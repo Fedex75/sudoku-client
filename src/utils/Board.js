@@ -7,12 +7,12 @@ export default class Board {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				if (data !== null){
-					const number = Number.parseInt(data.Mission[y * 9 + x]);
+					const number = Number.parseInt(data.mission[y * 9 + x]);
 					this.board[x][y] = {
 						clue: number > 0,
 						value: number,
 						notes: [],
-						solution: Number.parseInt(data.Solution[y * 9 + x])
+						solution: Number.parseInt(data.solution[y * 9 + x])
 					};
 				} else {
 					this.board[x][y] = {
@@ -53,16 +53,16 @@ export default class Board {
 		this.selectionCoords = c;
 	}
 
-	setNote(c, n, state = null){
+	setNote(c, n, state = null, push = true){
 		if (this.get(c).value === 0){
 			if (this.get(c).notes.includes(n)){
 				if (state !== true){
-					this.pushBoard();
+					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes = this.board[c.x][c.y].notes.filter(note => note !== n);
 				}
 			} else {
 				if (state !== false){
-					this.pushBoard();
+					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes.push(n);
 				}
 			}
@@ -73,7 +73,7 @@ export default class Board {
 		this.pushBoard();
 		this.board[c.x][c.y].value = s;
 		this.board[c.x][c.y].notes = [];
-		for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false);
+		for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
 	}
 
 	hint(c){
@@ -121,7 +121,7 @@ export default class Board {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				const cell = this.get({x: x, y: y});
-				if (cell.value > 0) highlightedCells[x][y] = true;
+				if (selectedCell.value > 0 && cell.value > 0) highlightedCells[x][y] = true;
 				if (cell.value > 0 && cell.value === selectedCell.value) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
 			}
 		}

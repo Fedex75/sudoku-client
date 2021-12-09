@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import API from '../API';
 import Board from '../utils/Board';
 import Canvas from './Canvas';
 import EditButton from './EditButton';
@@ -97,8 +98,13 @@ const Sudoku = () => {
 		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectionCoords);
 	}
 
+	async function newGame(){
+		gameRef.current = new Board(await API.getGame());
+		setRender(render => !render);
+	}
+
 	useEffect(() => {
-		let data = JSON.parse(`{
+		/*let data = JSON.parse(`{
 			"Id": "",
 			"Mission": "080032000700000160000004500100000004000005680500420000000300000400000801020070000",
 			"Solution": "685132479734598162219764538197683254342915687568427913851349726473256891926871345",
@@ -106,10 +112,10 @@ const Sudoku = () => {
 				"Type": "expert"
 			},
 			"Mode": "classic"
-		}`);
-		gameRef.current = new Board(data);
-		setRender(render => !render);
-
+		}`);*/
+		/*gameRef.current = new Board(data);
+		setRender(render => !render);*/
+		newGame();
 		window.addEventListener('keydown', handleKeyDown, false);
 	}, []);
 
