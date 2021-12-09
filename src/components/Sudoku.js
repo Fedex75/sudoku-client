@@ -1,229 +1,100 @@
-import React, { useEffect, useRef, useState } from 'react'
-
-/*function line(ctx, x1, y1, x2, y2){
-	ctx.beginPath();
-	ctx.moveTo(x1, y1);
-	ctx.lineTo(x2, y2);
-	ctx.stroke();
-}*/
-
-let squareSize = null;
-let cellPositions = null;
-
-function calculateHighlightedCells(game, selectedCell, selectedCoords){
-	let highlightedCells = Array(9).fill().map(x => Array(9).fill(false));
-	
-	if (selectedCell.type === 'notes'){
-		for (let i = 0; i < 9; i++){
-			highlightedCells[selectedCoords.x][i] = true;
-			highlightedCells[i][selectedCoords.y] = true;
-		}
-
-		const quadrantX = Math.floor(selectedCoords.x / 3);
-		const quadrantY = Math.floor(selectedCoords.y / 3);
-
-		for (let x = 0; x < 3; x++){
-			for (let y = 0; y < 3; y++) {
-				highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y] = true;
-			}
-		}
-	}
-
-	for (let x = 0; x < 9; x++){
-		for (let y = 0; y < 9; y++) {
-			const cell = game[x][y];
-			if ((cell.type === 'clue' || cell.type === 'solution') && (selectedCell.type === 'clue' || selectedCell.type === 'solution')){
-				highlightedCells[x][y] = true;
-				if (cell.value === selectedCell.value){
-					for (let i = 0; i < 9; i++){
-						highlightedCells[x][i] = true;
-						highlightedCells[i][y] = true;
-					}
-					const quadrantX = Math.floor(x / 3);
-					const quadrantY = Math.floor(y / 3);
-	
-					for (let x = 0; x < 3; x++){
-						for (let y = 0; y < 3; y++) {
-							highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y] = true;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return highlightedCells;
-}
-
-const Canvas = (props) => {
-	const canvasRef = useRef(null);
-
-	useEffect(() => {
-		const canvas = canvasRef.current;
-
-		cellPositions = [];
-		for (let i = 0; i < 9; i++) cellPositions.push([]);
-
-		squareSize = (canvas.width - 14) / 9;
-
-		let posY = 0;
-		for (let y = 0; y < 9; y++){
-			let posX = 0;
-			for (let x = 0; x < 9; x++){
-				cellPositions[x][y] = {x: posX, y: posY};
-				posX += squareSize + 1;
-				if ((x + 1) % 3 === 0) posX += 3;
-			}
-			posY += squareSize + 1;
-			if ((y + 1) % 3 === 0) posY += 3;
-		}
-	}, []);
-
-	useEffect(() => {
-		const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-		let selectedCell = null;
-		let highlitedCells = [];
-		if (props.selected != null){
-			selectedCell = props.game[props.selected.x][props.selected.y];
-			highlitedCells = calculateHighlightedCells(props.game, selectedCell, props.selected);
-		}
-
-		//Background
-		ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-		//Draw cells
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				const cell = props.game[x][y];
-				//Cell background
-				ctx.fillStyle = '#25242c'; //Default
-				if (props.selected != null){
-					if (highlitedCells[x][y]){
-						ctx.fillStyle = '#1e1e26'; //Cell in same row or column as any cell with the same value as the selected cell
-					}
-
-					if ((selectedCell.type === 'clue' || selectedCell.type === 'solution') && ((cell.type === 'clue' || cell.type === 'solution') && selectedCell.value === cell.value)){
-						ctx.fillStyle = '#16151b'; //Cell has same value as selected cell
-					}
-
-					if (props.selected.x === x && props.selected.y === y){
-						ctx.fillStyle = '#163c7b'; //Selected cell
-					}
-				}
-				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
-
-				switch (cell.type){
-					case 'clue':
-						ctx.fillStyle = '#75747c';
-						ctx.textAlign = "center";
-						ctx.textBaseline = "middle";
-						ctx.font = '38px arial';
-						ctx.fillText(cell.value, cellPositions[x][y].x + squareSize / 2, cellPositions[x][y].y + squareSize / 2 + 3);
-						break;
-					case 'notes':
-						for (const n of cell.notes){
-							if (props.selected && (selectedCell.type === 'clue' || selectedCell.type === 'solution') && selectedCell.value === n){
-								ctx.fillStyle = 'white';
-							} else {
-								ctx.fillStyle = '#75747c';
-							}
-							ctx.textAlign = "center";
-							ctx.textBaseline = "middle";
-							ctx.font = '14px arial';
-
-							const noteX = squareSize * (((n - 1) % 3 + 1) * 0.3 - 0.1);
-							const noteY = squareSize * ((Math.floor((n - 1) / 3) + 1) * 0.3 - 0.1);
-							
-							ctx.fillText(n, cellPositions[x][y].x + noteX, cellPositions[x][y].y + noteY);
-						}
-						break;
-					case 'solution':
-						ctx.fillStyle = '#6f90c3';
-						ctx.textAlign = "center";
-						ctx.textBaseline = "middle";
-						ctx.font = '38px arial';
-						ctx.fillText(cell.value, cellPositions[x][y].x + squareSize / 2, cellPositions[x][y].y + squareSize / 2 + 3);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-	});
-
-	function handleClick(e){
-		const canvas = canvasRef.current;
-		const rect = canvas.getBoundingClientRect();
-		const clickX = e.clientX - rect.left;
-		const clickY = e.clientY - rect.top;
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
-					props.onSelect(x, y);
-				}
-			}
-		}
-	}
-
-	return (
-		<canvas ref={canvasRef} width="500" height="500" {...props} style={{border: "solid 2px black"}} onClick={handleClick} />
-	)
-}
+import React, { useEffect, useRef, useState } from 'react';
+import Board from '../utils/Board';
+import Canvas from './Canvas';
+import EditButton from './EditButton';
 
 const Sudoku = () => {
-	const [selected, setSelected] = useState(null);
-	const [game, setGame] = useState(null);
-	const [noteMode, setNoteMode] = useState(false);
+	const [render, setRender] = useState(false);
+	const [hintState, setHintState] = useState(0);
 
-	const selectedRef = useRef(selected);
-	const gameRef = useRef(game);
-	const noteModeRef = useRef(noteMode);
+	const gameRef = useRef(null);
+	const noteModeRef = useRef(null);
+	const possibleValuesRef = useRef([]);
 
 	function onSelect(x, y){
-		if (selected === null || selected.x !== x || selected.y !== y){
-			selectedRef.current = {x: x, y: y};
-			setSelected({x: x, y: y});
+		if (gameRef.current.selectionCoords === null || gameRef.current.selectionCoords.x !== x || gameRef.current.selectionCoords.y !== y){
+			gameRef.current.setSelectionCoords({x: x, y: y});
+			setPossibleValues();
+			setRender(render => !render);
+		}
+	}
+
+	function handleNumberInput(number){
+		if (gameRef.current.selectionCoords !== null){
+			const selectedCell = gameRef.current.getSelectedCell();
+			if (selectedCell.value === 0){
+				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectionCoords, number);
+				else gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				setPossibleValues();
+				setRender(render => !render);
+			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
+				gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				setPossibleValues();
+				setRender(render => !render);
+			}
+		}
+	}
+
+	function invertNoteMode(){
+		noteModeRef.current = !noteModeRef.current;
+		setPossibleValues();
+		setRender(render => !render);
+	}
+
+	function eraseSelectedCell(){
+		if (gameRef.current.selectionCoords !== null){
+			gameRef.current.erase(gameRef.current.selectionCoords);
+			setRender(render => !render);
 		}
 	}
 
 	function handleKeyDown(e){
 		if (e.key === 'Enter') {
-			noteModeRef.current = !noteModeRef.current;
-			setNoteMode(mode => !mode);
+			invertNoteMode();
 		} else {
-			if (selectedRef.current !== null){
-				const selectedCell = gameRef.current[selectedRef.current.x][selectedRef.current.y];
-				if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && selectedRef.current !== null){
-					if (selectedCell.type === 'notes'){
-						let newGame = [...gameRef.current];
-						if (noteModeRef.current){
-							if (selectedCell.notes.includes(Number.parseInt(e.key))){
-								newGame[selectedRef.current.x][selectedRef.current.y].notes = newGame[selectedRef.current.x][selectedRef.current.y].notes.filter(note => note !== Number.parseInt(e.key));	
-							} else {
-								newGame[selectedRef.current.x][selectedRef.current.y].notes.push(Number.parseInt(e.key));
-							}
-						} else {
-							newGame[selectedRef.current.x][selectedRef.current.y] = {
-								type: 'solution',
-								value: Number.parseInt(e.key)
-							};	
-						}
-						gameRef.current = newGame;
-						setGame(newGame);
-					} else if (selectedCell.type === 'solution' && !noteModeRef.current) {
-						let newGame = [...gameRef.current];
-						newGame[selectedRef.current.x][selectedRef.current.y] = {
-							type: 'solution',
-							value: Number.parseInt(e.key)
-						};
-						gameRef.current = newGame;
-						setGame(newGame);
-					}
+			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) handleNumberInput(Number.parseInt(e.key));
+			else if (e.key === '0') eraseSelectedCell();
+			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
+				switch (e.key){
+					case 'ArrowDown':
+						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.y < 8) gameRef.current.selectionCoords.y++;
+						break;
+					case 'ArrowUp':
+						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.y > 0) gameRef.current.selectionCoords.y--;
+						break;
+					case 'ArrowLeft':
+						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.x > 0) gameRef.current.selectionCoords.x--;
+						break;
+					case 'ArrowRight':
+						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.x < 8) gameRef.current.selectionCoords.x++;
+						break;
 				}
+				setRender(render => !render);
 			}
 		}
+	}
+
+	function handleHintClick(){
+		if (gameRef.current.selectionCoords !== null){
+			if (hintState === 0){
+				setHintState(1);
+				setTimeout(() => {setHintState(0)}, 2000);
+			} else if (hintState === 1){
+				setHintState(0);
+				gameRef.current.hint(gameRef.current.selectionCoords);
+				setRender(render => !render);
+			}
+		}
+	}
+
+	function handleUndo(){
+		gameRef.current.popBoard();
+		setRender(render => !render);
+	}
+
+	function setPossibleValues(){
+		if (gameRef.current.selectionCoords === null || (noteModeRef.current && gameRef.current.getSelectedCell().value > 0)) possibleValuesRef.current = [];
+		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectionCoords);
 	}
 
 	useEffect(() => {
@@ -236,42 +107,49 @@ const Sudoku = () => {
 			},
 			"Mode": "classic"
 		}`);
-		let newGame = [];
-		for (let i = 0; i < 9; i++) newGame.push([]);
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				const number = Number.parseInt(data.Mission[y*9 + x]);
-				if (number === 0){
-					newGame[x][y] = {
-						type: 'notes',
-						notes: []
-					}
-				} else {
-					newGame[x][y] = {
-						type: 'clue',
-						value: number
-					}
-				}
-			}
-		}
-		gameRef.current = newGame;
-		setGame(newGame);
+		gameRef.current = new Board(data);
+		setRender(render => !render);
 
 		window.addEventListener('keydown', handleKeyDown, false);
 	}, []);
 
-	if (game === null){
-		return <div>Loading</div>
+	if (gameRef.current === null){
+		return <div className="game"></div>
 	}
 
 	return (
-		<div className="game">
+		<div
+			className="game"
+			onClick={() => {
+				gameRef.current.setSelectionCoords(null); setRender(remder => !render);
+				setPossibleValues();
+			}}
+		>
 			<div className="sudoku">
-				<Canvas selected={selected} onSelect={onSelect} game={game} />
+				<Canvas onSelect={onSelect} game={gameRef.current} />
 			</div>
-			<div className="controls" style={{width: 300, height: 500, backgroundColor: "green"}}>
-				<div>Note mode: {noteMode ? 'true' : 'false'}</div>
-				<div>Note mode ref: {noteModeRef.current ? 'true' : 'false'}</div>
+			<div className="controls" onClick={e => {e.stopPropagation()}}>
+				<div className="new-game-button">New Game</div>
+				<div className="edit__buttons">
+					<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
+					<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
+					<EditButton icon="fas fa-pencil-alt" highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>
+					<EditButton icon="fas fa-lightbulb" yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>
+				</div>
+				<div className="numpad">
+					{Array(9).fill().map((_, i) => (
+						<div
+							key={i}
+							className={`numpad__button ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
+							onClick={(e) => {
+								e.stopPropagation();
+								if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
+							}}
+						>
+							{i + 1}
+						</div>
+					))}
+				</div>
 			</div>
 		</div>
 	)
