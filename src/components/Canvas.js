@@ -13,7 +13,16 @@ let cellPositions = null;
 const Canvas = (props) => {
 	const canvasRef = useRef(null);
 
+	function resizeCanvas(){
+		const val = `${Math.min(window.visualViewport.width, 500) - (window.innerWidth < 880 ? 24 : 0)}px`;
+		canvasRef.current.style.width = val;
+		canvasRef.current.style.height = val;
+	}
+
 	useEffect(() => {
+		window.addEventListener('resize', resizeCanvas, false);
+		resizeCanvas();
+
 		const canvas = canvasRef.current;
 
 		cellPositions = [];
@@ -36,7 +45,7 @@ const Canvas = (props) => {
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext('2d');
 		let selectedCell = null;
 		let highlitedCells = [];
 		if (props.game.selectionCoords != null){
@@ -56,7 +65,7 @@ const Canvas = (props) => {
 				ctx.fillStyle = '#25242c'; //Default
 				if (props.game.selectionCoords != null){
 					if (highlitedCells[x][y]){
-						ctx.fillStyle = '#1e1e26'; //Cell in same row or column as any cell with the same value as the selected cell
+						ctx.fillStyle = '#1c1c26'; //Cell in same row or column as any cell with the same value as the selected cell
 					}
 
 					if (selectedCell.value > 0 && selectedCell.value === cell.value){
@@ -70,7 +79,7 @@ const Canvas = (props) => {
 				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
 
 				if (cell.value > 0){
-					ctx.fillStyle = cell.clue ? '#75747c' : '#6f90c3';
+					ctx.fillStyle = cell.clue ? '#75747c' : (cell.value !== cell.solution ? 'red' : '#6f90c3');
 					ctx.textAlign = "center";
 					ctx.textBaseline = "middle";
 					ctx.font = '38px arial';
@@ -94,14 +103,37 @@ const Canvas = (props) => {
 				}
 			}
 		}
+
+		if (props.showLinks && props.game.selectionCoords && selectedCell.value > 0){
+			let links = props.game.calculateLinks(selectedCell.value);
+			//Draw links
+			ctx.fillStyle = 'red';
+			ctx.strokeStyle = 'red';
+			links.forEach(link => {
+				link.forEach(cell => {
+					ctx.beginPath();
+					ctx.arc(cellPositions[cell.x][cell.y].x + squareSize / 2, cellPositions[cell.x][cell.y].y + squareSize / 2, squareSize / 8, 0, 2 * Math.PI, false);
+					ctx.fill();
+				});
+				if (link.length === 2){
+					ctx.beginPath();
+					ctx.moveTo(cellPositions[link[0].x][link[0].y].x + squareSize / 2, cellPositions[link[0].x][link[0].y].y + squareSize / 2);
+					ctx.lineWidth = 4;
+					ctx.lineTo(cellPositions[link[1].x][link[1].y].x + squareSize / 2, cellPositions[link[1].x][link[1].y].y + squareSize / 2);
+					ctx.stroke();
+				}
+			});
+		}
 	});
 
 	function handleClick(e){
 		e.stopPropagation();
 		const canvas = canvasRef.current;
 		const rect = canvas.getBoundingClientRect();
-		const clickX = e.clientX - rect.left;
-		const clickY = e.clientY - rect.top;
+		const clickX = (e.clientX - rect.left) / parseInt(canvasRef.current.style.width, 10) * 500;
+		const clickY = (e.clientY - rect.top) / parseInt(canvasRef.current.style.height, 10) * 500;
+
+		/*TODO: Optimize finding position*/
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
@@ -112,7 +144,7 @@ const Canvas = (props) => {
 	}
 
 	return (
-		<canvas ref={canvasRef} width="500" height="500" {...props} style={{border: "solid 2px black"}} onClick={handleClick} />
+		<canvas ref={canvasRef} width="500" height="500" style={{border: "solid 2px black"}} onClick={handleClick} />
 	)
 }
 

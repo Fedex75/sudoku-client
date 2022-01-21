@@ -1,29 +1,16 @@
 export default class Board {
-	constructor(data = null){
-		this.board = [];
-		this.selectionCoords = null;
-		this.history = [];
-		for (let i = 0; i < 9; i++) this.board.push([]);
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				if (data !== null){
-					const number = Number.parseInt(data.mission[y * 9 + x]);
-					this.board[x][y] = {
-						clue: number > 0,
-						value: number,
-						notes: [],
-						solution: Number.parseInt(data.solution[y * 9 + x])
-					};
-				} else {
-					this.board[x][y] = {
-						clue: false,
-						value: 0,
-						notes: [],
-						solution: 0
-					};
-				}
-			}
-		}
+	constructor(data){
+		this.board = data.board || Array(9).fill(Array(9).fill().map(x => ({
+			clue: false,
+			value: 0,
+			notes: [],
+			solution: 0
+		})));
+		this.mission = data.mission || null;
+		this.selectionCoords = data.selectionCoords || null;
+		this.history = data.history || [];
+		this.difficulty = data.difficulty || null;
+		this.mode = data.mode || null;
 	}
 
 	pushBoard(){
@@ -51,6 +38,7 @@ export default class Board {
 
 	setSelectionCoords(c){
 		this.selectionCoords = c;
+		this.saveToLocalStorage();
 	}
 
 	setNote(c, n, state = null, push = true){
@@ -59,11 +47,13 @@ export default class Board {
 				if (state !== true){
 					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes = this.board[c.x][c.y].notes.filter(note => note !== n);
+					this.saveToLocalStorage();
 				}
 			} else {
 				if (state !== false){
 					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes.push(n);
+					this.saveToLocalStorage();
 				}
 			}
 		}
@@ -74,6 +64,7 @@ export default class Board {
 		this.board[c.x][c.y].value = s;
 		this.board[c.x][c.y].notes = [];
 		for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
+		this.saveToLocalStorage();
 	}
 
 	hint(c){
@@ -83,16 +74,19 @@ export default class Board {
 
 	erase(c){
 		this.pushBoard();
-		if (this.board[c.x][c.y].clue){
+		if (!this.board[c.x][c.y].clue){
 			this.board[c.x][c.y] = {
 				clue: false,
 				value: 0,
-				notes: []
+				notes: [],
+				solution: this.board[c.x][c.y].solution
 			};
 		}
+		this.saveToLocalStorage();
 	}
 
 	getPossibleValues(c){
+		if (this.get(c).clue) return [];
 		let values = [];
 		for (const coords of this.getVisibleCells(c)){
 			const cell = this.get(coords);
@@ -127,5 +121,81 @@ export default class Board {
 		}
 
 		return highlightedCells;
+	}
+
+	calculateLinks(n){
+		let links = [];
+		//Find links in rows
+		for (let r = 0; r < 9; r++){
+			//Count candidates in row
+			let newLink = [];
+			for (let i = 0; i < 9; i++){
+				if (this.board[i][r].notes.includes(n)){
+					newLink.push({x: i, y: r});		
+				}
+			}
+			if (newLink.length <= 2){
+				links.push(newLink);
+			}
+		}
+		//Find links in columns
+		for (let c = 0; c < 9; c++){
+			//Count candidates in column
+			let newLink = [];
+			for (let i = 0; i < 9; i++){
+				if (this.board[c][i].notes.includes(n)){
+					newLink.push({x: c, y: i});
+				}
+			}
+			if (newLink.length <= 2){
+				links.push(newLink);
+			}
+		}
+		//Count candidates in quadrants
+		for (let qx = 0; qx < 3; qx++){
+			for (let qy = 0; qy < 3; qy++){
+				//Count candidates in quadrant
+				let newLink = [];
+				for (let x = 0; x < 3; x++){
+					for (let y = 0; y < 3; y++){
+						if (this.board[qx*3+x][qy*3+y].notes.includes(n)){
+							newLink.push({x: qx*3+x, y: qy*3+y});
+						}		
+					}
+				}
+				if (newLink.length <= 2){
+					links.push(newLink);
+				}
+			}
+		}
+		return links;
+	}
+
+	saveToLocalStorage(){
+		localStorage.setItem('game', JSON.stringify(this));
+	}
+
+	clearLocalStorage(){
+		localStorage.setItem('game', null);
+	}
+
+	checkComplete(){
+		for (let x = 0; x < 9; x++) for (let y = 0; y < 9; y++) if (this.board[x][y].value !== this.board[x][y].solution) return false;
+		return true;
+	}
+
+	restart(){
+		this.clearLocalStorage();
+		for (let x = 0; x < 9; x++){
+			for (let y = 0; y < 9; y++){
+				let n = Number.parseInt(this.mission[y*9+x]);
+				this.board[x][y] = {
+					clue: n > 0,
+					value: n,
+					notes: [],
+					solution: this.board[x][y].solution
+				};
+			}
+		}
 	}
 }

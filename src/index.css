@@ -1,5 +1,5 @@
 :root {
-	--background: #1d1d1d;
+	--background: #1d1d20;
 	--higlight:  #1e1e26;
 	--focus: #163c7b;
 }
@@ -10,29 +10,109 @@ html, body, #root, .App, .game {
 	height: 100%;
 	font-family: sans-serif;
 	user-select: none;
+	user-select: none;
+	touch-action: manipulation;
 }
 
-.game {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+a {
+	text-decoration: none;
+}
+
+body {
 	background-color: var(--background);
 }
 
-.controls {
+.section {
 	display: grid;
-	grid-template-rows: 50px auto fit-content;
-	grid-template-areas: 
-		"new-game"
-		"buttons"
-		"numpad";
-	height: 500px;
+	grid-template-rows: fit-content(0) auto;
+	height: 100%;
+}
+
+.section__content {
+	height: 100%;
+}
+
+.navbar {
+	display: grid;
+	grid-template-columns: fit-content(0) auto fit-content(0);
+	grid-template-areas: "logo title user";
+	align-items: center;
+	padding: 10px;
+	color: white;
+}
+
+.navbar__logo-wrapper img {
+	grid-area: logo;
+	height: 30px;
+}
+
+.navbar__title {
+	grid-area: title;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 30px;
+}
+
+.navbar__user-wrapper {
+	grid-area: user;
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.navbar__user-wrapper__settings {
+	padding: 10px;
+	cursor: pointer;
+}
+
+.navbar__user-wrapper__settings i {
+	font-size: 20px;
+	color: white;
+}
+
+.navbar__user-wrapper__login-button {
+	border: solid 1px white;
+	padding: 5px 10px;
+	word-wrap: none;
+	white-space: nowrap;
+	font-size: 20px;
+	color: white;
+}
+
+#sudoku {
+	display: grid;
+	grid-template-rows: auto fit-content(0);
+	grid-template-areas:
+		"game"
+		"made-with-love";
+	justify-content: center;
+	align-items: center;
+}
+
+.game {
+	display: grid;
+	grid-template-columns: 504px 320px;
+	grid-template-rows: 50px fit-content(0) fit-content(0) auto fit-content(0);
+	grid-template-areas:
+		"sudoku new-game"
+		"sudoku buttons"
+		"sudoku numpad";
 	gap: 20px;
-	padding-left: 30px;
+	width: fit-content;
+	height: fit-content;
+}
+
+.sudoku {
+	grid-area: sudoku;
+}
+
+.new-game-wrapper {
+	grid-area: new-game;
+	position: relative;
 }
 
 .new-game-button {
-	grid-area: new-game;
 	display: flex;
 	background-color: #4b7bec;
 	justify-content: center;
@@ -41,10 +121,52 @@ html, body, #root, .App, .game {
 	border-radius: 10px;
 	font-size: 20px;
 	cursor: pointer;
+	height: 100%;
 }
 
 .new-game-button:hover {
 	background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
+}
+
+.new-game-menu.hidden {
+	display: none;
+}
+
+.new-game-menu.visible {
+	display: flex;
+	position: absolute;
+	flex-flow: column;
+	background-color: #25242c;
+	width: 300px;
+	left: 50%;
+	transform: translateX(-50%);
+	margin-top: 10px;
+	border-radius: 15px;
+	border: solid 1px white;
+}
+
+.menu-button {
+	display: flex;
+	flex-flow: row;
+	align-items: center;
+	padding: 10px;
+	height: 30px;
+	border-bottom: solid 1px white;
+	color: #75747c;
+	cursor: pointer;
+}
+
+.menu-button:hover {
+	color: white;
+}
+
+.menu-button:last-child {
+	border-bottom: none;
+}
+
+.menu-button__icon {
+	width: 20px;
+	margin-right: 15px;
 }
 
 .edit__buttons {
@@ -90,7 +212,7 @@ html, body, #root, .App, .game {
 	display: grid;
 	grid-template-columns: repeat(3, auto);
 	grid-template-rows: repeat(3, auto);
-	gap: 0 10px;
+	gap: 10px 10px;
 }
 
 .numpad__button {
@@ -113,11 +235,44 @@ html, body, #root, .App, .game {
 .numpad__button.hidden {
 	background-color: transparent;
 	border: solid 1px #25242c;
-	width: 98px;
-	height: 98px;
 	cursor: default;
 }
 
 .numpad__button.hidden:hover {
 	background-image: none;
+}
+
+/*@media only screen and (max-width: 880px) {
+  .App {
+		display: block;
+	}
+
+	.game {
+		grid-template-columns: fit-content(0) auto !important;
+		grid-template-rows: 50px fit-content(0) auto !important;
+		grid-template-areas:
+			"new-game new-game"
+			"sudoku sudoku"
+			"buttons numpad" !important;
+		gap: 20px;
+		padding: 10px;
+	}
+
+	.edit__buttons {
+		flex-wrap: wrap;
+		width: 140px;
+		gap: 10px;
+	}
+
+	.numpad__button {
+		height: auto;
+		width: auto;
+	}
+}*/
+
+.made-with-love {
+	grid-area: made-with-love;
+	color: white;
+	text-align: center;
+	padding-bottom: 5px;
 }

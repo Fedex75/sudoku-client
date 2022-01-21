@@ -3,14 +3,20 @@ import API from '../API';
 import Board from '../utils/Board';
 import Canvas from './Canvas';
 import EditButton from './EditButton';
+import MenuButton from './MenuButton';
+import Section from './Section';
 
 const Sudoku = () => {
 	const [render, setRender] = useState(false);
 	const [hintState, setHintState] = useState(0);
+	const [newGameState, setNewGameState] = useState(0);
+	const [showLinks, setShowLinks] = useState(false);
 
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
+
+	const difficulties = ['easy', 'medium', 'hard', 'expert', 'evil', 'restart'];
 
 	function onSelect(x, y){
 		if (gameRef.current.selectionCoords === null || gameRef.current.selectionCoords.x !== x || gameRef.current.selectionCoords.y !== y){
@@ -26,10 +32,18 @@ const Sudoku = () => {
 			if (selectedCell.value === 0){
 				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectionCoords, number);
 				else gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				if (gameRef.current.checkComplete()){
+					gameRef.current.clearLocalStorage();
+					newGame(null);
+				}
 				setPossibleValues();
 				setRender(render => !render);
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				if (gameRef.current.checkComplete()){
+					gameRef.current.clearLocalStorage();
+					newGame(null);
+				}
 				setPossibleValues();
 				setRender(render => !render);
 			}
@@ -42,9 +56,14 @@ const Sudoku = () => {
 		setRender(render => !render);
 	}
 
+	function invertShowLinks(){
+		setShowLinks(v => !v);
+	}
+
 	function eraseSelectedCell(){
 		if (gameRef.current.selectionCoords !== null){
 			gameRef.current.erase(gameRef.current.selectionCoords);
+			setPossibleValues();
 			setRender(render => !render);
 		}
 	}
@@ -53,7 +72,7 @@ const Sudoku = () => {
 		if (e.key === 'Enter') {
 			invertNoteMode();
 		} else {
-			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) handleNumberInput(Number.parseInt(e.key));
+			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))) handleNumberInput(Number.parseInt(e.key));
 			else if (e.key === '0') eraseSelectedCell();
 			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				switch (e.key){
@@ -70,6 +89,7 @@ const Sudoku = () => {
 						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.x < 8) gameRef.current.selectionCoords.x++;
 						break;
 				}
+				setPossibleValues();
 				setRender(render => !render);
 			}
 		}
@@ -90,7 +110,23 @@ const Sudoku = () => {
 
 	function handleUndo(){
 		gameRef.current.popBoard();
+		gameRef.current.saveToLocalStorage();
+		setPossibleValues();
 		setRender(render => !render);
+	}
+
+	function handleNewGameClick(){
+		if (newGameState === 0) setNewGameState(1);
+		else setNewGameState(0);
+	}
+
+	async function handleMenuButtonClick(dif){
+		if (dif === 'restart'){
+			gameRef.current.restart();
+		} else {
+			newGame(await API.getGame(dif));
+		}
+		setNewGameState(0);
 	}
 
 	function setPossibleValues(){
@@ -98,24 +134,15 @@ const Sudoku = () => {
 		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectionCoords);
 	}
 
-	async function newGame(){
-		gameRef.current = new Board(await API.getGame());
+	async function newGame(data = null){
+		gameRef.current = new Board(data || await API.getGame());
+		setPossibleValues();
 		setRender(render => !render);
 	}
 
 	useEffect(() => {
-		/*let data = JSON.parse(`{
-			"Id": "",
-			"Mission": "080032000700000160000004500100000004000005680500420000000300000400000801020070000",
-			"Solution": "685132479734598162219764538197683254342915687568427913851349726473256891926871345",
-			"Difficulty": {
-				"Type": "expert"
-			},
-			"Mode": "classic"
-		}`);*/
-		/*gameRef.current = new Board(data);
-		setRender(render => !render);*/
-		newGame();
+		let ls = localStorage.getItem('game');
+		newGame( ls ? JSON.parse(ls) : null);
 		window.addEventListener('keydown', handleKeyDown, false);
 	}, []);
 
@@ -124,23 +151,25 @@ const Sudoku = () => {
 	}
 
 	return (
-		<div
-			className="game"
-			onClick={() => {
-				gameRef.current.setSelectionCoords(null); setRender(remder => !render);
-				setPossibleValues();
-			}}
-		>
-			<div className="sudoku">
-				<Canvas onSelect={onSelect} game={gameRef.current} />
-			</div>
-			<div className="controls" onClick={e => {e.stopPropagation()}}>
-				<div className="new-game-button">New Game</div>
+		<Section name="sudoku">
+			<div className="game">
+				<div className="sudoku">
+					<Canvas onSelect={onSelect} showLinks={showLinks} game={gameRef.current} />
+				</div>
+				<div className="new-game-wrapper" onClick={e => {e.stopPropagation()}}>
+					<div className="new-game-button" onClick={handleNewGameClick}>New Game</div>
+					<div className={`new-game-menu ${newGameState === 0 ? 'hidden' : 'visible'}`}>
+						{difficulties.map((dif, i) => (
+							<MenuButton key={i} icon={dif === 'restart' ? 'fas fa-redo' : 'fas fa-th'} title={dif.replace(/./, c => c.toUpperCase())} onClick={() => handleMenuButtonClick(dif)} />
+						))}
+					</div>
+				</div>
 				<div className="edit__buttons">
 					<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
 					<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
 					<EditButton icon="fas fa-pencil-alt" highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>
 					<EditButton icon="fas fa-lightbulb" yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>
+					<EditButton icon="fas fa-link"  title="Links" highlight={showLinks} onClick={invertShowLinks}/>
 				</div>
 				<div className="numpad">
 					{Array(9).fill().map((_, i) => (
@@ -157,7 +186,10 @@ const Sudoku = () => {
 					))}
 				</div>
 			</div>
-		</div>
+			<div className="made-with-love">
+				Made with <i className="fas fa-heart"></i> by The Gemini Project
+			</div>
+		</Section>
 	)
 }
 

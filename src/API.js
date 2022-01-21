@@ -2,7 +2,7 @@ import axios from "axios";
 
 class API {
 	constructor(){
-		this.host = 'http://localhost:8130'
+		this.host = 'https://sudoku.zaifo.com.ar';
 	}
 
 	getGame(level = 'expert'){
