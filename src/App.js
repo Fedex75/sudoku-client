@@ -24,16 +24,14 @@ function App() {
 	}
   
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Route exact path="/">
-          <Sudoku/>
-        </Route>
-				<Route exact path="/settings">
-					<Settings/>
-				</Route>
-      </BrowserRouter>
-    </div>
+		<BrowserRouter>
+			<Route exact path="/">
+				<Sudoku/>
+			</Route>
+			<Route exact path="/settings">
+				<Settings/>
+			</Route>
+		</BrowserRouter>
   );
 }
 

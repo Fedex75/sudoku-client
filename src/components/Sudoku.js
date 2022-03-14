@@ -19,19 +19,31 @@ const Sudoku = () => {
 	const difficulties = ['easy', 'medium', 'hard', 'expert', 'evil', 'restart'];
 
 	function onSelect(x, y){
-		if (gameRef.current.selectionCoords === null || gameRef.current.selectionCoords.x !== x || gameRef.current.selectionCoords.y !== y){
-			gameRef.current.setSelectionCoords({x: x, y: y});
+		if (gameRef.current.selectedCell === null || gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
+			gameRef.current.setselectedCell({x: x, y: y});
 			setPossibleValues();
 			setRender(render => !render);
 		}
 	}
 
+	function onHighlight(x, y){
+		if (gameRef.current.highlightedCell === null || gameRef.current.highlightedCell.x !== x || gameRef.current.highlightedCell.y !== y){
+			gameRef.current.setHighlightedCell({x: x, y: y});
+			setRender(render => !render);
+		} else {
+			if (gameRef.current.highlightedCell !== null){
+				gameRef.current.setHighlightedCell(null);
+				setRender(render => !render);
+			}
+		}
+	}
+
 	function handleNumberInput(number){
-		if (gameRef.current.selectionCoords !== null){
+		if (gameRef.current.selectedCell !== null){
 			const selectedCell = gameRef.current.getSelectedCell();
 			if (selectedCell.value === 0){
-				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectionCoords, number);
-				else gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectedCell, number);
+				else gameRef.current.setValue(gameRef.current.selectedCell, number);
 				if (gameRef.current.checkComplete()){
 					gameRef.current.clearLocalStorage();
 					newGame(null);
@@ -39,7 +51,7 @@ const Sudoku = () => {
 				setPossibleValues();
 				setRender(render => !render);
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
-				gameRef.current.setValue(gameRef.current.selectionCoords, number);
+				gameRef.current.setValue(gameRef.current.selectedCell, number);
 				if (gameRef.current.checkComplete()){
 					gameRef.current.clearLocalStorage();
 					newGame(null);
@@ -61,8 +73,8 @@ const Sudoku = () => {
 	}
 
 	function eraseSelectedCell(){
-		if (gameRef.current.selectionCoords !== null){
-			gameRef.current.erase(gameRef.current.selectionCoords);
+		if (gameRef.current.selectedCell !== null){
+			gameRef.current.erase(gameRef.current.selectedCell);
 			setPossibleValues();
 			setRender(render => !render);
 		}
@@ -77,16 +89,16 @@ const Sudoku = () => {
 			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				switch (e.key){
 					case 'ArrowDown':
-						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.y < 8) gameRef.current.selectionCoords.y++;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y < 8) gameRef.current.selectedCell.y++;
 						break;
 					case 'ArrowUp':
-						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.y > 0) gameRef.current.selectionCoords.y--;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y > 0) gameRef.current.selectedCell.y--;
 						break;
 					case 'ArrowLeft':
-						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.x > 0) gameRef.current.selectionCoords.x--;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x > 0) gameRef.current.selectedCell.x--;
 						break;
 					case 'ArrowRight':
-						if (gameRef.current.selectionCoords !== null && gameRef.current.selectionCoords.x < 8) gameRef.current.selectionCoords.x++;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x < 8) gameRef.current.selectedCell.x++;
 						break;
 				}
 				setPossibleValues();
@@ -96,13 +108,13 @@ const Sudoku = () => {
 	}
 
 	function handleHintClick(){
-		if (gameRef.current.selectionCoords !== null){
+		if (gameRef.current.selectedCell !== null){
 			if (hintState === 0){
 				setHintState(1);
 				setTimeout(() => {setHintState(0)}, 2000);
 			} else if (hintState === 1){
 				setHintState(0);
-				gameRef.current.hint(gameRef.current.selectionCoords);
+				gameRef.current.hint(gameRef.current.selectedCell);
 				setRender(render => !render);
 			}
 		}
@@ -130,8 +142,8 @@ const Sudoku = () => {
 	}
 
 	function setPossibleValues(){
-		if (gameRef.current.selectionCoords === null || (noteModeRef.current && gameRef.current.getSelectedCell().value > 0)) possibleValuesRef.current = [];
-		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectionCoords);
+		if (gameRef.current.selectedCell === null || (noteModeRef.current && gameRef.current.getSelectedCell().value > 0)) possibleValuesRef.current = [];
+		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectedCell);
 	}
 
 	async function newGame(data = null){
@@ -154,7 +166,7 @@ const Sudoku = () => {
 		<Section name="sudoku">
 			<div className="game">
 				<div className="sudoku">
-					<Canvas onSelect={onSelect} showLinks={showLinks} game={gameRef.current} />
+					<Canvas onSelect={onSelect} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
 				</div>
 				<div className="new-game-wrapper" onClick={e => {e.stopPropagation()}}>
 					<div className="new-game-button" onClick={handleNewGameClick}>New Game</div>
@@ -185,9 +197,6 @@ const Sudoku = () => {
 						</div>
 					))}
 				</div>
-			</div>
-			<div className="made-with-love">
-				Made with <i className="fas fa-heart"></i> by The Gemini Project
 			</div>
 		</Section>
 	)

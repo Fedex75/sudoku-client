@@ -46,16 +46,17 @@ const Canvas = (props) => {
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext('2d');
-		let selectedCell = null;
+		let selectedCell = props.game.getSelectedCell();;
 		let highlitedCells = [];
-		if (props.game.selectionCoords != null){
-			selectedCell = props.game.getSelectedCell();
-			highlitedCells = props.game.calculateHighlightedCells(props.game.selectionCoords);
+		highlitedCells = props.game.calculateHighlightedCells(props.game.highlightedCell || props.game.selectedCell);
+		let highlightedCell = null;
+		if (props.game.highlightedCell){
+			highlightedCell = props.game.getHighlightedCell();
 		}
 
 		//Background
 		ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 		//Draw cells
 		for (let x = 0; x < 9; x++){
@@ -63,20 +64,31 @@ const Canvas = (props) => {
 				const cell = props.game.get({x: x, y: y});
 				//Cell background
 				ctx.fillStyle = '#25242c'; //Default
-				if (props.game.selectionCoords != null){
-					if (highlitedCells[x][y]){
-						ctx.fillStyle = '#1c1c26'; //Cell in same row or column as any cell with the same value as the selected cell
-					}
-
-					if (selectedCell.value > 0 && selectedCell.value === cell.value){
-						ctx.fillStyle = '#16151b'; //Cell has same value as selected cell
-					}
-
-					if (props.game.selectionCoords.x === x && props.game.selectionCoords.y === y){
-						ctx.fillStyle = '#163c7b'; //Selected cell
-					}
+				
+				if (highlitedCells[x][y]){
+					ctx.fillStyle = '#191925'; //Cell in same row or column as any cell with the same value as the selected cell
 				}
-				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+				
+				if (
+					(props.game.highlightedCell && highlightedCell.value > 0 && highlightedCell.value === cell.value) ||
+					(!props.game.highlightedCell && props.game.selectedCell && selectedCell.value > 0 && selectedCell.value === cell.value)
+				){
+					ctx.fillStyle = '#16151b'; //Cell has same value as selected cell
+				}
+
+				if (props.game.selectedCell && props.game.selectedCell.x === x && props.game.selectedCell.y === y){
+					ctx.fillStyle = '#163c7b'; //Selected cell
+				}
+				
+				if (props.game.highlightedCell && props.game.highlightedCell.x === x && props.game.highlightedCell.y === y){
+					let auxStyle = ctx.fillStyle;
+					ctx.fillStyle = 'white';
+					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+					ctx.fillStyle = auxStyle;
+					ctx.fillRect(cellPositions[x][y].x + 2, cellPositions[x][y].y + 2, squareSize - 4, squareSize - 4);
+				} else {
+					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+				}
 
 				if (cell.value > 0){
 					ctx.fillStyle = cell.clue ? '#75747c' : (cell.value !== cell.solution ? 'red' : '#6f90c3');
@@ -86,11 +98,9 @@ const Canvas = (props) => {
 					ctx.fillText(cell.value, cellPositions[x][y].x + squareSize / 2, cellPositions[x][y].y + squareSize / 2 + 3);
 				} else {
 					for (const n of cell.notes){
-						if (props.game.selectionCoords && selectedCell.value === n){
-							ctx.fillStyle = 'white';
-						} else {
-							ctx.fillStyle = '#75747c';
-						}
+						ctx.fillStyle = '#75747c';
+						if ((props.game.highlightedCell && highlightedCell.value === n) || (!props.game.highlightedCell && props.game.selectedCell && selectedCell.value === n))	ctx.fillStyle = 'white';
+						
 						ctx.textAlign = "center";
 						ctx.textBaseline = "middle";
 						ctx.font = '14px arial';
@@ -104,7 +114,7 @@ const Canvas = (props) => {
 			}
 		}
 
-		if (props.showLinks && props.game.selectionCoords && selectedCell.value > 0){
+		if (props.showLinks && props.game.selectedCell && selectedCell.value > 0){
 			let links = props.game.calculateLinks(selectedCell.value);
 			//Draw links
 			ctx.fillStyle = 'red';
@@ -126,7 +136,7 @@ const Canvas = (props) => {
 		}
 	});
 
-	function handleClick(e){
+	function handleClick(e, double){
 		e.stopPropagation();
 		const canvas = canvasRef.current;
 		const rect = canvas.getBoundingClientRect();
@@ -137,14 +147,18 @@ const Canvas = (props) => {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
-					props.onSelect(x, y);
+					if (double){
+						props.onHighlight(x, y);
+					} else {
+						props.onSelect(x, y);
+					}
 				}
 			}
 		}
 	}
 
 	return (
-		<canvas ref={canvasRef} width="500" height="500" style={{border: "solid 2px black"}} onClick={handleClick} />
+		<canvas ref={canvasRef} width="500" height="500" style={{border: "solid 2px black"}} onClick={e => {handleClick(e, false)}} onDoubleClick={e => {handleClick(e, true)}} />
 	)
 }
 

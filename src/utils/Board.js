@@ -7,7 +7,8 @@ export default class Board {
 			solution: 0
 		})));
 		this.mission = data.mission || null;
-		this.selectionCoords = data.selectionCoords || null;
+		this.selectedCell = data.selectedCell || null;
+		this.highlightedCell = null;
 		this.history = data.history || [];
 		this.difficulty = data.difficulty || null;
 		this.mode = data.mode || null;
@@ -16,14 +17,14 @@ export default class Board {
 	pushBoard(){
 		this.history.push({
 			board: JSON.parse(JSON.stringify(this.board)),
-			selectionCoords: this.selectionCoords
+			selectedCell: this.selectedCell
 		});
 	}
 
 	popBoard(){
 		if (this.history.length > 0){
 			this.board = this.history[this.history.length - 1].board;
-			this.selectionCoords = this.history[this.history.length - 1].selectionCoords;
+			this.selectedCell = this.history[this.history.length - 1].selectedCell;
 			this.history.pop();
 		}
 	}
@@ -33,12 +34,20 @@ export default class Board {
 	}
 
 	getSelectedCell(){
-		return this.get(this.selectionCoords);
+		return this.get(this.selectedCell);
 	}
 
-	setSelectionCoords(c){
-		this.selectionCoords = c;
+	setselectedCell(c){
+		this.selectedCell = c;
 		this.saveToLocalStorage();
+	}
+
+	getHighlightedCell(){
+		return this.get(this.highlightedCell);
+	}
+
+	setHighlightedCell(c){
+		this.highlightedCell = c;
 	}
 
 	setNote(c, n, state = null, push = true){
