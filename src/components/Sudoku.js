@@ -15,6 +15,7 @@ const Sudoku = () => {
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
+	const holdInput = useRef(null);
 
 	const difficulties = ['easy', 'medium', 'hard', 'expert', 'evil', 'restart'];
 
@@ -22,7 +23,15 @@ const Sudoku = () => {
 		if (gameRef.current.selectedCell === null || gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
 			gameRef.current.setselectedCell({x: x, y: y});
 			setPossibleValues();
-			setRender(render => !render);
+			if (holdInput.current !== null){
+				if (holdInput === 0) eraseSelectedCell();
+				else if (possibleValuesRef.current.includes) handleNumberInput(holdInput.current);
+			} else {
+				if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
+				else setRender(render => !render);
+			}
+		} else {
+			if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
 		}
 	}
 
@@ -43,7 +52,13 @@ const Sudoku = () => {
 			const selectedCell = gameRef.current.getSelectedCell();
 			if (selectedCell.value === 0){
 				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectedCell, number);
-				else gameRef.current.setValue(gameRef.current.selectedCell, number);
+				else {
+					gameRef.current.setValue(gameRef.current.selectedCell, number);
+					if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
+						console.log('here1');
+						onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
+					}
+				}
 				if (gameRef.current.checkComplete()){
 					gameRef.current.clearLocalStorage();
 					newGame(null);
@@ -52,6 +67,10 @@ const Sudoku = () => {
 				setRender(render => !render);
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
+				if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
+					console.log('here2');
+					onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
+				}
 				if (gameRef.current.checkComplete()){
 					gameRef.current.clearLocalStorage();
 					newGame(null);
@@ -84,8 +103,18 @@ const Sudoku = () => {
 		if (e.key === 'Enter') {
 			invertNoteMode();
 		} else {
-			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))) handleNumberInput(Number.parseInt(e.key));
-			else if (e.key === '0') eraseSelectedCell();
+			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))){
+				if (holdInput.current === null){
+					handleNumberInput(Number.parseInt(e.key));
+					holdInput.current = Number.parseInt(e.key);
+				}
+			}
+			else if (e.key === '0'){
+				if (holdInput.current === null){
+					eraseSelectedCell();
+					holdInput.current = 0;
+				}
+			}
 			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				switch (e.key){
 					case 'ArrowDown':
@@ -105,6 +134,10 @@ const Sudoku = () => {
 				setRender(render => !render);
 			}
 		}
+	}
+
+	function handleKeyUp(e){
+		holdInput.current = null;
 	}
 
 	function handleHintClick(){
@@ -156,6 +189,7 @@ const Sudoku = () => {
 		let ls = localStorage.getItem('game');
 		newGame( ls ? JSON.parse(ls) : null);
 		window.addEventListener('keydown', handleKeyDown, false);
+		window.addEventListener('keyup', handleKeyUp, false);
 	}, []);
 
 	if (gameRef.current === null){

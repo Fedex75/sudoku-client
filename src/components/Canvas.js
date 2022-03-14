@@ -147,11 +147,12 @@ const Canvas = (props) => {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
-					if (double){
+					/*if (double){
 						props.onHighlight(x, y);
 					} else {
 						props.onSelect(x, y);
-					}
+					}*/
+					props.onSelect(x, y);
 				}
 			}
 		}

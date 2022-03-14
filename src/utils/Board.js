@@ -48,6 +48,7 @@ export default class Board {
 
 	setHighlightedCell(c){
 		this.highlightedCell = c;
+		this.saveToLocalStorage();
 	}
 
 	setNote(c, n, state = null, push = true){
