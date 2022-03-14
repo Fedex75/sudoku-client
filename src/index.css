@@ -1,10 +1,10 @@
 :root {
-	--background: #1d1d20;
+	--background: #171719;
 	--higlight:  #1e1e26;
 	--focus: #163c7b;
 }
 
-html, body, #root, .App, .game {
+html, body, #root, .game {
 	margin: 0;
 	width: 100%;
 	height: 100%;
@@ -22,10 +22,16 @@ body {
 	background-color: var(--background);
 }
 
+#root {
+	display: flex;
+	justify-content: center;
+}
+
 .section {
 	display: grid;
 	grid-template-rows: fit-content(0) auto;
 	height: 100%;
+	width: fit-content;
 }
 
 .section__content {
@@ -43,7 +49,7 @@ body {
 
 .navbar__logo-wrapper img {
 	grid-area: logo;
-	height: 30px;
+	height: 22px;
 }
 
 .navbar__title {
@@ -81,11 +87,7 @@ body {
 }
 
 #sudoku {
-	display: grid;
-	grid-template-rows: auto fit-content(0);
-	grid-template-areas:
-		"game"
-		"made-with-love";
+	display: flex;
 	justify-content: center;
 	align-items: center;
 }
@@ -137,7 +139,7 @@ body {
 	position: absolute;
 	flex-flow: column;
 	background-color: #25242c;
-	width: 300px;
+	width: 320px;
 	left: 50%;
 	transform: translateX(-50%);
 	margin-top: 10px;
@@ -242,11 +244,7 @@ body {
 	background-image: none;
 }
 
-/*@media only screen and (max-width: 880px) {
-  .App {
-		display: block;
-	}
-
+@media only screen and (max-width: 880px) {
 	.game {
 		grid-template-columns: fit-content(0) auto !important;
 		grid-template-rows: 50px fit-content(0) auto !important;
@@ -256,6 +254,10 @@ body {
 			"buttons numpad" !important;
 		gap: 20px;
 		padding: 10px;
+	}
+
+	#sudoku {
+		align-items: flex-start;
 	}
 
 	.edit__buttons {
@@ -268,11 +270,8 @@ body {
 		height: auto;
 		width: auto;
 	}
-}*/
 
-.made-with-love {
-	grid-area: made-with-love;
-	color: white;
-	text-align: center;
-	padding-bottom: 5px;
+	.new-game-menu.visible {
+		width: 100%;
+	}
 }
