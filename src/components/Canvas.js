@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import SettingsHandler from '../utils/SettingsHandler';
 
 /*function line(ctx, x1, y1, x2, y2){
 	ctx.beginPath();
@@ -14,9 +15,12 @@ const Canvas = (props) => {
 	const canvasRef = useRef(null);
 
 	function resizeCanvas(){
-		const val = `${Math.min(window.visualViewport.width, 500) - (window.innerWidth < 880 ? 24 : 0)}px`;
-		canvasRef.current.style.width = val;
-		canvasRef.current.style.height = val;
+		if (canvasRef.current){
+			//const val = `${Math.min(window.visualViewport.width, 500) - (window.innerWidth < 880 ? 24 : 0)}px`;
+			const val = `${window.visualViewport.width > 880 ? Math.min(window.visualViewport.width, 500) : Math.min(Math.min(window.visualViewport.height - 350, window.visualViewport.width - 6), 500)}px`;
+			canvasRef.current.style.width = val;
+			canvasRef.current.style.height = val;
+		}
 	}
 
 	useEffect(() => {
@@ -62,44 +66,53 @@ const Canvas = (props) => {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				const cell = props.game.get({x: x, y: y});
+				const isSelectedCell = props.game.selectedCell && props.game.selectedCell.x === x && props.game.selectedCell.y === y;
+				const isHighlightedCell = props.game.highlightedCell && props.game.highlightedCell.x === x && props.game.highlightedCell.y === y;
+				const hasSameValueAsSelected = (props.game.highlightedCell && highlightedCell.value > 0 && highlightedCell.value === cell.value) || (!props.game.highlightedCell && props.game.selectedCell && selectedCell.value > 0 && selectedCell.value === cell.value);
+				const hasColor = cell.color !== 'default';
 				//Cell background
-				ctx.fillStyle = '#25242c'; //Default
-				
-				if (highlitedCells[x][y]){
-					ctx.fillStyle = '#191925'; //Cell in same row or column as any cell with the same value as the selected cell
-				}
-				
-				if (
-					(props.game.highlightedCell && highlightedCell.value > 0 && highlightedCell.value === cell.value) ||
-					(!props.game.highlightedCell && props.game.selectedCell && selectedCell.value > 0 && selectedCell.value === cell.value)
-				){
-					ctx.fillStyle = '#16151b'; //Cell has same value as selected cell
-				}
+				ctx.setLineDash([]);
+				ctx.fillStyle = 
+					/*isSelectedCell ? (hasColor ? props.game.colors[cell.color] : '#163c7b') :*/
+					hasSameValueAsSelected ? (hasColor ? props.game.darkColors[cell.color] : '#16151b') : //Cell has same value as selected cell
+					highlitedCells[x][y] ? (isSelectedCell && hasColor ? props.game.colors[cell.color] : props.game.darkColors[cell.color]) : //Cell in same row or column as any cell with the same value as the selected cell
+					props.game.colors[cell.color]; //Default
 
-				if (props.game.selectedCell && props.game.selectedCell.x === x && props.game.selectedCell.y === y){
-					ctx.fillStyle = '#163c7b'; //Selected cell
-				}
-				
-				if (props.game.highlightedCell && props.game.highlightedCell.x === x && props.game.highlightedCell.y === y){
-					let auxStyle = ctx.fillStyle;
-					ctx.fillStyle = 'white';
-					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
-					ctx.fillStyle = auxStyle;
-					ctx.fillRect(cellPositions[x][y].x + 2, cellPositions[x][y].y + 2, squareSize - 4, squareSize - 4);
-				} else {
-					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+
+				ctx.strokeStyle = 'white';
+				ctx.lineWidth = 2;
+				if (isSelectedCell){
+					ctx.strokeRect(cellPositions[x][y].x + 2, cellPositions[x][y].y + 2, squareSize - 4, squareSize - 4);
+					if (isHighlightedCell){
+						ctx.setLineDash([5,5]);
+						ctx.strokeRect(cellPositions[x][y].x + 4, cellPositions[x][y].y + 4, squareSize - 8, squareSize - 8);	
+					}
+				} else if (isHighlightedCell){
+					ctx.setLineDash([5,5]);
+					ctx.strokeRect(cellPositions[x][y].x + 2, cellPositions[x][y].y + 2, squareSize - 4, squareSize - 4);
 				}
 
 				if (cell.value > 0){
-					ctx.fillStyle = cell.clue ? '#75747c' : (cell.value !== cell.solution ? 'red' : '#6f90c3');
+					//Number
 					ctx.textAlign = "center";
 					ctx.textBaseline = "middle";
-					ctx.font = '38px arial';
+					ctx.font = '40px arial';
+					const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution;
+					ctx.fillStyle = 
+						isError ? 'red'                              :
+						isSelectedCell ? 'white'                     :
+						cell.clue ? (hasColor ? 'white' : '#75747c') :
+						(hasColor ? 'black' : '#6f90c3')             ;
+					if (isError && hasColor) ctx.strokeStyle = 'white';
+					else ctx.strokeStyle = ctx.fillStyle;
 					ctx.fillText(cell.value, cellPositions[x][y].x + squareSize / 2, cellPositions[x][y].y + squareSize / 2 + 3);
 				} else {
+					//Candidates
 					for (const n of cell.notes){
-						ctx.fillStyle = '#75747c';
-						if ((props.game.highlightedCell && highlightedCell.value === n) || (!props.game.highlightedCell && props.game.selectedCell && selectedCell.value === n))	ctx.fillStyle = 'white';
+						ctx.fillStyle = 
+						(props.game.highlightedCell && highlightedCell.value === n) || (!props.game.highlightedCell && props.game.selectedCell && selectedCell.value === n) ? 'white' :
+						(hasColor ? 'black' : '#75747c');
 						
 						ctx.textAlign = "center";
 						ctx.textBaseline = "middle";
@@ -114,11 +127,12 @@ const Canvas = (props) => {
 			}
 		}
 
-		if (props.showLinks && props.game.selectedCell && selectedCell.value > 0){
-			let links = props.game.calculateLinks(selectedCell.value);
+		if (props.showLinks && props.game.highlightedCell && highlightedCell.value > 0){
+			let links = props.game.calculateLinks(props.game.highlightedCell && highlightedCell.value > 0 ? highlightedCell.value : selectedCell.value);
 			//Draw links
 			ctx.fillStyle = 'red';
 			ctx.strokeStyle = 'red';
+			ctx.setLineDash([]);
 			links.forEach(link => {
 				link.forEach(cell => {
 					ctx.beginPath();
@@ -147,12 +161,7 @@ const Canvas = (props) => {
 		for (let x = 0; x < 9; x++){
 			for (let y = 0; y < 9; y++) {
 				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
-					/*if (double){
-						props.onHighlight(x, y);
-					} else {
-						props.onSelect(x, y);
-					}*/
-					props.onSelect(x, y);
+					props.onClick(x, y);
 				}
 			}
 		}

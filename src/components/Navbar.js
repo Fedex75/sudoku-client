@@ -1,7 +1,9 @@
 import React from 'react';
 import logo from '../gemini.png';
 import {Link} from 'react-router-dom';
-import Auth from '../Auth';
+import NewGameButton from './NewGameButton';
+import UserButton from './UserButton';
+import eventBus from "./EventBus";
 
 function Navbar(props){
 	const sections = [
@@ -11,27 +13,30 @@ function Navbar(props){
 		},
 		{
 			name: 'settings',
-			translation: 'Settings'
+			translation: 'Opciones'
 		}
 	];
 
 	return (
 		<div className="navbar">
+			<div className='menu-icon-wrapper' onClick={() => {eventBus.dispatch("openModal", {})}}>
+				<i className='fas fa-bars'></i>
+			</div>
 			<div className="navbar__logo-wrapper">
-				<img src={logo}/>
+				<img src={logo} alt="Logo" />
 			</div>
 			<div className="navbar__title">
 				{sections.filter(x => x.name === props.currentSection)[0].translation}
 			</div>
 			<div className="navbar__user-wrapper">
-				<Link to="/settings"><div className="navbar__user-wrapper__settings"><i className="fas fa-cog"></i></div></Link>
-				{
-					Auth.isAuthenticated() ? 
-					<div className="navbar__user-wrapper__login-button">Log Out</div> :
-					<a href="https://accounts.zaifo.com.ar/signin?service=sudoku&continue=https%3A%2F%2Fsudoku.zaifo.com.ar"><div className="navbar__user-wrapper__login-button">Log In</div></a>
-				}
-				
+			<Link to="/settings"><div className="navbar__user-wrapper__settings"><i className="fas fa-cog"></i></div></Link>
+			<UserButton />
 			</div>
+			{
+				props.currentSection === 'sudoku' ?
+				<NewGameButton id="navbar-new-game-button" absoluteMenu={true} ghost />
+				: null
+			}
 		</div>
 	);
 }

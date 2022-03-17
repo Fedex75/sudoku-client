@@ -1,17 +1,41 @@
+import SettingsHandler from "./SettingsHandler";
+
 export default class Board {
 	constructor(data){
-		this.board = data.board || Array(9).fill(Array(9).fill().map(x => ({
-			clue: false,
-			value: 0,
-			notes: [],
-			solution: 0
-		})));
-		this.mission = data.mission || null;
-		this.selectedCell = data.selectedCell || null;
-		this.highlightedCell = null;
-		this.history = data.history || [];
-		this.difficulty = data.difficulty || null;
-		this.mode = data.mode || null;
+		this.board = data.board;
+		this.mission = data.mission;
+		this.selectedCell = data.selectedCell;
+		this.highlightedCell = this.getSelectedCell().value > 0 ? this.selectedCell : null;
+		this.history = data.history;
+		this.difficulty = data.difficulty;
+		this.mode = data.mode;
+		this.version = data.version;
+
+		this.saveToLocalStorage();
+
+		this.colors = {
+			default: '#25242c',
+			red: '#fc5c65',
+			orange: '#fd9644',
+			yellow: '#fed330',
+			green: '#26de81',
+			blueGreen: '#2bcbba',
+			lightBlue: '#45aaf2',
+			darkBlue: '#4b7bec',
+			purple: '#a55eea'
+		};
+
+		this.darkColors = {
+			default: '#191925',
+			red: '#99393d',
+			orange: '#995c29',
+			yellow: '#997e1d',
+			green: '#1a995a',
+			blueGreen: '#2bcbba',
+			lightBlue: '#2c6c99',
+			darkBlue: '#315099',
+			purple: '#6b3d99'
+		}
 	}
 
 	pushBoard(){
@@ -37,7 +61,7 @@ export default class Board {
 		return this.get(this.selectedCell);
 	}
 
-	setselectedCell(c){
+	setSelectedCell(c){
 		this.selectedCell = c;
 		this.saveToLocalStorage();
 	}
@@ -89,7 +113,8 @@ export default class Board {
 				clue: false,
 				value: 0,
 				notes: [],
-				solution: this.board[c.x][c.y].solution
+				solution: this.board[c.x][c.y].solution,
+				color: 'default'
 			};
 		}
 		this.saveToLocalStorage();
@@ -97,14 +122,18 @@ export default class Board {
 
 	getPossibleValues(c){
 		if (this.get(c).clue) return [];
-		let values = [];
-		for (const coords of this.getVisibleCells(c)){
-			const cell = this.get(coords);
-			if (cell.value > 0 && !values.includes(cell.value)){
-				values.push(cell.value);
+		if (SettingsHandler.settings.showPossibleValues){
+			let values = [];
+			for (const coords of this.getVisibleCells(c)){
+				const cell = this.get(coords);
+				if (cell.value > 0 && !values.includes(cell.value)){
+					values.push(cell.value);
+				}
 			}
+			return Array(9).fill().map((_, i) => i + 1).filter(v => !values.includes(v));
+		} else {
+			return Array(9).fill().map((_, i) => i + 1);
 		}
-		return Array(9).fill().map((_, i) => i + 1).filter(v => !values.includes(v));
 	}
 
 	getVisibleCells(c){
@@ -120,13 +149,15 @@ export default class Board {
 		let selectedCell = this.get(selectedCoords);
 		let highlightedCells = Array(9).fill().map(x => Array(9).fill(false));
 	
-		if (selectedCell.value === 0) for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
+		for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
 
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				const cell = this.get({x: x, y: y});
-				if (selectedCell.value > 0 && cell.value > 0) highlightedCells[x][y] = true;
-				if (cell.value > 0 && cell.value === selectedCell.value) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
+		if (SettingsHandler.settings.advancedHighlight){
+			for (let x = 0; x < 9; x++){
+				for (let y = 0; y < 9; y++) {
+					const cell = this.get({x: x, y: y});
+					if (selectedCell.value > 0 && cell.value > 0) highlightedCells[x][y] = true;
+					if (cell.value > 0 && cell.value === selectedCell.value) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
+				}
 			}
 		}
 
@@ -181,6 +212,10 @@ export default class Board {
 		return links;
 	}
 
+	setColor(coords, newColor){
+		this.board[coords.x][coords.y].color = newColor;
+	}
+
 	saveToLocalStorage(){
 		localStorage.setItem('game', JSON.stringify(this));
 	}
@@ -203,7 +238,8 @@ export default class Board {
 					clue: n > 0,
 					value: n,
 					notes: [],
-					solution: this.board[x][y].solution
+					solution: this.board[x][y].solution,
+					color: 'default'
 				};
 			}
 		}

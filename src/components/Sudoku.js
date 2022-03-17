@@ -1,34 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
-import API from '../API';
+import API from '../utils/API';
 import Board from '../utils/Board';
 import Canvas from './Canvas';
 import EditButton from './EditButton';
-import MenuButton from './MenuButton';
+import NewGameButton from './NewGameButton';
 import Section from './Section';
+import eventBus from "./EventBus";
 
 const Sudoku = () => {
-	const [render, setRender] = useState(false);
+	// eslint-disable-next-line
+	const [render, setRender] = useState(0);
 	const [hintState, setHintState] = useState(0);
-	const [newGameState, setNewGameState] = useState(0);
+	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
+	const [brush, setBrush] = useState(false);
 
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
 	const holdInput = useRef(null);
 
-	const difficulties = ['easy', 'medium', 'hard', 'expert', 'evil', 'restart'];
+	const BOARD_API_VERSION = 2; //MUST BE EQUAL TO SERVER'S VERSION
 
-	function onSelect(x, y){
+	function onClick(x, y){
 		if (gameRef.current.selectedCell === null || gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
-			gameRef.current.setselectedCell({x: x, y: y});
+			gameRef.current.setSelectedCell({x: x, y: y});
 			setPossibleValues();
 			if (holdInput.current !== null){
 				if (holdInput === 0) eraseSelectedCell();
-				else if (possibleValuesRef.current.includes) handleNumberInput(holdInput.current);
+				else if (possibleValuesRef.current.includes(holdInput.current)) handleNumberInput(holdInput.current);
 			} else {
 				if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
-				else setRender(render => !render);
+				else setRender(r => r === 100 ? 0 : r+1);
 			}
 		} else {
 			if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
@@ -38,11 +41,11 @@ const Sudoku = () => {
 	function onHighlight(x, y){
 		if (gameRef.current.highlightedCell === null || gameRef.current.highlightedCell.x !== x || gameRef.current.highlightedCell.y !== y){
 			gameRef.current.setHighlightedCell({x: x, y: y});
-			setRender(render => !render);
+			setRender(r => r === 100 ? 0 : r+1);
 		} else {
 			if (gameRef.current.highlightedCell !== null){
 				gameRef.current.setHighlightedCell(null);
-				setRender(render => !render);
+				setRender(r => r === 100 ? 0 : r+1);
 			}
 		}
 	}
@@ -55,7 +58,6 @@ const Sudoku = () => {
 				else {
 					gameRef.current.setValue(gameRef.current.selectedCell, number);
 					if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
-						console.log('here1');
 						onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
 					}
 				}
@@ -64,11 +66,9 @@ const Sudoku = () => {
 					newGame(null);
 				}
 				setPossibleValues();
-				setRender(render => !render);
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
 				if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
-					console.log('here2');
 					onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
 				}
 				if (gameRef.current.checkComplete()){
@@ -76,15 +76,15 @@ const Sudoku = () => {
 					newGame(null);
 				}
 				setPossibleValues();
-				setRender(render => !render);
 			}
 		}
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function invertNoteMode(){
 		noteModeRef.current = !noteModeRef.current;
 		setPossibleValues();
-		setRender(render => !render);
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function invertShowLinks(){
@@ -95,7 +95,7 @@ const Sudoku = () => {
 		if (gameRef.current.selectedCell !== null){
 			gameRef.current.erase(gameRef.current.selectedCell);
 			setPossibleValues();
-			setRender(render => !render);
+			setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
 
@@ -116,22 +116,23 @@ const Sudoku = () => {
 				}
 			}
 			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
+				// eslint-disable-next-line
 				switch (e.key){
 					case 'ArrowDown':
-						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y < 8) gameRef.current.selectedCell.y++;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y < 8) onClick(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y + 1);
 						break;
 					case 'ArrowUp':
-						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y > 0) gameRef.current.selectedCell.y--;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y > 0) onClick(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y - 1);
 						break;
 					case 'ArrowLeft':
-						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x > 0) gameRef.current.selectedCell.x--;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x > 0) onClick(gameRef.current.selectedCell.x - 1, gameRef.current.selectedCell.y);
 						break;
 					case 'ArrowRight':
-						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x < 8) gameRef.current.selectedCell.x++;
+						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x < 8) onClick(gameRef.current.selectedCell.x + 1, gameRef.current.selectedCell.y);
 						break;
 				}
 				setPossibleValues();
-				setRender(render => !render);
+				setRender(r => r === 100 ? 0 : r+1);
 			}
 		}
 	}
@@ -148,8 +149,19 @@ const Sudoku = () => {
 			} else if (hintState === 1){
 				setHintState(0);
 				gameRef.current.hint(gameRef.current.selectedCell);
-				setRender(render => !render);
+				setRender(r => r === 100 ? 0 : r+1);
 			}
+		}
+	}
+
+	function handleEraseInkClick(){
+		if (eraseInkState === 0){
+			setEraseInkState(1);
+			setTimeout(() => {setEraseInkState(0)}, 2000);
+		} else if (eraseInkState === 1){
+			setEraseInkState(0);
+			for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) gameRef.current.setColor({x: i, y: j}, 'default');
+			setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
 
@@ -157,21 +169,25 @@ const Sudoku = () => {
 		gameRef.current.popBoard();
 		gameRef.current.saveToLocalStorage();
 		setPossibleValues();
-		setRender(render => !render);
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
-	function handleNewGameClick(){
-		if (newGameState === 0) setNewGameState(1);
-		else setNewGameState(0);
-	}
-
-	async function handleMenuButtonClick(dif){
+	async function handleNewGame(dif){
 		if (dif === 'restart'){
 			gameRef.current.restart();
+			setRender(r => r === 100 ? 0 : r+1);
 		} else {
 			newGame(await API.getGame(dif));
 		}
-		setNewGameState(0);
+	}
+
+	function handleBrushClick(){
+		setBrush(b => !b);
+	}
+
+	function handleColorButtonClick(color){
+		gameRef.current.setColor(gameRef.current.selectedCell, gameRef.current.getSelectedCell().color !== color ? color : 'default');
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function setPossibleValues(){
@@ -182,14 +198,26 @@ const Sudoku = () => {
 	async function newGame(data = null){
 		gameRef.current = new Board(data || await API.getGame());
 		setPossibleValues();
-		setRender(render => !render);
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	useEffect(() => {
 		let ls = localStorage.getItem('game');
-		newGame( ls ? JSON.parse(ls) : null);
+		if (ls){
+			ls = JSON.parse(ls);
+			if (ls?.version && ls.version === BOARD_API_VERSION) newGame(ls);
+			else newGame(null);
+		} else newGame(null);
 		window.addEventListener('keydown', handleKeyDown, false);
 		window.addEventListener('keyup', handleKeyUp, false);
+		eventBus.on("newGame", (data) => {
+      handleNewGame(data.difficulty);
+		});
+		
+		return () => {
+			eventBus.remove("newGame");
+		}
+	// eslint-disable-next-line
 	}, []);
 
 	if (gameRef.current === null){
@@ -200,36 +228,45 @@ const Sudoku = () => {
 		<Section name="sudoku">
 			<div className="game">
 				<div className="sudoku">
-					<Canvas onSelect={onSelect} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
+					<Canvas onClick={onClick} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
 				</div>
-				<div className="new-game-wrapper" onClick={e => {e.stopPropagation()}}>
-					<div className="new-game-button" onClick={handleNewGameClick}>New Game</div>
-					<div className={`new-game-menu ${newGameState === 0 ? 'hidden' : 'visible'}`}>
-						{difficulties.map((dif, i) => (
-							<MenuButton key={i} icon={dif === 'restart' ? 'fas fa-redo' : 'fas fa-th'} title={dif.replace(/./, c => c.toUpperCase())} onClick={() => handleMenuButtonClick(dif)} />
-						))}
-					</div>
-				</div>
+				<NewGameButton id="large-new-game-button"/>
 				<div className="edit__buttons">
 					<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
 					<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
 					<EditButton icon="fas fa-pencil-alt" highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>
 					<EditButton icon="fas fa-lightbulb" yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>
+				</div>
+				<div className="extra__buttons">
 					<EditButton icon="fas fa-link"  title="Links" highlight={showLinks} onClick={invertShowLinks}/>
+					<EditButton icon="fas fa-droplet"  title="Paint" highlight={brush} onClick={handleBrushClick}/>
+					<EditButton icon="fas fa-droplet-slash"  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
 				</div>
 				<div className="numpad">
-					{Array(9).fill().map((_, i) => (
-						<div
-							key={i}
-							className={`numpad__button ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
-							onClick={(e) => {
-								e.stopPropagation();
-								if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
-							}}
-						>
-							{i + 1}
-						</div>
-					))}
+					{brush ?
+						['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default'].map((color, i) => (
+							<div
+								key={i}
+								className={'numpad__button color'}
+								onClick={(e) => {
+									e.stopPropagation();
+									handleColorButtonClick(color);
+								}}
+								style={{backgroundColor: gameRef.current.colors[color]}}
+							>
+							</div>
+						)) : Array(9).fill().map((_, i) => (
+							<div
+								key={i}
+								className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
+								onClick={(e) => {
+									e.stopPropagation();
+									if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
+								}}
+							>
+								{i + 1}
+							</div>
+						))}
 				</div>
 			</div>
 		</Section>
