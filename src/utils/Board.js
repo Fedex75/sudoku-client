@@ -97,7 +97,7 @@ export default class Board {
 		this.pushBoard();
 		this.board[c.x][c.y].value = s;
 		this.board[c.x][c.y].notes = [];
-		for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
+		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
 		this.saveToLocalStorage();
 	}
 
@@ -116,6 +116,9 @@ export default class Board {
 				solution: this.board[c.x][c.y].solution,
 				color: 'default'
 			};
+			if (this.highlightedCell === c){
+				this.highlightedCell = null;
+			}
 		}
 		this.saveToLocalStorage();
 	}

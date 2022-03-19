@@ -64,6 +64,7 @@ body {
 .navbar__title {
 	grid-area: title;
 	font-size: 30px;
+	margin-bottom: 2px;
 }
 
 .navbar__user-wrapper {

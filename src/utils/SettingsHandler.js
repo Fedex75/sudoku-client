@@ -20,6 +20,12 @@ class SettingsHandler {
 				translation: 'Mostrar solo candidatos posibles',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'autoRemoveCandidates',
+				translation: 'Remover candidatos automáticamente',
+				type: 'boolean',
+				default: true
 			}
 		];
 

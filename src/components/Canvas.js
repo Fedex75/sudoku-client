@@ -157,12 +157,15 @@ const Canvas = (props) => {
 		const clickX = (e.clientX - rect.left) / parseInt(canvasRef.current.style.width, 10) * 500;
 		const clickY = (e.clientY - rect.top) / parseInt(canvasRef.current.style.height, 10) * 500;
 
-		/*TODO: Optimize finding position*/
 		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++) {
-				if (clickX >= cellPositions[x][y].x && clickY >= cellPositions[x][y].y && clickX <= cellPositions[x][y].x + squareSize && clickY <= cellPositions[x][y].y + squareSize){
-					props.onClick(x, y);
-				}
+			if (clickX <= cellPositions[x][0].x + squareSize){
+				for (let y = 0; y < 9; y++) {
+					if (clickY <= cellPositions[0][y].y + squareSize){
+						props.onClick(x, y);
+						break;
+					}
+				}		
+				break;
 			}
 		}
 	}
