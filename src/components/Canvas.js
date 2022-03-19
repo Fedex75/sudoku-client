@@ -127,8 +127,8 @@ const Canvas = (props) => {
 			}
 		}
 
-		if (props.showLinks && props.game.highlightedCell && highlightedCell.value > 0){
-			let links = props.game.calculateLinks(props.game.highlightedCell && highlightedCell.value > 0 ? highlightedCell.value : selectedCell.value);
+		if (props.showLinks && ((highlightedCell && highlightedCell.value > 0) || (selectedCell && selectedCell.value > 0))){
+			let links = props.game.calculateLinks(highlightedCell && highlightedCell.value > 0 ? highlightedCell.value : selectedCell.value);
 			//Draw links
 			ctx.fillStyle = 'red';
 			ctx.strokeStyle = 'red';
