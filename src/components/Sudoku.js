@@ -19,6 +19,7 @@ const Sudoku = () => {
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
+	const completedNumbersRef = useRef([]);
 	const holdInput = useRef(null);
 
 	const BOARD_API_VERSION = 2; //MUST BE EQUAL TO SERVER'S VERSION
@@ -194,6 +195,7 @@ const Sudoku = () => {
 	function setPossibleValues(){
 		if (gameRef.current.selectedCell === null || (noteModeRef.current && gameRef.current.getSelectedCell().value > 0)) possibleValuesRef.current = [];
 		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectedCell);
+		completedNumbersRef.current = gameRef.current.getCompletedNumbers();
 	}
 
 	async function newGame(data = null){
@@ -267,7 +269,7 @@ const Sudoku = () => {
 							)) : Array(9).fill().map((_, i) => (
 								<div
 									key={i}
-									className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
+									className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'disabled' : ''} ${completedNumbersRef.current.includes(i + 1) ? 'hidden' : ''}`}
 									onClick={(e) => {
 										e.stopPropagation();
 										if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)

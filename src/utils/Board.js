@@ -147,6 +147,23 @@ export default class Board {
 		}
 	}
 
+	getCompletedNumbers(){
+		let completedNumbers = [];
+		let count = Array(9).fill(0);
+		for (let x = 0; x < 9; x++){
+			for (let y = 0; y < 9; y++){
+				let cell = this.get({x: x, y: y});
+				if (cell.value === cell.solution){
+					count[cell.value-1]++;
+					if (count[cell.value-1] === 9){
+						completedNumbers.push(cell.value);
+					}
+				}
+			}
+		}
+		return completedNumbers;
+	}
+
 	getVisibleCells(c){
 		let visibleCells = [];
 		for (let i = 0; i < 9; i++) visibleCells.push	({x: c.x, y: i}, {x: i, y: c.y});

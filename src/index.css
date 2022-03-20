@@ -142,6 +142,7 @@ body {
 	grid-template-columns: 287px;
 	grid-template-areas:
 		"title"
+		"space"
 		"new-game";
 }
 
@@ -155,10 +156,6 @@ body {
 .new-game-wrapper {
 	grid-area: new-game;
 	position: relative;
-}
-
-.new-game-wrapper.absolute {
-	position: inherit;
 }
 
 .new-game-button {
@@ -188,14 +185,20 @@ body {
 }
 
 .new-game-menu.visible {
-	display: flex;
 	position: absolute;
+	display: flex;
 	flex-flow: column;
-	background-color: #25242c;
+	gap: 10px;
 	width: 287px;
 	left: 50%;
 	transform: translateX(-50%);
 	margin-top: 10px;
+}
+
+.new-game-menu__list {
+	display: flex;
+	flex-flow: column;
+	background-color: #25242c;
 	border-radius: 15px;
 	border: solid 1px white;
 	box-sizing: border-box;
@@ -207,17 +210,21 @@ body {
 	align-items: center;
 	padding: 10px;
 	height: 30px;
-	border-bottom: solid 1px white;
+	border-top: solid 1px white;
 	color: #75747c;
 	cursor: pointer;
+}
+
+.menu-button.cancel {
+	display: none;
 }
 
 .menu-button:hover {
 	color: white;
 }
 
-.menu-button:last-child {
-	border-bottom: none;
+.menu-button:first-child {
+	border-top: none;
 }
 
 .menu-button__icon {
@@ -252,11 +259,13 @@ body {
 }
 
 .edit-buttons__button.highlight {
-	color: #4b7bec;
+	background-color: #4b7bec;
+	color: white;
 }
 
 .edit-buttons__button.yellow {
-	color: #fed330;
+	background-color: #fed330;
+	color: white;
 }
 
 .edit-buttons__button:hover {
@@ -295,7 +304,7 @@ body {
 	background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
 }
 
-.numpad__button.hidden {
+.numpad__button.disabled {
 	background-color: transparent;
 	width: 84.33px;
 	height: 84.33px;
@@ -303,8 +312,14 @@ body {
 	cursor: default;
 }
 
-.numpad__button.hidden:hover {
+.numpad__button.disabled:hover {
 	background-image: none;
+}
+
+.numpad__button.hidden {
+	border: none;
+	color: transparent;
+	background-color: transparent;
 }
 
 #settings {
@@ -404,7 +419,7 @@ body {
 		height: auto;
 	}
 
-	.numpad__button.hidden {
+	.numpad__button.disabled {
 		width: auto;
 		height: auto;
 	}
@@ -443,5 +458,48 @@ body {
 
 	.sudoku__win-screen-wrapper {
 		width: 100%;
+	}
+
+	.new-game-wrapper {
+		position: inherit;
+	}
+
+	.new-game-menu.visible {
+		position: absolute;
+		justify-content: end;
+		top: 0;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.7);
+		margin-top: 0;
+	}
+
+	.new-game-menu__list {
+		margin: 0 10px 0 10px;
+		border: none;
+	}
+
+	.menu-button {
+		justify-content: center;
+		border-color: #363440;
+		color: #4b7bec;
+		font-size: 20px;
+	}
+
+	.menu-button:hover {
+		color: #4b7bec;
+	}
+
+	.menu-button__icon {
+		display: none;
+	}
+
+	.menu-button.cancel {
+		display: flex;
+		border-top: none;
+		border-radius: 15px;
+		background-color: #25242c;
+		color: #4b7bec;
+		margin: 0 10px 20px 10px;
+		font-weight: bold;
 	}
 }
