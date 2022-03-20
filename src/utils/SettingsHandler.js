@@ -26,6 +26,12 @@ class SettingsHandler {
 				translation: 'Remover candidatos automáticamente',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'clearColorOnInput',
+				translation: 'Eliminar color al ingresar una solución',
+				type: 'boolean',
+				default: true
 			}
 		];
 

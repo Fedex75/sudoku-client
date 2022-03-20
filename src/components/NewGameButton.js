@@ -48,7 +48,7 @@ function NewGameButton(props){
 			<div className={`new-game-button ${props.ghost ? 'ghost' : ''}`} onClick={handleNewGameClick}>Nuevo juego</div>
 			<div className={`new-game-menu ${props.absoluteMenu ? 'absolute' : ''} ${newGameState === 0 ? 'hidden' : 'visible'}`}>
 				{difficulties.map((dif, i) => (
-					<MenuButton key={i} icon={dif === 'restart' ? 'fas fa-redo' : 'fas fa-th'} title={dif.translation} onClick={() => handleMenuButtonClick(dif.name)} />
+					<MenuButton key={i} icon={dif.name === 'restart' ? 'fas fa-undo' : 'fas fa-th'} title={dif.translation} onClick={() => handleMenuButtonClick(dif.name)} />
 				))}
 			</div>
 		</div>

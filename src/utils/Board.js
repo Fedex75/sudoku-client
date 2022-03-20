@@ -93,17 +93,25 @@ export default class Board {
 		}
 	}
 
+	clearCandidatesFromVisibleCells(c, s){
+		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
+	}
+
 	setValue(c, s){
 		this.pushBoard();
 		this.board[c.x][c.y].value = s;
 		this.board[c.x][c.y].notes = [];
-		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
+		this.clearCandidatesFromVisibleCells(c, s);
+		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default';
 		this.saveToLocalStorage();
 	}
 
 	hint(c){
 		this.board[c.x][c.y].clue = true;
 		this.board[c.x][c.y].value = this.board[c.x][c.y].solution;
+		this.clearCandidatesFromVisibleCells(c, this.board[c.x][c.y].solution);
+		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default';
+		this.saveToLocalStorage();
 	}
 
 	erase(c){
@@ -217,6 +225,7 @@ export default class Board {
 
 	setColor(coords, newColor){
 		this.board[coords.x][coords.y].color = newColor;
+		this.saveToLocalStorage();
 	}
 
 	saveToLocalStorage(){
@@ -229,6 +238,7 @@ export default class Board {
 
 	checkComplete(){
 		for (let x = 0; x < 9; x++) for (let y = 0; y < 9; y++) if (this.board[x][y].value !== this.board[x][y].solution) return false;
+		this.clearLocalStorage();
 		return true;
 	}
 

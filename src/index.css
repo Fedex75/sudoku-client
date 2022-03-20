@@ -128,6 +128,30 @@ body {
 	align-items: center;
 }
 
+.sudoku__win-screen-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 800px;
+	height: 100%;
+}
+
+.sudoku__win-screen {
+	display: grid;
+	grid-template-rows: fit-content(0) 30px 40px;
+	grid-template-columns: 287px;
+	grid-template-areas:
+		"title"
+		"new-game";
+}
+
+.sudoku__win-screen__title {
+	grid-area: title;
+	text-align: center;
+	color: white;
+	font-size: 30px;
+}
+
 .new-game-wrapper {
 	grid-area: new-game;
 	position: relative;
@@ -217,16 +241,13 @@ body {
 
 .edit-buttons__button {
 	display: flex;
-	/*flex-flow: column;*/
 	justify-content: center;
 	align-items: center;
 	color: #75747c;
-	/*border: solid 1px #75747c;*/
 	background-color: #25242c;
 	border-radius: 10px;
 	width: 67px;
 	height: 67px;
-	/*gap: 5px;*/
 	cursor: pointer;
 }
 
@@ -305,6 +326,7 @@ body {
 	border-color: black;
 	border-width: 1px 1px 0px 1px;
 	border-style: solid;
+	align-items: center;
 }
 
 .settings__item:first-child {
@@ -417,5 +439,9 @@ body {
 
 	#settings {
 		width: auto;
+	}
+
+	.sudoku__win-screen-wrapper {
+		width: 100%;
 	}
 }

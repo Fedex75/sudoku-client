@@ -14,6 +14,7 @@ const Sudoku = () => {
 	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
 	const [brush, setBrush] = useState(false);
+	const [win, setWin] = useState(false);
 
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
@@ -62,8 +63,7 @@ const Sudoku = () => {
 					}
 				}
 				if (gameRef.current.checkComplete()){
-					gameRef.current.clearLocalStorage();
-					newGame(null);
+					setWin(true);
 				}
 				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
@@ -71,11 +71,10 @@ const Sudoku = () => {
 				if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
 					onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
 				}
-				if (gameRef.current.checkComplete()){
-					gameRef.current.clearLocalStorage();
-					newGame(null);
-				}
 				setPossibleValues();
+				if (gameRef.current.checkComplete()){
+					setWin(true);
+				}
 			}
 		}
 		setRender(r => r === 100 ? 0 : r+1);
@@ -149,6 +148,8 @@ const Sudoku = () => {
 			} else if (hintState === 1){
 				setHintState(0);
 				gameRef.current.hint(gameRef.current.selectedCell);
+				setPossibleValues();
+				onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
 				setRender(r => r === 100 ? 0 : r+1);
 			}
 		}
@@ -198,6 +199,7 @@ const Sudoku = () => {
 	async function newGame(data = null){
 		gameRef.current = new Board(data || await API.getGame());
 		setPossibleValues();
+		setWin(false);
 		setRender(r => r === 100 ? 0 : r+1);
 	}
 
@@ -226,49 +228,57 @@ const Sudoku = () => {
 
 	return (
 		<Section name="sudoku">
-			<div className="game">
-				<div className="sudoku">
-					<Canvas onClick={onClick} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
+			{win ? 
+				<div className='sudoku__win-screen-wrapper'>
+					<div className='sudoku__win-screen'>
+						<div className='sudoku__win-screen__title'>¡Excelente!</div>
+						<NewGameButton />
+					</div>
+				</div> : 
+				<div className="game">
+					<div className="sudoku">
+						<Canvas onClick={onClick} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
+					</div>
+					<NewGameButton id="large-new-game-button"/>
+					<div className="edit__buttons">
+						<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
+						<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
+						<EditButton icon="fas fa-pencil-alt" highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>
+						<EditButton icon="fas fa-lightbulb" yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>
+					</div>
+					<div className="extra__buttons">
+						<EditButton icon="fas fa-link"  title="Links" highlight={showLinks} onClick={invertShowLinks}/>
+						<EditButton icon="fas fa-droplet"  title="Paint" highlight={brush} onClick={handleBrushClick}/>
+						<EditButton icon="fas fa-droplet-slash"  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
+					</div>
+					<div className="numpad">
+						{brush ?
+							['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default'].map((color, i) => (
+								<div
+									key={i}
+									className={'numpad__button color'}
+									onClick={(e) => {
+										e.stopPropagation();
+										handleColorButtonClick(color);
+									}}
+									style={{backgroundColor: gameRef.current.colors[color]}}
+								>
+								</div>
+							)) : Array(9).fill().map((_, i) => (
+								<div
+									key={i}
+									className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
+									onClick={(e) => {
+										e.stopPropagation();
+										if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
+									}}
+								>
+									{i + 1}
+								</div>
+							))}
+					</div>
 				</div>
-				<NewGameButton id="large-new-game-button"/>
-				<div className="edit__buttons">
-					<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
-					<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
-					<EditButton icon="fas fa-pencil-alt" highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>
-					<EditButton icon="fas fa-lightbulb" yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>
-				</div>
-				<div className="extra__buttons">
-					<EditButton icon="fas fa-link"  title="Links" highlight={showLinks} onClick={invertShowLinks}/>
-					<EditButton icon="fas fa-droplet"  title="Paint" highlight={brush} onClick={handleBrushClick}/>
-					<EditButton icon="fas fa-droplet-slash"  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
-				</div>
-				<div className="numpad">
-					{brush ?
-						['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default'].map((color, i) => (
-							<div
-								key={i}
-								className={'numpad__button color'}
-								onClick={(e) => {
-									e.stopPropagation();
-									handleColorButtonClick(color);
-								}}
-								style={{backgroundColor: gameRef.current.colors[color]}}
-							>
-							</div>
-						)) : Array(9).fill().map((_, i) => (
-							<div
-								key={i}
-								className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'hidden' : ''}`}
-								onClick={(e) => {
-									e.stopPropagation();
-									if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
-								}}
-							>
-								{i + 1}
-							</div>
-						))}
-				</div>
-			</div>
+			}
 		</Section>
 	)
 }

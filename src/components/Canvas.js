@@ -10,6 +10,8 @@ import SettingsHandler from '../utils/SettingsHandler';
 
 let squareSize = null;
 let cellPositions = null;
+let valuePositions = [];
+let noteDeltas = [];
 
 const Canvas = (props) => {
 	const canvasRef = useRef(null);
@@ -30,7 +32,10 @@ const Canvas = (props) => {
 		const canvas = canvasRef.current;
 
 		cellPositions = [];
-		for (let i = 0; i < 9; i++) cellPositions.push([]);
+		for (let i = 0; i < 9; i++){
+			cellPositions.push([]);
+			valuePositions.push([]);
+		}
 
 		squareSize = (canvas.width - 14) / 9;
 
@@ -44,6 +49,22 @@ const Canvas = (props) => {
 			}
 			posY += squareSize + 1;
 			if ((y + 1) % 3 === 0) posY += 3;
+		}
+
+		for (let x = 0; x < 9; x++){
+			for (let y = 0; y < 9; y++){
+				valuePositions[x][y] = {
+					x: cellPositions[x][y].x + squareSize / 2,
+					y: cellPositions[x][y].y + squareSize / 2 + 3
+				}
+			}
+		}
+
+		for (let n = 1; n <= 9; n++){
+			noteDeltas.push({
+				x: squareSize * (((n - 1) % 3 + 1) * 0.3 - 0.1),
+				y: squareSize * ((Math.floor((n - 1) / 3) + 1) * 0.3 - 0.1)
+			});
 		}
 	}, []);
 
@@ -106,7 +127,7 @@ const Canvas = (props) => {
 						(hasColor ? 'black' : '#6f90c3')             ;
 					if (isError && hasColor) ctx.strokeStyle = 'white';
 					else ctx.strokeStyle = ctx.fillStyle;
-					ctx.fillText(cell.value, cellPositions[x][y].x + squareSize / 2, cellPositions[x][y].y + squareSize / 2 + 3);
+					ctx.fillText(cell.value, valuePositions[x][y].x, valuePositions[x][y].y);
 				} else {
 					//Candidates
 					for (const n of cell.notes){
@@ -117,11 +138,8 @@ const Canvas = (props) => {
 						ctx.textAlign = "center";
 						ctx.textBaseline = "middle";
 						ctx.font = '14px arial';
-
-						const noteX = squareSize * (((n - 1) % 3 + 1) * 0.3 - 0.1);
-						const noteY = squareSize * ((Math.floor((n - 1) / 3) + 1) * 0.3 - 0.1);
 						
-						ctx.fillText(n, cellPositions[x][y].x + noteX, cellPositions[x][y].y + noteY);
+						ctx.fillText(n, cellPositions[x][y].x + noteDeltas[n-1].x, cellPositions[x][y].y + noteDeltas[n-1].y);
 					}
 				}
 			}
