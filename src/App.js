@@ -66,27 +66,29 @@ function App() {
 	}
   
   return (
-		<BrowserRouter>
-			<Route exact path="/">
-				<Sudoku/>
-			</Route>
-			<Route exact path="/settings">
-				<Settings/>
-			</Route>
-			<Modal
-				isOpen={isModalOpen}
-				onRequestClose={closeModal}
-				style={customStyles}
-				contentLabel="Example Modal"
-			>
-				<div style={{padding: 10, position: 'absolute', top: 0, left: 0}} onClick={closeModal}>
-					<i className='fas fa-times' style={{fontSize: '30px', color: 'white'}}></i>
-				</div>
-				<Link to="/"><div onClick={closeModal} style={{color: 'white', fontSize: '20px'}}>Sudoku</div></Link>
-				<Link to="/settings"><div onClick={closeModal} style={{color: 'white', fontSize: '20px'}}>Opciones</div></Link>
-				<UserButton />
-			</Modal>
-		</BrowserRouter>
+		<div className='app'>
+			<BrowserRouter>
+				<Route exact path="/">
+					<Sudoku/>
+				</Route>
+				<Route exact path="/settings">
+					<Settings/>
+				</Route>
+				<Modal
+					isOpen={isModalOpen}
+					onRequestClose={closeModal}
+					style={customStyles}
+					contentLabel="Example Modal"
+				>
+					<div style={{padding: 10, position: 'absolute', top: 0, left: 0}} onClick={closeModal}>
+						<i className='fas fa-times' style={{fontSize: '30px', color: 'white'}}></i>
+					</div>
+					<Link to="/"><div onClick={closeModal} style={{color: 'white', fontSize: '20px'}}>Sudoku</div></Link>
+					<Link to="/settings"><div onClick={closeModal} style={{color: 'white', fontSize: '20px'}}>Opciones</div></Link>
+					<UserButton />
+				</Modal>
+			</BrowserRouter>
+		</div>
   );
 }
 

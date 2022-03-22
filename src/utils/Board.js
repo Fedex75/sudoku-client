@@ -50,6 +50,9 @@ export default class Board {
 			this.board = this.history[this.history.length - 1].board;
 			this.selectedCell = this.history[this.history.length - 1].selectedCell;
 			this.history.pop();
+			if (this.highlightedCell && this.get(this.highlightedCell).value === 0){
+				this.highlightedCell = null;
+			}
 		}
 	}
 
@@ -107,6 +110,7 @@ export default class Board {
 	}
 
 	hint(c){
+		this.pushBoard();
 		this.board[c.x][c.y].clue = true;
 		this.board[c.x][c.y].value = this.board[c.x][c.y].solution;
 		this.clearCandidatesFromVisibleCells(c, this.board[c.x][c.y].solution);
@@ -243,6 +247,14 @@ export default class Board {
 	setColor(coords, newColor){
 		this.board[coords.x][coords.y].color = newColor;
 		this.saveToLocalStorage();
+	}
+
+	clearColors(){
+		for (let x = 0; x < 9; x++){
+			for (let y = 0; y < 9; y++){
+				this.board[x][y].color = 'default';
+			}
+		}
 	}
 
 	saveToLocalStorage(){

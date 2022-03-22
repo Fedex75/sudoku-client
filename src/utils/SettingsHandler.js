@@ -32,6 +32,12 @@ class SettingsHandler {
 				translation: 'Eliminar color al ingresar una solución',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'autoChangeInputLock',
+				translation: 'Cambiar bloqueo de entrada automáticamente',
+				type: 'boolean',
+				default: true
 			}
 		];
 

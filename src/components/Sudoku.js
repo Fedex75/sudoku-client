@@ -6,6 +6,9 @@ import EditButton from './EditButton';
 import NewGameButton from './NewGameButton';
 import Section from './Section';
 import eventBus from "./EventBus";
+import SettingsHandler from '../utils/SettingsHandler';
+import NunmpadButton from './NumpadButton';
+import ReactLoading from 'react-loading';
 
 const Sudoku = () => {
 	// eslint-disable-next-line
@@ -14,30 +17,34 @@ const Sudoku = () => {
 	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
 	const [brush, setBrush] = useState(false);
+	const [lockedInput, setLockedInput] = useState(0);
 	const [win, setWin] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const gameRef = useRef(null);
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
 	const completedNumbersRef = useRef([]);
-	const holdInput = useRef(null);
 
 	const BOARD_API_VERSION = 2; //MUST BE EQUAL TO SERVER'S VERSION
 
 	function onClick(x, y){
-		if (gameRef.current.selectedCell === null || gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
+		if (gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
+			//Click on unselected cell
 			gameRef.current.setSelectedCell({x: x, y: y});
+			let value = gameRef.current.getSelectedCell().value;
 			setPossibleValues();
-			if (holdInput.current !== null){
-				if (holdInput === 0) eraseSelectedCell();
-				else if (possibleValuesRef.current.includes(holdInput.current)) handleNumberInput(holdInput.current);
-			} else {
-				if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
-				else setRender(r => r === 100 ? 0 : r+1);
-			}
+			if (value > 0){
+				onHighlight(x, y);
+				if (lockedInput > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(value);
+			} else if (lockedInput > 0 && !brush && possibleValuesRef.current.includes(lockedInput)) handleNumberInput(lockedInput);
+			
 		} else {
+			//Click on selected cell
 			if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
+			if (lockedInput > 0 && possibleValuesRef.current.includes(lockedInput)) handleNumberInput(lockedInput);
 		}
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function onHighlight(x, y){
@@ -62,9 +69,60 @@ const Sudoku = () => {
 					if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
 						onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
 					}
-				}
-				if (gameRef.current.checkComplete()){
-					setWin(true);
+					let animation = [];
+
+					if (gameRef.current.checkComplete()){
+						eventBus.dispatch('doAnimation', [
+							{
+								type: 'board',
+								center: gameRef.current.selectedCell
+							}
+						]);
+						setTimeout(() => {setWin(true);}, 1350);
+					} else {
+						let flagRow = true;
+						let flagCol = true;
+						for (let i = 0; i < 9; i++){
+							if (gameRef.current.get({x: i, y: gameRef.current.selectedCell.y}).value === 0){
+								flagRow = false;
+							}
+							if (gameRef.current.get({x: gameRef.current.selectedCell.x, y: i}).value === 0){
+								flagCol = false;
+							}
+						}
+						if (flagRow){
+							animation.push({
+								type: 'row',
+								center: gameRef.current.selectedCell
+							});
+						}
+						if (flagCol){
+							animation.push({
+								type: 'col',
+								center: gameRef.current.selectedCell
+							});
+						}
+	
+						flagRow = true; //Recicle flagRow as flagQuadrant
+						let quadrantX = Math.floor(gameRef.current.selectedCell.x / 3);
+						let quadrantY = Math.floor(gameRef.current.selectedCell.y / 3);
+						for (let x = 0; x < 3; x++){
+							for (let y = 0; y < 3; y++){
+								if (gameRef.current.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y}).value === 0){
+									flagRow = false;
+									break;
+								}
+							}
+						}
+						if (flagRow){
+							animation.push({
+								type: 'quadrant',
+								quadrantX: quadrantX,
+								quadrantY: quadrantY
+							});
+						}
+						eventBus.dispatch('doAnimation', animation);
+					}
 				}
 				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
@@ -79,6 +137,14 @@ const Sudoku = () => {
 			}
 		}
 		setRender(r => r === 100 ? 0 : r+1);
+	}
+
+	function handleNumpadButtonClick(number, type){
+		if (type === 'primary'){
+			if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(number))) handleNumberInput(number);
+		} else {
+			setLockedInput(li => li === number ? 0 : number);
+		}
 	}
 
 	function invertNoteMode(){
@@ -99,21 +165,15 @@ const Sudoku = () => {
 		}
 	}
 
-	function handleKeyDown(e){
+	function handleKeyPress(e){
 		if (e.key === 'Enter') {
 			invertNoteMode();
 		} else {
 			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))){
-				if (holdInput.current === null){
-					handleNumberInput(Number.parseInt(e.key));
-					holdInput.current = Number.parseInt(e.key);
-				}
+				handleNumberInput(Number.parseInt(e.key));
 			}
 			else if (e.key === '0'){
-				if (holdInput.current === null){
-					eraseSelectedCell();
-					holdInput.current = 0;
-				}
+				eraseSelectedCell();
 			}
 			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				// eslint-disable-next-line
@@ -137,10 +197,6 @@ const Sudoku = () => {
 		}
 	}
 
-	function handleKeyUp(e){
-		holdInput.current = null;
-	}
-
 	function handleHintClick(){
 		if (gameRef.current.selectedCell !== null){
 			if (hintState === 0){
@@ -162,7 +218,7 @@ const Sudoku = () => {
 			setTimeout(() => {setEraseInkState(0)}, 2000);
 		} else if (eraseInkState === 1){
 			setEraseInkState(0);
-			for (let i = 0; i < 9; i++) for (let j = 0; j < 9; j++) gameRef.current.setColor({x: i, y: j}, 'default');
+			gameRef.current.clearColors();
 			setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
@@ -199,10 +255,21 @@ const Sudoku = () => {
 	}
 
 	async function newGame(data = null){
-		gameRef.current = new Board(data || await API.getGame());
-		setPossibleValues();
 		setWin(false);
-		setRender(r => r === 100 ? 0 : r+1);
+		setLoading(true);
+		if (data){
+			gameRef.current = new Board(data);
+			setLoading(false);
+			setPossibleValues();
+			setRender(r => r === 100 ? 0 : r+1);
+		} else {
+			API.getGame().then(board => {
+				gameRef.current = new Board(board);
+				setLoading(false);
+				setPossibleValues();
+				setRender(r => r === 100 ? 0 : r+1);
+			});
+		}
 	}
 
 	useEffect(() => {
@@ -212,8 +279,7 @@ const Sudoku = () => {
 			if (ls?.version && ls.version === BOARD_API_VERSION) newGame(ls);
 			else newGame(null);
 		} else newGame(null);
-		window.addEventListener('keydown', handleKeyDown, false);
-		window.addEventListener('keyup', handleKeyUp, false);
+		window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
       handleNewGame(data.difficulty);
 		});
@@ -236,7 +302,11 @@ const Sudoku = () => {
 						<div className='sudoku__win-screen__title'>¡Excelente!</div>
 						<NewGameButton />
 					</div>
-				</div> : 
+				</div> :
+				loading ?
+				<div className='sudoku__loading-screen'>
+					<ReactLoading />
+				</div> :
 				<div className="game">
 					<div className="sudoku">
 						<Canvas onClick={onClick} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
@@ -253,7 +323,7 @@ const Sudoku = () => {
 						<EditButton icon="fas fa-droplet"  title="Paint" highlight={brush} onClick={handleBrushClick}/>
 						<EditButton icon="fas fa-droplet-slash"  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
 					</div>
-					<div className="numpad">
+					<div className="numpad" onContextMenu={e => {e.preventDefault()}}>
 						{brush ?
 							['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default'].map((color, i) => (
 								<div
@@ -267,16 +337,12 @@ const Sudoku = () => {
 								>
 								</div>
 							)) : Array(9).fill().map((_, i) => (
-								<div
+								<NunmpadButton
 									key={i}
-									className={`numpad__button number ${possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1) ? 'disabled' : ''} ${completedNumbersRef.current.includes(i + 1) ? 'hidden' : ''}`}
-									onClick={(e) => {
-										e.stopPropagation();
-										if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(i + 1))) handleNumberInput(i + 1)
-									}}
-								>
-									{i + 1}
-								</div>
+									number={i+1}
+									className={`numpad__button number ${(possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1)) /*|| (lockedInput > 0 && lockedInput !== i + 1)*/ ? 'disabled' : ''} ${completedNumbersRef.current.includes(i + 1) ? 'hidden' : ''} ${!completedNumbersRef.current.includes(i + 1) &&  lockedInput === i + 1 ? 'locked' : ''}`}
+									onClick={handleNumpadButtonClick}
+								/>
 							))}
 					</div>
 				</div>

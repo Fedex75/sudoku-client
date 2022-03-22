@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import SettingsHandler from '../utils/SettingsHandler';
+import eventBus from "./EventBus";
 
 /*function line(ctx, x1, y1, x2, y2){
 	ctx.beginPath();
@@ -12,9 +13,12 @@ let squareSize = null;
 let cellPositions = null;
 let valuePositions = [];
 let noteDeltas = [];
+let animationColors = null;
+let currentAnimations = [];
 
 const Canvas = (props) => {
 	const canvasRef = useRef(null);
+	const startTime = useRef(-1);
 
 	function resizeCanvas(){
 		if (canvasRef.current){
@@ -66,9 +70,20 @@ const Canvas = (props) => {
 				y: squareSize * ((Math.floor((n - 1) / 3) + 1) * 0.3 - 0.1)
 			});
 		}
+		
+		eventBus.on("doAnimation", (data) => {
+			currentAnimations = data;
+			requestAnimationFrame(doAnimation);
+		});
+		
+		return () => {
+			eventBus.remove("doAnimation");
+		}
+		// eslint-disable-next-line
 	}, []);
 
-	useEffect(() => {
+	function renderFrame(){
+		if (canvasRef.current === null) return;
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext('2d');
 		let selectedCell = props.game.getSelectedCell();;
@@ -95,11 +110,17 @@ const Canvas = (props) => {
 				ctx.setLineDash([]);
 				ctx.fillStyle = 
 					/*isSelectedCell ? (hasColor ? props.game.colors[cell.color] : '#163c7b') :*/
+					/*animationColors && animationColors[x][y] ? animationColors[x][y] :*/
 					hasSameValueAsSelected ? (hasColor ? props.game.darkColors[cell.color] : '#16151b') : //Cell has same value as selected cell
 					highlitedCells[x][y] ? (isSelectedCell && hasColor ? props.game.colors[cell.color] : props.game.darkColors[cell.color]) : //Cell in same row or column as any cell with the same value as the selected cell
 					props.game.colors[cell.color]; //Default
 
 				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+
+				if (animationColors && animationColors[x][y]){
+					ctx.fillStyle = animationColors[x][y];
+					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+				}
 
 				ctx.strokeStyle = 'white';
 				ctx.lineWidth = 2;
@@ -166,6 +187,85 @@ const Canvas = (props) => {
 				}
 			});
 		}
+	}
+
+	function doAnimation(timestamp){
+		let progress = 0;
+		let cont = false;
+		const animationLengths = {
+			row: 750,
+			column: 750,
+			quadrant: 750,
+			board: 1350, //Must be equal to the timeout delay on Sudoku.js
+		};
+		const k = 0.2;
+
+		function brightness(x, p, q, l){
+			let t = (-q-l)*p+l;
+			return Math.max(0, k*(1-Math.abs(2/l*(x+t)-1)));
+		}
+
+		if (startTime.current < 0) {
+      startTime.current = timestamp;
+		}
+
+		//Init colors
+		animationColors = [];
+		for (let x = 0; x < 9; x++){
+			animationColors.push(Array(9).fill(null));
+		}
+
+		currentAnimations.forEach(animation => {
+			progress = (timestamp - startTime.current) / animationLengths[animation.type];
+
+			if (progress < 1){
+				cont = true;
+
+				switch(animation.type){
+					case 'row':
+						for (let x = 0; x < 9; x++){
+							animationColors[x][animation.center.y] = `rgba(255, 255, 255, ${brightness(Math.abs(animation.center.x - x), progress, 8, 4)})`;
+						}
+						break;
+					case 'column':
+						for (let y = 0; y < 9; y++){
+							animationColors[animation.center.x][y] = `rgba(255, 255, 255, ${brightness(Math.abs(animation.center.y - y), progress, 8, 4)})`;
+						}
+						break;
+					case 'quadrant':
+						for (let x = 0; x < 3; x++){
+							for (let y = 0; y < 3; y++){
+								animationColors[animation.quadrantX*3+x][animation.quadrantY*3+y] = `rgba(255, 255, 255, ${brightness(y*3+x, progress, 8, 8)})`;
+							}
+						}
+						break;
+					case 'board':
+						for (let x = 0; x < 9; x++){
+							for (let y = 0; y < 9; y++){
+								animationColors[x][y] = `rgba(255, 255, 255, ${brightness(Math.max(Math.abs(animation.center.x - x), Math.abs(animation.center.y - y)), progress, 8, 8)})`;
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+		});
+
+		renderFrame();
+
+		if (cont){
+			requestAnimationFrame(doAnimation);				
+		} else {
+			startTime.current = -1;
+			animationColors = null;
+			currentAnimations = [];
+			renderFrame();
+		}
+	}
+
+	useEffect(() => {
+		renderFrame();
 	});
 
 	function handleClick(e, double){

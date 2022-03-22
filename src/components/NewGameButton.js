@@ -33,12 +33,12 @@ function NewGameButton(props){
 	];
 
 	function handleNewGameClick(){
-		if (newGameState === 0) setNewGameState(1);
-		else setNewGameState(0);
+		setNewGameState(ng => ng === 0 ? 1 : 0);
 	}
 
-	async function handleMenuButtonClick(dif){
+	async function handleMenuButtonClick(e, dif){
 		//props.onNewGame(dif);
+		e.stopPropagation();
 		eventBus.dispatch("newGame", {difficulty: dif});
 		setNewGameState(0);
 	}
@@ -49,7 +49,7 @@ function NewGameButton(props){
 			<div className={`new-game-menu ${newGameState === 0 ? 'hidden' : 'visible'}`} onClick={handleNewGameClick}>
 				<div className='new-game-menu__list'>
 					{difficulties.map((dif, i) => (
-						<MenuButton key={i} icon={dif.name === 'restart' ? 'fas fa-undo' : 'fas fa-th'} title={dif.translation} onClick={() => {handleMenuButtonClick(dif.name)}} />
+						<MenuButton key={i} icon={dif.name === 'restart' ? 'fas fa-undo' : 'fas fa-th'} title={dif.translation} onClick={(e) => {handleMenuButtonClick(e, dif.name)}} />
 					))}
 				</div>
 				<MenuButton className="cancel" title="Cancelar" onClick={handleNewGameClick} />
