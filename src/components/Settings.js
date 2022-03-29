@@ -13,7 +13,7 @@ function Settings(props){
 	}
 
 	return (
-		<Section name="settings">
+		<Section name="settings" themeName={props.themeName} toggleTheme={props.toggleTheme}>
 			<div className="settings">
 				<div className="settings__list">
 					{SettingsHandler.template.map((t, key) => (

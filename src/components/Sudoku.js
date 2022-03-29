@@ -10,14 +10,15 @@ import SettingsHandler from '../utils/SettingsHandler';
 import NunmpadButton from './NumpadButton';
 import ReactLoading from 'react-loading';
 
-const Sudoku = () => {
+let animationCallback = null;
+
+const Sudoku = (props) => {
 	// eslint-disable-next-line
 	const [render, setRender] = useState(0);
 	const [hintState, setHintState] = useState(0);
 	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
 	const [brush, setBrush] = useState(false);
-	const [lockedInput, setLockedInput] = useState(0);
 	const [win, setWin] = useState(false);
 	const [loading, setLoading] = useState(false);
 
@@ -25,8 +26,21 @@ const Sudoku = () => {
 	const noteModeRef = useRef(null);
 	const possibleValuesRef = useRef([]);
 	const completedNumbersRef = useRef([]);
+	const lockedInputRef = useRef(0);
 
-	const BOARD_API_VERSION = 2; //MUST BE EQUAL TO SERVER'S VERSION
+	const BOARD_API_VERSION = 3; //MUST BE EQUAL TO SERVER'S VERSION
+
+	const colors = {
+		default: props.theme.canvasLightDefaultCellColor,
+		red: '#fc5c65',
+		orange: '#fd9644',
+		yellow: '#fed330',
+		green: '#26de81',
+		blueGreen: '#2bcbba',
+		lightBlue: '#45aaf2',
+		darkBlue: '#4b7bec',
+		purple: '#a55eea'
+	}
 
 	function onClick(x, y){
 		if (gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
@@ -35,27 +49,18 @@ const Sudoku = () => {
 			let value = gameRef.current.getSelectedCell().value;
 			setPossibleValues();
 			if (value > 0){
-				onHighlight(x, y);
-				if (lockedInput > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(value);
-			} else if (lockedInput > 0 && !brush && possibleValuesRef.current.includes(lockedInput)) handleNumberInput(lockedInput);
-			
+				if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = value;
+				setRender(r => r === 100 ? 0 : r+1);
+			} else {
+				if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+				else setRender(r => r === 100 ? 0 : r+1);
+			}
 		} else {
 			//Click on selected cell
-			if (gameRef.current.getSelectedCell().value > 0) onHighlight(x, y);
-			if (lockedInput > 0 && possibleValuesRef.current.includes(lockedInput)) handleNumberInput(lockedInput);
-		}
-		setRender(r => r === 100 ? 0 : r+1);
-	}
-
-	function onHighlight(x, y){
-		if (gameRef.current.highlightedCell === null || gameRef.current.highlightedCell.x !== x || gameRef.current.highlightedCell.y !== y){
-			gameRef.current.setHighlightedCell({x: x, y: y});
-			setRender(r => r === 100 ? 0 : r+1);
-		} else {
-			if (gameRef.current.highlightedCell !== null){
-				gameRef.current.setHighlightedCell(null);
-				setRender(r => r === 100 ? 0 : r+1);
-			}
+			let value = gameRef.current.getSelectedCell().value;
+			if (value > 0 && SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = lockedInputRef.current === 0 ? value : 0;
+			if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+			else setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
 
@@ -66,13 +71,11 @@ const Sudoku = () => {
 				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectedCell, number);
 				else {
 					gameRef.current.setValue(gameRef.current.selectedCell, number);
-					if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
-						onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
-					}
+					if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = number;
 					let animation = [];
 
 					if (gameRef.current.checkComplete()){
-						eventBus.dispatch('doAnimation', [
+						if (animationCallback) animationCallback([
 							{
 								type: 'board',
 								center: gameRef.current.selectedCell
@@ -121,15 +124,13 @@ const Sudoku = () => {
 								quadrantY: quadrantY
 							});
 						}
-						eventBus.dispatch('doAnimation', animation);
+						if (animation.length > 0 && animationCallback) animationCallback(animation);
 					}
 				}
 				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
-				if (!gameRef.current.highlightedCell || gameRef.current.getSelectedCell().value !== gameRef.current.getHighlightedCell().value){
-					onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
-				}
+				//if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = 0;
 				setPossibleValues();
 				if (gameRef.current.checkComplete()){
 					setWin(true);
@@ -143,7 +144,8 @@ const Sudoku = () => {
 		if (type === 'primary'){
 			if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(number))) handleNumberInput(number);
 		} else {
-			setLockedInput(li => li === number ? 0 : number);
+			lockedInputRef.current = lockedInputRef.current === number ? 0 : number;
+			setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
 
@@ -206,7 +208,7 @@ const Sudoku = () => {
 				setHintState(0);
 				gameRef.current.hint(gameRef.current.selectedCell);
 				setPossibleValues();
-				onHighlight(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y);
+				/*if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = 0;*/
 				setRender(r => r === 100 ? 0 : r+1);
 			}
 		}
@@ -230,15 +232,6 @@ const Sudoku = () => {
 		setRender(r => r === 100 ? 0 : r+1);
 	}
 
-	async function handleNewGame(dif){
-		if (dif === 'restart'){
-			gameRef.current.restart();
-			setRender(r => r === 100 ? 0 : r+1);
-		} else {
-			newGame(await API.getGame(dif));
-		}
-	}
-
 	function handleBrushClick(){
 		setBrush(b => !b);
 	}
@@ -249,43 +242,57 @@ const Sudoku = () => {
 	}
 
 	function setPossibleValues(){
-		if (gameRef.current.selectedCell === null || (noteModeRef.current && gameRef.current.getSelectedCell().value > 0)) possibleValuesRef.current = [];
+		if (noteModeRef.current && gameRef.current.getSelectedCell().value > 0) possibleValuesRef.current = [];
 		else possibleValuesRef.current = gameRef.current.getPossibleValues(gameRef.current.selectedCell);
 		completedNumbersRef.current = gameRef.current.getCompletedNumbers();
 	}
 
-	async function newGame(data = null){
+	async function handleNewGame(difficulty){
+		if (difficulty === 'restart'){
+			newGame(null, gameRef.current.id, gameRef.current.difficulty, gameRef.current.mode);
+		} else {
+			newGame(null, null, difficulty, 'classic');
+		}
+	}
+
+	async function newGame(data, id, difficulty, mode){
 		setWin(false);
 		setLoading(true);
 		if (data){
-			gameRef.current = new Board(data);
-			setLoading(false);
-			setPossibleValues();
-			setRender(r => r === 100 ? 0 : r+1);
+			gameRef.current = new Board(data, false);
+			afterNewGame();
 		} else {
-			API.getGame().then(board => {
-				gameRef.current = new Board(board);
-				setLoading(false);
-				setPossibleValues();
-				setRender(r => r === 100 ? 0 : r+1);
+			API.getGame(id, difficulty, mode).then(board => {
+				gameRef.current = new Board(board, true);
+				afterNewGame();
 			});
 		}
+	}
+
+	function afterNewGame(){
+		if (gameRef.current.getSelectedCell().value > 0 && SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = gameRef.current.getSelectedCell().value;
+		else lockedInputRef.current = 0;
+		noteModeRef.current = false;
+		setLoading(false);
+		setPossibleValues();
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	useEffect(() => {
 		let ls = localStorage.getItem('game');
 		if (ls){
 			ls = JSON.parse(ls);
-			if (ls?.version && ls.version === BOARD_API_VERSION) newGame(ls);
-			else newGame(null);
-		} else newGame(null);
-		window.addEventListener('keypress', handleKeyPress, false);
+			if (ls?.version && ls.version === BOARD_API_VERSION) newGame(ls, null, null, null);
+			else newGame(null, null, null, null);
+		} else newGame(null, null, null, null);
+		let keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
       handleNewGame(data.difficulty);
 		});
 		
 		return () => {
 			eventBus.remove("newGame");
+			window.removeEventListener('keypress', keyPressEvent);
 		}
 	// eslint-disable-next-line
 	}, []);
@@ -295,7 +302,7 @@ const Sudoku = () => {
 	}
 
 	return (
-		<Section name="sudoku">
+		<Section name="sudoku" themeName={props.themeName} toggleTheme={props.toggleTheme}>
 			{win ? 
 				<div className='sudoku__win-screen-wrapper'>
 					<div className='sudoku__win-screen'>
@@ -305,11 +312,11 @@ const Sudoku = () => {
 				</div> :
 				loading ?
 				<div className='sudoku__loading-screen'>
-					<ReactLoading />
+					<ReactLoading type='spin' color='#4b7bec' height={50} width={50} />
 				</div> :
 				<div className="game">
 					<div className="sudoku">
-						<Canvas onClick={onClick} onHighlight={onHighlight} showLinks={showLinks} game={gameRef.current} />
+						<Canvas onClick={onClick} showLinks={showLinks} game={gameRef.current} lockedInput={lockedInputRef.current} theme={props.theme} setAnimationCallback={cb => {animationCallback = cb;}} />
 					</div>
 					<NewGameButton id="large-new-game-button"/>
 					<div className="edit__buttons">
@@ -333,14 +340,14 @@ const Sudoku = () => {
 										e.stopPropagation();
 										handleColorButtonClick(color);
 									}}
-									style={{backgroundColor: gameRef.current.colors[color]}}
+									style={{backgroundColor: colors[color]}}
 								>
 								</div>
 							)) : Array(9).fill().map((_, i) => (
 								<NunmpadButton
 									key={i}
 									number={i+1}
-									className={`numpad__button number ${(possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1)) /*|| (lockedInput > 0 && lockedInput !== i + 1)*/ ? 'disabled' : ''} ${completedNumbersRef.current.includes(i + 1) ? 'hidden' : ''} ${!completedNumbersRef.current.includes(i + 1) &&  lockedInput === i + 1 ? 'locked' : ''}`}
+									className={`numpad__button number ${(possibleValuesRef.current !== null && !possibleValuesRef.current.includes(i + 1)) /*|| (lockedInputRef.current > 0 && lockedInputRef.current !== i + 1)*/ ? 'disabled' : ''} ${completedNumbersRef.current.includes(i + 1) ? 'hidden' : ''} ${!completedNumbersRef.current.includes(i + 1) &&  lockedInputRef.current === i + 1 ? 'locked' : ''}`}
 									onClick={handleNumpadButtonClick}
 								/>
 							))}

@@ -1,10 +1,4 @@
-:root {
-	--background: #171719;
-	--higlight:  #1e1e26;
-	--focus: #163c7b;
-}
-
-html, body, #root, .app {
+html, body, #root {
 	margin: 0;
 	width: 100%;
 	height: 100%;
@@ -17,10 +11,9 @@ a {
 	text-decoration: none;
 }
 
-.app {
+#root {
 	display: flex;
 	justify-content: center;
-	background-color: var(--background);
 }
 
 .section {
@@ -36,11 +29,10 @@ a {
 
 .navbar {
 	display: grid;
-	grid-template-columns: 0 fit-content(0) auto fit-content(0) 0;
-	grid-template-areas: "menu logo title user new-game";
+	grid-template-columns: 0 auto fit-content(0) 0;
+	grid-template-areas: "menu title user new-game";
 	padding: 5px 10px;
 	align-items: center;
-	color: white;
 }
 
 .menu-icon-wrapper {
@@ -67,7 +59,7 @@ a {
 	grid-area: user;
 	display: flex;
 	align-items: center;
-	gap: 15px;
+	gap: 10px;
 }
 
 .navbar__user-wrapper__settings {
@@ -77,16 +69,15 @@ a {
 
 .navbar__user-wrapper__settings i {
 	font-size: 20px;
-	color: white;
 }
 
 .navbar__user-wrapper__login-button {
-	border: solid 1px white;
+	border-style: solid;
+	border-width: 1px;
 	padding: 5px 10px;
 	word-wrap: none;
 	white-space: nowrap;
 	font-size: 20px;
-	color: white;
 	width: fit-content;
 }
 
@@ -134,12 +125,13 @@ a {
 
 .sudoku__win-screen {
 	display: grid;
-	grid-template-rows: fit-content(0) 30px 40px;
+	grid-template-rows: fit-content(0) 30px 40px 310px;
 	grid-template-columns: 287px;
 	grid-template-areas:
 		"title"
 		"space"
-		"new-game";
+		"new-game"
+		"space2";
 }
 
 .sudoku__win-screen__title {
@@ -147,6 +139,14 @@ a {
 	text-align: center;
 	color: white;
 	font-size: 30px;
+}
+
+.sudoku__loading-screen {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 800px;
+	height: 100%;
 }
 
 .new-game-wrapper {
@@ -194,9 +194,7 @@ a {
 .new-game-menu__list {
 	display: flex;
 	flex-flow: column;
-	background-color: #25242c;
 	border-radius: 15px;
-	border: solid 1px white;
 	box-sizing: border-box;
 }
 
@@ -206,8 +204,8 @@ a {
 	align-items: center;
 	padding: 10px;
 	height: 30px;
-	border-top: solid 1px white;
-	color: #75747c;
+	border-top-style: solid;
+	border-top-width: 1px;
 	cursor: pointer;
 }
 
@@ -215,12 +213,13 @@ a {
 	display: none;
 }
 
-.menu-button:hover {
-	color: white;
-}
-
 .menu-button:first-child {
 	border-top: none;
+	border-radius: 15px 15px 0 0;
+}
+
+.menu-button:last-child {
+	border-radius: 0 0 15px 15px;
 }
 
 .menu-button__icon {
@@ -246,8 +245,6 @@ a {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	color: #75747c;
-	background-color: #25242c;
 	border-radius: 10px;
 	width: 67px;
 	height: 67px;
@@ -292,19 +289,15 @@ a {
 	cursor: pointer;
 }
 
-.numpad__button.number {
-	background-color: #25242c;
-}
-
 .numpad__button:hover {
 	background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
 }
 
 .numpad__button.disabled {
-	background-color: transparent;
 	width: 84.33px;
 	height: 84.33px;
-	border: solid 1px #25242c;
+	border-style: solid;
+	border-width: 1px;
 	cursor: default;
 }
 
@@ -315,15 +308,15 @@ a {
 .numpad__button.hidden {
 	border: none;
 	color: transparent;
-	background-color: transparent;
+	background-color: transparent !important;
 }
 
 .numpad__button.locked {
-	border: 1px solid white;
+	border-width: 1px;
+	border-style: solid;
 	width: 84.33px;
 	height: 84.33px;
 	color: white;
-	/*background-color: transparent;*/
 }
 
 #settings {
@@ -341,8 +334,6 @@ a {
 	display: grid;
 	grid-template-columns: auto fit-content(0);
 	padding: 15px 25px;
-	background-color: #25242c;
-	border-color: black;
 	border-width: 1px 1px 0px 1px;
 	border-style: solid;
 	align-items: center;
@@ -360,7 +351,6 @@ a {
 }
 
 .settings__item__title {
-	color: white;
 	font-size: 20px;
 	margin-right: 40px;
 }
@@ -390,6 +380,10 @@ a {
 		align-items: flex-start;
 		width: calc(100% - 6px);
 		padding-left: 3px;
+	}
+
+	.sudoku__loading-screen {
+		width: fit-content;
 	}
 
 	.edit__buttons {
@@ -445,7 +439,7 @@ a {
 	}
 
 	.navbar {
-		grid-template-columns: fit-content(0) 0 auto 0 114px !important;
+		grid-template-columns: fit-content(0) auto 0 114px !important;
 	}
 
 	.navbar__logo-wrapper {
@@ -484,7 +478,6 @@ a {
 
 	.new-game-menu__list {
 		margin: 0 10px 0 10px;
-		border: none;
 	}
 
 	.menu-button {
@@ -506,9 +499,7 @@ a {
 		display: flex;
 		border-top: none;
 		border-radius: 15px;
-		background-color: #25242c;
 		color: #4b7bec;
 		margin: 0 10px 20px 10px;
-		font-weight: bold;
 	}
 }

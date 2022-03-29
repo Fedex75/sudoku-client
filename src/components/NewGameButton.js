@@ -32,7 +32,8 @@ function NewGameButton(props){
 		}
 	];
 
-	function handleNewGameClick(){
+	function handleNewGameClick(e){
+		e.stopPropagation();
 		setNewGameState(ng => ng === 0 ? 1 : 0);
 	}
 

@@ -1,41 +1,40 @@
 import SettingsHandler from "./SettingsHandler";
 
 export default class Board {
-	constructor(data){
-		this.board = data.board;
+	constructor(data, raw){
+		this.id = data.id;
 		this.mission = data.mission;
-		this.selectedCell = data.selectedCell;
-		this.highlightedCell = this.getSelectedCell().value > 0 ? this.selectedCell : null;
-		this.history = data.history;
 		this.difficulty = data.difficulty;
 		this.mode = data.mode;
 		this.version = data.version;
 
-		this.saveToLocalStorage();
+		if (raw){
+			//Create game from raw
+			this.selectedCell = {x: 0, y: 0};
+			this.history = [];
+			this.board = [];
 
-		this.colors = {
-			default: '#25242c',
-			red: '#fc5c65',
-			orange: '#fd9644',
-			yellow: '#fed330',
-			green: '#26de81',
-			blueGreen: '#2bcbba',
-			lightBlue: '#45aaf2',
-			darkBlue: '#4b7bec',
-			purple: '#a55eea'
-		};
-
-		this.darkColors = {
-			default: '#191925',
-			red: '#99393d',
-			orange: '#995c29',
-			yellow: '#997e1d',
-			green: '#1a995a',
-			blueGreen: '#2bcbba',
-			lightBlue: '#2c6c99',
-			darkBlue: '#315099',
-			purple: '#6b3d99'
+			for (let x = 0; x < 9; x++){
+				this.board.push(Array(9).fill(null));
+				for (let y = 0; y < 9; y++){
+					let number = Number.parseInt(data.mission[y * 9 + x]);
+					let solution = Number.parseInt(data.solution[y * 9 + x]);
+					this.board[x][y] = {
+						clue:     number > 0,
+						value:    number,
+						notes:    [],
+						solution: solution,
+						color:    'default',
+					};
+				}
+			}
+		} else {
+			this.board = data.board;
+			this.selectedCell = data.selectedCell;
+			this.history = data.history;
 		}
+
+		this.saveToLocalStorage();
 	}
 
 	pushBoard(){
@@ -50,9 +49,6 @@ export default class Board {
 			this.board = this.history[this.history.length - 1].board;
 			this.selectedCell = this.history[this.history.length - 1].selectedCell;
 			this.history.pop();
-			if (this.highlightedCell && this.get(this.highlightedCell).value === 0){
-				this.highlightedCell = null;
-			}
 		}
 	}
 
@@ -66,15 +62,6 @@ export default class Board {
 
 	setSelectedCell(c){
 		this.selectedCell = c;
-		this.saveToLocalStorage();
-	}
-
-	getHighlightedCell(){
-		return this.get(this.highlightedCell);
-	}
-
-	setHighlightedCell(c){
-		this.highlightedCell = c;
 		this.saveToLocalStorage();
 	}
 
@@ -128,9 +115,6 @@ export default class Board {
 				solution: this.board[c.x][c.y].solution,
 				color: 'default'
 			};
-			if (this.highlightedCell === c){
-				this.highlightedCell = null;
-			}
 		}
 		this.saveToLocalStorage();
 	}
@@ -177,19 +161,24 @@ export default class Board {
 		return visibleCells;
 	}
 
-	calculateHighlightedCells(selectedCoords){
-		let selectedCell = this.get(selectedCoords);
+	calculateHighlightedCells(selectedCoords, number){
 		let highlightedCells = Array(9).fill().map(x => Array(9).fill(false));
+		let targetValue = number > 0 ? number : this.get(selectedCoords).value;
 	
-		for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
+		if (number === 0) for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
 
 		if (SettingsHandler.settings.advancedHighlight){
 			for (let x = 0; x < 9; x++){
 				for (let y = 0; y < 9; y++) {
 					const cell = this.get({x: x, y: y});
-					if (selectedCell.value > 0 && cell.value > 0) highlightedCells[x][y] = true;
-					if (cell.value > 0 && cell.value === selectedCell.value) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
+					if (targetValue > 0 && cell.value > 0) highlightedCells[x][y] = true;
+					if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
 				}
+			}
+		} else {
+			for (let i = 0; i < 9; i++){
+				highlightedCells[selectedCoords.x][i] = true;
+				highlightedCells[i][selectedCoords.y] = true;
 			}
 		}
 
@@ -269,21 +258,5 @@ export default class Board {
 		for (let x = 0; x < 9; x++) for (let y = 0; y < 9; y++) if (this.board[x][y].value !== this.board[x][y].solution) return false;
 		this.clearLocalStorage();
 		return true;
-	}
-
-	restart(){
-		this.clearLocalStorage();
-		for (let x = 0; x < 9; x++){
-			for (let y = 0; y < 9; y++){
-				let n = Number.parseInt(this.mission[y*9+x]);
-				this.board[x][y] = {
-					clue: n > 0,
-					value: n,
-					notes: [],
-					solution: this.board[x][y].solution,
-					color: 'default'
-				};
-			}
-		}
 	}
 }
