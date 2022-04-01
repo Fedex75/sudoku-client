@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ThemeHandler from '../utils/ThemeHandler';
 import SettingsHandler from '../utils/SettingsHandler';
 import eventBus from "./EventBus";
@@ -29,6 +29,9 @@ function brightness(x, p, q, l){
 
 const Canvas = (props) => {
 	const canvasRef = useRef(null);
+	const lastMouseCell = useRef(null);
+	const mouseButton = useRef(null);
+	const [render, setRender] = useState(0);
 
 	function resizeCanvas(){
 		if (canvasRef.current){
@@ -69,11 +72,15 @@ const Canvas = (props) => {
 		
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false);
 		let rotateEvent = o9n.orientation.addEventListener('change', resizeCanvas);
+		let touchStartEvent = canvasRef.current.addEventListener('touchstart', onTouchStart, {passive: false}); 
+		let touchMoveEvent = canvasRef.current.addEventListener('touchmove', onTouchMove, {passive: false});
 
 		return () => {
 			eventBus.remove("doAnimation");
 			window.removeEventListener('resize', resizeEvent);
 			o9n.orientation.removeEventListener('change', rotateEvent);
+			if (canvasRef.current) canvasRef.current.removeEventListener('touchstart', touchStartEvent);
+			if (canvasRef.current) canvasRef.current.removeEventListener('touchmove', touchMoveEvent);
 		}
 	}, []);
 
@@ -368,28 +375,100 @@ const Canvas = (props) => {
 		renderFrame();
 	});
 
-	function handleClick(e){
-		e.stopPropagation();
-		const canvas = canvasRef.current;
-		const rect = canvas.getBoundingClientRect();
-		const clickX = (e.clientX - rect.left) / parseInt(canvasRef.current.style.width, 10) * 500;
-		const clickY = (e.clientY - rect.top) / parseInt(canvasRef.current.style.height, 10) * 500;
-
+	function screenCoordsToBoardCoords(clientX, clientY){
+		const rect = canvasRef.current.getBoundingClientRect();
+		const clickX = (clientX - rect.left) / parseInt(canvasRef.current.style.width, 10) * 500;
+		const clickY = (clientY - rect.top) / parseInt(canvasRef.current.style.height, 10) * 500;
 		for (let x = 0; x < 9; x++){
 			if (clickX <= cellPositions[x][0].x + squareSize){
 				for (let y = 0; y < 9; y++) {
 					if (clickY <= cellPositions[0][y].y + squareSize){
-						props.onClick(x, y);
-						break;
+						return {
+							x: x,
+							y: y
+						};
 					}
-				}		
-				break;
+				}
 			}
+		}
+		return null;
+	}
+
+	function handleInputStart(coords, button){
+		lastMouseCell.current = coords;
+		mouseButton.current = button;
+		props.onClick(coords.x, coords.y, button);
+		setRender(r => r === 100 ? 0 : r+1);
+	}
+
+	function onMouseDown(e){
+		e.stopPropagation();
+		e.preventDefault();
+		handleInputStart(screenCoordsToBoardCoords(e.clientX, e.clientY), e.button);
+	}
+
+	function onTouchStart(e){
+		e.stopPropagation();
+		e.preventDefault();
+		handleInputStart(screenCoordsToBoardCoords(e.targetTouches[0].screenX, e.targetTouches[0].screenY), 0);
+	}
+
+	function handleInputMove(coords){
+		if (coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
+			lastMouseCell.current = coords;
+			props.onClick(coords.x, coords.y, mouseButton.current, true);
+			setRender(r => r === 100 ? 0 : r+1);
 		}
 	}
 
+	function onMouseMove(e){
+		e.stopPropagation();
+		e.preventDefault();
+		handleInputMove(screenCoordsToBoardCoords(e.clientX, e.clientY));
+	}
+
+	function onTouchMove(e){
+		e.stopPropagation();
+		e.preventDefault();
+		handleInputMove(screenCoordsToBoardCoords(e.targetTouches[0].screenX, e.targetTouches[0].screenY));
+	}
+
+	function onMouseUp(e){
+		e.stopPropagation();
+		e.preventDefault();
+		lastMouseCell.current = null;
+	}
+
+	function onContextMenu(e){
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
+	function onMouseLeave(e){
+		e.stopPropagation();
+		e.preventDefault();
+		lastMouseCell.current = null;
+		mouseButton.current = null;
+	}
+
+	function onTouchEnd(e){
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
 	return (
-		<canvas ref={canvasRef} width="500" height="500" onClick={e => {handleClick(e)}} />
+		<canvas
+			style={{touchAction: 'none'}}
+			ref={canvasRef}
+			width="500"
+			height="500"
+			onContextMenu={onContextMenu}
+			onMouseDown={onMouseDown}
+			onMouseMove={onMouseMove}
+			onMouseUp={onMouseUp}
+			onTouchEnd={onTouchEnd}
+			onMouseLeave={onMouseLeave}
+		/>
 	)
 }
 

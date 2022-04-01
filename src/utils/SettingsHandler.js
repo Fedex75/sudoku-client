@@ -38,6 +38,18 @@ class SettingsHandler {
 				translation: 'Cambiar bloqueo de entrada automáticamente',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'lockCellsWithColor',
+				translation: 'Bloquear celdas con color',
+				type: 'boolean',
+				default: true
+			},
+			{
+				name: 'autoSolveCellsWithColor',
+				translation: 'Solucionar celdas con color automáticamente si tienen solo un candidato',
+				type: 'boolean',
+				default: true
 			}
 		];
 

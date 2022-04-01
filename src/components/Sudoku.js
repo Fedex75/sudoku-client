@@ -42,25 +42,52 @@ const Sudoku = (props) => {
 		purple: '#a55eea'
 	}
 
-	function onClick(x, y){
-		if (gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
-			//Click on unselected cell
-			gameRef.current.setSelectedCell({x: x, y: y});
-			let value = gameRef.current.getSelectedCell().value;
-			setPossibleValues();
-			if (value > 0){
-				if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = value;
+	function onClick(x, y, button, hold = false){
+		switch (button){
+			case 0:
+				if (noteModeRef && hold){
+					handleRemoveNote({x: x, y: y});
+				} else {	
+					if (gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
+						//Click on unselected cell
+						gameRef.current.setSelectedCell({x: x, y: y});
+						let value = gameRef.current.getSelectedCell().value;
+						setPossibleValues();
+						if (value > 0){
+							if (SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = value;
+							setRender(r => r === 100 ? 0 : r+1);
+						} else {
+							if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+							else setRender(r => r === 100 ? 0 : r+1);
+						}
+					} else {
+						//Click on selected cell
+						let value = gameRef.current.getSelectedCell().value;
+						if (value > 0 && SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = lockedInputRef.current === 0 ? value : 0;
+						if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+						else setRender(r => r === 100 ? 0 : r+1);
+					}
+				}
+				break;
+			case 1:
+				gameRef.current.setColor({x: x, y: y}, gameRef.current.get({x: x, y: y}).color === 'default' ? 'darkBlue' : 'default');
 				setRender(r => r === 100 ? 0 : r+1);
-			} else {
-				if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
-				else setRender(r => r === 100 ? 0 : r+1);
-			}
-		} else {
-			//Click on selected cell
-			let value = gameRef.current.getSelectedCell().value;
-			if (value > 0 && SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = lockedInputRef.current === 0 ? value : 0;
-			if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
-			else setRender(r => r === 100 ? 0 : r+1);
+				break;
+			case 2:
+				handleRemoveNote({x: x, y: y});
+				break;
+			default:
+				break;
+		}
+	}
+
+	function handleRemoveNote(coords){
+		if (
+			lockedInputRef.current > 0 &&
+			!brush &&
+			gameRef.current.getPossibleValues(coords).includes(lockedInputRef.current)
+		){
+			gameRef.current.setNote(coords, lockedInputRef.current);
 		}
 	}
 
@@ -71,9 +98,8 @@ const Sudoku = (props) => {
 				if (noteModeRef.current) gameRef.current.setNote(gameRef.current.selectedCell, number);
 				else {
 					gameRef.current.setValue(gameRef.current.selectedCell, number);
-					if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = number;
+					if (SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = number;
 					let animation = [];
-
 					if (gameRef.current.checkComplete()){
 						if (animationCallback) animationCallback([
 							{
@@ -130,7 +156,6 @@ const Sudoku = (props) => {
 				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
-				//if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = 0;
 				setPossibleValues();
 				if (gameRef.current.checkComplete()){
 					setWin(true);

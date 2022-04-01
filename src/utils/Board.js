@@ -84,15 +84,17 @@ export default class Board {
 	}
 
 	setNote(c, n, state = null, push = true){
-		if (this.get(c).value === 0){
-			if (this.get(c).notes.includes(n)){
+		const cell = this.get(c);
+		if (cell.value === 0){
+			if (cell.notes.includes(n)){
 				if (state !== true){
 					if (push) this.pushBoard();
-					this.board[c.x][c.y].notes = this.board[c.x][c.y].notes.filter(note => note !== n);
+					this.board[c.x][c.y].notes = cell.notes.filter(note => note !== n);
+					if (SettingsHandler.settings.autoSolveCellsWithColor && cell.color && this.board[c.x][c.y].notes.length === 1) this.setValue(c, this.board[c.x][c.y].notes, false);
 					this.saveToLocalStorage();
 				}
 			} else {
-				if (state !== false){
+				if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (this.get(c).color === 'default'))){
 					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes.push(n);
 					this.saveToLocalStorage();
@@ -105,8 +107,8 @@ export default class Board {
 		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false);
 	}
 
-	setValue(c, s){
-		this.pushBoard();
+	setValue(c, s, push = true){
+		if (push) this.pushBoard();
 		this.board[c.x][c.y].value = s;
 		this.board[c.x][c.y].notes = [];
 		this.clearCandidatesFromVisibleCells(c, s);
@@ -181,8 +183,9 @@ export default class Board {
 
 	calculateHighlightedCells(selectedCoords, number){
 		let highlightedCells = Array(9).fill().map(x => Array(9).fill(false));
-		let targetValue = number > 0 ? number : this.get(selectedCoords).value;
-	
+		let selectedCell = this.get(selectedCoords);
+		let targetValue = number > 0 ? number : selectedCell.value;
+
 		if (number === 0) for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
 
 		if (SettingsHandler.settings.advancedHighlight){
@@ -191,6 +194,7 @@ export default class Board {
 					const cell = this.get({x: x, y: y});
 					if (targetValue > 0 && cell.value > 0) highlightedCells[x][y] = true;
 					if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
+					if (this.mode === 'killer' && cell.cageIndex === selectedCell.cageIndex) highlightedCells[x][y] = true;
 				}
 			}
 		} else {
