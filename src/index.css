@@ -321,6 +321,9 @@ a {
 
 #settings {
 	width: 600px;
+}
+
+.settings {
 	padding-top: 40px;
 }
 
@@ -457,6 +460,7 @@ a {
 
 	#settings {
 		width: auto;
+		overflow-y: scroll;
 	}
 
 	.sudoku__win-screen-wrapper {

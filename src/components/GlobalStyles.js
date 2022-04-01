@@ -51,6 +51,32 @@ export const GlobalStyles = createGlobalStyle`
     color: ${({ theme }) => theme.menuButtonColor};
   }
 
+  .new-game-menu__mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    justify-content: center;
+    padding: 10px;
+  }
+  
+  .new-game-menu__mode-selector__item {
+    display: grid;
+    place-items: center;
+    border-style: solid;
+    border-width: 1px;
+    border-color: ${({theme}) => theme.modeSelectorBorderColor};
+    border-radius: 5px;
+    color: ${({theme}) => theme.modeSelectorColor};
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .new-game-menu__mode-selector__item.selected {
+    border-color: ${({theme}) => theme.modeSelectorSelectedBorderColor};
+    background-color: ${({theme}) => theme.modeSelectorSelectedBorderColor};
+    color: white;
+  }
+
   .menu-button:hover {
     color: ${({ theme }) => theme.menuButtonHoverColor};
     background-color: ${({ theme }) => theme.menuButtonHoverBackground};

@@ -12,11 +12,13 @@ import { ThemeProvider } from 'styled-components';
 import { GlobalStyles } from "./components/GlobalStyles";
 import ThemeHandler from './utils/ThemeHandler';
 import ThemeSwitch from './components/ThemeSwitch';
+import o9n from 'o9n';
 
 function App() {
   const [loading, setLoading] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [theme, setTheme] = useState(ThemeHandler.themeName);
+	const [gameMode, setGameMode] = useState('classic');
 
 	const customStyles = {
 		overlay: {
@@ -62,7 +64,7 @@ function App() {
 			}
 		});*/
 
-		//window.screen.orientation.lock('portrait');
+		o9n.orientation.lock('portrait').then(a => {}).catch(e => {});
 
 		eventBus.on("openModal", () => {
       setIsModalOpen(true);
@@ -83,7 +85,7 @@ function App() {
 				<GlobalStyles />
 				<BrowserRouter>
 					<Route exact path="/">
-						<Sudoku themeName={theme} toggleTheme={themeToggler} theme={ThemeHandler.theme}/>
+						<Sudoku themeName={theme} toggleTheme={themeToggler} theme={ThemeHandler.theme} gameMode={gameMode} setGameMode={setGameMode} />
 					</Route>
 					<Route exact path="/settings">
 						<Settings themeName={theme} toggleTheme={themeToggler}/>

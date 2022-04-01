@@ -247,11 +247,11 @@ const Sudoku = (props) => {
 		completedNumbersRef.current = gameRef.current.getCompletedNumbers();
 	}
 
-	async function handleNewGame(difficulty){
+	async function handleNewGame(difficulty, mode){
 		if (difficulty === 'restart'){
 			newGame(null, gameRef.current.id, gameRef.current.difficulty, gameRef.current.mode);
 		} else {
-			newGame(null, null, difficulty, 'classic');
+			newGame(null, null, difficulty, mode);
 		}
 	}
 
@@ -282,12 +282,15 @@ const Sudoku = (props) => {
 		let ls = localStorage.getItem('game');
 		if (ls){
 			ls = JSON.parse(ls);
-			if (ls?.version && ls.version === BOARD_API_VERSION) newGame(ls, null, null, null);
-			else newGame(null, null, null, null);
-		} else newGame(null, null, null, null);
+			if (ls?.version && ls.version === BOARD_API_VERSION){
+				props.setGameMode(ls.mode)
+				newGame(ls, null, null, null);
+			}
+			else newGame(null, null, null, 'classic');
+		} else newGame(null, null, null, 'classic');
 		let keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
-      handleNewGame(data.difficulty);
+      handleNewGame(data.difficulty, data.mode);
 		});
 		
 		return () => {
@@ -302,12 +305,12 @@ const Sudoku = (props) => {
 	}
 
 	return (
-		<Section name="sudoku" themeName={props.themeName} toggleTheme={props.toggleTheme}>
+		<Section name="sudoku" themeName={props.themeName} toggleTheme={props.toggleTheme} gameMode={props.gameMode} setGameMode={props.setGameMode}>
 			{win ? 
 				<div className='sudoku__win-screen-wrapper'>
 					<div className='sudoku__win-screen'>
 						<div className='sudoku__win-screen__title'>¡Excelente!</div>
-						<NewGameButton />
+						<NewGameButton gameMode={props.gameMode} setGameMode={props.setGameMode} />
 					</div>
 				</div> :
 				loading ?
@@ -318,7 +321,7 @@ const Sudoku = (props) => {
 					<div className="sudoku">
 						<Canvas onClick={onClick} showLinks={showLinks} game={gameRef.current} lockedInput={lockedInputRef.current} theme={props.theme} setAnimationCallback={cb => {animationCallback = cb;}} />
 					</div>
-					<NewGameButton id="large-new-game-button"/>
+					<NewGameButton id="large-new-game-button" gameMode={props.gameMode} setGameMode={props.setGameMode}/>
 					<div className="edit__buttons">
 						<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
 						<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>

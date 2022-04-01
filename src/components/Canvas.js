@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import ThemeHandler from '../utils/ThemeHandler';
 import SettingsHandler from '../utils/SettingsHandler';
 import eventBus from "./EventBus";
+import o9n from 'o9n';
 
 
 let squareSize = null;
@@ -64,20 +65,16 @@ const Canvas = (props) => {
 			}
 			posY += squareSize + 1;
 			if ((y + 1) % 3 === 0) posY += borderWidth - 1;
-			//Candidate positions
-			noteDeltas.push({
-				x: squareSize * ((y % 3 + 1) * 0.25),
-				y: squareSize * ((Math.floor(y / 3) + 1) * 0.3 - 0.08)
-			});
 		}
 		
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false);
-		
+		let rotateEvent = o9n.orientation.addEventListener('change', resizeCanvas);
+
 		return () => {
 			eventBus.remove("doAnimation");
 			window.removeEventListener('resize', resizeEvent);
+			o9n.orientation.removeEventListener('change', rotateEvent);
 		}
-		// eslint-disable-next-line
 	}, []);
 
 	function renderFrame(){
@@ -144,9 +141,9 @@ const Canvas = (props) => {
 					hasSameValueAsSelected ? ThemeHandler.theme.canvasSameValueCellBackground : //Cell has same value as selected cell
 					highlitedCells[x][y] ? darkColors.default : //Cell in same row or column as any cell with the same value as the selected cell
 					colors.default; //Default
-				
+
 				if (hasColor){
-					ctx.fillRect(cellPositions[x][y].x + 3, cellPositions[x][y].y + 3, squareSize - 6, squareSize - 6);
+					ctx.fillRect(cellPositions[x][y].x + (props.game.mode === 'classic' ? 3 : 2), cellPositions[x][y].y + (props.game.mode === 'classic' ? 3 : 2), squareSize - (props.game.mode === 'classic' ? 6 : 4), squareSize - (props.game.mode === 'classic' ? 6 : 4));
 				} else {
 					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
 				}
@@ -154,6 +151,78 @@ const Canvas = (props) => {
 				if (animationColors && animationColors[x][y]){
 					ctx.fillStyle = animationColors[x][y];
 					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize);
+				}
+
+				if (props.game.mode === 'killer'){
+					//Cages
+					const cagePadding = 2.5;
+					const hShift = cell.cageValue > 9 ? 16 : (cell.cageValue > 0 ? 8 : 2.5);
+					const vShift = cell.cageValue > 0 ? 12 : 2.5;
+					//Borders
+					ctx.strokeStyle = ThemeHandler.theme.canvasKillerCageColor;
+					ctx.setLineDash([5, 5]);
+					ctx.lineWidth = 1;
+					//Top
+					if (y === 0 || props.game.board[x][y-1].cageIndex !== cell.cageIndex){
+						ctx.beginPath();
+						ctx.moveTo(cellPositions[x][y].x + cagePadding + hShift, cellPositions[x][y].y + cagePadding); //Top left
+						ctx.lineTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + cagePadding); //Top right
+						ctx.stroke();
+					}
+					//Right
+					if (x === 8 || props.game.board[x+1][y].cageIndex !== cell.cageIndex){
+						ctx.beginPath();
+						ctx.moveTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + cagePadding + 2.5); //Top right
+						ctx.lineTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + squareSize - cagePadding); //Bottom right
+						ctx.stroke();
+					} else {
+						//Right bridges
+						ctx.beginPath();						
+						if (!(y > 0 && props.game.board[x+1][y-1].cageIndex === cell.cageIndex && props.game.board[x][y-1].cageIndex === cell.cageIndex)){
+							ctx.moveTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + cagePadding); //Top right
+							ctx.lineTo(cellPositions[x+1][y].x + cagePadding, cellPositions[x+1][y].y + cagePadding); //Right cell's top left
+						}
+						if (!(y < 8 && props.game.board[x+1][y+1].cageIndex === cell.cageIndex && props.game.board[x][y+1].cageIndex === cell.cageIndex)){
+							ctx.moveTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + squareSize - cagePadding); //Bottom right
+							ctx.lineTo(cellPositions[x+1][y].x + cagePadding, cellPositions[x+1][y].y + squareSize - cagePadding); //Right cell's bottom left
+						}						
+						ctx.stroke();
+					}
+					//Bottom
+					if (y === 8 || props.game.board[x][y+1].cageIndex !== cell.cageIndex){
+						ctx.beginPath();
+						ctx.moveTo(cellPositions[x][y].x + squareSize - cagePadding - 2.5, cellPositions[x][y].y + squareSize - cagePadding); //Bottom right
+						ctx.lineTo(cellPositions[x][y].x + cagePadding, cellPositions[x][y].y + squareSize - cagePadding); //Bottom left
+						ctx.stroke();
+					} else {
+						//Bottom bridges
+						ctx.beginPath();
+						if (!(x > 0 && props.game.board[x-1][y].cageIndex === cell.cageIndex && props.game.board[x-1][y+1].cageIndex === cell.cageIndex)){
+							ctx.moveTo(cellPositions[x][y].x + cagePadding, cellPositions[x][y].y + squareSize - cagePadding); //Bottom left
+							ctx.lineTo(cellPositions[x][y+1].x + cagePadding, cellPositions[x][y+1].y + cagePadding); //Bottom cell's top left
+						}
+						if (!(x < 8 && props.game.board[x+1][y].cageIndex === cell.cageIndex && props.game.board[x+1][y+1].cageIndex === cell.cageIndex)){
+							ctx.moveTo(cellPositions[x][y].x + squareSize - cagePadding, cellPositions[x][y].y + squareSize - cagePadding); //Bottom right
+							ctx.lineTo(cellPositions[x][y+1].x + squareSize - cagePadding, cellPositions[x][y+1].y + cagePadding); //Bottom cell's top right
+						}
+						ctx.stroke();
+					}
+					//Left
+					if (x === 0 || props.game.board[x-1][y].cageIndex !== cell.cageIndex){
+						ctx.beginPath();
+						ctx.moveTo(cellPositions[x][y].x + cagePadding, cellPositions[x][y].y + squareSize - cagePadding - 2.5); //Bottom left
+						ctx.lineTo(cellPositions[x][y].x + cagePadding, cellPositions[x][y].y + cagePadding + vShift); //Top left
+						ctx.stroke();
+					}
+
+					//Cage sum
+					if (cell.cageValue > 0){
+						ctx.textAlign = 'left';
+						ctx.textBaseline = 'top';
+						ctx.font = '13px Arial';
+						ctx.fillStyle = ThemeHandler.theme.canvasKillerCageColor;
+						ctx.fillText(cell.cageValue, cellPositions[x][y].x + 2, cellPositions[x][y].y + 2);
+					}
 				}
 
 				if (cell.value > 0){
@@ -173,12 +242,12 @@ const Canvas = (props) => {
 					//Candidates
 					for (const n of cell.notes){
 						ctx.fillStyle = 
-						selectedCell.value === n || props.lockedInput === n ? ThemeHandler.theme.canvasNoteHighlightColor :
+						(props.lockedInput === 0 && selectedCell.value === n) || props.lockedInput === n ? ThemeHandler.theme.canvasNoteHighlightColor :
 						'#75747c';
 						
 						ctx.textAlign = "center";
 						ctx.textBaseline = "middle";
-						ctx.font = '16px Arial';
+						ctx.font = props.game.mode === 'classic' ? '16px Arial' : '12px Arial';
 						
 						ctx.fillText(n, cellPositions[x][y].x + noteDeltas[n-1].x, cellPositions[x][y].y + noteDeltas[n-1].y);
 					}
@@ -281,6 +350,21 @@ const Canvas = (props) => {
 				resolve();
 			});
 		});
+		//Candidate positions
+		noteDeltas = [];
+		for (let n = 0; n < 9; n++){
+			if (props.game.mode === 'classic'){
+				noteDeltas.push({
+					x: squareSize * ((n % 3 + 1) * 0.25),
+					y: squareSize * ((Math.floor(n / 3) + 1) * 0.3 - 0.08)
+				});
+			} else {
+				noteDeltas.push({
+					x: squareSize * ((n % 3 + 1.5) * 0.2),
+					y: squareSize * ((Math.floor(n / 3) + 2) * 0.22 - 0.08)
+				});
+			}
+		}
 		renderFrame();
 	});
 

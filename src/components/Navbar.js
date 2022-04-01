@@ -32,7 +32,7 @@ function Navbar(props){
 			</div>
 			{
 				props.currentSection === 'sudoku' ?
-				<NewGameButton id="navbar-new-game-button" absoluteMenu={true} ghost />
+				<NewGameButton id="navbar-new-game-button" absoluteMenu={true} ghost gameMode={props.gameMode} setGameMode={props.setGameMode} />
 				: null
 			}
 		</div>

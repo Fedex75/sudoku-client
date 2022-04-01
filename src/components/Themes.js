@@ -24,7 +24,7 @@ export const lightTheme = {
 	canvasSelectedCellBackground: '#bbdefb',
 	canvasSameValueCellBackground: '#c3d7ea',
 	canvasNoteHighlightColor: blue,
-	canvasAnimationBaseColor: '107, 118, 138',
+	canvasAnimationBaseColor: '0, 0, 0',
 	gameMenuListBackground: 'white',
 	gameMenuListBorder: 'none',
 	mobile__gameMenuListBorder: 'white',
@@ -41,6 +41,10 @@ export const lightTheme = {
 	cancelButtonBackround: 'white',
 	cancelButtonFontWeight: 'regular',
 	modalOverlayBackground: 'white',
+	modeSelectorBorderColor: darkGray,
+	modeSelectorColor: darkGray,
+	modeSelectorSelectedBorderColor: blue,
+	canvasKillerCageColor: darkGray,
 };
 
 export const darkTheme = {
@@ -81,4 +85,8 @@ export const darkTheme = {
 	cancelButtonBackround: '#25242c',
 	cancelButtonFontWeight: 'bold',
 	modalOverlayBackground: '#171719',
+	modeSelectorBorderColor: 'white',
+	modeSelectorColor: 'white',
+	modeSelectorSelectedBorderColor: blue,
+	canvasKillerCageColor: '#75747c',
 };
