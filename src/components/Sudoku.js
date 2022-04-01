@@ -193,6 +193,7 @@ const Sudoku = (props) => {
 	}
 
 	function handleKeyPress(e){
+		console.log(e.key);
 		if (e.key === 'Enter') {
 			invertNoteMode();
 		} else {
