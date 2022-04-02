@@ -7,6 +7,7 @@ export default class Board {
 		this.difficulty = data.difficulty;
 		this.mode = data.mode;
 		this.version = data.version;
+		this.fullNotation = false;
 
 		if (raw){
 			//Create game from raw
@@ -90,7 +91,12 @@ export default class Board {
 				if (state !== true){
 					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes = cell.notes.filter(note => note !== n);
-					if (SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default' && this.board[c.x][c.y].notes.length === 1) this.setValue(c, this.board[c.x][c.y].notes[0], false);
+					if (
+						(
+							SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default' ||
+							SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation
+						) &&
+						this.board[c.x][c.y].notes.length === 1) this.setValue(c, this.board[c.x][c.y].notes[0], false);
 					this.saveToLocalStorage();
 				}
 			} else {

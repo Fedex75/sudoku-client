@@ -193,17 +193,16 @@ const Sudoku = (props) => {
 	}
 
 	function handleKeyPress(e){
-		console.log(e.key);
 		if (e.key === 'Enter') {
 			invertNoteMode();
 		} else {
 			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))){
 				handleNumberInput(Number.parseInt(e.key));
-			}
-			else if (e.key === '0'){
+			} else if (e.key === '0'){
 				eraseSelectedCell();
-			}
-			else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
+			} else if (e.key === 'f'){
+				gameRef.current.fullNotation = !gameRef.current.fullNotation;
+			} else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				// eslint-disable-next-line
 				switch (e.key){
 					case 'ArrowDown':

@@ -395,10 +395,12 @@ const Canvas = (props) => {
 	}
 
 	function handleInputStart(coords, button){
-		lastMouseCell.current = coords;
-		mouseButton.current = button;
-		props.onClick(coords.x, coords.y, button);
-		setRender(r => r === 100 ? 0 : r+1);
+		if (coords){
+			lastMouseCell.current = coords;
+			mouseButton.current = button;
+			props.onClick(coords.x, coords.y, button);
+			setRender(r => r === 100 ? 0 : r+1);
+		}
 	}
 
 	function onMouseDown(e){

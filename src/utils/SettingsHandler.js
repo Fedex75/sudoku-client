@@ -50,6 +50,12 @@ class SettingsHandler {
 				translation: 'Solucionar celdas con color automáticamente si tienen solo un candidato',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'autoSolveCellsFullNotation',
+				translation: '[Experimental] Solucionar celdas automáticamente si la notación está completa',
+				type: 'boolean',
+				default: false
 			}
 		];
 
