@@ -263,22 +263,23 @@ const Canvas = (props) => {
 		}
 
 		if (props.showLinks && (props.lockedInput > 0 || selectedCell.value > 0)){
-			let links = props.game.calculateLinks(props.lockedInput > 0 ? props.lockedInput : selectedCell.value);
 			//Draw links
+			const target = props.lockedInput > 0 ? props.lockedInput : selectedCell.value;
+			let links = props.game.calculateLinks(target);
 			ctx.fillStyle = 'red';
 			ctx.strokeStyle = 'red';
 			ctx.setLineDash([]);
 			links.forEach(link => {
 				link.forEach(cell => {
 					ctx.beginPath();
-					ctx.arc(cellPositions[cell.x][cell.y].x + squareSize / 2, cellPositions[cell.x][cell.y].y + squareSize / 2, squareSize / 8, 0, 2 * Math.PI, false);
+					ctx.arc(cellPositions[cell.x][cell.y].x + noteDeltas[target - 1].x, cellPositions[cell.x][cell.y].y + noteDeltas[target - 1].y, squareSize / 8, 0, 2 * Math.PI, false);
 					ctx.fill();
 				});
 				if (link.length === 2){
 					ctx.beginPath();
-					ctx.moveTo(cellPositions[link[0].x][link[0].y].x + squareSize / 2, cellPositions[link[0].x][link[0].y].y + squareSize / 2);
+					ctx.moveTo(cellPositions[link[0].x][link[0].y].x + noteDeltas[target - 1].x, cellPositions[link[0].x][link[0].y].y + noteDeltas[target - 1].y);
 					ctx.lineWidth = 4;
-					ctx.lineTo(cellPositions[link[1].x][link[1].y].x + squareSize / 2, cellPositions[link[1].x][link[1].y].y + squareSize / 2);
+					ctx.lineTo(cellPositions[link[1].x][link[1].y].x + noteDeltas[target - 1].x, cellPositions[link[1].x][link[1].y].y + noteDeltas[target - 1].y);
 					ctx.stroke();
 				}
 			});
