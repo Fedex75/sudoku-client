@@ -220,6 +220,8 @@ const Sudoku = (props) => {
 				eraseSelectedCell();
 			} else if (e.key === 'f'){
 				gameRef.current.fullNotation = !gameRef.current.fullNotation;
+			} else if (e.key === 'c'){
+				navigator.clipboard.writeText(gameRef.current.getTextRepresentation());
 			} else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				// eslint-disable-next-line
 				switch (e.key){

@@ -312,4 +312,14 @@ export default class Board {
 		this.clearLocalStorage();
 		return true;
 	}
+
+	getTextRepresentation(){
+		let text = '';
+		for (let y = 0; y < 9; y++){
+			for (let x = 0; x < 9; x++) {
+				text += this.board[x][y].value;
+			}
+		}
+		return text;
+	}
 }
