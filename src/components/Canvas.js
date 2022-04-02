@@ -72,15 +72,15 @@ const Canvas = (props) => {
 		
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false);
 		let rotateEvent = o9n.orientation.addEventListener('change', resizeCanvas);
-		let touchStartEvent = canvasRef.current.addEventListener('touchstart', onTouchStart, {passive: false}); 
-		let touchMoveEvent = canvasRef.current.addEventListener('touchmove', onTouchMove, {passive: false});
+		let touchStartEvent = canvas.addEventListener('touchstart', onTouchStart, {passive: false}); 
+		let touchMoveEvent = canvas.addEventListener('touchmove', onTouchMove, {passive: false});
 
 		return () => {
 			eventBus.remove("doAnimation");
 			window.removeEventListener('resize', resizeEvent);
 			o9n.orientation.removeEventListener('change', rotateEvent);
-			if (canvasRef.current) canvasRef.current.removeEventListener('touchstart', touchStartEvent);
-			if (canvasRef.current) canvasRef.current.removeEventListener('touchmove', touchMoveEvent);
+			canvas.removeEventListener('touchstart', touchStartEvent);
+			canvas.removeEventListener('touchmove', touchMoveEvent);
 		}
 	}, []);
 

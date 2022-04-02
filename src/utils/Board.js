@@ -98,8 +98,8 @@ export default class Board {
 					this.board[c.x][c.y].notes = cell.notes.filter(note => note !== n);
 					if (
 						(
-							SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default' ||
-							SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation
+							(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
+							(SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation)
 						) &&
 						this.board[c.x][c.y].notes.length === 1
 					) this.setValue(c, this.board[c.x][c.y].notes[0], false);

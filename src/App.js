@@ -13,6 +13,8 @@ import { GlobalStyles } from "./components/GlobalStyles";
 import ThemeHandler from './utils/ThemeHandler';
 import ThemeSwitch from './components/ThemeSwitch';
 import o9n from 'o9n';
+import ReactLoading from 'react-loading';
+import Auth from './utils/Auth';
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -55,14 +57,14 @@ function App() {
   }
 
 	useEffect(() => {
-		/*Auth.checkSession().then(authenticated => {
+		Auth.checkSession().then(authenticated => {
 			if (authenticated){
 				setLoading(false);
 			} else {
 				//window.location.replace(Auth.authRedirect + '&continue=' + encodeURIComponent('https://sudoku.zaifo.com.ar/overview'))
         setLoading(false);
 			}
-		});*/
+		});
 
 		o9n.orientation.lock('portrait').then(a => {}).catch(e => {});
 
@@ -76,7 +78,11 @@ function App() {
 	}, []);
 
 	if (loading){
-		return <></>  //TODO: add reactloading
+		return (
+			<div className='sudoku__loading-screen'>
+				<ReactLoading type='spin' color='#4b7bec' height={50} width={50} />
+			</div>
+		);
 	}
   
   return (
