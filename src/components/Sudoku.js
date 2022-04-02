@@ -28,7 +28,7 @@ const Sudoku = (props) => {
 	const completedNumbersRef = useRef([]);
 	const lockedInputRef = useRef(0);
 
-	const BOARD_API_VERSION = 3; //MUST BE EQUAL TO SERVER'S VERSION
+	const BOARD_API_VERSION = 4; //MUST BE EQUAL TO SERVER'S VERSION
 
 	const colors = {
 		default: props.theme.canvasLightDefaultCellColor,
@@ -79,6 +79,7 @@ const Sudoku = (props) => {
 			default:
 				break;
 		}
+		checkAnimation();
 	}
 
 	function handleRemoveNote(coords){
@@ -89,6 +90,78 @@ const Sudoku = (props) => {
 		){
 			gameRef.current.setNote(coords, lockedInputRef.current);
 		}
+		checkAnimation();
+	}
+
+	function checkAnimation(){
+		let animation = [];
+		if (gameRef.current.checkComplete()){
+			if (animationCallback) animationCallback([
+				{
+					type: 'board',
+					center: gameRef.current.selectedCell
+				}
+			]);
+			setTimeout(() => {setWin(true);}, 1350);
+		} else {
+			for (let i = 0; i < 9; i++){
+				let flagRow = true;
+				let flagCol = true;
+				for (let j = 0; j < 9; j++){
+					if (gameRef.current.get({x: j, y: i}).value === 0){
+						flagRow = false;
+					}
+					if (gameRef.current.get({x: i, y: j}).value === 0){
+						flagCol = false;
+					}
+				}
+				if (flagRow && !gameRef.current.animationCache.rows[i]){
+					gameRef.current.animationCache.rows[i] = true;
+					animation.push({
+						type: 'row',
+						center: {
+							x: gameRef.current.selectedCell.x,
+							y: i
+						}
+					});
+				}
+				if (flagCol && !gameRef.current.animationCache.cols[i]){
+					gameRef.current.animationCache.cols[i] = true;
+					animation.push({
+						type: 'col',
+						center: {
+							x: i,
+							y: gameRef.current.selectedCell.y
+						}
+					});
+				}	
+			}
+			for (let qx = 0; qx < 3; qx++){
+				for (let qy = 0; qy < 3; qy++){
+					if (!gameRef.current.animationCache.quadrants[qy*3+qx]){
+						let flagQuadrant = true;
+						for (let x = 0; x < 3; x++){
+							for (let y = 0; y < 3; y++){
+								if (gameRef.current.get({x: qx * 3 + x, y: qy * 3 + y}).value === 0){
+									flagQuadrant = false;
+									break;
+								}
+							}
+						}
+						if (flagQuadrant){
+							gameRef.current.animationCache.quadrants[qy*3+qx] = true;
+							animation.push({
+								type: 'quadrant',
+								quadrantX: qx,
+								quadrantY: qy
+							});
+						}
+					}
+				}
+			}
+			if (animation.length > 0 && animationCallback) animationCallback(animation);
+		}
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function handleNumberInput(number){
@@ -99,69 +172,14 @@ const Sudoku = (props) => {
 				else {
 					gameRef.current.setValue(gameRef.current.selectedCell, number);
 					if (SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = number;
-					let animation = [];
-					if (gameRef.current.checkComplete()){
-						if (animationCallback) animationCallback([
-							{
-								type: 'board',
-								center: gameRef.current.selectedCell
-							}
-						]);
-						setTimeout(() => {setWin(true);}, 1350);
-					} else {
-						let flagRow = true;
-						let flagCol = true;
-						for (let i = 0; i < 9; i++){
-							if (gameRef.current.get({x: i, y: gameRef.current.selectedCell.y}).value === 0){
-								flagRow = false;
-							}
-							if (gameRef.current.get({x: gameRef.current.selectedCell.x, y: i}).value === 0){
-								flagCol = false;
-							}
-						}
-						if (flagRow){
-							animation.push({
-								type: 'row',
-								center: gameRef.current.selectedCell
-							});
-						}
-						if (flagCol){
-							animation.push({
-								type: 'col',
-								center: gameRef.current.selectedCell
-							});
-						}
-	
-						flagRow = true; //Recicle flagRow as flagQuadrant
-						let quadrantX = Math.floor(gameRef.current.selectedCell.x / 3);
-						let quadrantY = Math.floor(gameRef.current.selectedCell.y / 3);
-						for (let x = 0; x < 3; x++){
-							for (let y = 0; y < 3; y++){
-								if (gameRef.current.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y}).value === 0){
-									flagRow = false;
-									break;
-								}
-							}
-						}
-						if (flagRow){
-							animation.push({
-								type: 'quadrant',
-								quadrantX: quadrantX,
-								quadrantY: quadrantY
-							});
-						}
-						if (animation.length > 0 && animationCallback) animationCallback(animation);
-					}
 				}
 				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
 				setPossibleValues();
-				if (gameRef.current.checkComplete()){
-					setWin(true);
-				}
 			}
 		}
+		checkAnimation();
 		setRender(r => r === 100 ? 0 : r+1);
 	}
 

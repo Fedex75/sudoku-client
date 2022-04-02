@@ -8,6 +8,12 @@ export default class Board {
 		this.mode = data.mode;
 		this.version = data.version;
 		this.fullNotation = false;
+		this.cages = data.cages || null;
+		this.animationCache = {
+			rows: Array(9).fill(false),
+			cols: Array(9).fill(false),
+			quadrants: Array(9).fill(false)
+		};
 
 		if (raw){
 			//Create game from raw
@@ -47,7 +53,6 @@ export default class Board {
 				}
 			}
 		} else {
-			this.cages = data.cages;
 			this.board = data.board;
 			this.selectedCell = data.selectedCell;
 			this.history = data.history;
@@ -96,7 +101,8 @@ export default class Board {
 							SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default' ||
 							SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation
 						) &&
-						this.board[c.x][c.y].notes.length === 1) this.setValue(c, this.board[c.x][c.y].notes[0], false);
+						this.board[c.x][c.y].notes.length === 1
+					) this.setValue(c, this.board[c.x][c.y].notes[0], false);
 					this.saveToLocalStorage();
 				}
 			} else {
@@ -120,8 +126,27 @@ export default class Board {
 		this.clearCandidatesFromVisibleCells(c, s);
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default';
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
-			const cageIndex = this.get(c).cageIndex;
-			for (let x = 0; x < 9; x++) for (let y = 0; y < 9; y++) if (this.get({x: x, y: y}).cageIndex === cageIndex) this.setNote({x: x, y: y}, s, false, false);
+			let remaining = this.cages[this.get(c).cageIndex].length;
+			let sum = 0;
+			let realSum;
+			this.cages[this.get(c).cageIndex].forEach(cellIndex => {
+				let x = cellIndex % 9;
+				let y = (cellIndex - x) / 9;
+				const cell = this.get({x: x, y: y});
+				this.setNote({x: x, y: y}, s, false, false);
+				if (cell.value > 0) remaining--;
+				sum += cell.value;
+				if (cell.cageValue > 0) realSum = cell.cageValue;
+			});
+			if (remaining === 1){
+				this.cages[this.get(c).cageIndex].forEach(cellIndex => {
+					let x = cellIndex % 9;
+					let y = (cellIndex - x) / 9;
+					if (this.get({x: x, y: y}).value === 0){
+						this.setValue({x: x, y: y}, realSum - sum, false);
+					}
+				});
+			}
 		}
 		this.saveToLocalStorage();
 	}
