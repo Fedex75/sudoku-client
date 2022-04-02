@@ -220,12 +220,21 @@ export default class Board {
 		if (number === 0) for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true;
 
 		if (SettingsHandler.settings.advancedHighlight){
+			let highlightCages = [];
+			if (this.mode === 'killer'){
+				for (let x = 0; x < 9; x++){
+					for (let y = 0; y < 9; y++) {
+						const cell = this.get({x: x, y: y});
+						if (cell.value > 0 && cell.value === targetValue) highlightCages.push(cell.cageIndex);
+					}
+				}	
+			}
 			for (let x = 0; x < 9; x++){
 				for (let y = 0; y < 9; y++) {
 					const cell = this.get({x: x, y: y});
 					if (targetValue > 0 && cell.value > 0) highlightedCells[x][y] = true;
 					if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
-					if (this.mode === 'killer' && cell.cageIndex === selectedCell.cageIndex) highlightedCells[x][y] = true;
+					if (this.mode === 'killer' && highlightCages.includes(cell.cageIndex)) highlightedCells[x][y] = true;
 				}
 			}
 		} else {
