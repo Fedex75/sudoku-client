@@ -313,7 +313,7 @@ export default class Board {
 	saveToLocalStorage(){
 		const boardText = JSON.stringify(this);
 		localStorage.setItem('game', boardText);
-		if (Auth.isAuthenticated){
+		if (Auth.isAuthenticated()){
 			API.saveGame(boardText).then(() => {}).catch((e) => {});
 		}
 	}

@@ -26,7 +26,7 @@ export const GlobalStyles = createGlobalStyle`
   .edit-buttons__button {
     color: ${({ theme }) => theme.editButtonColor};
     background-color: ${({ theme }) => theme.editButtonBackground};
-  }sudoku__loading-screen
+  }
 
   .numpad__button.number {
     background-color: ${({ theme }) => theme.numpadButtonBackground};
