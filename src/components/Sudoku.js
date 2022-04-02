@@ -9,6 +9,7 @@ import eventBus from "./EventBus";
 import SettingsHandler from '../utils/SettingsHandler';
 import NunmpadButton from './NumpadButton';
 import ReactLoading from 'react-loading';
+import Auth from '../utils/Auth';
 
 let animationCallback = null;
 
@@ -324,15 +325,19 @@ const Sudoku = (props) => {
 	}
 
 	useEffect(() => {
-		let ls = localStorage.getItem('game');
-		if (ls){
-			ls = JSON.parse(ls);
-			if (ls?.version && ls.version === BOARD_API_VERSION){
-				props.setGameMode(ls.mode)
-				newGame(ls, null, null, null);
-			}
-			else newGame(null, null, null, 'classic');
+		let data;
+		if (Auth.isAuthenticated() && Auth.user.savedGame){
+			data = JSON.parse(Auth.user.savedGame);
+		} else {
+			const ls = localStorage.getItem('game');	
+			data = ls ? JSON.parse(ls) : null;
+		}
+		
+		if (data?.version && data.version === BOARD_API_VERSION){
+				props.setGameMode(data.mode)
+				newGame(data, null, null, null);
 		} else newGame(null, null, null, 'classic');
+
 		let keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
       handleNewGame(data.difficulty, data.mode);

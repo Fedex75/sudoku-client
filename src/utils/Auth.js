@@ -17,6 +17,7 @@ class Auth {
 					resolve(this.authenticated);
 				}, {withCredentials: true});
 			} catch (e){
+				this.authenticated = false;
 				reject();
 			}
 		});

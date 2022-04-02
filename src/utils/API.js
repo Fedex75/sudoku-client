@@ -12,6 +12,14 @@ class API {
 			});
 		});
 	}
+
+	saveGame(board){
+		return new Promise((resolve, reject) => {
+			axios.post(`${this.host}/api/user/savegame`, {board: board}, {withCredentials: true}).then(res => {
+				resolve(res.data);
+			});
+		});
+	}
 }
 
 export default new API();

@@ -4,6 +4,12 @@ export const GlobalStyles = createGlobalStyle`
     background-color: ${({ theme }) => theme.background};
   }
 
+  .main-loading-screen {
+    display: grid;
+    place-items: center;
+    background-color: ${({ theme }) => theme.background};
+  }
+
   .navbar {
     color: ${({ theme }) => theme.navbarFontColor};
   }
@@ -20,7 +26,7 @@ export const GlobalStyles = createGlobalStyle`
   .edit-buttons__button {
     color: ${({ theme }) => theme.editButtonColor};
     background-color: ${({ theme }) => theme.editButtonBackground};
-  }
+  }sudoku__loading-screen
 
   .numpad__button.number {
     background-color: ${({ theme }) => theme.numpadButtonBackground};
@@ -31,10 +37,7 @@ export const GlobalStyles = createGlobalStyle`
     border-color: ${({ theme }) => theme.disabledButtonBorderColor};
   }
 
-  .numpad__button.locked {
-    border-color: ${({ theme }) => theme.lockedButtonBorderColor};
-    background-color: ${({ theme }) => theme.lockedButtonBackgroundColor};
-  }
+  .numpad__button.loplace-items: center;
 
   .sudoku__win-screen__title {
     color: ${({ theme }) => theme.navbarFontColor};

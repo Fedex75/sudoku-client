@@ -1,3 +1,5 @@
+import API from "./API";
+import Auth from "./Auth";
 import SettingsHandler from "./SettingsHandler";
 
 export default class Board {
@@ -9,7 +11,7 @@ export default class Board {
 		this.version = data.version;
 		this.fullNotation = false;
 		this.cages = data.cages || null;
-		this.animationCache = {
+		this.animationCache = data.animationCache || {
 			rows: Array(9).fill(false),
 			cols: Array(9).fill(false),
 			quadrants: Array(9).fill(false)
@@ -309,7 +311,11 @@ export default class Board {
 	}
 
 	saveToLocalStorage(){
-		localStorage.setItem('game', JSON.stringify(this));
+		const boardText = JSON.stringify(this);
+		localStorage.setItem('game', boardText);
+		if (Auth.isAuthenticated){
+			API.saveGame(boardText).then(() => {}).catch((e) => {});
+		}
 	}
 
 	clearLocalStorage(){

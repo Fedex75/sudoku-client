@@ -4,7 +4,7 @@ import Auth from '../utils/Auth';
 function UserButton(props){
 	if (Auth.isAuthenticated()){
 		return (
-			<div className="navbar__user-wrapper__login-button">Log Out</div>
+			<div className="navbar__user-wrapper__login-button">Salir</div>
 		);
 	} else {
 		return (

@@ -17,7 +17,7 @@ import ReactLoading from 'react-loading';
 import Auth from './utils/Auth';
 
 function App() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [theme, setTheme] = useState(ThemeHandler.themeName);
 	const [gameMode, setGameMode] = useState('classic');
@@ -64,6 +64,8 @@ function App() {
 				//window.location.replace(Auth.authRedirect + '&continue=' + encodeURIComponent('https://sudoku.zaifo.com.ar/overview'))
         setLoading(false);
 			}
+		}).catch(() => {
+			setLoading(false);
 		});
 
 		o9n.orientation.lock('portrait').then(a => {}).catch(e => {});
@@ -76,42 +78,39 @@ function App() {
 			eventBus.remove("openModal");
 		};
 	}, []);
-
-	if (loading){
-		return (
-			<div className='sudoku__loading-screen'>
-				<ReactLoading type='spin' color='#4b7bec' height={50} width={50} />
-			</div>
-		);
-	}
   
   return (
 		<ThemeProvider theme={ThemeHandler.theme}>
-			<>
-				<GlobalStyles />
-				<BrowserRouter>
-					<Route exact path="/">
-						<Sudoku themeName={theme} toggleTheme={themeToggler} theme={ThemeHandler.theme} gameMode={gameMode} setGameMode={setGameMode} />
-					</Route>
-					<Route exact path="/settings">
-						<Settings themeName={theme} toggleTheme={themeToggler}/>
-					</Route>
-					<Modal
-						isOpen={isModalOpen}
-						onRequestClose={closeModal}
-						style={customStyles}
-						contentLabel="Example Modal"
-					>
-						<div style={{padding: 10, position: 'absolute', top: 0, left: 0}} onClick={closeModal}>
-							<i className='fas fa-times' style={{fontSize: '30px', color: ThemeHandler.theme.navbarFontColor}}></i>
-						</div>
-						<Link to="/"><div onClick={closeModal} style={{color: ThemeHandler.theme.navbarFontColor, fontSize: '20px'}}>Sudoku</div></Link>
-						<Link to="/settings"><div onClick={closeModal} style={{color: ThemeHandler.theme.navbarFontColor, fontSize: '20px'}}>Opciones</div></Link>
-						<ThemeSwitch themeName={theme} toggleTheme={themeToggler} />
-						<UserButton />
-					</Modal>
-				</BrowserRouter>
-			</>
+			<GlobalStyles />
+			{
+				loading ?
+					<div className='main-loading-screen'>
+						<ReactLoading type='spin' color='#4b7bec' height={50} width={50} />
+					</div> 
+				:
+					<BrowserRouter>
+						<Route exact path="/">
+							<Sudoku themeName={theme} toggleTheme={themeToggler} theme={ThemeHandler.theme} gameMode={gameMode} setGameMode={setGameMode} />
+						</Route>
+						<Route exact path="/settings">
+							<Settings themeName={theme} toggleTheme={themeToggler}/>
+						</Route>
+						<Modal
+							isOpen={isModalOpen}
+							onRequestClose={closeModal}
+							style={customStyles}
+							contentLabel="Example Modal"
+						>
+							<div style={{padding: 10, position: 'absolute', top: 0, left: 0}} onClick={closeModal}>
+								<i className='fas fa-times' style={{fontSize: '30px', color: ThemeHandler.theme.navbarFontColor}}></i>
+							</div>
+							<Link to="/"><div onClick={closeModal} style={{color: ThemeHandler.theme.navbarFontColor, fontSize: '20px'}}>Sudoku</div></Link>
+							<Link to="/settings"><div onClick={closeModal} style={{color: ThemeHandler.theme.navbarFontColor, fontSize: '20px'}}>Opciones</div></Link>
+							<ThemeSwitch themeName={theme} toggleTheme={themeToggler} />
+							<UserButton />
+						</Modal>
+					</BrowserRouter>
+			}
 		</ThemeProvider>
   );
 }
