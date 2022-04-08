@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ThemeHandler from '../utils/ThemeHandler';
 import SettingsHandler from '../utils/SettingsHandler';
-import eventBus from "./EventBus";
 import o9n from 'o9n';
 
 
@@ -43,9 +42,7 @@ const Canvas = (props) => {
 
 	useEffect(() => {
 		resizeCanvas();
-
-		const canvas = canvasRef.current;
-		squareSize = (canvas.width - 14) / 9;
+		squareSize = (canvasRef.current.width - 14) / 9;
 
 		for (let i = 0; i < 9; i++){
 			cellPositions.push([]);
@@ -69,14 +66,14 @@ const Canvas = (props) => {
 			posY += squareSize + 1;
 			if ((y + 1) % 3 === 0) posY += borderWidth - 1;
 		}
-		
+
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false);
 		let rotateEvent = o9n.orientation.addEventListener('change', resizeCanvas);
+		const canvas = canvasRef.current;
 		let touchStartEvent = canvas.addEventListener('touchstart', onTouchStart, {passive: false}); 
 		let touchMoveEvent = canvas.addEventListener('touchmove', onTouchMove, {passive: false});
 
 		return () => {
-			eventBus.remove("doAnimation");
 			window.removeEventListener('resize', resizeEvent);
 			o9n.orientation.removeEventListener('change', rotateEvent);
 			canvas.removeEventListener('touchstart', touchStartEvent);
@@ -84,8 +81,9 @@ const Canvas = (props) => {
 		}
 	}, []);
 
-	function renderFrame(){
+	function renderFrame(overrideInputLock = null){
 		if (canvasRef.current === null) return;
+		const lockedInput = overrideInputLock || props.lockedInput;
 		const colors = {
 			default: ThemeHandler.theme.canvasLightDefaultCellColor,
 			red: '#fc5c65',
@@ -113,11 +111,11 @@ const Canvas = (props) => {
 		const ctx = canvas.getContext('2d');
 		let selectedCell = props.game.getSelectedCell();
 		let highlitedCells = [];
-		highlitedCells = props.game.calculateHighlightedCells(props.game.selectedCell, props.lockedInput);
+		highlitedCells = props.game.calculateHighlightedCells(props.game.selectedCell, overrideInputLock || lockedInput);
 
 		//Background
 		ctx.fillStyle = ThemeHandler.theme.canvasCellBorderColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 		//Borders
 		ctx.fillStyle = ThemeHandler.theme.canvasQuadrantBorderColor;
@@ -133,7 +131,7 @@ const Canvas = (props) => {
 			for (let y = 0; y < 9; y++) {
 				const cell = props.game.get({x: x, y: y});
 				const isSelectedCell = props.game.selectedCell.x === x && props.game.selectedCell.y === y;
-				const hasSameValueAsSelected = ((props.lockedInput > 0 && props.lockedInput === cell.value) || (props.lockedInput === 0 && selectedCell.value > 0 && selectedCell.value === cell.value));
+				const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCell.value > 0 && selectedCell.value === cell.value));
 				const hasColor = cell.color !== 'default';
 				//Cell background
 				ctx.setLineDash([]);
@@ -249,7 +247,7 @@ const Canvas = (props) => {
 					//Candidates
 					for (const n of cell.notes){
 						ctx.fillStyle = 
-						(props.lockedInput === 0 && selectedCell.value === n) || props.lockedInput === n ? ThemeHandler.theme.canvasNoteHighlightColor :
+						(lockedInput === 0 && selectedCell.value === n) || lockedInput === n ? ThemeHandler.theme.canvasNoteHighlightColor :
 						'#75747c';
 						
 						ctx.textAlign = "center";
@@ -262,9 +260,9 @@ const Canvas = (props) => {
 			}
 		}
 
-		if (props.showLinks && (props.lockedInput > 0 || selectedCell.value > 0)){
+		if (props.showLinks && (lockedInput > 0 || selectedCell.value > 0)){
 			//Draw links
-			const target = props.lockedInput > 0 ? props.lockedInput : selectedCell.value;
+			const target = lockedInput > 0 ? lockedInput : selectedCell.value;
 			let links = props.game.calculateLinks(target);
 			ctx.fillStyle = 'red';
 			ctx.strokeStyle = 'red';
@@ -286,7 +284,7 @@ const Canvas = (props) => {
 		}
 	}
 
-	function doAnimation(timestamp){
+	function doAnimation(timestamp, overrideInputLock){
 		//Init colors
 		animationColors = [];
 		for (let x = 0; x < 9; x++){
@@ -335,18 +333,18 @@ const Canvas = (props) => {
 			}
 		}
 
-		renderFrame();
+		renderFrame(overrideInputLock);
 
 		if (currentAnimations.length > 0){
-			requestAnimationFrame(doAnimation);				
+			requestAnimationFrame((ts) => {doAnimation(ts, overrideInputLock)});
 		} else {
 			animationColors = null;
-			renderFrame();
+			renderFrame(overrideInputLock);
 		}
 	}
 
 	useEffect(() => {
-		props.setAnimationCallback((data) => {
+		props.setAnimationCallback((data, overrideInputLock) => {
 			return new Promise((resolve, reject) => {
 				data.forEach(animation => {
 					currentAnimations.push({
@@ -354,7 +352,7 @@ const Canvas = (props) => {
 						startTime: -1
 					});
 				});
-				requestAnimationFrame(doAnimation);
+				requestAnimationFrame((timestamp) => {doAnimation(timestamp, overrideInputLock)});
 				resolve();
 			});
 		});
@@ -373,6 +371,7 @@ const Canvas = (props) => {
 				});
 			}
 		}
+		
 		renderFrame();
 	});
 

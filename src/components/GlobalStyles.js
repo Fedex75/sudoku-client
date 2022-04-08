@@ -37,6 +37,11 @@ export const GlobalStyles = createGlobalStyle`
     border-color: ${({ theme }) => theme.disabledButtonBorderColor};
   }
 
+  .numpad__button.locked {
+    background-color: ${({ theme }) => theme.lockedButtonBackgroundColor};
+    border-color: ${({ theme }) => theme.lockedButtonBorderColor};
+  }
+
   .numpad__button.loplace-items: center;
 
   .sudoku__win-screen__title {

@@ -372,7 +372,7 @@ a {
 			"extra numpad" !important;
 		gap: 10px;
 		width: 100%;
-		height: calc(100%-20px);
+		height: calc(100% - 20px);
 	}
 
 	#large-new-game-button {
