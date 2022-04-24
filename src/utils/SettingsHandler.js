@@ -4,6 +4,12 @@ class SettingsHandler {
 	constructor(){
 		this.template = [
 			{
+				name: 'autoTheme',
+				translation: 'Aspecto automático',
+				type: 'boolean',
+				default: 'true'
+			},
+			{
 				name: 'checkMistakes',
 				translation: 'Mostrar errores',
 				type: 'boolean',

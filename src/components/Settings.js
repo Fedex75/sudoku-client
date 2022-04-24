@@ -4,8 +4,7 @@ import Section from './Section';
 import SettingsHandler from '../utils/SettingsHandler';
 
 function Settings(props){
-	// eslint-disable-next-line
-	const [render, setRender] = useState(0);
+	const [, setRender] = useState(0);
 
 	function handleChange(name, value){
 		SettingsHandler.setSetting(name, value);
@@ -25,10 +24,6 @@ function Settings(props){
 							}
 						</div>
 					))}
-					{/*<div className="settings__item">
-						<div className="settings__item__title">Selección avanzada</div>
-						<ReactSwitch className="react-switch" onChange={checked => {handleChange('advancedSelection', checked)}} checked={SettingsHandler.settings.advancedSelection} />
-					</div>*/}
 				</div>
 			</div>
 		</Section>

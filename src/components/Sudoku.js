@@ -10,12 +10,12 @@ import SettingsHandler from '../utils/SettingsHandler';
 import NunmpadButton from './NumpadButton';
 import ReactLoading from 'react-loading';
 import Auth from '../utils/Auth';
+import ThemeHandler from '../utils/ThemeHandler';
 
 let animationCallback = null;
 
 const Sudoku = (props) => {
-	// eslint-disable-next-line
-	const [render, setRender] = useState(0);
+	const [, setRender] = useState(0);
 	const [hintState, setHintState] = useState(0);
 	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
@@ -224,7 +224,6 @@ const Sudoku = (props) => {
 			} else if (e.key === 'c'){
 				navigator.clipboard.writeText(gameRef.current.getTextRepresentation());
 			} else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
-				// eslint-disable-next-line
 				switch (e.key){
 					case 'ArrowDown':
 						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.y < 8) onClick(gameRef.current.selectedCell.x, gameRef.current.selectedCell.y + 1);
@@ -237,6 +236,8 @@ const Sudoku = (props) => {
 						break;
 					case 'ArrowRight':
 						if (gameRef.current.selectedCell !== null && gameRef.current.selectedCell.x < 8) onClick(gameRef.current.selectedCell.x + 1, gameRef.current.selectedCell.y);
+						break;
+					default:
 						break;
 				}
 				setPossibleValues();
@@ -334,13 +335,13 @@ const Sudoku = (props) => {
 		}
 		
 		if (data?.version && data.version === BOARD_API_VERSION){
-				props.setGameMode(data.mode)
-				newGame(data, null, null, null);
+			props.setGameMode(data.mode)
+			newGame(data, null, null, null);
 		} else newGame(null, null, null, 'classic');
 
 		let keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
-      handleNewGame(data.difficulty, data.mode);
+      		handleNewGame(data.difficulty, data.mode);
 		});
 		
 		return () => {

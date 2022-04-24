@@ -1,15 +1,22 @@
 import { lightTheme, darkTheme } from "../components/Themes"
+import SettingsHandler from "./SettingsHandler";
 
 class ThemeHandler {
 	constructor(){
-		this.themeName = 'dark'; //Default
-		let themeData = localStorage.getItem('theme');
-		if (themeData){
-			themeData = JSON.parse(themeData);
-			if (themeData?.name) this.setTheme(themeData.name);
-			else this.setTheme('dark');
+		this.themeName = 'light' //Default
+		if (SettingsHandler.settings.autoTheme) this.updateAutoTheme()
+		else {
+			let themeData = localStorage.getItem('theme');
+			if (themeData){
+				themeData = JSON.parse(themeData);
+				if (themeData?.name) this.themeName = themeData.name;
+			}
 		}
-		else this.setTheme('dark');
+		this.setTheme(this.themeName)
+	}
+
+	updateAutoTheme(){
+		if (SettingsHandler.settings.autoTheme) this.setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 	}
 
 	setTheme(newThemeName){

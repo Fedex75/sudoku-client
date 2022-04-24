@@ -17,7 +17,7 @@ import ReactLoading from 'react-loading';
 import Auth from './utils/Auth';
 
 function App() {
-  const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [theme, setTheme] = useState(ThemeHandler.themeName);
 	const [gameMode, setGameMode] = useState('classic');
@@ -57,12 +57,27 @@ function App() {
   }
 
 	useEffect(() => {
+		document.body.addEventListener('scroll', (e) => {
+			e.preventDefault()
+			window.scrollTo(0, 0)
+		}, {passive: false})
+
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible'){
+				ThemeHandler.updateAutoTheme()
+			}
+		})
+
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+			ThemeHandler.setTheme(event.matches ? 'dark' : 'light')
+		});
+
 		Auth.checkSession().then(authenticated => {
 			if (authenticated){
 				setLoading(false);
 			} else {
 				//window.location.replace(Auth.authRedirect + '&continue=' + encodeURIComponent('https://sudoku.zaifo.com.ar/overview'))
-        setLoading(false);
+        		setLoading(false);
 			}
 		}).catch(() => {
 			setLoading(false);
@@ -71,7 +86,7 @@ function App() {
 		o9n.orientation.lock('portrait').then(a => {}).catch(e => {});
 
 		eventBus.on("openModal", () => {
-      setIsModalOpen(true);
+      		setIsModalOpen(true);
 		});
 
 		return () => {
