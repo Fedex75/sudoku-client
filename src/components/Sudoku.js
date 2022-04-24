@@ -14,12 +14,12 @@ import ThemeHandler from '../utils/ThemeHandler';
 
 let animationCallback = null;
 
-const Sudoku = (props) => {
-	const [, setRender] = useState(0);
+const Sudoku = ({themeName, theme, toggleTheme, gameMode, setGameMode}) => {
+	// eslint-disable-next-line
+	const [render, setRender] = useState(0);
 	const [hintState, setHintState] = useState(0);
 	const [eraseInkState, setEraseInkState] = useState(0);
 	const [showLinks, setShowLinks] = useState(false);
-	const [brush, setBrush] = useState(false);
 	const [win, setWin] = useState(false);
 	const [loading, setLoading] = useState(false);
 
@@ -28,11 +28,12 @@ const Sudoku = (props) => {
 	const possibleValuesRef = useRef([]);
 	const completedNumbersRef = useRef([]);
 	const lockedInputRef = useRef(0);
+	const brushRef = useRef(false);
 
 	const BOARD_API_VERSION = 4; //MUST BE EQUAL TO SERVER'S VERSION
 
 	const colors = {
-		default: props.theme.canvasLightDefaultCellColor,
+		default: theme.canvasLightDefaultCellColor,
 		red: '#fc5c65',
 		orange: '#fd9644',
 		yellow: '#fed330',
@@ -48,7 +49,7 @@ const Sudoku = (props) => {
 			case 0:
 				if (noteModeRef && hold){
 					handleRemoveNote({x: x, y: y});
-				} else {	
+				} else {
 					if (gameRef.current.selectedCell.x !== x || gameRef.current.selectedCell.y !== y){
 						//Click on unselected cell
 						gameRef.current.setSelectedCell({x: x, y: y});
@@ -58,40 +59,48 @@ const Sudoku = (props) => {
 							if (SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = value;
 							setRender(r => r === 100 ? 0 : r+1);
 						} else {
-							if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+							if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
 							else setRender(r => r === 100 ? 0 : r+1);
 						}
 					} else {
 						//Click on selected cell
 						let value = gameRef.current.getSelectedCell().value;
 						if (value > 0 && SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = lockedInputRef.current === 0 ? value : 0;
-						if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
+						if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current);
 						else setRender(r => r === 100 ? 0 : r+1);
 					}
 				}
 				break;
 			case 1:
-				gameRef.current.setColor({x: x, y: y}, gameRef.current.get({x: x, y: y}).color === 'default' ? 'darkBlue' : 'default');
-				setRender(r => r === 100 ? 0 : r+1);
+				handleSetColor({x: x, y: y}, 'darkBlue');
 				break;
 			case 2:
-				handleRemoveNote({x: x, y: y});
+				const value = gameRef.current.get({x: x, y: y}).value;
+				if (value === 0){
+					handleRemoveNote({x: x, y: y});
+				} else if (!hold){
+					gameRef.current.setSelectedCell({x: x, y: y});
+					if (value > 0 && SettingsHandler.settings.autoChangeInputLock){
+						lockedInputRef.current = lockedInputRef.current === value ? 0 : value;
+						setRender(r => r === 100 ? 0 : r+1);
+					}
+				}
 				break;
 			default:
 				break;
 		}
-		checkAnimation();
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function handleRemoveNote(coords){
 		if (
 			lockedInputRef.current > 0 &&
-			!brush &&
+			!brushRef.current &&
 			gameRef.current.getPossibleValues(coords).includes(lockedInputRef.current)
 		){
 			gameRef.current.setNote(coords, lockedInputRef.current);
 		}
-		checkAnimation();
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
 	function checkAnimation(){
@@ -160,9 +169,9 @@ const Sudoku = (props) => {
 					}
 				}
 			}
-			if (animation.length > 0 && animationCallback) animationCallback(animation);
+			if (animation.length > 0 && animationCallback) animationCallback(animation, lockedInputRef.current);
 		}
-		setRender(r => r === 100 ? 0 : r+1);
+		gameRef.current.saveToLocalStorage();
 	}
 
 	function handleNumberInput(number){
@@ -174,13 +183,11 @@ const Sudoku = (props) => {
 					gameRef.current.setValue(gameRef.current.selectedCell, number);
 					if (SettingsHandler.settings.autoChangeInputLock && gameRef.current.mode === 'classic') lockedInputRef.current = number;
 				}
-				setPossibleValues();
 			} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
 				gameRef.current.setValue(gameRef.current.selectedCell, number);
-				setPossibleValues();
 			}
 		}
-		checkAnimation();
+		setPossibleValues();
 		setRender(r => r === 100 ? 0 : r+1);
 	}
 
@@ -280,12 +287,16 @@ const Sudoku = (props) => {
 	}
 
 	function handleBrushClick(){
-		setBrush(b => !b);
+		brushRef.current = !brushRef.current;
+		setRender(r => r === 100 ? 0 : r+1);
 	}
 
-	function handleColorButtonClick(color){
-		gameRef.current.setColor(gameRef.current.selectedCell, gameRef.current.getSelectedCell().color !== color ? color : 'default');
-		setRender(r => r === 100 ? 0 : r+1);
+	function handleSetColor(coords, color){
+		const selectedCell = gameRef.current.get(coords);
+		if (selectedCell.value === 0){
+			gameRef.current.setColor(coords, selectedCell.color !== color ? color : 'default');
+			setRender(r => r === 100 ? 0 : r+1);
+		}
 	}
 
 	function setPossibleValues(){
@@ -326,6 +337,10 @@ const Sudoku = (props) => {
 	}
 
 	useEffect(() => {
+		if (gameRef.current && !win && !loading) checkAnimation();
+	});
+
+	useEffect(() => {
 		let data;
 		if (Auth.isAuthenticated() && Auth.user.savedGame){
 			data = JSON.parse(Auth.user.savedGame);
@@ -335,20 +350,22 @@ const Sudoku = (props) => {
 		}
 		
 		if (data?.version && data.version === BOARD_API_VERSION){
-			props.setGameMode(data.mode)
+			setGameMode(data.mode)
 			newGame(data, null, null, null);
 		} else newGame(null, null, null, 'classic');
 
-		let keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
+		const keyPressEvent = window.addEventListener('keypress', handleKeyPress, false);
 		eventBus.on("newGame", (data) => {
       		handleNewGame(data.difficulty, data.mode);
 		});
-		
+		const windowUnloadEvent = window.addEventListener('unload', gameRef.current.saveToLocalStorage);
+
 		return () => {
 			eventBus.remove("newGame");
 			window.removeEventListener('keypress', keyPressEvent);
+			window.removeEventListener('unload', windowUnloadEvent);
+			gameRef.current.saveToLocalStorage();
 		}
-	// eslint-disable-next-line
 	}, []);
 
 	if (gameRef.current === null){
@@ -356,12 +373,12 @@ const Sudoku = (props) => {
 	}
 
 	return (
-		<Section name="sudoku" themeName={props.themeName} toggleTheme={props.toggleTheme} gameMode={props.gameMode} setGameMode={props.setGameMode}>
+		<Section name="sudoku" themeName={themeName} toggleTheme={toggleTheme} gameMode={gameMode} setGameMode={setGameMode}>
 			{win ? 
 				<div className='sudoku__win-screen-wrapper'>
 					<div className='sudoku__win-screen'>
 						<div className='sudoku__win-screen__title'>¡Excelente!</div>
-						<NewGameButton gameMode={props.gameMode} setGameMode={props.setGameMode} />
+						<NewGameButton gameMode={gameMode} setGameMode={setGameMode} />
 					</div>
 				</div> :
 				loading ?
@@ -370,9 +387,9 @@ const Sudoku = (props) => {
 				</div> :
 				<div className="game">
 					<div className="sudoku">
-						<Canvas onClick={onClick} showLinks={showLinks} game={gameRef.current} lockedInput={lockedInputRef.current} theme={props.theme} setAnimationCallback={cb => {animationCallback = cb;}} />
+						<Canvas onClick={onClick} showLinks={showLinks} game={gameRef.current} lockedInput={lockedInputRef.current} theme={theme} setAnimationCallback={cb => {animationCallback = cb;}} />
 					</div>
-					<NewGameButton id="large-new-game-button" gameMode={props.gameMode} setGameMode={props.setGameMode}/>
+					<NewGameButton id="large-new-game-button" gameMode={gameMode} setGameMode={setGameMode}/>
 					<div className="edit__buttons">
 						<EditButton icon="fas fa-undo" title="Undo" onClick={handleUndo}/>
 						<EditButton icon="fas fa-eraser" title="Erase" onClick={eraseSelectedCell}/>
@@ -381,18 +398,18 @@ const Sudoku = (props) => {
 					</div>
 					<div className="extra__buttons">
 						<EditButton icon="fas fa-link"  title="Links" highlight={showLinks} onClick={invertShowLinks}/>
-						<EditButton icon="fas fa-droplet"  title="Paint" highlight={brush} onClick={handleBrushClick}/>
+						<EditButton icon="fas fa-droplet"  title="Paint" highlight={brushRef.current} onClick={handleBrushClick}/>
 						<EditButton icon="fas fa-droplet-slash"  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
 					</div>
 					<div className="numpad" onContextMenu={e => {e.preventDefault()}}>
-						{brush ?
+						{brushRef.current ?
 							['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default'].map((color, i) => (
 								<div
 									key={i}
 									className={'numpad__button color'}
 									onClick={(e) => {
 										e.stopPropagation();
-										handleColorButtonClick(color);
+										handleSetColor(gameRef.current.selectedCell, color);
 									}}
 									style={{backgroundColor: colors[color]}}
 								>

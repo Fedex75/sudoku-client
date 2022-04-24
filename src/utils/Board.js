@@ -60,13 +60,14 @@ export default class Board {
 			this.history = data.history;
 		}
 
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	pushBoard(){
 		this.history.push({
 			board: JSON.parse(JSON.stringify(this.board)),
-			selectedCell: this.selectedCell
+			selectedCell: this.selectedCell,
+			animationCache: JSON.parse(JSON.stringify(this.animationCache))
 		});
 	}
 
@@ -74,6 +75,7 @@ export default class Board {
 		if (this.history.length > 0){
 			this.board = this.history[this.history.length - 1].board;
 			this.selectedCell = this.history[this.history.length - 1].selectedCell;
+			this.animationCache = this.history[this.history.length - 1].animationCache;
 			this.history.pop();
 		}
 	}
@@ -88,7 +90,7 @@ export default class Board {
 
 	setSelectedCell(c){
 		this.selectedCell = c;
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	setNote(c, n, state = null, push = true){
@@ -105,13 +107,13 @@ export default class Board {
 						) &&
 						this.board[c.x][c.y].notes.length === 1
 					) this.setValue(c, this.board[c.x][c.y].notes[0], false);
-					this.saveToLocalStorage();
+					//this.saveToLocalStorage();
 				}
 			} else {
 				if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (this.get(c).color === 'default'))){
 					if (push) this.pushBoard();
 					this.board[c.x][c.y].notes.push(n);
-					this.saveToLocalStorage();
+					//this.saveToLocalStorage();
 				}
 			}
 		}
@@ -150,7 +152,7 @@ export default class Board {
 				});
 			}
 		}
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	hint(c){
@@ -159,7 +161,7 @@ export default class Board {
 		this.board[c.x][c.y].value = this.board[c.x][c.y].solution;
 		this.clearCandidatesFromVisibleCells(c, this.board[c.x][c.y].solution);
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default';
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	erase(c){
@@ -169,7 +171,7 @@ export default class Board {
 			this.board[c.x][c.y].notes = [];
 			this.board[c.x][c.y].color = 'default';
 		}
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	getPossibleValues(c){
@@ -234,16 +236,16 @@ export default class Board {
 			for (let x = 0; x < 9; x++){
 				for (let y = 0; y < 9; y++) {
 					const cell = this.get({x: x, y: y});
-					if (targetValue > 0 && cell.value > 0) highlightedCells[x][y] = true;
+					if (
+						(targetValue > 0 && cell.value > 0) ||
+						(this.mode === 'killer' && highlightCages.includes(cell.cageIndex)) ||
+						(SettingsHandler.settings.lockCellsWithColor && cell.color !== 'default' && !cell.notes.includes(targetValue))
+					) highlightedCells[x][y] = true;
 					if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.getVisibleCells({x: x, y: y})) highlightedCells[visibleCell.x][visibleCell.y] = true;
-					if (this.mode === 'killer' && highlightCages.includes(cell.cageIndex)) highlightedCells[x][y] = true;
 				}
 			}
 		} else {
-			for (let i = 0; i < 9; i++){
-				highlightedCells[selectedCoords.x][i] = true;
-				highlightedCells[i][selectedCoords.y] = true;
-			}
+			for (const visibleCell of this.getVisibleCells(selectedCoords)) highlightedCells[visibleCell.x][visibleCell.y] = true;
 		}
 
 		return highlightedCells;
@@ -298,8 +300,9 @@ export default class Board {
 	}
 
 	setColor(coords, newColor){
+		this.pushBoard();
 		this.board[coords.x][coords.y].color = newColor;
-		this.saveToLocalStorage();
+		//this.saveToLocalStorage();
 	}
 
 	clearColors(){
