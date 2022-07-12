@@ -1,42 +1,40 @@
+import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import ReactSwitch from 'react-switch';
 
 const moonIconStyle = {
-	display: 'flex',
-	justifyContent: 'center',
-	alignItems: 'center',
-	width: 25,
-	height: 28,
+	fontSize: 18,
 	color: 'white',
 }
 
 const sunIconStyle = {
-	display: 'flex',
-	justifyContent: 'center',
-	alignItems: 'center',
-	width: 25,
-	height: 28,
+	fontSize: 18,
 	color: '#344861',
 }
 
-const ThemeSwitch = (props) => {
+const ThemeSwitch = ({themeName, toggleTheme}) => {
 	return (
 		<ReactSwitch
 			width={50}
 			onColor='#25242c'
 			offColor='#cdc8cc'
 			checkedIcon={
-				<i className='fas fa-moon' style={moonIconStyle} />
+				<div style={{display: 'grid', placeItems: 'center', width: 25, height: 28}}>
+					<FontAwesomeIcon icon={faMoon} style={moonIconStyle} />
+				</div>
 			}
 			uncheckedIcon={
-				<i className='fas fa-sun' style={sunIconStyle} />
+				<div style={{display: 'grid', placeItems: 'center', width: 25, height: 28}}>
+					<FontAwesomeIcon icon={faSun} style={sunIconStyle} />
+				</div>
 			}
 			handleDiameter={24}
 			onHandleColor='#4b7bec'
 			offHandleColor='#4b7bec'
 			activeBoxShadow={null}
-			checked={props.themeName === 'dark'}
-			onChange={props.toggleTheme}
+			checked={themeName === 'dark'}
+			onChange={toggleTheme}
 		/>
 	);
 }

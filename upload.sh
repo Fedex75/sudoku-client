@@ -1,4 +1,5 @@
 #!/bin/bash
-folder=server/control/proxy/www/sudoku.zaifo.com.ar
-ssh root@production "rm -rf ~/${folder}/*"
-scp -r build/* "root@production:~/${folder}/"
+FOLDER="~/server/control/proxy/www/sudoku.zaifo.com.ar"
+ssh root@production rm -rf $FOLDER/*
+ssh root@production mkdir $FOLDER/static
+scp -r build/* root@production:$FOLDER

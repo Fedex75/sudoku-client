@@ -1,32 +1,32 @@
-import {useCallback, useRef} from 'react';
+import {useCallback, useRef} from 'react'
 
 export default function useLongPress(
   callback,
   ms = 200
 ) {
-  const timerRef = useRef(0);
+  const timerRef = useRef(0)
 
   const endTimer = () => {
-    clearTimeout(timerRef.current || 0);
-    timerRef.current = 0;
-  };
+    clearTimeout(timerRef.current || 0)
+    timerRef.current = 0
+  }
 
   const onStartLongPress = useCallback(() => {
-		endTimer();
+		endTimer()
     timerRef.current = window.setTimeout(() => {
-			endTimer();
-			callback('secondary');
-    }, ms);
-  }, [callback, ms]);
+			endTimer()
+			callback('secondary')
+    }, ms)
+  }, [callback, ms])
 
   const onEndLongPress = useCallback(() => {
 		if (timerRef.current) {
-      endTimer();
-      callback('primary');
+      endTimer()
+      callback('primary')
     }/* else {
-			callback(e, 'secondary');
+			callback(e, 'secondary')
 		}*/
-  }, [callback]);
+  }, [callback])
 
-  return [onStartLongPress, onEndLongPress, endTimer];
+  return [onStartLongPress, onEndLongPress, endTimer]
 }

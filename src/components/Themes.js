@@ -1,13 +1,22 @@
-const blue = '#4b7bec';
-const lightGray = '#e4e7ed';
-const darkGray = '#344861';
-const darkBackground = '#25242c';
+const blue = '#4b7bec'
+const lightGray = '#e4e7ed'
+const darkGrayBlue = '#344861'
+//const darkBackground = '#25242c'
+const darkBackground = '#212121'
 
 export const lightTheme = {
 	themeName: 'light',
-	background: 'white',
-	loginButtonBorderColor: darkGray,
-	navbarFontColor: darkGray,
+	background: '#f9fafb',
+	primaryTextColor: darkGrayBlue,
+	secondaryTextColor: '#9e9e9e',
+	loginButtonBorderColor: darkGrayBlue,
+	topbarBackgroundColor: 'white',
+	topbarFontColor: darkGrayBlue,
+	bookmarkOffColor: lightGray,
+	bookmarkOnColor: blue,
+	actionSheetButtonBackground: '#eeeef0',
+	actionSheetCancelBackground: 'white',
+	actionSheetButtonBorder: '#d8d8db',
 	editButtonColor: blue,
 	editButtonBackground: lightGray,
 	numpadButtonBackground: lightGray,
@@ -18,12 +27,12 @@ export const lightTheme = {
 	canvasLightDefaultCellColor: 'white',
 	canvasDarkDefaultCellColor: '#e2ebf3',
 	canvasCellBorderColor: '#bec6d4',
-	canvasQuadrantBorderColor: darkGray,
-	canvasClueColor: darkGray,
+	canvasQuadrantBorderColor: darkGrayBlue,
+	canvasClueColor: darkGrayBlue,
 	canvasSolutionColor: blue,
 	canvasSelectedCellBackground: '#bbdefb',
 	canvasSameValueCellBackground: '#c3d7ea',
-	canvasNoteHighlightColor: blue,
+	canvasNoteHighlightColor: 'black',
 	canvasAnimationBaseColor: '0, 0, 0',
 	gameMenuListBackground: 'white',
 	gameMenuListBorder: 'none',
@@ -37,21 +46,30 @@ export const lightTheme = {
 	menuButtonHoverBackground: '#e4eaf1',
 	settingsItemBackground: 'white',
 	settingsItemBorder: lightGray,
-	settingsItemColor: darkGray,
+	settingsItemColor: darkGrayBlue,
 	cancelButtonBackround: 'white',
 	cancelButtonFontWeight: 'regular',
-	modalOverlayBackground: 'white',
-	modeSelectorBorderColor: darkGray,
-	modeSelectorColor: darkGray,
+	modeSelectorBorderColor: darkGrayBlue,
+	modeSelectorColor: darkGrayBlue,
 	modeSelectorSelectedBorderColor: blue,
-	canvasKillerCageColor: darkGray,
-};
+	canvasKillerCageColor: darkGrayBlue,
+	homeGridShadow: '0px 0px 10px #aaaaaa',
+	homeGridIconColor: '#444444',
+}
 
 export const darkTheme = {
 	themeName: 'dark',
-	background: '#171719',
+	background: 'black',
+	primaryTextColor: 'white',
+	secondaryTextColor: '#e0e0e0',
 	loginButtonBorderColor: 'white',
-	navbarFontColor: 'white',
+	topbarBackgroundColor: darkBackground,
+	topbarFontColor: 'white',
+	bookmarkOffColor: 'darkgray',
+	bookmarkOnColor: blue,
+	actionSheetButtonBackground: '#1f1e1e',
+	actionSheetCancelBackground: '#2c2c2e',
+	actionSheetButtonBorder: '#434344',
 	editButtonColor: '#75747c',
 	editButtonBackground: darkBackground,
 	numpadButtonBackground: darkBackground,
@@ -73,7 +91,7 @@ export const darkTheme = {
 	gameMenuListBorder: 'solid 1px white',
 	mobile__gameMenuListBorder: 'none',
 	menuButtonBorderColor: 'white',
-	mobile__menuButtonBorderColor: darkGray,
+	mobile__menuButtonBorderColor: darkGrayBlue,
 	menuButtonColor: '#75747c',
 	mobile__menuButtonColor: blue,
 	gameMenuListShadow: 'none',
@@ -84,9 +102,10 @@ export const darkTheme = {
 	settingsItemTitleColor: 'white',
 	cancelButtonBackround: '#25242c',
 	cancelButtonFontWeight: 'bold',
-	modalOverlayBackground: '#171719',
 	modeSelectorBorderColor: 'white',
 	modeSelectorColor: 'white',
 	modeSelectorSelectedBorderColor: blue,
 	canvasKillerCageColor: '#75747c',
-};
+	homeGridShadow: 'none',
+	homeGridIconColor: '#616161',
+}
