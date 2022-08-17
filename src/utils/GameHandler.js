@@ -7,15 +7,13 @@ const BOARD_API_VERSION = 4
 class GameHandler {
 	constructor(){
 		let data
-		if (Auth.isAuthenticated() && Auth.user.savedGame){
-			data = JSON.parse(Auth.user.savedGame)
-		} else {
-			const lsGame = localStorage.getItem('game');	
-			data = lsGame ? JSON.parse(lsGame) : null
-		}
+		
+		const lsGame = localStorage.getItem('game');
+		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION){
 			this.game = new Board(data, false)
+			this.saveGame(JSON.stringify(this.game))
 		} else {
 			this.game = null
 		}
@@ -27,6 +25,23 @@ class GameHandler {
 		this.solved = lsSolved ? JSON.parse(lsSolved) : []
 
 		this.complete = false
+
+		/*let db
+		const request = window.indexedDB.open('SudokuDB')
+
+		request.onupgradeneeded = event => {
+			const db = event.target.result
+			const objectStore = db.createObjectStore('missions', {keyPath: '_id'})
+
+			objectStore.transaction.oncomplete = event => {
+				const missionObjectStore = db.transaction('missions', 'readwrite').objectStore('missions')
+				
+			}
+		}
+
+		request.onsuccess = event => {
+			db = event.target.result
+		}*/
 	}
 
 	init(){
@@ -38,9 +53,9 @@ class GameHandler {
 					this.missions = missions
 					localStorage.setItem('missions', JSON.stringify(this.missions))
 					resolve()
-				}).catch(() => {
+				}).catch((e) => {
 					//Download failed and there are no available games, reject
-					reject()
+					reject(e)
 				})
 			} else {
 				//Cache is not empty, get new games only
@@ -62,6 +77,7 @@ class GameHandler {
 	newGame(mode, difficulty){
 		if (difficulty === 'restart'){
 			this.game.restart()
+			this.complete = false
 			return
 		}
 

@@ -7,7 +7,6 @@ import ThemeHandler from './utils/ThemeHandler'
 import o9n from 'o9n'
 import ReactLoading from 'react-loading'
 import GameHandler from './utils/GameHandler'
-import { toast } from 'react-toastify'
 import Home from './pages/home/Home'
 import Sudoku from './pages/sudoku/Sudoku'
 import Settings from './pages/settings/Settings'
@@ -45,8 +44,9 @@ function App() {
 
 		GameHandler.init().then(() => {
 			setLoading(false)
-		}).catch(() => {
-			toast.error('Error al descargar las misiones')
+		}).catch((e) => {
+			console.log(e);
+			alert('😱 Ocurrió un error')
 		})
 
 		/*Auth.checkSession().then(authenticated => {

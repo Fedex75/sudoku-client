@@ -84,6 +84,13 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
+	function line(ctx, x1, y1, x2, y2){
+		ctx.beginPath()
+		ctx.moveTo(x1, y1)
+		ctx.lineTo(x2, y2)
+		ctx.stroke()
+	}
+
 	function renderFrame(){
 		if (canvasRef.current === null) return
 		const colors = {
@@ -133,15 +140,9 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 				const cell = game.get({x, y})
 				const isSelectedCell = game.selectedCell.x === x && game.selectedCell.y === y
 				const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCell.value > 0 && selectedCell.value === cell.value))
-				const hasColor = cell.color !== 'default'
 				//Cell background
 				ctx.setLineDash([])
-
-				if (hasColor){
-					ctx.fillStyle = colors[cell.color]
-					ctx.fillRect(cellPositions[x][y].x + 1, cellPositions[x][y].y + 1, squareSize - 2, squareSize - 2)
-				}
-
+				
 				ctx.fillStyle =
 					!showSelectedCell ? colors.default :
 					isSelectedCell ? ThemeHandler.theme.canvasSelectedCellBackground :
@@ -149,11 +150,7 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 					highlitedCells[x][y] ? darkColors.default : //Cell in same row or column as any cell with the same value as the selected cell
 					colors.default //Default
 
-				if (hasColor){
-					ctx.fillRect(cellPositions[x][y].x + (game.mode === 'classic' ? 3 : 2), cellPositions[x][y].y + (game.mode === 'classic' ? 3 : 2), squareSize - (game.mode === 'classic' ? 6 : 4), squareSize - (game.mode === 'classic' ? 6 : 4))
-				} else {
-					ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize)
-				}
+				ctx.fillRect(cellPositions[x][y].x, cellPositions[x][y].y, squareSize, squareSize)
 
 				if (animationColors && animationColors[x][y]){
 					ctx.fillStyle = animationColors[x][y]
@@ -244,7 +241,7 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 						isError ? 'red' :
 						cell.clue ? ThemeHandler.theme.canvasClueColor :
 						ThemeHandler.theme.canvasSolutionColor
-					if (isError && hasColor) ctx.strokeStyle = 'white'
+					if (isError && cell.color !== 'default') ctx.strokeStyle = 'white'
 					else ctx.strokeStyle = ctx.fillStyle
 					ctx.fillText(cell.value, valuePositions[x][y].x, valuePositions[x][y].y)
 				} else {
@@ -260,6 +257,45 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 						
 						ctx.fillText(n, cellPositions[x][y].x + noteDeltas[n-1].x, cellPositions[x][y].y + noteDeltas[n-1].y)
 					}
+				}
+			}
+		}
+
+		for (let x = 0; x < nSquares; x++){
+			for (let y = 0; y < nSquares; y++) {
+				const cell = game.get({x, y})
+
+				//Color
+				if (cell.color !== 'default'){
+					ctx.strokeStyle = colors[cell.color]
+					ctx.lineWidth = 2
+
+					const left = cellPositions[x][y].x + 2
+					const right = left + squareSize - 4
+					const top = cellPositions[x][y].y + 2
+					const bottom = top + squareSize - 4
+
+					//Top
+					if (y === 0 || game.board[x][y-1].color !== cell.color) line(ctx, left - 1, top, right + 1, top)
+					
+					//Right
+					if (x === (nSquares - 1) || game.board[x+1][y].color !== cell.color) line(ctx, right, top, right, bottom)
+					else {
+						//Right bridges
+						if (!(y > 0 && game.board[x+1][y-1].color === cell.color && game.board[x][y-1].color === cell.color)) line(ctx, right, top, right + 4, top)
+						if (!(y < (nSquares - 1) && game.board[x+1][y+1].color === cell.color && game.board[x][y+1].color === cell.color)) line(ctx, right, bottom, right + 4, bottom)
+					}
+
+					//Bottom
+					if (y === (nSquares - 1) || game.board[x][y+1].color !== cell.color) line(ctx, left - 1, bottom, right + 1, bottom)
+					else {
+						//Bottom bridges
+						if (!(x > 0 && game.board[x-1][y].color === cell.color && game.board[x-1][y+1].color === cell.color)) line(ctx, left, bottom - 1, left, bottom + 5)
+						if (!(x < (nSquares - 1) && game.board[x+1][y].color === cell.color && game.board[x+1][y+1].color === cell.color)) line(ctx, right, bottom - 1, right, bottom + 5)
+					}
+
+					//Left
+					if (x === 0 || game.board[x-1][y].color !== cell.color) line(ctx, left, top, left, bottom)
 				}
 			}
 		}

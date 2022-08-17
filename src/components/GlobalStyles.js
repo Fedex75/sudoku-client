@@ -219,7 +219,7 @@ export const GlobalStyles = createGlobalStyle`
     display: grid;
     grid-template-rows: auto fit-content(0);
     justify-content: center;
-    background-color: ${({ theme }) => theme.topbarBackgroundColor};
+    background-color: ${({ theme }) => theme.homeGridBackground};
     border-radius: 20px;
     padding: 10px;
     padding-top: 15px;
@@ -460,7 +460,7 @@ export const GlobalStyles = createGlobalStyle`
   .bookmarks__item {
     display: flex;
     flex-flow: column;
-    background-color: ${({ theme }) => theme.topbarBackgroundColor};
+    background-color: ${({ theme }) => theme.homeGridBackground};
     padding: 10px;
     border-radius: 20px;
   }

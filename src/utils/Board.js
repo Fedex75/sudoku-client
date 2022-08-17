@@ -6,6 +6,7 @@ export default class Board {
 		this._id = data._id
 		this.id = data.id
 		this.mission = data.mission
+		this.solution = data.solution
 		this.difficulty = data.difficulty
 		this.mode = data.mode
 		this.version = data.version
@@ -20,49 +21,51 @@ export default class Board {
 		this.nSquares = nSquares
 
 		if (raw){
-			//Create game from raw
-			this.selectedCell = {x: 0, y: 0}
-			this.history = []
-			this.board = []
-
-			for (let x = 0; x < this.nSquares; x++){
-				this.board.push(Array(this.nSquares).fill(null))
-				for (let y = 0; y < this.nSquares; y++){
-					let number = Number.parseInt(data.mission[y * this.nSquares + x])
-					let solution = Number.parseInt(data.solution[y * this.nSquares + x])
-					this.board[x][y] = {
-						clue:     number > 0,
-						value:    number,
-						notes:    [],
-						solution: solution,
-						color:    'default',
-					}
-				}
-			}
-
-			if (this.mode === 'killer'){
-				for (let cageIndex = 0; cageIndex < data.cages.length; cageIndex++){
-					data.cages[cageIndex].forEach((cell, cellIndex) => {
-						let x = cell % this.nSquares
-						let y = (cell - (cell % this.nSquares)) / this.nSquares
-						this.board[x][y].cageIndex = cageIndex
-						if (cellIndex === 0){
-							let sum = 0
-							for (const cell2 of data.cages[cageIndex]) sum += this.board[cell2 % this.nSquares][(cell2 - (cell2 % this.nSquares)) / this.nSquares].solution
-							this.board[x][y].cageValue = sum
-						} else {
-							this.board[x][y].cageValue = 0
-						}
-					})
-				}
-			}
+			this.initBoard()
 		} else {
 			this.board = data.board
 			this.selectedCell = data.selectedCell
 			this.history = data.history
 		}
+	}
 
-		//this.saveToLocalStorage()
+	initBoard(){
+		//Create game from raw data
+		this.selectedCell = {x: 0, y: 0}
+		this.history = []
+		this.board = []
+
+		for (let x = 0; x < this.nSquares; x++){
+			this.board.push(Array(this.nSquares).fill(null))
+			for (let y = 0; y < this.nSquares; y++){
+				let number = Number.parseInt(this.mission[y * this.nSquares + x])
+				let solution = Number.parseInt(this.solution[y * this.nSquares + x])
+				this.board[x][y] = {
+					clue:     number > 0,
+					value:    number,
+					notes:    [],
+					solution: solution,
+					color:    'default',
+				}
+			}
+		}
+
+		if (this.mode === 'killer'){
+			for (let cageIndex = 0; cageIndex < this.cages.length; cageIndex++){
+				this.cages[cageIndex].forEach((cell, cellIndex) => {
+					let x = cell % this.nSquares
+					let y = (cell - (cell % this.nSquares)) / this.nSquares
+					this.board[x][y].cageIndex = cageIndex
+					if (cellIndex === 0){
+						let sum = 0
+						for (const cell2 of this.cages[cageIndex]) sum += this.board[cell2 % this.nSquares][(cell2 - (cell2 % this.nSquares)) / this.nSquares].solution
+						this.board[x][y].cageValue = sum
+					} else {
+						this.board[x][y].cageValue = 0
+					}
+				})
+			}
+		}
 	}
 
 	pushBoard(){
@@ -71,7 +74,7 @@ export default class Board {
 			selectedCell: this.selectedCell,
 			animationCache: JSON.parse(JSON.stringify(this.animationCache))
 		})
-		//if (this.history.length > 5) this.history.shift()
+		if (this.history.length > 5) this.history.shift()
 	}
 
 	popBoard(){
@@ -79,6 +82,7 @@ export default class Board {
 			this.board = this.history[this.history.length - 1].board
 			this.selectedCell = this.history[this.history.length - 1].selectedCell
 			this.animationCache = this.history[this.history.length - 1].animationCache
+			this.checkFullNotation(true)
 			this.history.pop()
 		}
 	}
@@ -103,7 +107,8 @@ export default class Board {
 				const quadrantX = Math.floor(c.x / 3)
 				const quadrantY = Math.floor(c.y / 3)
 				let found = 0
-				for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!this.highlightedCellsCache[quadrantX * 3 + x][quadrantY * 3 + y]) found++
+				let highlightedCells = this.calculateHighlightedCells(null, n)
+				for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
 				if (found === 1){
 					this.setValue(c, n)
 					return null
@@ -160,7 +165,7 @@ export default class Board {
 				sum += cell.value
 				if (cell.cageValue > 0) realSum = cell.cageValue
 			})
-			if (remaining === 1){
+			if (remaining === 1 && realSum - sum <= 9){
 				this.cages[this.get(c).cageIndex].forEach(cellIndex => {
 					let x = cellIndex % this.nSquares
 					let y = (cellIndex - x) / this.nSquares
@@ -198,10 +203,16 @@ export default class Board {
 			let values = []
 			for (const coords of this.getVisibleCells(c)){
 				const cell = this.get(coords)
-				if (cell.value > 0 && !values.includes(cell.value)){
-					values.push(cell.value)
-				}
+				if (cell.value > 0 && !values.includes(cell.value)) values.push(cell.value)
 			}
+			for (const coords of this.getQuadrantCells(c)){
+				const cell = this.get(coords)
+				if (cell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor){
+					for (const candidate of cell.notes){
+						if (!values.includes(candidate)) values.push(candidate)
+					}
+				}
+			}	
 			return Array(this.nSquares).fill().map((_, i) => i + 1).filter(v => !values.includes(v))
 		} else {
 			return Array(this.nSquares).fill().map((_, i) => i + 1)
@@ -225,19 +236,29 @@ export default class Board {
 		return completedNumbers
 	}
 
-	getVisibleCells(c){
-		let visibleCells = []
-		for (let i = 0; i < this.nSquares; i++) visibleCells.push({x: c.x, y: i}, {x: i, y: c.y})
+	getQuadrantCells(c){
+		let quadrantCells = []
 		const quadrantX = Math.floor(c.x / 3)
 		const quadrantY = Math.floor(c.y / 3)
-		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) visibleCells.push({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
+		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) quadrantCells.push({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
+		return quadrantCells
+	}
+
+	getVisibleCells(c){
+		let visibleCells = []
+		const quadrantX = Math.floor(c.x / 3)
+		const quadrantY = Math.floor(c.y / 3)
+		visibleCells = visibleCells.concat(this.getQuadrantCells(c))
+		for (let i = 0; i < this.nSquares; i++){
+			if (i < quadrantX * 3 || i >= quadrantX * 3 + 3) visibleCells.push({x: c.x, y: i})
+			if (i < quadrantY * 3 || i >= quadrantY * 3 + 3) visibleCells.push({x: i, y: c.y})
+		}
 		return visibleCells
 	}
 
 	calculateHighlightedCells(selectedCoords, number){
 		let highlightedCells = Array(this.nSquares).fill().map(x => Array(this.nSquares).fill(false))
-		let selectedCell = this.get(selectedCoords)
-		let targetValue = number > 0 ? number : selectedCell.value
+		let targetValue = number > 0 ? number : this.get(selectedCoords).value
 
 		if (number === 0) for (const cell of this.getVisibleCells(selectedCoords)) highlightedCells[cell.x][cell.y] = true
 
@@ -290,8 +311,6 @@ export default class Board {
 		} else {
 			for (const visibleCell of this.getVisibleCells(selectedCoords)) highlightedCells[visibleCell.x][visibleCell.y] = true
 		}
-
-		this.highlightedCellsCache = highlightedCells
 
 		return highlightedCells
 	}
@@ -351,6 +370,7 @@ export default class Board {
 	}
 
 	clearColors(){
+		this.pushBoard()
 		for (let x = 0; x < this.nSquares; x++){
 			for (let y = 0; y < this.nSquares; y++){
 				this.board[x][y].color = 'default'
@@ -368,8 +388,9 @@ export default class Board {
 		return true
 	}
 
-	checkFullNotation(){
-		if (this.fullNotation || !SettingsHandler.settings.autoSolveCellsFullNotation) return
+	checkFullNotation(force = false){
+		if (this.fullNotation && !force) return
+		
 		for (let n = 1; n <= 9; n++){
 			for (let quadrantX = 0; quadrantX < 3; quadrantX++){
 				for (let quadrantY = 0; quadrantY < 3; quadrantY++){
@@ -383,11 +404,14 @@ export default class Board {
 							}
 						}
 					}
-					if (!found) return
+					if (!found){
+						this.fullNotation = false
+						return
+					}
 				}
 			}
 		}
-		console.log('Full notation')
+
 		this.fullNotation = true
 	}
 
@@ -443,16 +467,7 @@ export default class Board {
 	}
 
 	restart(){
-		for (let x = 0; x < this.nSquares; x++){
-			for (let y = 0; y < this.nSquares; y++){
-				this.board[x][y] = {
-					...this.board[x][y],
-					value:    this.board[x][y].clue ? this.board[x][y].value : 0,
-					notes:    [],
-					color:    'default',
-				}
-			}
-		}
+		this.initBoard()
 		this.fullNotation = false
 		this.animationCache = {
 			board: false,

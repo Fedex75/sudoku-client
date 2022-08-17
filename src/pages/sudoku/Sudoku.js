@@ -25,12 +25,12 @@ const Sudoku = ({theme}) => {
 	const [showLinks, setShowLinks] = useState(false)
 	const [win, setWin] = useState(false)
 	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
+	const [brush, setBrush] = useState(false)
 
 	const noteModeRef = useRef(null)
 	const possibleValuesRef = useRef([])
 	const completedNumbersRef = useRef([])
 	const lockedInputRef = useRef(0)
-	const brushRef = useRef(false)
 	const noteDragMode = useRef(null)
 
 	const newGameActionSheetRef = useRef()
@@ -64,17 +64,14 @@ const Sudoku = ({theme}) => {
 						setPossibleValues()
 						if (value > 0){
 							if (SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = value
-							setRender(r => r === 100 ? 0 : r+1)
 						} else {
-							if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
-							else setRender(r => r === 100 ? 0 : r+1)
+							if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
 						}
 					} else {
 						//Click on selected cell
 						let value = GameHandler.game.getSelectedCell().value
 						if (value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = lockedInputRef.current === 0 ? value : 0
-						if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
-						else setRender(r => r === 100 ? 0 : r+1)
+						if (lockedInputRef.current > 0 && !brush && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
 					}
 				}
 				break
@@ -89,7 +86,6 @@ const Sudoku = ({theme}) => {
 					GameHandler.game.setSelectedCell({x, y})
 					if (value > 0 && SettingsHandler.settings.autoChangeInputLock){
 						lockedInputRef.current = lockedInputRef.current === value ? 0 : value
-						setRender(r => r === 100 ? 0 : r+1)
 					}
 				}
 				break
@@ -102,7 +98,7 @@ const Sudoku = ({theme}) => {
 	function handleSetNote(coords, hold){
 		if (
 			lockedInputRef.current > 0  &&
-			!brushRef.current &&
+			!brush &&
 			GameHandler.game.getPossibleValues(coords).includes(lockedInputRef.current)
 		){
 			if (noteDragMode.current === null){
@@ -266,8 +262,6 @@ const Sudoku = ({theme}) => {
 				handleNumberInput(Number.parseInt(e.key))
 			} else if (e.key === '0'){
 				eraseSelectedCell()
-			} else if (e.key === 'f'){
-				GameHandler.game.fullNotation = !GameHandler.game.fullNotation
 			} else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
 				switch (e.key){
 					case 'ArrowDown':
@@ -327,8 +321,8 @@ const Sudoku = ({theme}) => {
 	}
 
 	function handleBrushClick(){
-		brushRef.current = !brushRef.current
-		setRender(r => r === 100 ? 0 : r+1)
+		setBrush(b => !b)
+		//setRender(r => r === 100 ? 0 : r+1)
 	}
 
 	function handleSetColor(coords, color){
@@ -354,7 +348,7 @@ const Sudoku = ({theme}) => {
 		if (GameHandler.game.getSelectedCell().value > 0 && SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = GameHandler.game.getSelectedCell().value
 		else lockedInputRef.current = 0
 		noteModeRef.current = false
-		brushRef.current = false
+		setBrush(false)
 		setWin(false)
 		setShowLinks(false)
 		setPossibleValues()
@@ -392,13 +386,13 @@ const Sudoku = ({theme}) => {
 		setPossibleValues()
 		setRender(r => r === 100 ? 0 : r+1)
 
-		const windowUnloadEvent = window.addEventListener('unload', () => {
+		const windowVisibilityChangeEvent = window.addEventListener('visibilitychange', () => {
 			if (GameHandler.game && !GameHandler.game.checkComplete()) GameHandler.game.saveToLocalStorage()
 		})
 
 		return () => {
 			window.removeEventListener('keypress', keyPressEvent)
-			window.removeEventListener('unload', windowUnloadEvent)
+			window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
 			GameHandler.game.saveToLocalStorage()
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -436,7 +430,7 @@ const Sudoku = ({theme}) => {
 									<EditButton key={2} icon={faPencilAlt} highlight={noteModeRef.current} title="Notes" onClick={invertNoteMode}/>,
 									<EditButton key={3} icon={faLightbulb} yellow={hintState === 1} title="Hint" onClick={handleHintClick}/>,
 									<EditButton key={4} icon={faLink}  title="Links" highlight={showLinks} onClick={invertShowLinks}/>,
-									<EditButton key={8} icon={faDroplet}  title="Paint" highlight={brushRef.current} onClick={handleBrushClick}/>,
+									<EditButton key={8} icon={faDroplet}  title="Paint" highlight={brush} onClick={handleBrushClick}/>,
 									<EditButton key={12} icon={faDropletSlash}  title="Erase ink" yellow={eraseInkState === 1} onClick={handleEraseInkClick}/>
 								]
 								let specialButtonIndex = 0
@@ -446,7 +440,7 @@ const Sudoku = ({theme}) => {
 										else {
 											const key = 4 * y + x
 											const buttonIndex = 3 * (y - 1) + x
-											buttons.push(brushRef.current ?
+											buttons.push(brush ?
 												<div
 													key={key}
 													className={'numpad__button color'}

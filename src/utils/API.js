@@ -10,7 +10,7 @@ class API {
 			axios.get(`${this.host}/api/sudoku/all_games`).then(res => {
 				resolve(res.data)
 			}).catch(e => {
-				reject()
+				reject(e)
 			})
 		})
 	}
@@ -20,7 +20,7 @@ class API {
 			axios.post(`${this.host}/api/sudoku/new_games`, {cache: cache}).then(res => {
 				resolve(res.data)
 			}).catch(e => {
-				reject()
+				reject(e)
 			})
 		})
 	}

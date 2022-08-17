@@ -61,7 +61,7 @@ class SettingsHandler {
 				name: 'autoSolveCellsFullNotation',
 				translation: 'Solucionar celdas automáticamente si la notación está completa',
 				type: 'boolean',
-				default: false
+				default: true
 			},
 			/*{
 				name: 'autoDetectPairs',

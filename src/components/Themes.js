@@ -2,7 +2,7 @@ const blue = '#4b7bec'
 const lightGray = '#e4e7ed'
 const darkGrayBlue = '#344861'
 //const darkBackground = '#25242c'
-const darkBackground = '#212121'
+const darkBackground = '#1c1c1e'
 
 export const lightTheme = {
 	themeName: 'light',
@@ -63,7 +63,7 @@ export const darkTheme = {
 	primaryTextColor: 'white',
 	secondaryTextColor: '#e0e0e0',
 	loginButtonBorderColor: 'white',
-	topbarBackgroundColor: darkBackground,
+	topbarBackgroundColor: 'transparent',
 	topbarFontColor: 'white',
 	bookmarkOffColor: 'darkgray',
 	bookmarkOnColor: blue,
@@ -106,6 +106,7 @@ export const darkTheme = {
 	modeSelectorColor: 'white',
 	modeSelectorSelectedBorderColor: blue,
 	canvasKillerCageColor: '#75747c',
+	homeGridBackground: darkBackground,
 	homeGridShadow: 'none',
 	homeGridIconColor: '#616161',
 }
