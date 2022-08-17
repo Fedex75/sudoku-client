@@ -198,25 +198,29 @@ export default class Board {
 	}
 
 	getPossibleValues(c){
-		if (this.get(c).clue) return []
+		const cell = this.get(c)
+		if (cell.clue) return []
+		let values = []
 		if (SettingsHandler.settings.showPossibleValues){
-			let values = []
+			if (cell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor) return cell.notes
+			
+			//Check value of visible cells
 			for (const coords of this.getVisibleCells(c)){
-				const cell = this.get(coords)
-				if (cell.value > 0 && !values.includes(cell.value)) values.push(cell.value)
+				const visibleCell = this.get(coords)
+				if (visibleCell.value > 0 && !values.includes(visibleCell.value)) values.push(visibleCell.value)
 			}
+
+			//Check cells with color in quadrant
 			for (const coords of this.getQuadrantCells(c)){
-				const cell = this.get(coords)
-				if (cell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor){
-					for (const candidate of cell.notes){
+				const visibleCell = this.get(coords)
+				if (visibleCell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor){
+					for (const candidate of visibleCell.notes){
 						if (!values.includes(candidate)) values.push(candidate)
 					}
 				}
-			}	
-			return Array(this.nSquares).fill().map((_, i) => i + 1).filter(v => !values.includes(v))
-		} else {
-			return Array(this.nSquares).fill().map((_, i) => i + 1)
+			}
 		}
+		return Array(this.nSquares).fill().map((_, i) => i + 1).filter(v => !values.includes(v))
 	}
 
 	getCompletedNumbers(){
@@ -250,8 +254,8 @@ export default class Board {
 		const quadrantY = Math.floor(c.y / 3)
 		visibleCells = visibleCells.concat(this.getQuadrantCells(c))
 		for (let i = 0; i < this.nSquares; i++){
-			if (i < quadrantX * 3 || i >= quadrantX * 3 + 3) visibleCells.push({x: c.x, y: i})
-			if (i < quadrantY * 3 || i >= quadrantY * 3 + 3) visibleCells.push({x: i, y: c.y})
+			if (i < quadrantX * 3 || i >= quadrantX * 3 + 3) visibleCells.push({x: i, y: c.y})
+			if (i < quadrantY * 3 || i >= quadrantY * 3 + 3) visibleCells.push({x: c.x, y: i})
 		}
 		return visibleCells
 	}

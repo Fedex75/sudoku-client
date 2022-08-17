@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import ThemeHandler from '../utils/ThemeHandler'
 import SettingsHandler from '../utils/SettingsHandler'
 import o9n from 'o9n'
@@ -25,7 +25,13 @@ function brightness(x, p, q, l){
 	return Math.max(0, k*(1-Math.abs(2/l*(x+t)-1)))
 }
 
-const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback = () => {}, onClick = () => {}, nSquares = 9, autoSize = true, size = null, showSelectedCell = true, canvasSize = 500}) => {
+const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimationCallback = () => {}, onClick = () => {}, nSquares = 9, autoSize = true, size = null, showSelectedCell = true, canvasSize = 500}, ref) => {
+	useImperativeHandle(ref, () => ({
+		renderFrame(){
+			renderFrame()
+		}
+	}))
+
 	const canvasRef = useRef(null)
 	const lastMouseCell = useRef(null)
 	const mouseButton = useRef(null)
@@ -512,6 +518,6 @@ const Canvas = ({lockedInput = 0, game, showLinks = false, setAnimationCallback 
 			onMouseLeave={onMouseLeave}
 		/>
 	)
-}
+})
 
 export default Canvas
