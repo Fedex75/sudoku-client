@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router'
 import Button from '../../components/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark, faDroplet, faDropletSlash, faEraser, faLightbulb, faLink, faPencilAlt, faPlus, faUndo } from '@fortawesome/free-solid-svg-icons'
+import ColorButton from '../../components/ColorButton'
 
 let animationCallback = null
 
@@ -27,6 +28,7 @@ const Sudoku = ({theme}) => {
 	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
 
 	const brushRef = useRef(false)
+	const lockedColorRef = useRef('purple')
 	const noteModeRef = useRef(null)
 	const possibleValuesRef = useRef([])
 	const completedNumbersRef = useRef([])
@@ -39,26 +41,11 @@ const Sudoku = ({theme}) => {
 
 	const canvasRef = useRef()
 
-	const colors = {
-		default: theme.canvasLightDefaultCellColor,
-		red: '#fc5c65',
-		orange: '#fd9644',
-		yellow: '#fed330',
-		green: '#26de81',
-		blueGreen: '#2bcbba',
-		lightBlue: '#45aaf2',
-		darkBlue: '#4b7bec',
-		purple: '#a55eea'
-	}
-
 	function onClick(x, y, button, hold = false){
-		if (!hold) noteDragMode.current = null
-
 		switch (button){
 			case 0:
-				if (noteModeRef.current && hold){
-					console.log('Flag 1');
-					handleSetNote({x, y}, hold)
+				if (brushRef.current){
+					if (lockedColorRef.current !== null) handleSetColor({x, y}, lockedColorRef.current)
 				} else {
 					if (GameHandler.game.selectedCell.x !== x || GameHandler.game.selectedCell.y !== y){
 						//Click on unselected cell
@@ -68,13 +55,13 @@ const Sudoku = ({theme}) => {
 						if (value > 0){
 							if (SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = value
 						} else {
-							if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
+							if (lockedInputRef.current > 0 && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current, hold)
 						}
 					} else {
 						//Click on selected cell
 						let value = GameHandler.game.getSelectedCell().value
 						if (value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = lockedInputRef.current === 0 ? value : 0
-						if (lockedInputRef.current > 0 && !brushRef.current && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current)
+						if (lockedInputRef.current > 0 && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current, hold)
 					}
 				}
 				break
@@ -83,11 +70,8 @@ const Sudoku = ({theme}) => {
 				break
 			case 2:
 				const value = GameHandler.game.get({x, y}).value
-				if (value === 0){
-					console.log('Flag 2');
-					handleSetNote({x, y}, hold)
-
-				} else if (!hold){
+				if (value === 0) handleSetNote({x, y}, hold)
+				else if (!hold){
 					GameHandler.game.setSelectedCell({x, y})
 					if (value > 0 && SettingsHandler.settings.autoChangeInputLock){
 						lockedInputRef.current = lockedInputRef.current === value ? 0 : value
@@ -101,14 +85,14 @@ const Sudoku = ({theme}) => {
 	}
 
 	function handleSetNote(coords, hold){
+		if (!hold) noteDragMode.current = null
 		if (
 			lockedInputRef.current > 0  &&
 			!brushRef.current &&
 			GameHandler.game.getPossibleValues(coords).includes(lockedInputRef.current)
 		){
 			if (noteDragMode.current === null){
-				const state = GameHandler.game.setNote(coords, lockedInputRef.current)
-				if (state !== null) noteDragMode.current = state
+				noteDragMode.current = GameHandler.game.setNote(coords, lockedInputRef.current)
 			} else {
 				if (GameHandler.game.get(coords).notes.includes(lockedInputRef.current) !== noteDragMode.current){
 					GameHandler.game.setNote(coords, lockedInputRef.current)
@@ -213,15 +197,12 @@ const Sudoku = ({theme}) => {
 		}*/
 	}
 
-	function handleNumberInput(number){
+	function handleNumberInput(number, hold){
 		if (!GameHandler.complete){
 			if (GameHandler.game.selectedCell !== null){
 				const selectedCell = GameHandler.game.getSelectedCell()
 				if (selectedCell.value === 0){
-					if (noteModeRef.current){
-						console.log('Flag 3');
-						GameHandler.game.setNote(GameHandler.game.selectedCell, number)
-					}
+					if (noteModeRef.current) GameHandler.game.setNote(GameHandler.game.selectedCell, number, )
 					else {
 						GameHandler.game.setValue(GameHandler.game.selectedCell, number)
 						if (SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = number
@@ -332,6 +313,14 @@ const Sudoku = ({theme}) => {
 	function handleBrushClick(){
 		brushRef.current = !brushRef.current
 		setRender(r => r === 100 ? 0 : r+1)
+	}
+
+	function handleColorButtonClick(color, type){
+		if (type === 'primary') handleSetColor(GameHandler.game.selectedCell, color)
+		else {
+			lockedColorRef.current = lockedColorRef.current === color ? null : color
+			setRender(r => r === 100 ? 0 : r+1)
+		}
 	}
 
 	function handleSetColor(coords, color){
@@ -450,14 +439,12 @@ const Sudoku = ({theme}) => {
 											const key = 4 * y + x
 											const buttonIndex = 3 * (y - 1) + x
 											buttons.push(brushRef.current ?
-												<div
+												<ColorButton
 													key={key}
-													className={'numpad__button color'}
-													onClick={(e) => {
-														e.stopPropagation()
-														handleSetColor(GameHandler.game.selectedCell, colorNames[buttonIndex - 1])
-													}}
-													style={{backgroundColor: colors[colorNames[buttonIndex - 1]]}}
+													theme={theme}
+													color={colorNames[buttonIndex - 1]}
+													locked={lockedColorRef.current === colorNames[buttonIndex - 1]}
+													onClick={handleColorButtonClick}
 												/> :
 												<NumpadButton
 													key={key}

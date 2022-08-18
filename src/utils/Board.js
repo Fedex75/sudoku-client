@@ -1,17 +1,20 @@
 import GameHandler from "./GameHandler"
 import SettingsHandler from "./SettingsHandler"
+import Solver from "./Solver";
+import Decoder from "./Decoder"
+import { difficultyDecoder, modeDecoder } from "./Difficulties";
 
 export default class Board {
 	constructor(data, raw, nSquares = 9){
-		this._id = data._id
 		this.id = data.id
-		this.mission = data.mission
-		this.solution = data.solution
-		this.difficulty = data.difficulty
-		this.mode = data.mode
-		this.version = data.version
+		this.mode = raw ? modeDecoder[data.id[0]] : data.mode
+		this.difficulty = raw ? difficultyDecoder[data.id[1]] : data.difficulty
+		this.mission = raw ? Decoder.decode(data.m) : data.mission
+		this.solution = raw ?
+			(this.mode === 'classic' ? Solver.solve(this.mission) : data.s) :
+			data.solution
 		this.fullNotation = false
-		this.cages = data.cages || null
+		this.cages = raw ? data.c?.split(',').map(s => s.match(/.{2}/g)) || null : data.cages || null
 		this.animationCache = data.animationCache || {
 			board: false,
 			rows: Array(nSquares).fill(false),
@@ -53,12 +56,13 @@ export default class Board {
 		if (this.mode === 'killer'){
 			for (let cageIndex = 0; cageIndex < this.cages.length; cageIndex++){
 				this.cages[cageIndex].forEach((cell, cellIndex) => {
-					let x = cell % this.nSquares
-					let y = (cell - (cell % this.nSquares)) / this.nSquares
+					let x = cell[0]
+					let y = cell[1]
 					this.board[x][y].cageIndex = cageIndex
+					if (this.cages[cageIndex].length === 1) this.board[x][y].value = this.board[x][y].solution
 					if (cellIndex === 0){
 						let sum = 0
-						for (const cell2 of this.cages[cageIndex]) sum += this.board[cell2 % this.nSquares][(cell2 - (cell2 % this.nSquares)) / this.nSquares].solution
+						for (const cell2 of this.cages[cageIndex]) sum += this.board[cell2[0]][cell2[1]].solution
 						this.board[x][y].cageValue = sum
 					} else {
 						this.board[x][y].cageValue = 0
@@ -153,12 +157,13 @@ export default class Board {
 		this.clearCandidatesFromVisibleCells(c, s)
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default'
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
-			let remaining = this.cages[this.get(c).cageIndex].length
+			const cageIndex = this.get(c).cageIndex
+			let remaining = this.cages[cageIndex].length
 			let sum = 0
 			let realSum
-			this.cages[this.get(c).cageIndex].forEach(cellIndex => {
-				let x = cellIndex % this.nSquares
-				let y = (cellIndex - x) / this.nSquares
+			this.cages[cageIndex].forEach(coords => {
+				let x = coords[0]
+				let y = coords[1]
 				const cell = this.get({x, y})
 				this.setNote({x, y}, s, false, false, false)
 				if (cell.value > 0) remaining--
@@ -166,9 +171,9 @@ export default class Board {
 				if (cell.cageValue > 0) realSum = cell.cageValue
 			})
 			if (remaining === 1 && realSum - sum <= 9){
-				this.cages[this.get(c).cageIndex].forEach(cellIndex => {
-					let x = cellIndex % this.nSquares
-					let y = (cellIndex - x) / this.nSquares
+				this.cages[cageIndex].forEach(coords => {
+					let x = coords[0]
+					let y = coords[1]
 					if (this.get({x, y}).value === 0){
 						this.setValue({x, y}, realSum - sum, false)
 					}
@@ -294,7 +299,6 @@ export default class Board {
 						for (let x = 0; x < 3; x++){
 							for (let y = 0; y < 3; y++){
 								const cell = this.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
-								if (!cell) console.log(quadrantX * 3 + x, quadrantY * 3 + y);
 								if (cell.color !== 'default' && cell.notes.includes(targetValue)){
 									found = true
 									break
@@ -443,7 +447,6 @@ export default class Board {
 										(x2 !== c.x || y2 !== c.y) &&
 										(x2 !== x || y2 !== y)
 									){
-										console.log(x2, y2);
 										return
 									}
 								}

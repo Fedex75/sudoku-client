@@ -48,7 +48,7 @@ class Solver {
         for(let square in candidates_map){
             let candidates = candidates_map[square]
             cur_row.push(candidates)
-            if(i % 9 == 8){
+            if(i % 9 === 8){
                 rows.push(cur_row)
                 cur_row = []
             }
@@ -71,7 +71,7 @@ class Solver {
         for(let square in squares_values_map){
             let val = squares_values_map[square]
             
-            if(val, this.DIGITS.indexOf(val) !== -1){
+            if(this.DIGITS.indexOf(val) !== -1){
                 let new_candidates = this._assign(candidate_map, square, val)
                 // Fail if we can't assign val to square
                 if(!new_candidates) return false
@@ -88,14 +88,10 @@ class Solver {
         // If only one candidate for every square, we've a solved puzzle!
         // Return the candidates map.
         let max_nr_candidates = 0;
-        let max_candidates_square = null
         for(const si in this.SQUARES){
             let square = this.SQUARES[si]           
             let nr_candidates = candidates[square].length
-            if(nr_candidates > max_nr_candidates){
-                max_nr_candidates = nr_candidates
-                max_candidates_square = square
-            }
+            if(nr_candidates > max_nr_candidates) max_nr_candidates = nr_candidates
         }
         if(max_nr_candidates === 1) return candidates
 

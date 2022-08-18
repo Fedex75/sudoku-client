@@ -285,7 +285,7 @@ export const GlobalStyles = createGlobalStyle`
 	}
 
 	.edit-buttons__button__icon {
-		font-size: 30px;
+		font-size: 35px;
 	}
 
   .numpad {
@@ -298,11 +298,12 @@ export const GlobalStyles = createGlobalStyle`
 	}
 
 	.numpad__button {
+    position: relative;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		color: #4b7bec;
-		font-size: 40px;
+		font-size: 50px;
 		border-radius: 10px;
 		cursor: pointer;
 	}
@@ -337,6 +338,10 @@ export const GlobalStyles = createGlobalStyle`
 		color: white;
     background-color: ${({ theme }) => theme.lockedButtonBackgroundColor};
     border-color: ${({ theme }) => theme.lockedButtonBorderColor};
+  }
+
+  .numpad__button.color {
+    color: white;
   }
 
   #sudoku {

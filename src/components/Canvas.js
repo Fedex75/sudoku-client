@@ -25,7 +25,7 @@ function brightness(x, p, q, l){
 	return Math.max(0, k*(1-Math.abs(2/l*(x+t)-1)))
 }
 
-const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimationCallback = () => {}, onClick = () => {}, nSquares = 9, autoSize = true, size = null, showSelectedCell = true, canvasSize = 500}, ref) => {
+const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimationCallback = () => {}, onClick = () => {}, nSquares = 9, autoSize = true, size = null, showSelectedCell = true, canvasSize = 500, noTouch = false}, ref) => {
 	useImperativeHandle(ref, () => ({
 		renderFrame(){
 			renderFrame()
@@ -310,8 +310,8 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 			//Draw links
 			const target = lockedInput > 0 ? lockedInput : selectedCell.value
 			let links = game.calculateLinks(target)
-			ctx.fillStyle = 'red'
-			ctx.strokeStyle = 'red'
+			ctx.fillStyle = '#ff5252'
+			ctx.strokeStyle = '#ff5252'
 			ctx.setLineDash([])
 			links.forEach(link => {
 				link.forEach(cell => {
@@ -450,19 +450,23 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	}
 
 	function onMouseDown(e){
-		e.stopPropagation()
-		e.preventDefault()
-		handleInputStart(screenCoordsToBoardCoords(e.clientX, e.clientY), e.button)
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			handleInputStart(screenCoordsToBoardCoords(e.clientX, e.clientY), e.button)
+		}
 	}
 
 	function onTouchStart(e){
-		e.stopPropagation()
-		e.preventDefault()
-		handleInputStart(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY), 0)
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			handleInputStart(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY), 0)
+		}	
 	}
 
 	function handleInputMove(coords){
-		if (coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
+		if (!noTouch && coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
 			lastMouseCell.current = coords
 			onClick(coords.x, coords.y, mouseButton.current, true)
 			setRender(r => r === 100 ? 0 : r+1)
@@ -470,43 +474,48 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	}
 
 	function onMouseMove(e){
-		e.stopPropagation()
-		e.preventDefault()
-		handleInputMove(screenCoordsToBoardCoords(e.clientX, e.clientY))
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			handleInputMove(screenCoordsToBoardCoords(e.clientX, e.clientY))
+		}
 	}
 
 	function onTouchMove(e){
-		e.stopPropagation()
-		e.preventDefault()
-		handleInputMove(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			handleInputMove(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
+		}
 	}
 
 	function onMouseUp(e){
-		e.stopPropagation()
-		e.preventDefault()
-		lastMouseCell.current = null
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			lastMouseCell.current = null
+		}
 	}
 
 	function onContextMenu(e){
-		e.stopPropagation()
-		e.preventDefault()
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+		}
 	}
 
 	function onMouseLeave(e){
-		e.stopPropagation()
-		e.preventDefault()
-		lastMouseCell.current = null
-		mouseButton.current = null
-	}
-
-	function onTouchEnd(e){
-		e.stopPropagation()
-		e.preventDefault()
+		if (!noTouch){
+			e.stopPropagation()
+			e.preventDefault()
+			lastMouseCell.current = null
+			mouseButton.current = null
+		}
 	}
 
 	return (
 		<canvas
-			style={{touchAction: 'none'}}
+			style={{touchAction: noTouch ? 'auto' : 'none'}}
 			ref={canvasRef}
 			width={canvasSize}
 			height={canvasSize}
@@ -514,7 +523,6 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 			onMouseDown={onMouseDown}
 			onMouseMove={onMouseMove}
 			onMouseUp={onMouseUp}
-			onTouchEnd={onTouchEnd}
 			onMouseLeave={onMouseLeave}
 		/>
 	)

@@ -1,21 +1,29 @@
-import API from './API'
-import Auth from './Auth'
 import Board from './Board'
 
+import missions from '../data/missions.json'
+import Decoder from './Decoder'
+import { difficultyDecoder, modeDecoder } from './Difficulties'
+
 const BOARD_API_VERSION = 4
+const STORAGE_SCHEMA_VERSION = 1
 
 class GameHandler {
-	constructor(){
+	init(){
+		const ls_schema_version = localStorage.getItem('SCHEMA_VERSION') 
+		if (ls_schema_version === null || ls_schema_version < STORAGE_SCHEMA_VERSION){
+			localStorage.clear()
+			localStorage.setItem('SCHEMA_VERSION', STORAGE_SCHEMA_VERSION)
+		}
+
 		let data
-		
 		const lsGame = localStorage.getItem('game');
 		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION){
-			this.game = new Board(data, false)
-			this.saveGame(JSON.stringify(this.game))
+			this.setCurrentGame(new Board(data, false))
 		} else {
 			this.game = null
+			this.complete = false
 		}
 
 		const lsBookmarks = localStorage.getItem('bookmarks')
@@ -23,55 +31,13 @@ class GameHandler {
 
 		const lsSolved = localStorage.getItem('solved')
 		this.solved = lsSolved ? JSON.parse(lsSolved) : []
-
-		this.complete = false
-
-		/*let db
-		const request = window.indexedDB.open('SudokuDB')
-
-		request.onupgradeneeded = event => {
-			const db = event.target.result
-			const objectStore = db.createObjectStore('missions', {keyPath: '_id'})
-
-			objectStore.transaction.oncomplete = event => {
-				const missionObjectStore = db.transaction('missions', 'readwrite').objectStore('missions')
-				
-			}
-		}
-
-		request.onsuccess = event => {
-			db = event.target.result
-		}*/
-	}
-
-	init(){
-		return new Promise(async (resolve, reject) => {
-			this.missions = JSON.parse(localStorage.getItem('missions'))
-			if (!this.missions){
-				//Cache is empty, get all games
-				API.getAllGames().then(missions => {
-					this.missions = missions
-					localStorage.setItem('missions', JSON.stringify(this.missions))
-					resolve()
-				}).catch((e) => {
-					//Download failed and there are no available games, reject
-					reject(e)
-				})
-			} else {
-				//Cache is not empty, get new games only
-				resolve()
-				API.getNewGames(this.missions.map(mission => mission._id)).then(new_missions => {
-					this.missions.push(...new_missions)
-					localStorage.setItem('missions', JSON.stringify(this.missions))
-				}).catch(() => {})
-			}
-		})
 	}
 
 	setCurrentGame(board){
 		this.game = board
 		this.complete = false
 		this.game.version = BOARD_API_VERSION
+		this.saveGame(JSON.stringify(this.game))
 	}
 
 	newGame(mode, difficulty){
@@ -81,21 +47,15 @@ class GameHandler {
 			return
 		}
 
-		let candidates = this.missions.filter(m => m.mode === mode && m.difficulty === difficulty)
-		const unsolvedCandidates = candidates.filter(c => !this.solved.some(mission => !mission.custom && mission._id === c._id))
-		if (unsolvedCandidates.length > 0) candidates = unsolvedCandidates
+		let candidates = missions[mode][difficulty].filter(c => !this.solved.some(mission => !mission.c && mission.id === c.id))
+		if (candidates.length === 0) candidates = missions[mode][difficulty]
 		this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], true))
 	}
 
 	boardFromCustomMission(mission){
 		return new Board({
-			_id: null,
-			id: null,
-			mission: mission,
-			solution: '0'.repeat(9*9),
-			cages: null,
-			difficulty: 'custom',
-			mode: 'classic'
+			id: 'cc',
+			m: mission
 		}, true)
 	}
 
@@ -110,10 +70,7 @@ class GameHandler {
 			}
 		} else {
 			//Data is board text representation
-			if (
-				data.length === 81 &&
-				data.split('').every(char => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(char))
-			){
+			if (Decoder.decode(data).length === 81){
 				this.setCurrentGame(this.boardFromCustomMission(data))
 				return(true)
 			} else {
@@ -123,31 +80,28 @@ class GameHandler {
 	}
 
 	exportMission(){
-		return JSON.stringify(this.missions.filter(m => m._id === this.game._id)[0])
+		return JSON.stringify(missions[this.game.mode][this.game.difficulty].find(m => m.id === this.game.id))
 	}
 
 	saveGame(data){
 		localStorage.setItem('game', data)
-		if (Auth.isAuthenticated()){
-			API.saveGame(data).then(() => {}).catch((e) => {})
-		}
 	}
 
 	setComplete(){
 		this.complete = true
 		localStorage.removeItem('game')
 		if (this.game.difficulty === 'custom'){
-			if (!this.solved.some(mission => mission.custom && mission.mission === this.game.mission)){
+			if (!this.solved.some(mission => mission.c && mission.m === this.game.mission)){
 				this.solved.push({
-					custom: true,
-					mission: this.game.mission
+					c: 1,
+					m: this.game.mission
 				})
 			}
 		} else {
-			if (!this.solved.some(mission => !mission.custom && mission._id === this.game._id)){
+			if (!this.solved.some(mission => !mission.c && mission.id === this.game.id)){
 				this.solved.push({
-					custom: false,
-					_id: this.game._id
+					c: 0,
+					id: this.game.id
 				})
 			}
 		}
@@ -155,10 +109,12 @@ class GameHandler {
 	}
 
 	currentGameIsBookmarked(){
+		if (!this.game) return false
+
 		if (this.game.difficulty === 'custom'){
-			return this.bookmarks.some(bm => bm.custom && bm.mission === this.game.mission)
+			return this.bookmarks.some(bm => bm.c && bm.mission === this.game.mission)
 		} else {
-			return this.bookmarks.some(bm => !bm.custom && bm._id === this.game._id)
+			return this.bookmarks.some(bm => !bm.c && bm.id === this.game.id)
 		}
 	}
 
@@ -166,33 +122,33 @@ class GameHandler {
 		if (!this.currentGameIsBookmarked()){
 			if (this.game.difficulty === 'custom'){
 				this.bookmarks.push({
-					custom: true,
+					c: 1,
 					mission: this.game.mission
 				})
 			} else {
 				this.bookmarks.push({
-					custom: false,
-					_id: this.game._id
+					c: 0,
+					id: this.game.id
 				})
 			}
+			localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 		}
-		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 	}
 
 	removeBookmark({id, mission}){
 		if (id){
-			this.bookmarks = this.bookmarks.filter(bm => bm.custom || bm._id !== id)
+			this.bookmarks = this.bookmarks.filter(bm => bm.c || bm.id !== id)
 		} else {
-			this.bookmarks = this.bookmarks.filter(bm => !bm.custom || bm.mission !== mission)
+			this.bookmarks = this.bookmarks.filter(bm => !bm.c || bm.m !== mission)
 		}
 		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 	}
 
 	loadGameFromBookmark(bm){
-		if (bm.custom){
-			this.setCurrentGame(this.boardFromCustomMission(bm.mission))
+		if (bm.c){
+			this.setCurrentGame(this.boardFromCustomMission(bm.m))
 		} else {
-			this.setCurrentGame(new Board(this.missions.filter(mission => mission._id === bm._id)[0], true))
+			this.setCurrentGame(new Board(missions[modeDecoder[bm.id[0]]][difficultyDecoder[bm.id[1]]].find(mission => mission.id === bm.id), true))
 		}
 	}
 }

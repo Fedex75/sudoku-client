@@ -4,6 +4,9 @@ import App from './App'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import { BrowserRouter } from 'react-router-dom'
 import API from './utils/API'
+import GameHandler from './utils/GameHandler'
+
+GameHandler.init()
 
 const container = document.getElementById('root')
 const root = createRoot(container)

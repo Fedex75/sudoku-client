@@ -18,13 +18,8 @@ function Home(){
 	let navigate = useNavigate()
 
 	let classicMiniature = new Board({
-		_id: null,
-		id: null,
-		mission: '103004080',
-		solution: '123654789',
-		cages: null,
-		mode: 'classic',
-		difficulty: '',
+		id: 'ce0',
+		m: '1.3:4.8.',
 	}, true, 3)
 
 	classicMiniature.setValue({x: 1, y: 0}, 2)
@@ -33,13 +28,10 @@ function Home(){
 	classicMiniature.setValue({x: 2, y: 2}, 9)
 
 	let killerMiniature = new Board({
-		_id: null,
-		id: null,
-		mission: '103004080',
-		solution: '123654789',
-		cages: [[0, 1], [2, 5], [3, 6], [7, 8], [4]],
-		mode: 'killer',
-		difficulty: ''
+		id: 'ke0',
+		m: '1.3:4.8.',
+		s: '123654789',
+		c: '0010,2021,0102,11,1222',
 	}, true, 3)
 
 	killerMiniature.setValue({x: 1, y: 0}, 2)
@@ -79,11 +71,11 @@ function Home(){
 			<SectionContent id="home">
 				<div className="home__grid">
 					<div className="home__grid__item" style={{width: `${squareSize}px`, height: `${squareSize}px`}} onClick={() => {openNewGameActionSheet('classic')}}>
-						<Canvas onClick={() => {openNewGameActionSheet('classic')}} game={classicMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
+						<Canvas noTouch onClick={() => {openNewGameActionSheet('classic')}} game={classicMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
 						<p className="home__grid__item__title">Clásico</p>
 					</div>
 					<div className="home__grid__item" style={{width: `${squareSize}px`, height: `${squareSize}px`}} onClick={() => {openNewGameActionSheet('killer')}}>
-						<Canvas onClick={() => {openNewGameActionSheet('killer')}} game={killerMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
+						<Canvas noTouch onClick={() => {openNewGameActionSheet('killer')}} game={killerMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
 						<p className="home__grid__item__title">Killer</p>
 					</div>
 					<Link to="/bookmarks">
