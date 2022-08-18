@@ -41,65 +41,56 @@ const Sudoku = ({theme}) => {
 
 	const canvasRef = useRef()
 
-	function onClick(x, y, button, hold = false){
-		switch (button){
-			case 0:
-				if (brushRef.current){
-					if (lockedColorRef.current !== null) handleSetColor({x, y}, lockedColorRef.current)
-				} else {
-					if (GameHandler.game.selectedCell.x !== x || GameHandler.game.selectedCell.y !== y){
-						//Click on unselected cell
-						GameHandler.game.setSelectedCell({x, y})
-						let value = GameHandler.game.getSelectedCell().value
-						setPossibleValues()
-						if (value > 0){
-							if (SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = value
-						} else {
-							if (lockedInputRef.current > 0 && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current, hold)
-						}
-					} else {
-						//Click on selected cell
-						let value = GameHandler.game.getSelectedCell().value
-						if (value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = lockedInputRef.current === 0 ? value : 0
-						if (lockedInputRef.current > 0 && possibleValuesRef.current.includes(lockedInputRef.current)) handleNumberInput(lockedInputRef.current, hold)
-					}
-				}
-				break
-			case 1:
-				handleSetColor({x, y}, 'purple')
-				break
-			case 2:
-				const value = GameHandler.game.get({x, y}).value
-				if (value === 0) handleSetNote({x, y}, hold)
-				else if (!hold){
-					GameHandler.game.setSelectedCell({x, y})
-					if (value > 0 && SettingsHandler.settings.autoChangeInputLock){
-						lockedInputRef.current = lockedInputRef.current === value ? 0 : value
-					}
-				}
-				break
-			default:
-				break
-		}
-		setRender(r => r === 100 ? 0 : r+1)
-	}
+	function onClick(c, hold){
+		if (brushRef.current){
+			//If color is locked, paint cell
+			if (lockedColorRef.current !== null) handleSetColor(c, lockedColorRef.current)
+		} else {
+			//Selected cell
+			GameHandler.game.setSelectedCell(c)
+			const selectedCell = GameHandler.game.getSelectedCell()
+			setPossibleValues()
 
-	function handleSetNote(coords, hold){
-		if (!hold) noteDragMode.current = null
-		if (
-			lockedInputRef.current > 0  &&
-			!brushRef.current &&
-			GameHandler.game.getPossibleValues(coords).includes(lockedInputRef.current)
-		){
-			if (noteDragMode.current === null){
-				noteDragMode.current = GameHandler.game.setNote(coords, lockedInputRef.current)
+			if (lockedInputRef.current === 0){
+				//Set input lock
+				if (selectedCell.value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = selectedCell.value
 			} else {
-				if (GameHandler.game.get(coords).notes.includes(lockedInputRef.current) !== noteDragMode.current){
-					GameHandler.game.setNote(coords, lockedInputRef.current)
+				if (hold){
+					if (possibleValuesRef.current.includes(lockedInputRef.current)){
+						if (noteModeRef.current){
+							if (selectedCell.notes.includes(lockedInputRef.current) !== noteDragMode.current) GameHandler.game.setNote(c, lockedInputRef.current)
+						} else {
+							if (selectedCell.value === 0) GameHandler.game.setValue(c, lockedInputRef.current)
+						}
+					}
+				} else {
+					if (selectedCell.value > 0){
+						lockedInputRef.current = selectedCell.value === lockedInputRef.current ? 0 : selectedCell.value
+					} else {
+						if (possibleValuesRef.current.includes(lockedInputRef.current)){
+							if (noteModeRef.current) noteDragMode.current = GameHandler.game.setNote(GameHandler.game.selectedCell, lockedInputRef.current)
+							else GameHandler.game.setValue(GameHandler.game.selectedCell, lockedInputRef.current)
+						}
+					}
 				}
 			}
 		}
-		setRender(r => r === 100 ? 0 : r+1)
+		setPossibleValues()
+	}
+
+	function handleNumpadButtonClick(number, type){
+		if (GameHandler.complete) return
+
+		if (type === 'primary'){
+			if (possibleValuesRef.current.includes(number)){
+				if (noteModeRef.current) GameHandler.game.setNote(GameHandler.game.selectedCell, number)
+				else {
+					if (lockedInputRef.current > 0) lockedInputRef.current = number
+					GameHandler.game.setValue(GameHandler.game.selectedCell, number)
+				}
+			}
+		} else lockedInputRef.current = lockedInputRef.current === number ? 0 : number
+		setPossibleValues()
 	}
 
 	function checkAnimation(){
@@ -197,38 +188,9 @@ const Sudoku = ({theme}) => {
 		}*/
 	}
 
-	function handleNumberInput(number, hold){
-		if (!GameHandler.complete){
-			if (GameHandler.game.selectedCell !== null){
-				const selectedCell = GameHandler.game.getSelectedCell()
-				if (selectedCell.value === 0){
-					if (noteModeRef.current) GameHandler.game.setNote(GameHandler.game.selectedCell, number, )
-					else {
-						GameHandler.game.setValue(GameHandler.game.selectedCell, number)
-						if (SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') lockedInputRef.current = number
-					}
-				} else if (!selectedCell.clue && selectedCell.value > 0 && !noteModeRef.current) {
-					GameHandler.game.setValue(GameHandler.game.selectedCell, number)
-				}
-			}
-			setPossibleValues()
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
-	function handleNumpadButtonClick(number, type){
-		if (type === 'primary'){
-			if (possibleValuesRef.current == null || (possibleValuesRef.current !== null && possibleValuesRef.current.includes(number))) handleNumberInput(number)
-		} else {
-			lockedInputRef.current = lockedInputRef.current === number ? 0 : number
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
 	function invertNoteMode(){
 		noteModeRef.current = !noteModeRef.current
 		setPossibleValues()
-		setRender(r => r === 100 ? 0 : r+1)
 	}
 
 	function invertShowLinks(){
@@ -236,46 +198,18 @@ const Sudoku = ({theme}) => {
 	}
 
 	function eraseSelectedCell(){
-		if (!GameHandler.complete && GameHandler.game.selectedCell !== null){
+		if (GameHandler.complete) return
+
+		if (GameHandler.game.selectedCell !== null){
 			GameHandler.game.erase(GameHandler.game.selectedCell)
 			setPossibleValues()
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
-	function handleKeyPress(e){
-		if (e.key === 'Enter') {
-			invertNoteMode()
-		} else {
-			if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key) && possibleValuesRef.current.includes(Number.parseInt(e.key))){
-				handleNumberInput(Number.parseInt(e.key))
-			} else if (e.key === '0'){
-				eraseSelectedCell()
-			} else if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)){
-				switch (e.key){
-					case 'ArrowDown':
-						if (GameHandler.game.selectedCell !== null && GameHandler.game.selectedCell.y < 8) onClick(GameHandler.game.selectedCell.x, GameHandler.game.selectedCell.y + 1)
-						break
-					case 'ArrowUp':
-						if (GameHandler.game.selectedCell !== null && GameHandler.game.selectedCell.y > 0) onClick(GameHandler.game.selectedCell.x, GameHandler.game.selectedCell.y - 1)
-						break
-					case 'ArrowLeft':
-						if (GameHandler.game.selectedCell !== null && GameHandler.game.selectedCell.x > 0) onClick(GameHandler.game.selectedCell.x - 1, GameHandler.game.selectedCell.y)
-						break
-					case 'ArrowRight':
-						if (GameHandler.game.selectedCell !== null && GameHandler.game.selectedCell.x < 8) onClick(GameHandler.game.selectedCell.x + 1, GameHandler.game.selectedCell.y)
-						break
-					default:
-						break
-				}
-				setPossibleValues()
-				setRender(r => r === 100 ? 0 : r+1)
-			}
 		}
 	}
 
 	function handleHintClick(){
-		if (!GameHandler.complete && GameHandler.game.selectedCell !== null){
+		if (GameHandler.complete) return
+
+		if (GameHandler.game.selectedCell !== null){
 			if (hintState === 0){
 				setHintState(1)
 				setTimeout(() => {setHintState(0)}, 2000)
@@ -283,8 +217,6 @@ const Sudoku = ({theme}) => {
 				setHintState(0)
 				GameHandler.game.hint(GameHandler.game.selectedCell)
 				setPossibleValues()
-				/*if (SettingsHandler.settings.autoChangeInputLock) lockedInputRef.current = 0;*/
-				setRender(r => r === 100 ? 0 : r+1)
 			}
 		}
 	}
@@ -301,13 +233,11 @@ const Sudoku = ({theme}) => {
 	}
 
 	function handleUndo(){
-		if (!GameHandler.complete){
-			GameHandler.game.popBoard()
-			GameHandler.game.saveToLocalStorage()
-			setPossibleValues()
-			canvasRef.current.renderFrame()
-			setRender(r => r === 100 ? 0 : r+1)
-		}
+		if (GameHandler.complete) return
+
+		GameHandler.game.popBoard()
+		canvasRef.current.renderFrame()
+		setPossibleValues()
 	}
 
 	function handleBrushClick(){
@@ -315,15 +245,9 @@ const Sudoku = ({theme}) => {
 		setRender(r => r === 100 ? 0 : r+1)
 	}
 
-	function handleColorButtonClick(color, type){
-		if (type === 'primary') handleSetColor(GameHandler.game.selectedCell, color)
-		else {
-			lockedColorRef.current = lockedColorRef.current === color ? null : color
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
 	function handleSetColor(coords, color){
+		if (GameHandler.complete) return
+
 		const cell = GameHandler.game.get(coords)
 		if (
 			cell.value === 0 &&
@@ -334,10 +258,19 @@ const Sudoku = ({theme}) => {
 		}
 	}
 
+	function handleColorButtonClick(color, type){
+		if (type === 'primary') handleSetColor(GameHandler.game.selectedCell, color)
+		else {
+			lockedColorRef.current = lockedColorRef.current === color ? null : color
+			setRender(r => r === 100 ? 0 : r+1)
+		}
+	}
+
 	function setPossibleValues(){
 		if (noteModeRef.current && GameHandler.game.getSelectedCell().value > 0) possibleValuesRef.current = []
 		else possibleValuesRef.current = GameHandler.game.getPossibleValues(GameHandler.game.selectedCell)
 		completedNumbersRef.current = GameHandler.game.getCompletedNumbers()
+		setRender(r => r === 100 ? 0 : r+1)
 	}
 
 	function handleNewGame(difficulty){
@@ -351,9 +284,7 @@ const Sudoku = ({theme}) => {
 		setShowLinks(false)
 		setPossibleValues()
 		setBookmark(GameHandler.currentGameIsBookmarked())
-
 		newGameActionSheetRef.current.close()
-		setRender(r => r === 100 ? 0 : r+1)
 	}
 
 	function handleBookmarkClick(){
@@ -379,17 +310,13 @@ const Sudoku = ({theme}) => {
 			return
 		}
 
-		const keyPressEvent = window.addEventListener('keypress', handleKeyPress, false)
-
 		setPossibleValues()
-		setRender(r => r === 100 ? 0 : r+1)
 
 		const windowVisibilityChangeEvent = window.addEventListener('visibilitychange', () => {
 			if (GameHandler.game && !GameHandler.game.checkComplete()) GameHandler.game.saveToLocalStorage()
 		})
 
 		return () => {
-			window.removeEventListener('keypress', keyPressEvent)
 			window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
 			GameHandler.game.saveToLocalStorage()
 		}

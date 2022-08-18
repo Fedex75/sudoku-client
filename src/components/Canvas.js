@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import ThemeHandler from '../utils/ThemeHandler'
 import SettingsHandler from '../utils/SettingsHandler'
 import o9n from 'o9n'
@@ -34,8 +34,6 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 
 	const canvasRef = useRef(null)
 	const lastMouseCell = useRef(null)
-	const mouseButton = useRef(null)
-	const [, setRender] = useState(0)
 
 	function resizeCanvas(){
 		if (!canvasRef.current) return
@@ -428,72 +426,34 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 		for (let x = 0; x < nSquares; x++){
 			if (clickX <= cellPositions[x][0].x + squareSize){
 				for (let y = 0; y < nSquares; y++) {
-					if (clickY <= cellPositions[0][y].y + squareSize){
-						return {
-							x: x,
-							y: y
-						}
-					}
+					if (clickY <= cellPositions[0][y].y + squareSize) return {x, y}
 				}
 			}
 		}
 		return null
 	}
 
-	function handleInputStart(coords, button){
-		if (coords){
-			lastMouseCell.current = coords
-			mouseButton.current = button
-			onClick(coords.x, coords.y, button)
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
-	function onMouseDown(e){
-		if (!noTouch){
-			e.stopPropagation()
-			e.preventDefault()
-			handleInputStart(screenCoordsToBoardCoords(e.clientX, e.clientY), e.button)
-		}
-	}
-
 	function onTouchStart(e){
 		if (!noTouch){
 			e.stopPropagation()
 			e.preventDefault()
-			handleInputStart(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY), 0)
-		}	
-	}
-
-	function handleInputMove(coords){
-		if (!noTouch && coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
+			
+			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
 			lastMouseCell.current = coords
-			onClick(coords.x, coords.y, mouseButton.current, true)
-			setRender(r => r === 100 ? 0 : r+1)
-		}
-	}
-
-	function onMouseMove(e){
-		if (!noTouch){
-			e.stopPropagation()
-			e.preventDefault()
-			handleInputMove(screenCoordsToBoardCoords(e.clientX, e.clientY))
-		}
+			onClick(coords, false)
+		}	
 	}
 
 	function onTouchMove(e){
 		if (!noTouch){
 			e.stopPropagation()
 			e.preventDefault()
-			handleInputMove(screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY))
-		}
-	}
-
-	function onMouseUp(e){
-		if (!noTouch){
-			e.stopPropagation()
-			e.preventDefault()
-			lastMouseCell.current = null
+			
+			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
+			if (!noTouch && coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
+				lastMouseCell.current = coords
+				onClick(coords, true)
+			}
 		}
 	}
 
@@ -504,15 +464,6 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 		}
 	}
 
-	function onMouseLeave(e){
-		if (!noTouch){
-			e.stopPropagation()
-			e.preventDefault()
-			lastMouseCell.current = null
-			mouseButton.current = null
-		}
-	}
-
 	return (
 		<canvas
 			style={{touchAction: noTouch ? 'auto' : 'none'}}
@@ -520,10 +471,6 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 			width={canvasSize}
 			height={canvasSize}
 			onContextMenu={onContextMenu}
-			onMouseDown={onMouseDown}
-			onMouseMove={onMouseMove}
-			onMouseUp={onMouseUp}
-			onMouseLeave={onMouseLeave}
 		/>
 	)
 })

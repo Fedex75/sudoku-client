@@ -25,11 +25,6 @@ function ColorButton({onClick = () => {}, color, theme, locked}){
     return (
         <div
             className={'numpad__button color'}
-            onClick={(e) => {
-                e.stopPropagation()
-                if (endLongPressFired.current) endLongPressFired.current = false
-                else onClick(color, 'primary')
-            }}
             style={{backgroundColor: colors[color]}}
             onTouchStart={(e) => {
 				e.stopPropagation()

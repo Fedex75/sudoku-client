@@ -78,7 +78,7 @@ export default class Board {
 			selectedCell: this.selectedCell,
 			animationCache: JSON.parse(JSON.stringify(this.animationCache))
 		})
-		if (this.history.length > 5) this.history.shift()
+		//if (this.history.length > 5) this.history.shift()
 	}
 
 	popBoard(){
@@ -105,45 +105,45 @@ export default class Board {
 
 	setNote(c, n, state = null, push = true, checkAutoSolution = true){
 		const cell = this.get(c)
-		if (cell.value === 0){
-			//Check if only available place in quadrant
-			if (checkAutoSolution){
-				const quadrantX = Math.floor(c.x / 3)
-				const quadrantY = Math.floor(c.y / 3)
-				let found = 0
-				let highlightedCells = this.calculateHighlightedCells(null, n)
-				for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
-				if (found === 1){
-					this.setValue(c, n)
-					return null
-				}
-			}
 
-			if (cell.notes.includes(n)){
-				if (state !== true){
-					//Remove note
-					if (push) this.pushBoard()
-					this.board[c.x][c.y].notes = cell.notes.filter(note => note !== n)
-					if (
-						(
-							(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
-							(SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation)
-						) &&
-						this.board[c.x][c.y].notes.length === 1
-					) this.setValue(c, this.board[c.x][c.y].notes[0], false)
-					return false
-				}
-			} else {
-				if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (this.get(c).color === 'default'))){
-					//Add note
-					if (push) this.pushBoard()
-					this.board[c.x][c.y].notes.push(n)
-					this.checkFullNotation()
-					return true
-				}
+		if (cell.value > 0) return null
+		
+		//Check if only available place in quadrant
+		if (checkAutoSolution){
+			const quadrantX = Math.floor(c.x / 3)
+			const quadrantY = Math.floor(c.y / 3)
+			let found = 0
+			let highlightedCells = this.calculateHighlightedCells(null, n)
+			for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
+			if (found === 1){
+				this.setValue(c, n)
+				return null
 			}
 		}
-		return null
+
+		if (cell.notes.includes(n)){
+			if (state !== true){
+				//Remove note
+				if (push) this.pushBoard()
+				this.board[c.x][c.y].notes = cell.notes.filter(note => note !== n)
+				if (
+					(
+						(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
+						(SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation)
+					) &&
+					this.board[c.x][c.y].notes.length === 1
+				) this.setValue(c, this.board[c.x][c.y].notes[0], false)
+				return false
+			}
+		} else {
+			if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (this.get(c).color === 'default'))){
+				//Add note
+				if (push) this.pushBoard()
+				this.board[c.x][c.y].notes.push(n)
+				this.checkFullNotation()
+				return true
+			}
+		}
 	}
 
 	clearCandidatesFromVisibleCells(c, s){
@@ -151,11 +151,15 @@ export default class Board {
 	}
 
 	setValue(c, s, push = true){
+		if (this.board[c.x][c.y].clue) return
+
 		if (push) this.pushBoard()
 		this.board[c.x][c.y].value = s
 		this.board[c.x][c.y].notes = []
 		this.clearCandidatesFromVisibleCells(c, s)
+		
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default'
+		
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
 			const cageIndex = this.get(c).cageIndex
 			let remaining = this.cages[cageIndex].length
@@ -180,7 +184,6 @@ export default class Board {
 				})
 			}
 		}
-		//this.saveToLocalStorage()
 	}
 
 	hint(c){
@@ -372,6 +375,8 @@ export default class Board {
 	}
 
 	setColor(coords, newColor){
+		if (GameHandler.complete) return
+
 		this.pushBoard()
 		this.board[coords.x][coords.y].color = newColor
 		//this.saveToLocalStorage()

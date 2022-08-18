@@ -7,19 +7,12 @@ function NunmpadButton({onClick, number, disabled, hidden, locked}){
 	const endLongPressFired = useRef(false)
 	const [onTouchStart, onTouchEnd] = useLongPress((type) => {
 		endLongPressFired.current = true
-		onClick(number, type)
+		if (type === 'secondary' || !disabled) onClick(number, type)
 	}, 300)
 
 	return (
 		<div
-			/*ref={divRef}*/
 			className={`numpad__button number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
-			onClick={(e) => {
-				e.stopPropagation()
-				if (hidden) return
-				if (endLongPressFired.current) endLongPressFired.current = false
-				else onClick(number, 'primary')
-			}}
 			onTouchStart={(e) => {
 				e.stopPropagation()
 				if (hidden) return
