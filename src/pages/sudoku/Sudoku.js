@@ -113,7 +113,7 @@ const Sudoku = ({theme}) => {
 			}
 		}
 
-		let animation = []
+		/*let animation = []
 		if (GameHandler.game.checkComplete()){
 			if (!GameHandler.game.animationCache.board){
 				GameHandler.game.animationCache.board = true
@@ -187,7 +187,7 @@ const Sudoku = ({theme}) => {
 			}
 			if (animation.length > 0 && animationCallback) animationCallback(animation)
 			GameHandler.game.saveToLocalStorage()
-		}
+		}*/
 	}
 
 	function invertNoteMode(){
