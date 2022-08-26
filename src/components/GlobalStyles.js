@@ -438,7 +438,7 @@ export const GlobalStyles = createGlobalStyle`
     border-color: ${({ theme }) => theme.settingsItemBorder};
   }
 
-  settings__item:first-child {
+  .settings__item:first-child {
 		border-top-left-radius: 10px;
 		border-top-right-radius: 10px;
 	}
