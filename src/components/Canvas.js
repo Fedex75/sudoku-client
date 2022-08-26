@@ -33,13 +33,14 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	}))
 
 	const canvasRef = useRef(null)
+	const wrapperRef = useRef(null)
 	const lastMouseCell = useRef(null)
 
 	function resizeCanvas(){
 		if (!canvasRef.current) return
 		const val = autoSize ?
 		//`${window.visualViewport.width > 880 ? Math.min(window.visualViewport.width, canvasSize) : Math.min(Math.min(window.visualViewport.height - 350, window.visualViewport.width - 6), canvasSize)}px`
-		`${Math.min(window.visualViewport.height - 340, window.visualViewport.width, canvasSize)}px`
+		`${Math.min(window.visualViewport.height - 340, window.visualViewport.width - 4, canvasSize)}px`
 		: size
 		canvasRef.current.style.width = val
 		canvasRef.current.style.height = val
@@ -75,15 +76,19 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false)
 		let rotateEvent = o9n.orientation.addEventListener('change', resizeCanvas)
-		const canvas = canvasRef.current
-		let touchStartEvent = canvas.addEventListener('touchstart', onTouchStart, {passive: false}); 
-		let touchMoveEvent = canvas.addEventListener('touchmove', onTouchMove, {passive: false})
+
+		const wrapper = wrapperRef.current
+		let touchStartEvent
+		if (!noTouch){
+			touchStartEvent = wrapper.addEventListener('touchstart', (e) => {
+				e.preventDefault()
+			}, {passive: false})
+		}
 
 		return () => {
 			window.removeEventListener('resize', resizeEvent)
 			o9n.orientation.removeEventListener('change', rotateEvent)
-			canvas.removeEventListener('touchstart', touchStartEvent)
-			canvas.removeEventListener('touchmove', touchMoveEvent)
+			if (!noTouch) wrapper.removeEventListener('touchstart', touchStartEvent)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
@@ -436,18 +441,18 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	function onTouchStart(e){
 		if (!noTouch){
 			e.stopPropagation()
-			e.preventDefault()
 			
 			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
-			lastMouseCell.current = coords
-			onClick(coords, false)
+			if (coords){
+				lastMouseCell.current = coords
+				onClick(coords, false)
+			}
 		}	
 	}
 
 	function onTouchMove(e){
 		if (!noTouch){
 			e.stopPropagation()
-			e.preventDefault()
 			
 			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
 			if (!noTouch && coords && lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)){
@@ -465,13 +470,17 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	}
 
 	return (
-		<canvas
-			style={{touchAction: noTouch ? 'auto' : 'none'}}
-			ref={canvasRef}
-			width={canvasSize}
-			height={canvasSize}
-			onContextMenu={onContextMenu}
-		/>
+		<div className='canvas__wrapper' ref={wrapperRef}>
+			<canvas
+				style={{touchAction: noTouch ? 'auto' : 'none'}}
+				ref={canvasRef}
+				width={canvasSize}
+				height={canvasSize}
+				onTouchStart={onTouchStart}
+				onTouchMove={onTouchMove}
+				onContextMenu={onContextMenu}
+			/>
+		</div>
 	)
 })
 

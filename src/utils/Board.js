@@ -29,6 +29,7 @@ export default class Board {
 			this.board = data.board
 			this.selectedCell = data.selectedCell
 			this.history = data.history
+			this.checkFullNotation()
 		}
 	}
 

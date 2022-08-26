@@ -87,8 +87,10 @@ export const GlobalStyles = createGlobalStyle`
     display: flex;
     flex-flow: column;
     align-items: center;
+    justify-content: center;
     background-color: ${({ theme }) => theme.topbarBackgroundColor};
-    padding: 10px;
+    padding-right: 10px;
+    height: 44px;
   }
 
   .topbar__top {
@@ -111,7 +113,9 @@ export const GlobalStyles = createGlobalStyle`
     grid-area: back;
     display: grid;
     place-items: center;
-    margin-right: 10px;
+    padding: 10px;
+    height: 44px;
+    box-sizing: border-box;
   }
 
   .topbar__top__back {
@@ -371,6 +375,10 @@ export const GlobalStyles = createGlobalStyle`
 		align-items: center;
 	}
 
+  .canvas__wrapper {
+    width: 100%;
+  }
+
 	.sudoku__win-screen-wrapper {
 		display: flex;
 		justify-content: center;
@@ -453,7 +461,7 @@ export const GlobalStyles = createGlobalStyle`
     color: ${({ theme }) => theme.primaryTextColor};
   }
 
-  #bookmarks {
+  .bookmarks__wrapper {
     display: flex;
     flex-flow: column;
     gap: 20px;
@@ -485,5 +493,14 @@ export const GlobalStyles = createGlobalStyle`
   .bookmarks__item__canvas-wrapper {
     display: grid;
     place-items: center;
+  }
+
+  .bookmarks__empty {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: ${({theme}) => theme.bookmarksEmptyColor};
   }
 `

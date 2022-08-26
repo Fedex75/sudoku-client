@@ -1,4 +1,4 @@
-import { faBookmark, faCheck } from "@fortawesome/free-solid-svg-icons"
+import { faBookmark, faCheck, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useNavigate } from "react-router"
@@ -17,12 +17,19 @@ function Bookmarks(){
 	const [playBookmarkData, setPlayBookmarkData] = useState(null)
 	const navigate = useNavigate()
 
+	const clearBookmarksActionSheetRef = useRef(null)
 	const removeBookmarkActionSheetRef = useRef(null)
 	const playBookmarkActionSheetRef = useRef(null)
 
 	function handleRemoveBookmark(bm){
 		setRemoveBookmarkData(bm)
 		removeBookmarkActionSheetRef.current.open()
+	}
+
+	function clearBookmarks(){
+		GameHandler.clearBookmarks()
+		clearBookmarksActionSheetRef.current.close()
+		setBookmarks([])
 	}
 
 	function removeBookmark(){
@@ -50,44 +57,54 @@ function Bookmarks(){
 
 	return (
 		<Section>
-			<Topbar title="Juegos guardados" backURL="/" />
+			<Topbar title="Marcadores" backURL="/">
+				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrashCan} className="topbar__buttons__button" style={{color: 'var(--red)'}} onClick={() => {clearBookmarksActionSheetRef.current.open()}}/> : null}
+			</Topbar>
 
 			<SectionContent id="bookmarks">
 				{
-					bookmarks.map((bm, i) => {
-						let board
+					bookmarks.length > 0 ?
+					<div className="bookmarks__wrapper">
+						{
+							bookmarks.map((bm, i) => {
+								let board
 
-						if (bm.c){
-							board = new Board({
-								id: 'cc0',
-								m: Decoder.decode(bm.m),
-							}, true)
-						} else {
-							board = new Board(missions[modeDecoder[bm.id[0]]][difficultyDecoder[bm.id[1]]].find(mission => mission.id === bm.id), true)
+								if (bm.c){
+									board = new Board({
+										id: 'cc0',
+										m: Decoder.decode(bm.m),
+									}, true)
+								} else {
+									board = new Board(missions[modeDecoder[bm.id[0]]][difficultyDecoder[bm.id[1]]].find(mission => mission.id === bm.id), true)
+								}
+
+								const solved = bm.c ? false : GameHandler.solved.includes(bm.id)
+
+								return (
+									<div key={i} className="bookmarks__item">
+										<div className="bookmarks_item__top">
+											<p className="bookmarks__item__top__title">{`${modeTranslations[board.mode]} - ${difficultyTranslations[board.difficulty]}`}</p>
+											{solved ? <FontAwesomeIcon style={{color: 'var(--green)'}} icon={faCheck} /> : null}
+											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => {handleRemoveBookmark(bm)}} />
+										</div>
+										<div className="bookmarks__item__canvas-wrapper" onClick={() => {handlePlayBookmark(bm)}}>
+											<Canvas game={board} autoSize={false} size={canvasSize} showSelectedCell={false} noTouch/>
+										</div>
+									</div>
+								)
+							})
 						}
-
-						let solved
-						if (bm.c){
-							solved = GameHandler.solved.some(mission => mission.c && mission.m === bm.m)
-						} else {
-							solved = GameHandler.solved.some(mission => !mission.c && mission.id === bm.id)
-						}
-
-						return (
-							<div key={i} className="bookmarks__item">
-								<div className="bookmarks_item__top">
-									<p className="bookmarks__item__top__title">{`${modeTranslations[board.mode]} - ${difficultyTranslations[board.difficulty]}`}</p>
-									{solved ? <FontAwesomeIcon style={{color: 'var(--green)'}} icon={faCheck} /> : null}
-									<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => {handleRemoveBookmark(bm)}} />
-								</div>
-								<div className="bookmarks__item__canvas-wrapper" onClick={() => {handlePlayBookmark(bm)}}>
-									<Canvas game={board} autoSize={false} size={canvasSize} showSelectedCell={false} noTouch/>
-								</div>
-							</div>
-						)
-					})
+					</div> :
+					<div className="bookmarks__empty">
+						<FontAwesomeIcon icon={faBookmark} style={{fontSize: 70, marginBottom: 10}}/>
+						<p style={{fontSize: 20}}>No hay marcadores</p>
+					</div>
 				}
 			</SectionContent>
+
+			<ActionSheet reference={clearBookmarksActionSheetRef} title="¿Eliminar todos los marcadores?" cancelTitle="Cancelar">
+				<ActionSheetButton title="Eliminar" color="var(--red)" onClick={clearBookmarks}/>
+			</ActionSheet>
 
 			<ActionSheet reference={removeBookmarkActionSheetRef} title="¿Eliminar marcador?" cancelTitle="Cancelar">
 				<ActionSheetButton title="Eliminar" color="var(--red)" onClick={removeBookmark}/>

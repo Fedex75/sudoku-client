@@ -83,7 +83,7 @@ function Home(){
 							<div className="home__grid__item__icon-wrapper">
 								<FontAwesomeIcon className='home__grid__item__icon-wrapper__icon' icon={faBookmark} />
 							</div>
-							<p className="home__grid__item__title">Guardados</p>
+							<p className="home__grid__item__title">Marcadores</p>
 						</div>
 					</Link>					
 					<div className="home__grid__item" style={{width: `${squareSize}px`, height: `${squareSize}px`}} onClick={handleImport}>

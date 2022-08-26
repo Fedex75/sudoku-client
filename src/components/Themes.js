@@ -55,6 +55,7 @@ export const lightTheme = {
 	canvasKillerCageColor: darkGrayBlue,
 	homeGridShadow: '0px 0px 10px #aaaaaa',
 	homeGridIconColor: '#444444',
+	bookmarksEmptyColor: '#444444',
 }
 
 export const darkTheme = {
@@ -78,13 +79,13 @@ export const darkTheme = {
 	lockedButtonBackgroundColor: blue,
 	lockedButtonBorderColor: blue,
 	canvasLightDefaultCellColor: '#25242c',
-	canvasDarkDefaultCellColor: '#191925',
+	canvasDarkDefaultCellColor: '#161620',
 	canvasCellBorderColor: 'black',
 	canvasQuadrantBorderColor: 'black',
 	canvasClueColor: '#75747c',
 	canvasSolutionColor: '#6f90c3',
 	canvasSelectedCellBackground: '#153b79',
-	canvasSameValueCellBackground: '#16151b',
+	canvasSameValueCellBackground: '#0f0e12',
 	canvasNoteHighlightColor: 'white',
 	canvasAnimationBaseColor: '255, 255, 255',
 	gameMenuListBackground: '#25242c',
@@ -109,4 +110,5 @@ export const darkTheme = {
 	homeGridBackground: darkBackground,
 	homeGridShadow: 'none',
 	homeGridIconColor: '#616161',
+	bookmarksEmptyColor: '#616161',
 }

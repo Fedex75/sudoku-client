@@ -5,7 +5,7 @@ import Decoder from './Decoder'
 import { difficultyDecoder, modeDecoder } from './Difficulties'
 
 const BOARD_API_VERSION = 4
-const STORAGE_SCHEMA_VERSION = 1
+const STORAGE_SCHEMA_VERSION = 2
 
 class GameHandler {
 	init(){
@@ -47,7 +47,7 @@ class GameHandler {
 			return
 		}
 
-		let candidates = missions[mode][difficulty].filter(c => !this.solved.some(mission => !mission.c && mission.id === c.id))
+		let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
 		if (candidates.length === 0) candidates = missions[mode][difficulty]
 		this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], true))
 	}
@@ -90,21 +90,7 @@ class GameHandler {
 	setComplete(){
 		this.complete = true
 		localStorage.removeItem('game')
-		if (this.game.difficulty === 'custom'){
-			if (!this.solved.some(mission => mission.c && mission.m === this.game.mission)){
-				this.solved.push({
-					c: 1,
-					m: this.game.mission
-				})
-			}
-		} else {
-			if (!this.solved.some(mission => !mission.c && mission.id === this.game.id)){
-				this.solved.push({
-					c: 0,
-					id: this.game.id
-				})
-			}
-		}
+		if (this.game.difficulty !== 'custom' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
 		localStorage.setItem('solved', JSON.stringify(this.solved))
 	}
 
@@ -135,12 +121,13 @@ class GameHandler {
 		}
 	}
 
+	clearBookmarks(){
+		this.bookmarks = []
+		localStorage.setItem('bookmarks', '[]')
+	}
+
 	removeBookmark({id, mission}){
-		if (id){
-			this.bookmarks = this.bookmarks.filter(bm => bm.c || bm.id !== id)
-		} else {
-			this.bookmarks = this.bookmarks.filter(bm => !bm.c || bm.m !== mission)
-		}
+		this.bookmarks = id ? this.bookmarks.filter(bm => bm.c || bm.id !== id) : this.bookmarks.filter(bm => !bm.c || bm.m !== mission)
 		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 	}
 

@@ -1,18 +1,25 @@
 import { faChevronLeft, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
-import ThemeHandler from '../../utils/ThemeHandler'
 import Input from '../Input'
 
 function Topbar({title, subtitle = '', titleSize = 24, children, backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}}){
 	return (
 		<div className="topbar">
 			<div className={`topbar__top ${subtitle !== '' ? 'subtitle' : ''}`}>
-				<div className='topbar__top__back'>
-					{backURL ? <Link to={backURL}><FontAwesomeIcon icon={faChevronLeft} style={{color: ThemeHandler.theme.topbarFontColor}} /></Link> :
-					onBack ? <FontAwesomeIcon icon={faChevronLeft} style={{color: ThemeHandler.theme.topbarFontColor}} onClick={onBack} /> : null}
-				</div>
-				<p className='topbar__title' style={{fontSize: titleSize}}>{title}</p>
+				{
+					backURL ?
+					<Link to={backURL}>
+						<div className='topbar__top__back'>
+							<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} />
+						</div>
+					</Link> :
+					onBack ? 
+					<div className='topbar__top__back'>
+						<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} onClick={onBack} />
+					</div> : null
+				}
+				<p className='topbar__title' style={{fontSize: titleSize, paddingLeft: backURL || onBack ? 0 : 10}}>{title}</p>
 				{subtitle !== '' ? <p className='topbar__subtitle'>{subtitle}</p> : null}
 				<div className='topbar__buttons'>
 					{children}
