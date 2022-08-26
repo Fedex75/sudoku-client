@@ -104,22 +104,24 @@ export default class Board {
 		this.selectedCell = c
 	}
 
+	onlyAvailableInQuadrant(c, n){
+		const quadrantX = Math.floor(c.x / 3)
+		const quadrantY = Math.floor(c.y / 3)
+		let found = 0
+		let highlightedCells = this.calculateHighlightedCells(null, n)
+		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
+		return found === 1
+	}
+
 	setNote(c, n, state = null, push = true, checkAutoSolution = true){
 		const cell = this.get(c)
 
 		if (cell.value > 0) return null
 		
 		//Check if only available place in quadrant
-		if (checkAutoSolution){
-			const quadrantX = Math.floor(c.x / 3)
-			const quadrantY = Math.floor(c.y / 3)
-			let found = 0
-			let highlightedCells = this.calculateHighlightedCells(null, n)
-			for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
-			if (found === 1){
-				this.setValue(c, n)
-				return null
-			}
+		if (checkAutoSolution && this.onlyAvailableInQuadrant(c, n)){
+			this.setValue(c, n)
+			return true
 		}
 
 		if (cell.notes.includes(n)){
@@ -133,7 +135,10 @@ export default class Board {
 						(SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation)
 					) &&
 					this.board[c.x][c.y].notes.length === 1
-				) this.setValue(c, this.board[c.x][c.y].notes[0], false)
+				){
+					this.setValue(c, this.board[c.x][c.y].notes[0], false)
+					return true
+				}
 				return false
 			}
 		} else {
@@ -428,46 +433,6 @@ export default class Board {
 
 		this.fullNotation = true
 	}
-
-	/*checkPairs(c){
-		if (!SettingsHandler.settings.autoDetectPairs) return
-		let cell1 = this.get(c)
-		cell1.notes.sort()
-		const quadrantX = Math.floor(c.x / 3)
-		const quadrantY = Math.floor(c.y / 3)
-		for (let x = quadrantX * 3; x < quadrantX * 3 + 3; x++){
-			for (let y = quadrantY * 3; y < quadrantY * 3 + 3; y++){
-				if (x !== c.x || y !== c.y){
-					const cell2 = this.get({x, y})
-					cell2.notes.sort()
-					//If both cells have 2 candidates and they are the same...
-					if (cell1.notes.length === 2 && cell2.notes.length === 2 && cell1.notes[0] === cell2.notes[0] && cell1.notes[1] === cell2.notes[1]){
-						//For each candidate...
-						for (const n of cell1.notes){
-							//For each cell in the quadrant
-							for (let x2 = quadrantX * 3; x2 < quadrantX * 3 + 3; x2++){
-								for (let y2 = quadrantY * 3; y2 < quadrantY * 3 + 3; y2++){
-									//If possibleValues inculdes n and it's not one of the 2 cells of the pair, return
-									if (
-										this.getPossibleValues({x: x2, y: y2}).includes(n) &&
-										(x2 !== c.x || y2 !== c.y) &&
-										(x2 !== x || y2 !== y)
-									){
-										return
-									}
-								}
-							}
-						}
-
-						//The cells are a pair
-						this.setColor(c, 'purple')
-						this.setColor({x, y}, 'purple')
-						return
-					}
-				}
-			}
-		}
-	}*/
 
 	getTextRepresentation(cluesOnly){
 		let text = ''

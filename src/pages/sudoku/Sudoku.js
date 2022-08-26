@@ -57,7 +57,7 @@ const Sudoku = ({theme}) => {
 				if (hold){
 					if (cellPossibleValues.includes(lockedInput)){
 						if (noteMode && cellPossibleValues.length > 1){
-							if (cell.notes.includes(lockedInput) !== noteDragMode) GameHandler.game.setNote(coords, lockedInput)
+							if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInQuadrant(coords, lockedInput)) GameHandler.game.setNote(coords, lockedInput)
 						} else {
 							if (cell.value === 0) GameHandler.game.setValue(coords, lockedInput)
 						}
@@ -67,9 +67,14 @@ const Sudoku = ({theme}) => {
 					if (cell.value > 0){
 						setLockedInput(li => cell.value === li ? 0 : cell.value)
 					} else {
-						if (cellPossibleValues.includes(lockedInput)){
-							if (noteMode && cellPossibleValues.length > 1) setNoteDragMode(GameHandler.game.setNote(coords, lockedInput))
-							else GameHandler.game.setValue(coords, lockedInput)
+						if (noteMode){
+							if (cellPossibleValues.length === 1){
+								if (cellPossibleValues.includes(lockedInput)) GameHandler.game.setValue(coords, lockedInput)
+							} else {
+								if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) setNoteDragMode(GameHandler.game.setNote(coords, lockedInput))
+							}
+						} else {
+							if (cellPossibleValues.includes(lockedInput)) GameHandler.game.setValue(coords, lockedInput)
 						}
 					}
 				}
