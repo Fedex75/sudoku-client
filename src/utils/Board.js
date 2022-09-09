@@ -15,12 +15,6 @@ export default class Board {
 			data.solution
 		this.fullNotation = false
 		this.cages = raw ? data.c?.split(',').map(s => s.match(/.{2}/g)) || null : data.cages || null
-		this.animationCache = data.animationCache || {
-			board: false,
-			rows: Array(nSquares).fill(false),
-			cols: Array(nSquares).fill(false),
-			quadrants: Array(nSquares).fill(false)
-		}
 		this.nSquares = nSquares
 
 		if (raw){
@@ -76,8 +70,7 @@ export default class Board {
 	pushBoard(){
 		this.history.push({
 			board: JSON.parse(JSON.stringify(this.board)),
-			selectedCell: this.selectedCell,
-			animationCache: JSON.parse(JSON.stringify(this.animationCache))
+			selectedCell: this.selectedCell
 		})
 		//if (this.history.length > 5) this.history.shift()
 	}
@@ -86,7 +79,6 @@ export default class Board {
 		if (this.history.length > 0){
 			this.board = this.history[this.history.length - 1].board
 			this.selectedCell = this.history[this.history.length - 1].selectedCell
-			this.animationCache = this.history[this.history.length - 1].animationCache
 			this.checkFullNotation(true)
 			this.history.pop()
 		}
@@ -466,11 +458,5 @@ export default class Board {
 	restart(){
 		this.initBoard()
 		this.fullNotation = false
-		this.animationCache = {
-			board: false,
-			rows: Array(this.nSquares).fill(false),
-			cols: Array(this.nSquares).fill(false),
-			quadrants: Array(this.nSquares).fill(false)
-		}
 	}
 }

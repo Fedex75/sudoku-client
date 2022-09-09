@@ -40,8 +40,17 @@ const Sudoku = ({theme}) => {
 	const canvasRef = useRef()
 	const sudokuRef = useRef()
 
+	function handleComplete(){
+		setTimeout(() => {
+			setWin(true)
+			setShowLinks(false)
+			setLockedInput(0)
+			setLockedColor(defaultLockedColor)
+		}, 1350) //Must be equal to animation duration in Canvas.js
+	}
+
 	function onClick(coords, hold){
-		let animations = null
+		let animations = []
 
 		if (brush){
 			GameHandler.game.setSelectedCell(coords)
@@ -87,13 +96,16 @@ const Sudoku = ({theme}) => {
 		}
 		updatePossibleValues()
 
-		if (animations) canvasRef.current?.doAnimation(animations)
+		if (animations.length > 0){
+			canvasRef.current?.doAnimation(animations)
+			if (animations[0].type === 'board') handleComplete()
+		}
 	}
 
 	function handleNumpadButtonClick(number, type){
 		if (GameHandler.complete) return
 
-		let animations = null
+		let animations = []
 
 		if (type === 'primary'){
 			if (possibleValues.includes(number)){
@@ -107,7 +119,10 @@ const Sudoku = ({theme}) => {
 		} else setLockedInput(li => li === number ? 0 : number)
 		updatePossibleValues()
 
-		if (animations) canvasRef.current?.doAnimation(animations)
+		if (animations.length > 0){
+			canvasRef.current?.doAnimation(animations)
+			if (animations[0].type === 'board') handleComplete()
+		}
 	}
 
 	function invertNoteMode(){
@@ -132,7 +147,7 @@ const Sudoku = ({theme}) => {
 	function handleHintClick(){
 		if (GameHandler.complete) return
 
-		let animations = null
+		let animations = []
 
 		if (GameHandler.game.selectedCell !== null){
 			if (hintState === 0){
@@ -145,7 +160,10 @@ const Sudoku = ({theme}) => {
 			}
 		}
 
-		if (animations) canvasRef.current?.doAnimation(animations)
+		if (animations.length > 0){
+			canvasRef.current?.doAnimation(animations)
+			if (animations[0].type === 'board') handleComplete()
+		}
 	}
 
 	function handleEraseInkClick(){
