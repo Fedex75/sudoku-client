@@ -60,7 +60,7 @@ export default class Board {
 					let x = cell[0]
 					let y = cell[1]
 					this.board[x][y].cageIndex = cageIndex
-					if (this.cages[cageIndex].length === 1) this.board[x][y].value = this.board[x][y].solution
+					if (this.cages[cageIndex].length === 1 && this.nSquares > 3) this.board[x][y].value = this.board[x][y].solution
 					if (cellIndex === 0){
 						let sum = 0
 						for (const cell2 of this.cages[cageIndex]) sum += this.board[cell2[0]][cell2[1]].solution
@@ -116,12 +116,11 @@ export default class Board {
 	setNote(c, n, state = null, push = true, checkAutoSolution = true){
 		const cell = this.get(c)
 
-		if (cell.value > 0) return null
+		if (cell.value > 0) return [null, []]
 		
 		//Check if only available place in quadrant
 		if (checkAutoSolution && this.onlyAvailableInQuadrant(c, n)){
-			this.setValue(c, n)
-			return true
+			return [true, this.setValue(c, n)]
 		}
 
 		if (cell.notes.includes(n)){
@@ -136,10 +135,9 @@ export default class Board {
 					) &&
 					this.board[c.x][c.y].notes.length === 1
 				){
-					this.setValue(c, this.board[c.x][c.y].notes[0], false)
-					return true
+					return [true, this.setValue(c, this.board[c.x][c.y].notes[0], false)]
 				}
-				return false
+				return [false, []]
 			}
 		} else {
 			if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (this.get(c).color === 'default'))){
@@ -147,7 +145,7 @@ export default class Board {
 				if (push) this.pushBoard()
 				this.board[c.x][c.y].notes.push(n)
 				this.checkFullNotation()
-				return true
+				return [true, []]
 			}
 		}
 	}
@@ -166,6 +164,8 @@ export default class Board {
 		
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default'
 		
+		let animations = []
+
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
 			const cageIndex = this.get(c).cageIndex
 			let remaining = this.cages[cageIndex].length
@@ -185,20 +185,39 @@ export default class Board {
 					let x = coords[0]
 					let y = coords[1]
 					if (this.get({x, y}).value === 0){
-						this.setValue({x, y}, realSum - sum, false)
+						animations.concat(this.setValue({x, y}, realSum - sum, false))
 					}
 				})
 			}
 		}
+
+		//Check animations
+		if (this.checkComplete()) animations = [{type: 'board', center: c}]
+		else {
+			let flagRow = true
+			let flagCol = true
+			for (let i = 0; i < this.nSquares; i++){
+				if (this.get({x: i, y: c.y}).value === 0) flagRow = false
+				if (this.get({x: c.x, y: i}).value === 0) flagCol = false
+			}
+			if (flagRow) animations.push({type: 'row', center: c})
+			if (flagCol) animations.push({type: 'col', center: c})
+
+			const quadrantX = Math.floor(c.x / 3)
+			const quadrantY = Math.floor(c.y / 3)
+
+			let quadrantFlag = true
+			for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (this.board[quadrantX * 3 + x][quadrantY * 3 + y].value === 0) quadrantFlag = false
+			if (quadrantFlag) animations.push({type: 'quadrant', quadrantX, quadrantY})
+		}
+
+		return animations
 	}
 
 	hint(c){
-		this.pushBoard()
+		const animations = this.setValue(c, this.board[c.x][c.y].solution, true)
 		this.board[c.x][c.y].clue = true
-		this.board[c.x][c.y].value = this.board[c.x][c.y].solution
-		this.clearCandidatesFromVisibleCells(c, this.board[c.x][c.y].solution)
-		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default'
-		//this.saveToLocalStorage()
+		return animations
 	}
 
 	erase(c){

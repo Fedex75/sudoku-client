@@ -25,16 +25,43 @@ function brightness(x, p, q, l){
 	return Math.max(0, k*(1-Math.abs(2/l*(x+t)-1)))
 }
 
-const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimationCallback = () => {}, onClick = () => {}, nSquares = 9, autoSize = true, size = null, showSelectedCell = true, canvasSize = 500, noTouch = false}, ref) => {
+const Canvas = forwardRef(({
+		game,
+		lockedInput = 0,
+		showLinks = false,
+		onClick = () => {},
+		nSquares = 9,
+		autoSize = true,
+		size = null,
+		showSelectedCell = true,
+		canvasSize = 500,
+		noTouch = false
+}, ref) => {	
+	
 	useImperativeHandle(ref, () => ({
 		renderFrame(){
 			renderFrame()
+		},
+		doAnimation(data){
+			data.forEach(animation => {
+				currentAnimations.push({
+					data: animation,
+					startTime: -1
+				})
+			})
+			requestAnimationFrame((timestamp) => {doAnimation(timestamp)})
+		},
+		stopAnimations(){
+			currentAnimations = []
 		}
 	}))
 
 	const canvasRef = useRef(null)
 	const wrapperRef = useRef(null)
 	const lastMouseCell = useRef(null)
+
+	const lockedInputRef = useRef()
+	const showLinksRef = useRef()
 
 	function resizeCanvas(){
 		if (!canvasRef.current) return
@@ -128,7 +155,7 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 		const canvas = canvasRef.current
 		const ctx = canvas.getContext('2d')
 		let selectedCell = game.getSelectedCell()
-		let highlitedCells = game.calculateHighlightedCells(game.selectedCell, lockedInput)
+		let highlitedCells = game.calculateHighlightedCells(game.selectedCell, lockedInputRef.current)
 
 		//Background
 		ctx.fillStyle = ThemeHandler.theme.canvasCellBorderColor
@@ -148,7 +175,7 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 			for (let y = 0; y < nSquares; y++) {
 				const cell = game.get({x, y})
 				const isSelectedCell = game.selectedCell.x === x && game.selectedCell.y === y
-				const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCell.value > 0 && selectedCell.value === cell.value))
+				const hasSameValueAsSelected = ((lockedInputRef.current > 0 && lockedInputRef.current === cell.value) || (lockedInputRef.current === 0 && selectedCell.value > 0 && selectedCell.value === cell.value))
 				//Cell background
 				ctx.setLineDash([])
 				
@@ -257,7 +284,7 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 					//Candidates
 					for (const n of cell.notes){
 						ctx.fillStyle = 
-						(lockedInput === 0 && selectedCell.value === n) || lockedInput === n ? ThemeHandler.theme.canvasNoteHighlightColor :
+						(lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n ? ThemeHandler.theme.canvasNoteHighlightColor :
 						'#75747c'
 						
 						ctx.textAlign = "center"
@@ -309,9 +336,9 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 			}
 		}
 
-		if (showLinks && (lockedInput > 0 || selectedCell.value > 0)){
+		if (showLinksRef.current && (lockedInputRef.current > 0 || selectedCell.value > 0)){
 			//Draw links
-			const target = lockedInput > 0 ? lockedInput : selectedCell.value
+			const target = lockedInputRef.current > 0 ? lockedInputRef.current : selectedCell.value
 			let links = game.calculateLinks(target)
 			ctx.fillStyle = '#ff5252'
 			ctx.strokeStyle = '#ff5252'
@@ -393,18 +420,9 @@ const Canvas = forwardRef(({lockedInput = 0, game, showLinks = false, setAnimati
 	}
 
 	useEffect(() => {
-		setAnimationCallback((data) => {
-			return new Promise((resolve, reject) => {
-				data.forEach(animation => {
-					currentAnimations.push({
-						data: animation,
-						startTime: -1
-					})
-				})
-				requestAnimationFrame((timestamp) => {doAnimation(timestamp)})
-				resolve()
-			})
-		})
+		lockedInputRef.current = lockedInput
+		showLinksRef.current = showLinks
+
 		//Candidate positions
 		noteDeltas = []
 		for (let n = 0; n < nSquares; n++){

@@ -376,6 +376,9 @@ export const GlobalStyles = createGlobalStyle`
 	}
 
   .canvas__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
   }
 

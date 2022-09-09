@@ -29,7 +29,7 @@ function Settings({themeName, toggleTheme}){
 						</div>
 					))}
 				</div>
-				<p className='settings__version'>Versión: 1.8.3</p>
+				<p className='settings__version'>Versión: 1.9.0</p>
 			</SectionContent>
 		</Section>
 	)

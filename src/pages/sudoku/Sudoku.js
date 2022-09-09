@@ -15,8 +15,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark, faDroplet, faDropletSlash, faEraser, faLightbulb, faLink, faPencilAlt, faPlus, faUndo } from '@fortawesome/free-solid-svg-icons'
 import ColorButton from '../../components/ColorButton'
 
-let animationCallback = null
-
 const colorNames = ['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default']
 
 const defaultLockedColor = 'purple'
@@ -43,6 +41,8 @@ const Sudoku = ({theme}) => {
 	const sudokuRef = useRef()
 
 	function onClick(coords, hold){
+		let animations = null
+
 		if (brush){
 			GameHandler.game.setSelectedCell(coords)
 			if (lockedColor !== null) handleSetColor(coords, lockedColor)
@@ -57,9 +57,9 @@ const Sudoku = ({theme}) => {
 				if (hold){
 					if (cellPossibleValues.includes(lockedInput)){
 						if (noteMode && cellPossibleValues.length > 1){
-							if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInQuadrant(coords, lockedInput)) GameHandler.game.setNote(coords, lockedInput)
+							if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInQuadrant(coords, lockedInput)) [, animations] = GameHandler.game.setNote(coords, lockedInput)
 						} else {
-							if (cell.value === 0) GameHandler.game.setValue(coords, lockedInput)
+							if (cell.value === 0) animations = GameHandler.game.setValue(coords, lockedInput)
 						}
 					}
 				} else {
@@ -69,130 +69,45 @@ const Sudoku = ({theme}) => {
 					} else {
 						if (noteMode){
 							if (cellPossibleValues.length === 1){
-								if (cellPossibleValues.includes(lockedInput)) GameHandler.game.setValue(coords, lockedInput)
+								if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
 							} else {
-								if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) setNoteDragMode(GameHandler.game.setNote(coords, lockedInput))
+								if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)){
+									let newNoteMode
+									[newNoteMode, animations] = GameHandler.game.setNote(coords, lockedInput)
+									setNoteDragMode(newNoteMode)
+
+								}
 							}
 						} else {
-							if (cellPossibleValues.includes(lockedInput)) GameHandler.game.setValue(coords, lockedInput)
+							if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
 						}
 					}
 				}
 			}
 		}
 		updatePossibleValues()
+
+		if (animations) canvasRef.current?.doAnimation(animations)
 	}
 
 	function handleNumpadButtonClick(number, type){
 		if (GameHandler.complete) return
 
+		let animations = null
+
 		if (type === 'primary'){
 			if (possibleValues.includes(number)){
 				if (noteMode && possibleValues.length > 1){
-					GameHandler.game.setNote(GameHandler.game.selectedCell, number)
+					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCell, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
-					GameHandler.game.setValue(GameHandler.game.selectedCell, number)
+					animations = GameHandler.game.setValue(GameHandler.game.selectedCell, number)
 				}
 			}
 		} else setLockedInput(li => li === number ? 0 : number)
 		updatePossibleValues()
-	}
 
-	function checkAnimation(){
-		if (GameHandler.game.checkComplete()){
-			if (!GameHandler.game.animationCache.board){
-				GameHandler.game.animationCache.board = true
-				if (animationCallback) animationCallback([
-					{
-						type: 'board',
-						center: GameHandler.game.selectedCell
-					}
-				])
-				setTimeout(() => {
-					setWin(true)
-					setShowLinks(false)
-					setLockedInput(0)
-					setLockedColor(defaultLockedColor)
-				}, 1350)
-			}
-		}
-
-		/*let animation = []
-		if (GameHandler.game.checkComplete()){
-			if (!GameHandler.game.animationCache.board){
-				GameHandler.game.animationCache.board = true
-				if (animationCallback) animationCallback([
-					{
-						type: 'board',
-						center: GameHandler.game.selectedCell
-					}
-				])
-				setTimeout(() => {
-					setWin(true)
-					setShowLinks(false)
-					setLockedInput(0)
-				}, 1350)
-			}
-		} else {
-			for (let i = 0; i < 9; i++){
-				let flagRow = true
-				let flagCol = true
-				for (let j = 0; j < 9; j++){
-					if (GameHandler.game.get({x: j, y: i}).value === 0){
-						flagRow = false
-					}
-					if (GameHandler.game.get({x: i, y: j}).value === 0){
-						flagCol = false
-					}
-				}
-				if (flagRow && !GameHandler.game.animationCache.rows[i]){
-					GameHandler.game.animationCache.rows[i] = true
-					animation.push({
-						type: 'row',
-						center: {
-							x: GameHandler.game.selectedCell.x,
-							y: i
-						}
-					})
-				}
-				if (flagCol && !GameHandler.game.animationCache.cols[i]){
-					GameHandler.game.animationCache.cols[i] = true
-					animation.push({
-						type: 'col',
-						center: {
-							x: i,
-							y: GameHandler.game.selectedCell.y
-						}
-					})
-				}	
-			}
-			for (let qx = 0; qx < 3; qx++){
-				for (let qy = 0; qy < 3; qy++){
-					if (!GameHandler.game.animationCache.quadrants[qy*3+qx]){
-						let flagQuadrant = true
-						for (let x = 0; x < 3; x++){
-							for (let y = 0; y < 3; y++){
-								if (GameHandler.game.get({x: qx * 3 + x, y: qy * 3 + y}).value === 0){
-									flagQuadrant = false
-									break
-								}
-							}
-						}
-						if (flagQuadrant){
-							GameHandler.game.animationCache.quadrants[qy*3+qx] = true
-							animation.push({
-								type: 'quadrant',
-								quadrantX: qx,
-								quadrantY: qy
-							})
-						}
-					}
-				}
-			}
-			if (animation.length > 0 && animationCallback) animationCallback(animation)
-			GameHandler.game.saveToLocalStorage()
-		}*/
+		if (animations) canvasRef.current?.doAnimation(animations)
 	}
 
 	function invertNoteMode(){
@@ -210,11 +125,14 @@ const Sudoku = ({theme}) => {
 		if (GameHandler.game.selectedCell !== null){
 			GameHandler.game.erase(GameHandler.game.selectedCell)
 			updatePossibleValues()
+			canvasRef.current?.stopAnimations()
 		}
 	}
 
 	function handleHintClick(){
 		if (GameHandler.complete) return
+
+		let animations = null
 
 		if (GameHandler.game.selectedCell !== null){
 			if (hintState === 0){
@@ -222,10 +140,12 @@ const Sudoku = ({theme}) => {
 				setTimeout(() => {setHintState(0)}, 2000)
 			} else if (hintState === 1){
 				setHintState(0)
-				GameHandler.game.hint(GameHandler.game.selectedCell)
+				animations = GameHandler.game.hint(GameHandler.game.selectedCell)
 				updatePossibleValues()
 			}
 		}
+
+		if (animations) canvasRef.current?.doAnimation(animations)
 	}
 
 	function handleEraseInkClick(){
@@ -243,7 +163,7 @@ const Sudoku = ({theme}) => {
 		if (GameHandler.complete) return
 
 		GameHandler.game.popBoard()
-		//canvasRef.current.renderFrame()
+		canvasRef.current?.stopAnimations()
 		updatePossibleValues()
 	}
 
@@ -309,10 +229,6 @@ const Sudoku = ({theme}) => {
 	}
 
 	useEffect(() => {
-		if (GameHandler.game && !win) checkAnimation()
-	})
-
-	useEffect(() => {
 		if (GameHandler.game === null){
 			navigate('/')
 			return
@@ -352,7 +268,7 @@ const Sudoku = ({theme}) => {
 					</div> :
 					<div className="game">
 						<div ref={sudokuRef} className="sudoku">
-							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} setAnimationCallback={cb => {animationCallback = cb;}} />
+							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} />
 						</div>
 						<div className="numpad" onContextMenu={e => {e.preventDefault()}}>
 							{(() => {
