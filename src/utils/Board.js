@@ -111,7 +111,7 @@ export default class Board {
 		if (cell.value > 0) return [null, []]
 		
 		//Check if only available place in quadrant
-		if (checkAutoSolution && this.onlyAvailableInQuadrant(c, n)){
+		if (SettingsHandler.settings.autoSolveOnlyInQuadrant && checkAutoSolution && this.onlyAvailableInQuadrant(c, n)){
 			return [true, this.setValue(c, n)]
 		}
 

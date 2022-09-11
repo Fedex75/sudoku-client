@@ -61,12 +61,18 @@ class SettingsHandler {
 				type: 'boolean',
 				default: true
 			},
-			/*{
-				name: 'autoDetectPairs',
-				translation: 'Detectar pares automáticamente',
+			{
+				name: 'autoSolveOnlyInQuadrant',
+				translation: 'Solucionar celda si es el único candidato en el cuadrante',
 				type: 'boolean',
-				default: true
-			}*/
+				default: false
+			},
+			{
+				name: 'autoSolveNakedSingles',
+				translation: "Solucionar celda si es un 'Naked Single'",
+				type: 'boolean',
+				default: false
+			},
 		]
 
 		this.settings = {}

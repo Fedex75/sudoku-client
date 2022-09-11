@@ -199,7 +199,7 @@ const Canvas = forwardRef(({
 					const hShift = cell.cageValue > 9 ? 16 : (cell.cageValue > 0 ? 8 : 2.5)
 					const vShift = cell.cageValue > 0 ? 12 : 2.5
 					//Borders
-					ctx.strokeStyle = cell.cageIndex === selectedCell.cageIndex ? ThemeHandler.theme.canvasKillerHighlightedCageColor : ThemeHandler.theme.canvasKillerCageColor
+					ctx.strokeStyle = (cell.cageIndex === selectedCell.cageIndex && game.nSquares > 3) ? ThemeHandler.theme.canvasKillerHighlightedCageColor : ThemeHandler.theme.canvasKillerCageColor
 					ctx.fillStyle = ctx.strokeStyle
 					ctx.setLineDash([5, 5])
 					ctx.lineWidth = 1

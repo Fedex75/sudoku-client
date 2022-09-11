@@ -77,7 +77,7 @@ const Sudoku = ({theme}) => {
 						setLockedInput(li => cell.value === li ? 0 : cell.value)
 					} else {
 						if (noteMode){
-							if (cellPossibleValues.length === 1){
+							if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1){
 								if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
 							} else {
 								if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)){
@@ -109,7 +109,7 @@ const Sudoku = ({theme}) => {
 
 		if (type === 'primary'){
 			if (possibleValues.includes(number)){
-				if (noteMode && possibleValues.length > 1){
+				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)){
 					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCell, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
