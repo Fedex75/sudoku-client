@@ -3,13 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import { BrowserRouter } from 'react-router-dom'
-//import API from './utils/API'
 import GameHandler from './utils/GameHandler'
 
 GameHandler.init()
 
-const container = document.getElementById('root')
-const root = createRoot(container)
+const root = createRoot(document.getElementById('root'))
 
 root.render(
   <StrictMode>
@@ -18,22 +16,6 @@ root.render(
     </BrowserRouter>
   </StrictMode>,
 )
-
-/*window.addEventListener("error", event => {
-  if (process.env.NODE_ENV === 'production') {
-    API.logError({
-      text: event.message
-    }).catch(() => {})
-  }
-})
-
-window.addEventListener("unhandledrejection", event => {
-  if (process.env.NODE_ENV === 'production') {
-    API.logError({
-      text: event.reason.message
-    }).catch(() => {})
-  }
-})*/
 
 
 serviceWorkerRegistration.register({

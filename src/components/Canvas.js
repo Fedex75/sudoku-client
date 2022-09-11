@@ -199,7 +199,8 @@ const Canvas = forwardRef(({
 					const hShift = cell.cageValue > 9 ? 16 : (cell.cageValue > 0 ? 8 : 2.5)
 					const vShift = cell.cageValue > 0 ? 12 : 2.5
 					//Borders
-					ctx.strokeStyle = ThemeHandler.theme.canvasKillerCageColor
+					ctx.strokeStyle = cell.cageIndex === selectedCell.cageIndex ? ThemeHandler.theme.canvasKillerHighlightedCageColor : ThemeHandler.theme.canvasKillerCageColor
+					ctx.fillStyle = ctx.strokeStyle
 					ctx.setLineDash([5, 5])
 					ctx.lineWidth = 1
 					//Top
@@ -259,9 +260,7 @@ const Canvas = forwardRef(({
 					if (cell.cageValue > 0){
 						ctx.textAlign = 'left'
 						ctx.textBaseline = 'top'
-						//ctx.font = '13px Arial'
 						ctx.font = `${squareSize * 0.24}px Arial`
-						ctx.fillStyle = ThemeHandler.theme.canvasKillerCageColor
 						ctx.fillText(cell.cageValue, cellPositions[x][y].x + 2, cellPositions[x][y].y + 2)
 					}
 				}

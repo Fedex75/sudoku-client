@@ -24,22 +24,19 @@ function App() {
 			window.scrollTo(0, 0)
 		}, {passive: false})
 
-		document.addEventListener('visibilitychange', () => {
-			if (document.visibilityState === 'visible'){
-				ThemeHandler.updateAutoTheme()
-				setTheme(ThemeHandler.themeName)
-			}
-		})
-
-		const matchMedia = window.matchMedia('(prefers-color-scheme: dark)')
-		if (matchMedia){
-			matchMedia.addEventListener('change', event => {
+		const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+		if (matchMediaColorScheme){
+			matchMediaColorScheme.onchange = event => {
 				ThemeHandler.setTheme(event.matches ? 'dark' : 'light')
 				setTheme(ThemeHandler.themeName)
-			})
+			}
 		}
 
 		o9n.orientation.lock('portrait').then(() => {}).catch(() => {})
+
+		return () => {
+			if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => {} 
+		}
 	}, [])
   
   return (
