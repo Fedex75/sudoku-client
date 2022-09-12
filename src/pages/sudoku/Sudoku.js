@@ -1,25 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Canvas from '../../components/Canvas'
-import EditButton from '../../components/EditButton'
-import { Section, SectionContent, Topbar } from '../../components/section'
+import './sudoku.css'
+import { useEffect, useRef, useState } from 'react'
+import { Canvas, EditButton, Section, SectionContent, Topbar, NumpadButton, ActionSheet, ActionSheetButton, Button, ColorButton } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
-import NumpadButton from '../../components/NumpadButton'
-import ActionSheet from '../../components/ActionSheet'
-import { ActionSheetButton } from '../../components/ActionSheet'
 import GameHandler from '../../utils/GameHandler'
 import { modeTranslations, difficultyTranslations, classicDifficulties, killerDifficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router'
-import Button from '../../components/Button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark, faDroplet, faDropletSlash, faEraser, faLightbulb, faLink, faPencilAlt, faPlus, faUndo } from '@fortawesome/free-solid-svg-icons'
-import ColorButton from '../../components/ColorButton'
 
 const colorNames = ['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple', 'default']
 
 const defaultLockedColor = 'purple'
 
-const Sudoku = ({theme}) => {
+export default function Sudoku({theme}){
 	const [hintState, setHintState] = useState(0)
 	const [eraseInkState, setEraseInkState] = useState(0)
 	const [showLinks, setShowLinks] = useState(false)
@@ -310,7 +304,6 @@ const Sudoku = ({theme}) => {
 											buttons.push(brush ?
 												<ColorButton
 													key={key}
-													theme={theme}
 													color={colorNames[buttonIndex - 1]}
 													locked={lockedColor === colorNames[buttonIndex - 1]}
 													onClick={handleColorButtonClick}
@@ -374,5 +367,3 @@ const Sudoku = ({theme}) => {
 		</Section>
 	)
 }
-
-export default Sudoku

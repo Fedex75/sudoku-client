@@ -1,0 +1,12 @@
+.section {
+  display: grid;
+  grid-template-rows: fit-content(0) auto fit-content(0);
+  grid-template-areas:
+    "top"
+    "center"
+    "bottom";
+  background-color: var(--light-gray);
+  height: 100%;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}

@@ -13,7 +13,7 @@ const sunIconStyle = {
 	color: '#344861',
 }
 
-const ThemeSwitch = ({themeName, toggleTheme}) => {
+const ThemeSwitch = ({theme, toggleTheme}) => {
 	return (
 		<ReactSwitch
 			width={50}
@@ -33,7 +33,7 @@ const ThemeSwitch = ({themeName, toggleTheme}) => {
 			onHandleColor='#4b7bec'
 			offHandleColor='#4b7bec'
 			activeBoxShadow={null}
-			checked={themeName === 'dark'}
+			checked={theme === 'dark'}
 			onChange={toggleTheme}
 		/>
 	);

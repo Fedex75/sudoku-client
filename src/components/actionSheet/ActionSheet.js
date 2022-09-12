@@ -1,29 +1,11 @@
-import ActionSheetReact from 'actionsheet-react';
-import { useState } from 'react';
-
-export function ActionSheetButton({title, color = 'var(--theme-color)', onClick = () => {}, cancel = false}){
-	const [clicked, setClicked] = useState(false);
-
-	return (
-		<div
-			className={`action-sheet__button ${cancel ? 'cancel' : ''}`}
-			onClick={onClick}
-			onTouchStart={() => {setClicked(true)}}
-			onTouchEnd={() => {setClicked(false)}}
-			style={{
-				color: color,
-				filter: clicked ? 'brightness(90%)' : 'none'
-			}}
-		>	
-			{title}
-		</div>
-	);
-}
+import './actionSheet.css'
+import ActionSheetReact from 'actionsheet-react'
+import { ActionSheetButton } from '../'
 
 export default function ActionSheet({reference, title = null, cancelTitle = null, onClose = () => {}, children}){
 	function cancel(){
-		reference.current.close();
-		onClose();
+		reference.current.close()
+		onClose()
 	}
 
 	return (
@@ -52,8 +34,5 @@ export default function ActionSheet({reference, title = null, cancelTitle = null
 			</div>
 			{cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={cancel} /> : null}
 		</ActionSheetReact>
-	);
+	)
 }
-
-//<Button title="Cerrar sesíon" backgroundColor='#efeef1' color='var(--dark-red)' />
-//<Button title="Cancelar" backgroundColor='white' color='var(--dark-yellow)'/>

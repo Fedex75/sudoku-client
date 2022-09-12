@@ -1,0 +1,18 @@
+.button {
+  display: grid;
+  place-items: center;
+  padding: 7px 0;
+  border-radius: 7px;
+  font-size: 22px;
+}
+
+.button.disabled {
+  filter: brightness(80%);
+}
+
+.button.ghost {
+  height: fit-content;
+  font-size: 16px;
+  padding: 5px 20px;
+  margin-bottom: 0;
+}

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
-import ThemeHandler from '../utils/ThemeHandler'
-import SettingsHandler from '../utils/SettingsHandler'
+import SettingsHandler from '../../utils/SettingsHandler'
 import o9n from 'o9n'
 
 let squareSize
@@ -25,6 +24,37 @@ function brightness(x, p, q, l){
 	return Math.max(0, k*(1-Math.abs(2/l*(x+t)-1)))
 }
 
+const themes = {
+	light: {
+		canvasLightDefaultCellColor: 'white',
+		canvasDarkDefaultCellColor: '#e2ebf3',
+		canvasCellBorderColor: '#bec6d4',
+		canvasQuadrantBorderColor: '#344861',
+		canvasClueColor: '#344861',
+		canvasSolutionColor: '#4b7bec',
+		canvasSelectedCellBackground: '#bbdefb',
+		canvasSameValueCellBackground: '#c3d7ea',
+		canvasNoteHighlightColor: 'black',
+		canvasAnimationBaseColor: '0, 0, 0',
+		canvasKillerCageColor: '#344861',
+		canvasKillerHighlightedCageColor: 'black',
+	},
+	dark: {
+		canvasLightDefaultCellColor: '#25242c',
+		canvasDarkDefaultCellColor: '#161620',
+		canvasCellBorderColor: 'black',
+		canvasQuadrantBorderColor: 'black',
+		canvasClueColor: '#75747c',
+		canvasSolutionColor: '#6f90c3',
+		canvasSelectedCellBackground: '#153b79',
+		canvasSameValueCellBackground: '#0f0e12',
+		canvasNoteHighlightColor: 'white',
+		canvasAnimationBaseColor: '255, 255, 255',
+		canvasKillerCageColor: '#75747c',
+  	canvasKillerHighlightedCageColor: 'white',
+	}
+}
+
 const Canvas = forwardRef(({
 		game,
 		lockedInput = 0,
@@ -35,7 +65,8 @@ const Canvas = forwardRef(({
 		size = null,
 		showSelectedCell = true,
 		canvasSize = 500,
-		noTouch = false
+		noTouch = false,
+		theme
 }, ref) => {	
 	
 	useImperativeHandle(ref, () => ({
@@ -130,7 +161,7 @@ const Canvas = forwardRef(({
 	function renderFrame(){
 		if (canvasRef.current === null) return
 		const colors = {
-			default: ThemeHandler.theme.canvasLightDefaultCellColor,
+			default: themes[theme].canvasLightDefaultCellColor,
 			red: '#fc5c65',
 			orange: '#fd9644',
 			yellow: '#fed330',
@@ -142,7 +173,7 @@ const Canvas = forwardRef(({
 		}
 	
 		const darkColors = {
-			default: ThemeHandler.theme.canvasDarkDefaultCellColor,
+			default: themes[theme].canvasDarkDefaultCellColor,
 			red: '#99393d',
 			orange: '#995c29',
 			yellow: '#997e1d',
@@ -158,11 +189,11 @@ const Canvas = forwardRef(({
 		let highlitedCells = game.calculateHighlightedCells(game.selectedCell, lockedInputRef.current)
 
 		//Background
-		ctx.fillStyle = ThemeHandler.theme.canvasCellBorderColor
-    	ctx.fillRect(0, 0, canvas.width, canvas.height)
+		ctx.fillStyle = themes[theme].canvasCellBorderColor
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 		//Borders
-		ctx.fillStyle = ThemeHandler.theme.canvasQuadrantBorderColor
+		ctx.fillStyle = themes[theme].canvasQuadrantBorderColor
 		ctx.fillRect(0, 0, borderWidth, canvasSize)
 		ctx.fillRect(0, 0, canvasSize, borderWidth)
 		for (let i = 2; i < nSquares; i += 3){
@@ -181,8 +212,8 @@ const Canvas = forwardRef(({
 				
 				ctx.fillStyle =
 					!showSelectedCell ? colors.default :
-					isSelectedCell ? ThemeHandler.theme.canvasSelectedCellBackground :
-					hasSameValueAsSelected ? ThemeHandler.theme.canvasSameValueCellBackground : //Cell has same value as selected cell
+					isSelectedCell ? themes[theme].canvasSelectedCellBackground :
+					hasSameValueAsSelected ? themes[theme].canvasSameValueCellBackground : //Cell has same value as selected cell
 					highlitedCells[x][y] ? darkColors.default : //Cell in same row or column as any cell with the same value as the selected cell
 					colors.default //Default
 
@@ -199,7 +230,7 @@ const Canvas = forwardRef(({
 					const hShift = cell.cageValue > 9 ? 16 : (cell.cageValue > 0 ? 8 : 2.5)
 					const vShift = cell.cageValue > 0 ? 12 : 2.5
 					//Borders
-					ctx.strokeStyle = (cell.cageIndex === selectedCell.cageIndex && game.nSquares > 3) ? ThemeHandler.theme.canvasKillerHighlightedCageColor : ThemeHandler.theme.canvasKillerCageColor
+					ctx.strokeStyle = (cell.cageIndex === selectedCell.cageIndex && game.nSquares > 3) ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
 					ctx.fillStyle = ctx.strokeStyle
 					ctx.setLineDash([5, 5])
 					ctx.lineWidth = 1
@@ -273,9 +304,9 @@ const Canvas = forwardRef(({
 					ctx.font = `${squareSize * 0.74}px Arial`
 					const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
 					ctx.fillStyle = 
-						isError ? 'red' :
-						cell.clue ? ThemeHandler.theme.canvasClueColor :
-						ThemeHandler.theme.canvasSolutionColor
+						isError ? '#fc5c65' :
+						cell.clue ? themes[theme].canvasClueColor :
+						themes[theme].canvasSolutionColor
 					if (isError && cell.color !== 'default') ctx.strokeStyle = 'white'
 					else ctx.strokeStyle = ctx.fillStyle
 					ctx.fillText(cell.value, valuePositions[x][y].x, valuePositions[x][y].y)
@@ -283,7 +314,7 @@ const Canvas = forwardRef(({
 					//Candidates
 					for (const n of cell.notes){
 						ctx.fillStyle = 
-						(lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n ? ThemeHandler.theme.canvasNoteHighlightColor :
+						(lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n ? themes[theme].canvasNoteHighlightColor :
 						'#75747c'
 						
 						ctx.textAlign = "center"
@@ -377,25 +408,25 @@ const Canvas = forwardRef(({
 				switch(animation.data.type){
 					case 'row':
 						for (let x = 0; x < nSquares; x++){
-							animationColors[x][animation.data.center.y] = `rgba(${ThemeHandler.theme.canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - x), progress, 8, 4)})`
+							animationColors[x][animation.data.center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}), ${brightness(Math.abs(animation.data.center.x - x), progress, 8, 4)})`
 						}
 						break
 					case 'col':
 						for (let y = 0; y < nSquares; y++){
-							animationColors[animation.data.center.x][y] = `rgba(${ThemeHandler.theme.canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
+							animationColors[animation.data.center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
 						}
 						break
 					case 'quadrant':
 						for (let x = 0; x < 3; x++){
 							for (let y = 0; y < 3; y++){
-								animationColors[animation.data.quadrantX*3+x][animation.data.quadrantY*3+y] = `rgba(${ThemeHandler.theme.canvasAnimationBaseColor}, ${brightness(y*3+x, progress, 8, 8)})`
+								animationColors[animation.data.quadrantX*3+x][animation.data.quadrantY*3+y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y*3+x, progress, 8, 8)})`
 							}
 						}
 						break
 					case 'board':
 						for (let x = 0; x < nSquares; x++){
 							for (let y = 0; y < nSquares; y++){
-								animationColors[x][y] = `rgba(${ThemeHandler.theme.canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`
+								animationColors[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`
 							}
 						}
 						break

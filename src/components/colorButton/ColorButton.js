@@ -1,9 +1,9 @@
 import React, {useRef} from "react";
-import useLongPress from '../utils/useLongPress'
+import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 
-function ColorButton({onClick = () => {}, color, theme, locked}){
+function ColorButton({onClick = () => {}, color, locked}){
     const endLongPressFired = useRef(false)
 	const [onTouchStart, onTouchEnd] = useLongPress((type) => {
 		endLongPressFired.current = true
@@ -11,7 +11,7 @@ function ColorButton({onClick = () => {}, color, theme, locked}){
 	}, 300)
 
     const colors = {
-        default: theme.canvasLightDefaultCellColor,
+        default: 'var(--canvasLightDefaultCellColor)',
         red: '#fc5c65',
         orange: '#fd9644',
         yellow: '#fed330',

@@ -1,0 +1,15 @@
+.action-sheet__list {
+  display: flex;
+  flex-flow: column;
+  margin-bottom: 10px;
+}
+
+.action-sheet__list__title {
+  display: grid;
+  place-items: center;
+  border-radius: 15px 15px 0 0;
+  background-color: var(--actionSheetButtonBackground);
+  color: var(--secondaryTextColor);
+  padding: 10px;
+  text-align: center;
+}

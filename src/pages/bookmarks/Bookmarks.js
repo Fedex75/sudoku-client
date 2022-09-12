@@ -1,17 +1,16 @@
+import './bookmarks.css'
 import { faBookmark, faCheck, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useNavigate } from "react-router"
-import Canvas from "../../components/Canvas"
-import { Section, SectionContent, Topbar } from "../../components/section"
+import { Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components'
 import Board from "../../utils/Board"
 import Decoder from "../../utils/Decoder"
 import { difficultyDecoder, difficultyTranslations, modeDecoder, modeTranslations } from "../../utils/Difficulties"
 import GameHandler from "../../utils/GameHandler"
 import missions from '../../data/missions.json'
-import ActionSheet, { ActionSheetButton } from "../../components/ActionSheet"
 
-function Bookmarks(){
+function Bookmarks({theme}){
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
 	const [removeBookmarkData, setRemoveBookmarkData] = useState(null)
 	const [playBookmarkData, setPlayBookmarkData] = useState(null)
@@ -88,7 +87,7 @@ function Bookmarks(){
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => {handleRemoveBookmark(bm)}} />
 										</div>
 										<div className="bookmarks__item__canvas-wrapper" onClick={() => {handlePlayBookmark(bm)}}>
-											<Canvas game={board} autoSize={false} size={canvasSize} showSelectedCell={false} noTouch/>
+											<Canvas game={board} autoSize={false} size={canvasSize} showSelectedCell={false} noTouch theme={theme} />
 										</div>
 									</div>
 								)

@@ -1,17 +1,14 @@
+import './home.css'
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from "react-router-dom"
-import Button from "../../components/Button"
-import Canvas from "../../components/Canvas"
-import { Section, SectionContent, Topbar } from "../../components/section"
+import { Button, Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from "../../components"
 import Board from "../../utils/Board"
 import GameHandler from "../../utils/GameHandler"
-import ActionSheet from '../../components/ActionSheet'
-import { ActionSheetButton } from '../../components/ActionSheet'
 import { modeTranslations, difficultyTranslations, classicDifficulties, killerDifficulties } from '../../utils/Difficulties'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightToBracket, faBookmark, faGear } from '@fortawesome/free-solid-svg-icons'
 
-function Home(){
+function Home({theme}){
 	const [newGameMode, setNewGameMode] = useState('classic')
 
 	const newGameActionSheetRef = useRef()
@@ -71,11 +68,11 @@ function Home(){
 			<SectionContent id="home">
 				<div className="home__grid">
 					<div className="home__grid__item" style={{width: `${squareSize}px`, height: `${squareSize}px`}} onClick={() => {openNewGameActionSheet('classic')}}>
-						<Canvas noTouch onClick={() => {openNewGameActionSheet('classic')}} game={classicMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
+						<Canvas noTouch onClick={() => {openNewGameActionSheet('classic')}} game={classicMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3} theme={theme} />
 						<p className="home__grid__item__title">Clásico</p>
 					</div>
 					<div className="home__grid__item" style={{width: `${squareSize}px`, height: `${squareSize}px`}} onClick={() => {openNewGameActionSheet('killer')}}>
-						<Canvas noTouch onClick={() => {openNewGameActionSheet('killer')}} game={killerMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3}/>
+						<Canvas noTouch onClick={() => {openNewGameActionSheet('killer')}} game={killerMiniature} nSquares={3} autoSize={false} size={`${squareSize - 60}px`} showSelectedCell={false} canvasSize={(squareSize - 60) * 3} theme={theme} />
 						<p className="home__grid__item__title">Killer</p>
 					</div>
 					<Link to="/bookmarks">

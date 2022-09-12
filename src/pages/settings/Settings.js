@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { Section, SectionContent, Topbar } from '../../components/section'
+import './settings.css'
+import { useState } from 'react'
+import { Section, SectionContent, Topbar, ThemeSwitch } from '../../components'
 import ReactSwitch from 'react-switch'
 import SettingsHandler from '../../utils/SettingsHandler'
-import ThemeSwitch from '../../components/ThemeSwitch'
 
-function Settings({themeName, toggleTheme}){
+export default function Settings({theme, toggleTheme}){
 	const [, setRender] = useState(0)
 
 	function handleChange(name, value){
@@ -15,7 +15,7 @@ function Settings({themeName, toggleTheme}){
 	return (
 		<Section>
 			<Topbar title="Opciones" backURL="/">
-				<ThemeSwitch themeName={themeName} toggleTheme={toggleTheme} />
+				<ThemeSwitch theme={theme} toggleTheme={toggleTheme} />
 			</Topbar>
 			<SectionContent id="settings">
 				<div className="settings__list">
@@ -34,5 +34,3 @@ function Settings({themeName, toggleTheme}){
 		</Section>
 	)
 }
-
-export default Settings

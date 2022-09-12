@@ -1,56 +1,40 @@
-import React, {useState, useEffect} from 'react'
+import React, { useEffect } from 'react'
 import { Route, Routes } from 'react-router'
 import './utils/SettingsHandler'
-import { ThemeProvider } from 'styled-components'
-import { GlobalStyles } from "./components/GlobalStyles"
-import ThemeHandler from './utils/ThemeHandler'
 import o9n from 'o9n'
-import Home from './pages/home/Home'
-import Sudoku from './pages/sudoku/Sudoku'
-import Settings from './pages/settings/Settings'
-import Bookmarks from './pages/bookmarks/Bookmarks'
+import { Home, Sudoku, Settings, Bookmarks } from './pages'
+import useLocalStorage from 'use-local-storage'
+
+const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
 function App() {
-	const [theme, setTheme] = useState(ThemeHandler.themeName)
-
-	function toggleTheme(){
-		ThemeHandler.toggleTheme()
-		setTheme(ThemeHandler.themeName)
-	}
+	const [theme, setTheme] = useLocalStorage('theme', matchMediaColorScheme?.matches ? 'dark' : 'light')
 
 	useEffect(() => {
-		document.body.addEventListener('scroll', (e) => {
+		const scrollEvent = document.body.addEventListener('scroll', (e) => {
 			e.preventDefault()
 			window.scrollTo(0, 0)
 		}, {passive: false})
 
-		const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
-		if (matchMediaColorScheme){
-			matchMediaColorScheme.onchange = event => {
-				ThemeHandler.setTheme(event.matches ? 'dark' : 'light')
-				setTheme(ThemeHandler.themeName)
-			}
-		}
+		if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
 
 		o9n.orientation.lock('portrait').then(() => {}).catch(() => {})
 
 		return () => {
-			if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => {} 
+			document.body.removeEventListener('scroll', scrollEvent)
+			if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => {}
 		}
 	}, [])
   
   return (
-		<ThemeProvider theme={ThemeHandler.theme}>
-			<GlobalStyles />
-			{
-				<Routes>
-					<Route exact path="/" element={<Home />} />
-					<Route exact path="/sudoku" element={<Sudoku theme={ThemeHandler.theme} />} />
-					<Route exact path="/settings" element={<Settings themeName={theme} toggleTheme={toggleTheme}/>} />
-					<Route exact path="/bookmarks" element={<Bookmarks />} />
-				</Routes>
-			}
-		</ThemeProvider>
+		<div className='app' data-theme={theme}>
+			<Routes>
+				<Route exact path="/" element={<Home theme={theme} />} />
+				<Route exact path="/sudoku" element={<Sudoku theme={theme} />} />
+				<Route exact path="/settings" element={<Settings theme={theme} toggleTheme={() => {setTheme(t => t === 'dark' ? 'light' : 'dark')}}/>} />
+				<Route exact path="/bookmarks" element={<Bookmarks />} theme={theme} />
+			</Routes>
+		</div>
   )
 }
 

@@ -20,8 +20,7 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.0",
     "react-switch": "^6.0.0",
-    "react-toastify": "^8.2.0",
-    "styled-components": "^5.3.5",
+    "use-local-storage": "^2.3.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

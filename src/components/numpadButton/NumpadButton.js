@@ -1,5 +1,6 @@
-import React, {useRef} from 'react'
-import useLongPress from '../utils/useLongPress'
+import './numpadButton.css'
+import {useRef} from 'react'
+import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 

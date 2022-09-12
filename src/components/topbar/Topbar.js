@@ -1,7 +1,8 @@
+import './topbar.css'
 import { faChevronLeft, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
-import Input from '../Input'
+import { Input } from '../'
 
 function Topbar({title, subtitle = '', titleSize = 24, children, backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}}){
 	return (

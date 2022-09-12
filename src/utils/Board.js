@@ -213,13 +213,13 @@ export default class Board {
 	}
 
 	erase(c){
-		this.pushBoard()
-		if (!this.board[c.x][c.y].clue){
-			this.board[c.x][c.y].value = 0
-			this.board[c.x][c.y].notes = []
-			this.board[c.x][c.y].color = 'default'
+		const cell = this.board[c.x][c.y]
+		if (!cell.clue && (cell.value > 0 || cell.notes.length > 0)){
+			this.pushBoard()
+			cell.value = 0
+			cell.notes = []
+			cell.color = 'default'
 		}
-		//this.saveToLocalStorage()
 	}
 
 	getPossibleValues(c){

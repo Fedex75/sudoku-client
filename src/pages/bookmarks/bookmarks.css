@@ -1,0 +1,42 @@
+.bookmarks__wrapper {
+  display: flex;
+  flex-flow: column;
+  gap: 20px;
+  padding: 10px;
+  margin-top: 10px;
+  overflow-y: scroll;
+}
+
+.bookmarks__item {
+  display: flex;
+  flex-flow: column;
+  background-color: var(--homeGridBackground);
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.bookmarks_item__top {
+  display: grid;
+  grid-template-columns: auto fit-content(0) fit-content(0);
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.bookmarks__item__top__title {
+  color: var(--primaryTextColor);
+}
+
+.bookmarks__item__canvas-wrapper {
+  display: grid;
+  place-items: center;
+}
+
+.bookmarks__empty {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--bookmarksEmptyColor);
+}

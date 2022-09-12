@@ -1,0 +1,130 @@
+:root {
+  --theme-color: #4b7bec;
+  --red: #fc5c65;
+  --green: #26de81;
+  --blue: #4b7bec;
+  --lightGray: #e4e7ed;
+  --darkGrayBlue: #344861;
+  --darkBackground: #1c1c1e;
+}
+
+[data-theme='light'] {
+  --background: #f9fafb;
+  --primaryTextColor: var(--darkGrayBlue);
+  --secondaryTextColor: #9e9e9e;
+  --loginButtonBorderColor: var(--darkGrayBlue);
+  --topbarBackgroundColor: white;
+  --topbarFontColor: var(--darkGrayBlue);
+  --bookmarkOffColor: var(--lightGray);
+  --bookmarkOnColor: var(--blue);
+  --actionSheetButtonBackground: #eeeef0;
+  --actionSheetCancelBackground: white;
+  --actionSheetButtonBorder: #d8d8db;
+  --editButtonColor: var(--blue);
+  --editButtonBackground: var(--lightGray);
+  --numpadButtonBackground: var(--lightGray);
+  --disabledButtonBackground: transparent;
+  --disabledButtonBorderColor: transparent;
+  --lockedButtonBackgroundColor: var(--blue);
+  --lockedButtonBorderColor: var(--blue);
+  --gameMenuListBackground: white;
+  --gameMenuListBorder: none;
+  --mobile__gameMenuListBorder: white;
+  --menuButtonBorderColor: var(--lightGray);
+  --mobile__menuButtonBorderColor: var(--lightGray);
+  --menuButtonColor: var(--blue);
+  --mobile__menuButtonColor: var(--blue);
+  --gameMenuListShadow: 0 5px 20px 0 rgb(0 0 0 / 20%);
+  --menuButtonHoverColor: var(--blue);
+  --menuButtonHoverBackground: #e4eaf1;
+  --settingsItemBackground: white;
+  --settingsItemBorder: var(--lightGray);
+  --settingsItemColor: var(--darkGrayBlue);
+  --cancelButtonBackround: white;
+  --cancelButtonFontWeight: regular;
+  --modeSelectorBorderColor: var(--darkGrayBlue);
+  --modeSelectorColor: var(--darkGrayBlue);
+  --modeSelectorSelectedBorderColor: var(--blue);
+  --homeGridBackground: var(--darkBackground);
+  --homeGridShadow: 0px 0px 10px #aaaaaa;
+  --homeGridIconColor: #444444;
+  --bookmarksEmptyColor: #444444;
+}
+
+[data-theme='dark'] {
+  --background: black;
+  --primaryTextColor: white;
+  --secondaryTextColor: #e0e0e0;
+  --loginButtonBorderColor: white;
+  --topbarBackgroundColor: transparent;
+  --topbarFontColor: white;
+  --bookmarkOffColor: darkgray;
+  --bookmarkOnColor: var(--blue);
+  --actionSheetButtonBackground: #1f1e1e;
+  --actionSheetCancelBackground: #2c2c2e;
+  --actionSheetButtonBorder: #434344;
+  --editButtonColor: #75747c;
+  --editButtonBackground: var(--darkBackground);
+  --numpadButtonBackground: var(--darkBackground);
+  --disabledButtonBackground: transparent;
+  --disabledButtonBorderColor: #25242c;
+  --lockedButtonBackgroundColor: var(--blue);
+  --lockedButtonBorderColor: var(--blue);
+  --canvasLightDefaultCellColor: #25242c;
+  --canvasDarkDefaultCellColor: #161620;
+  --canvasCellBorderColor: black;
+  --canvasQuadrantBorderColor: black;
+  --canvasClueColor: #75747c;
+  --canvasSolutionColor: #6f90c3;
+  --canvasSelectedCellBackground: #153b79;
+  --canvasSameValueCellBackground: #0f0e12;
+  --canvasNoteHighlightColor: white;
+  --canvasAnimationBaseColor: 255, 255, 255;
+  --gameMenuListBackground: #25242c;
+  --gameMenuListBorder: solid 1px white;
+  --mobile__gameMenuListBorder: none;
+  --menuButtonBorderColor: white;
+  --mobile__menuButtonBorderColor: var(--darkGrayBlue);
+  --menuButtonColor: #75747c;
+  --mobile__menuButtonColor: var(--blue);
+  --gameMenuListShadow: none;
+  --menuButtonHoverColor: white;
+  --menuButtonHoverBackground: #25242c;
+  --settingsItemBackground: #25242c;
+  --settingsItemBorder: black;
+  --settingsItemTitleColor: white;
+  --cancelButtonBackround: #25242c;
+  --cancelButtonFontWeight: bold;
+  --modeSelectorBorderColor: white;
+  --modeSelectorColor: white;
+  --modeSelectorSelectedBorderColor: var(--blue);
+  --homeGridBackground: var(--darkBackground);
+  --homeGridShadow: none;
+  --homeGridIconColor: #616161;
+  --bookmarksEmptyColor: #616161;
+}
+
+html, body, #root, .app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: sans-serif;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.app {
+  background-color: var(--background);
+}
+
+body {
+  position: fixed;
+}
+
+a {
+  text-decoration: none;
+}
+
+p {
+  margin: 0;
+}

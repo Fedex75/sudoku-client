@@ -1,4 +1,4 @@
-import React from 'react';
+import './button.css'
 import ReactLoading from 'react-loading';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
