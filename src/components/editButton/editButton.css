@@ -1,0 +1,29 @@
+.edit-buttons__button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--editButtonColor);
+  background-color: var(--editButtonBackground);
+  /*aspect-ratio: 5 / 4;*/
+  transition: all 0.1s ease-in-out;
+}
+
+.edit-buttons__button.highlight {
+  background-color: #4b7bec;
+  color: white;
+}
+
+.edit-buttons__button.yellow {
+  background-color: #fed330;
+  color: white;
+}
+
+.edit-buttons__button:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
+}
+
+.edit-buttons__button__icon {
+  font-size: 35px;
+}

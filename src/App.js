@@ -7,8 +7,16 @@ import useLocalStorage from 'use-local-storage'
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
+const options = {
+	parser: (str) => {
+		let parsed = JSON.parse(str)
+		if (typeof parsed === 'string') return parsed
+		return 'dark'
+ 	}
+}
+
 function App() {
-	const [theme, setTheme] = useLocalStorage('theme', matchMediaColorScheme?.matches ? 'dark' : 'light')
+	const [theme, setTheme] = useLocalStorage('theme', matchMediaColorScheme?.matches ? 'dark' : 'light', options)
 
 	useEffect(() => {
 		const scrollEvent = document.body.addEventListener('scroll', (e) => {
@@ -24,15 +32,16 @@ function App() {
 			document.body.removeEventListener('scroll', scrollEvent)
 			if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => {}
 		}
+		// eslint-disable-next-line
 	}, [])
   
   return (
-		<div className='app' data-theme={theme}>
+		<div className='app' data-theme={theme} onClick={()=>{}}>
 			<Routes>
 				<Route exact path="/" element={<Home theme={theme} />} />
 				<Route exact path="/sudoku" element={<Sudoku theme={theme} />} />
 				<Route exact path="/settings" element={<Settings theme={theme} toggleTheme={() => {setTheme(t => t === 'dark' ? 'light' : 'dark')}}/>} />
-				<Route exact path="/bookmarks" element={<Bookmarks />} theme={theme} />
+				<Route exact path="/bookmarks" element={<Bookmarks theme={theme} />}/>
 			</Routes>
 		</div>
   )

@@ -1,0 +1,67 @@
+.numpad {
+  grid-area: numpad;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-areas:
+    "edit edit edit edit"
+    "special rows rows rows"
+    "special rows rows rows"
+    "special rows rows rows";
+  height: 100%;
+  gap: 7px;
+}
+
+.numpad__edit-buttons {
+  grid-area: edit;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.numpad__special-buttons {
+  grid-area: special;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.numpad__rows-wrapper {
+  grid-area: rows;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-areas:
+    "row1 row1 row1"
+    "row2 row2 row2"
+    "row3 row3 row3";
+  gap: 7px;
+}
+
+.numpad__button-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+@media (min-aspect-ratio: 46/89) and (max-aspect-ratio: 21/20) {
+  /*Tablets and small phones*/
+  .numpad {
+    grid-template-columns: 3fr 4fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+      "special edit"
+      "rows rows";
+  }
+
+  .numpad__special-buttons {
+    grid-template-rows: auto;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .numpad__rows-wrapper {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "row1 row2 row3";
+  }
+}

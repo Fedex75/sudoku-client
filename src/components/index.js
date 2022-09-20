@@ -11,6 +11,8 @@ import SectionContent from './sectionContent/SectionContent'
 import ThemeSwitch from './themeSwitch/ThemeSwitch'
 import Topbar from './topbar/Topbar'
 import TopbarButtons from './topbarButtons/TopbarButtons'
+import ExpandCard from './expandCard/ExpandCard'
+import Numpad from './numpad/Numpad'
 
 export {
   ActionSheet,
@@ -20,10 +22,12 @@ export {
   ColorButton,
   EditButton,
   Input,
+  Numpad,
   NumpadButton,
   Section,
   SectionContent,
   ThemeSwitch,
   Topbar,
-  TopbarButtons
+  TopbarButtons,
+  ExpandCard
 }

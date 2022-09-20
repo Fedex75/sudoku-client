@@ -10,12 +10,14 @@
   padding: 14px 0;
   border-top: solid 1px var(--actionSheetButtonBorder);
   background-color: var(--actionSheetButtonBackground);
+  width: 100%;
 }
 
 .action-sheet__button.cancel {
   border-top: none;
   background-color: var(--actionSheetCancelBackground);
   margin-bottom: 10px;
+  max-width: 450px;
 }
 
 .action-sheet__button:first-child {

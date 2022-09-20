@@ -1,12 +1,30 @@
 .section {
   display: grid;
-  grid-template-rows: fit-content(0) auto fit-content(0);
+  grid-template-rows: fit-content(0) auto;
   grid-template-areas:
-    "top"
-    "center"
-    "bottom";
+    "topbar"
+    "content";
   background-color: var(--light-gray);
   height: 100%;
+  padding: 7px;
   padding-bottom: 20px;
+  gap: 7px;
   box-sizing: border-box;
+}
+
+@media (max-width: 1000px) {
+  .section {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (orientation: landscape) {
+  /*@media () {
+
+  }*/
+}
+
+@media (orientation: portrait) {
+  
 }

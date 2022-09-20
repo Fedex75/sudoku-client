@@ -1,73 +1,79 @@
 .topbar {
-  grid-area: top;
+  grid-area: topbar;
   display: flex;
   flex-flow: column;
   align-items: center;
   justify-content: center;
-  background-color: var(--topbarBackgroundColor);
-  padding-right: 10px;
-  height: 44px;
 }
 
 .topbar__top {
   display: grid;
-  grid-template-columns: fit-content(0) auto fit-content(0);
-  grid-template-areas: "back title buttons";
   align-items: center;
-  /*min-height: 48px;*/
   width: 100%;
-}
-
-.topbar__top.subtitle {
-  grid-template-rows: fit-content(0) fit-content(0);
-  grid-template-areas:
-    "back title buttons"
-    "back subtitle buttons";
+  /*width: calc(100% - 14px);*/
+  overflow-x: hidden;
 }
 
 .topbar__top__back {
   grid-area: back;
   display: grid;
   place-items: center;
-  padding: 10px;
-  height: 44px;
   box-sizing: border-box;
+  margin-right: 10px;
 }
 
 .topbar__top__back {
   font-size: 20px;
+  padding: 6.5px 10px !important;
 }
 
 .topbar__bottom {
   width: 100%;
 }
 
-.topbar__title {
+.topbar__title-wrapper {
   grid-area: title;
   color: var(--topbarFontColor);
+  white-space: nowrap;
+  margin-right: 10px;
+  width: fit-content;
 }
 
-.topbar__top.subtitle .topbar__title {
-  font-size: 16px;
+.topbar__title {
+  font-size: 20px;
 }
 
-.topbar__subtitle {
-  grid-area: subtitle;
-  color: var(--topbarFontColor);
-}
-
-.topbar__top.subtitle .topbar__subtitle {
-  font-size: 16px;
-}
-
-.topbar__buttons {
-  grid-area: buttons;
+.topbar__title-wrapper.subtitle {
   display: flex;
-  gap: 20px;
+  flex-flow: column;
+  gap: 2px;
+}
+
+.topbar__title-wrapper.subtitle .topbar__title {
+  font-size: 12px;
+  color: gray;
+}
+
+.topbar__top__additional {
+  display: grid;
+  gap: 10px;
+}
+
+.topbar__button {
+  display: grid;
+  place-items: center;
+  color: var(--theme-color);
+  font-size: 20px;
+  margin-right: 10px;
   white-space: nowrap;
 }
 
-.topbar__buttons__button {
-  color: var(--theme-color);
-  font-size: 24px;
+.topbar__button:last-child {
+  margin-right: 0;
+}
+
+@media (min-aspect-ratio: 21 / 20) {
+  .topbar__top {
+    width: 100%;
+  }
 }

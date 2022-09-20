@@ -16,6 +16,7 @@ export default class Board {
 		this.fullNotation = false
 		this.cages = raw ? data.c?.split(',').map(s => s.match(/.{2}/g)) || null : data.cages || null
 		this.nSquares = nSquares
+		this.timer = raw ? 0 : data.timer
 
 		if (raw){
 			this.initBoard()
@@ -32,6 +33,7 @@ export default class Board {
 		this.selectedCell = {x: 0, y: 0}
 		this.history = []
 		this.board = []
+		this.timer = 0
 
 		for (let x = 0; x < this.nSquares; x++){
 			this.board.push(Array(this.nSquares).fill(null))
@@ -458,5 +460,9 @@ export default class Board {
 	restart(){
 		this.initBoard()
 		this.fullNotation = false
+	}
+
+	setTimer(timestamp){
+		this.timer = timestamp
 	}
 }

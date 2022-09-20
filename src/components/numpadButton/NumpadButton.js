@@ -1,19 +1,18 @@
 import './numpadButton.css'
-import {useRef} from 'react'
 import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
+
 function NunmpadButton({onClick, number, disabled, hidden, locked}){
-	const endLongPressFired = useRef(false)
 	const [onTouchStart, onTouchEnd] = useLongPress((type) => {
-		endLongPressFired.current = true
 		if (type === 'secondary' || !disabled) onClick(number, type)
 	}, 300)
 
 	return (
 		<div
-			className={`numpad__button number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
+			className={`numpad__button fade_in number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
 			onTouchStart={(e) => {
 				e.stopPropagation()
 				if (hidden) return
@@ -23,6 +22,17 @@ function NunmpadButton({onClick, number, disabled, hidden, locked}){
 				e.stopPropagation()
 				if (hidden) return
 				onTouchEnd()
+			}}
+			onClick={(e) => {
+				e.stopPropagation()
+				if (hidden || isTouchDevice) return
+				onClick(number, 'primary')
+			}}
+			onContextMenu={(e) => {
+				e.stopPropagation()
+				e.preventDefault()
+				if (hidden || isTouchDevice) return
+				onClick(number, 'secondary')
 			}}
 		>
 			{number}

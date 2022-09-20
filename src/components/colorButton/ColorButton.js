@@ -1,12 +1,11 @@
-import React, {useRef} from "react";
 import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
+
 function ColorButton({onClick = () => {}, color, locked}){
-    const endLongPressFired = useRef(false)
 	const [onTouchStart, onTouchEnd] = useLongPress((type) => {
-		endLongPressFired.current = true
 		onClick(color, type)
 	}, 300)
 
@@ -24,7 +23,7 @@ function ColorButton({onClick = () => {}, color, locked}){
 
     return (
         <div
-            className={'numpad__button color'}
+            className={'numpad__button color fade_in'}
             style={{backgroundColor: colors[color]}}
             onTouchStart={(e) => {
 				e.stopPropagation()
@@ -33,6 +32,17 @@ function ColorButton({onClick = () => {}, color, locked}){
 			onTouchEnd={(e) => {
 				e.stopPropagation()
 				onTouchEnd()
+			}}
+            onClick={(e) => {
+				e.stopPropagation()
+				if (isTouchDevice) return
+				onClick(color, 'primary')
+			}}
+			onContextMenu={(e) => {
+				e.stopPropagation()
+				e.preventDefault()
+				if (isTouchDevice) return
+				onClick(color, 'secondary')
 			}}
         >
             {locked ? <FontAwesomeIcon icon={faLock} style={{fontSize: 30}}/> : null}

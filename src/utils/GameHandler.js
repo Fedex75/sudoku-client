@@ -4,7 +4,7 @@ import missions from '../data/missions.json'
 import Decoder from './Decoder'
 import { difficultyDecoder, modeDecoder } from './Difficulties'
 
-const BOARD_API_VERSION = 4
+const BOARD_API_VERSION = 6
 const STORAGE_SCHEMA_VERSION = 2
 
 class GameHandler {
@@ -31,6 +31,14 @@ class GameHandler {
 
 		const lsSolved = localStorage.getItem('solved')
 		this.solved = lsSolved ? JSON.parse(lsSolved) : []
+
+		const lsClassicDifficulty = localStorage.getItem('classicDifficulty')
+		this.classicDifficulty = lsClassicDifficulty || (this.game?.mode === 'classic' ? this.game.difficulty : 'easy')
+		localStorage.setItem('classicDifficulty', this.classicDifficulty)
+
+		const lsKillerDifficulty = localStorage.getItem('killerDifficulty')
+		this.killerDifficulty = lsKillerDifficulty || (this.game?.mode === 'killer' ? this.game.difficulty : 'easy')
+		localStorage.setItem('killerDifficulty', this.killerDifficulty)
 	}
 
 	setCurrentGame(board){
@@ -38,6 +46,13 @@ class GameHandler {
 		this.complete = false
 		this.game.version = BOARD_API_VERSION
 		this.saveGame(JSON.stringify(this.game))
+		if (this.game.mode === 'classic'){
+			this.classicDifficulty = this.game.difficulty
+			localStorage.setItem('classicDifficulty', this.classicDifficulty)
+		} else {
+			this.killerDifficulty = this.game.difficulty
+			localStorage.setItem('killerDifficulty', this.killerDifficulty)
+		}
 	}
 
 	newGame(mode, difficulty){

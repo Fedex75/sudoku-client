@@ -1,10 +1,11 @@
+#bookmarks {
+  overflow-y: scroll;
+}
+
 .bookmarks__wrapper {
   display: flex;
   flex-flow: column;
   gap: 20px;
-  padding: 10px;
-  margin-top: 10px;
-  overflow-y: scroll;
 }
 
 .bookmarks__item {
@@ -30,6 +31,10 @@
 .bookmarks__item__canvas-wrapper {
   display: grid;
   place-items: center;
+}
+
+.bookmarks__item__canvas-wrapper canvas {
+  width: calc(100vw - 60px);
 }
 
 .bookmarks__empty {
