@@ -9,29 +9,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRightToBracket, faBookmark, faChevronRight, faGear } from '@fortawesome/free-solid-svg-icons'
 import API from '../../utils/API'
 
-function Home({theme}){
+function Home({theme, accentColor}){
 	const [newGameMode, setNewGameMode] = useState(null)
 
 	const discardGameActionSheetRef = useRef()
 	let navigate = useNavigate()
 
-	let classicMiniature = new Board({
-		id: 'ce0',
-		m: '1.3:4.8.',
-	}, true, 3)
-
+	let classicMiniature = new Board({id: 'ce0', m: '1.3:4.8.'}, true, 3)
 	classicMiniature.setValue({x: 1, y: 0}, 2)
 	classicMiniature.setValue({x: 0, y: 1}, 6)
 	classicMiniature.setValue({x: 0, y: 2}, 7)
 	classicMiniature.setValue({x: 2, y: 2}, 9)
 
-	let killerMiniature = new Board({
-		id: 'ke0',
-		m: '1.3:4.8.',
-		s: '123654789',
-		c: '0010,2021,0102,11,1222',
-	}, true, 3)
-
+	let killerMiniature = new Board({id: 'ke0', m: '1.3:4.8.', s: '123654789', c: '0010,2021,0102,11,1222'}, true, 3)
 	killerMiniature.setValue({x: 1, y: 0}, 2)
 	killerMiniature.setValue({x: 0, y: 1}, 6)
 	killerMiniature.setValue({x: 0, y: 2}, 7)
@@ -79,15 +69,11 @@ function Home({theme}){
 			<SectionContent id="home">
 				<div className="home__grid fade_in">
 					<ExpandCard className="home__grid__item" onClick={() => {openNewGameActionSheet('classic')}}>
-						<div className='home__grid__item__canvas-wrapper'>
-							<Canvas noTouch game={classicMiniature} nSquares={3} autoSize={false} showSelectedCell={false} theme={theme} />
-						</div>
+						<Canvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme={theme} accentColor={accentColor} />
 						<p className="home__grid__item__title">Clásico</p>
 					</ExpandCard>
 					<ExpandCard className="home__grid__item" onClick={() => {openNewGameActionSheet('killer')}}>
-						<div className='home__grid__item__canvas-wrapper'>
-							<Canvas noTouch game={killerMiniature} nSquares={3} autoSize={false} showSelectedCell={false} theme={theme} />
-						</div>
+						<Canvas noTouch game={killerMiniature} nSquares={3} showSelectedCell={false} theme={theme} accentColor={accentColor} />
 						<p className="home__grid__item__title">Killer</p>
 					</ExpandCard>
 					<ExpandCard className="home__grid__item" onClick={() => {navigate('/bookmarks')}}>

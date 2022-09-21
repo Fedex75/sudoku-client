@@ -8,11 +8,13 @@ import Input from './input/Input'
 import NumpadButton from './numpadButton/NumpadButton'
 import Section from './section/Section'
 import SectionContent from './sectionContent/SectionContent'
-import ThemeSwitch from './themeSwitch/ThemeSwitch'
 import Topbar from './topbar/Topbar'
 import TopbarButtons from './topbarButtons/TopbarButtons'
 import ExpandCard from './expandCard/ExpandCard'
 import Numpad from './numpad/Numpad'
+import SettingsItem from './settingsItem/SettingsItem'
+import Check from './check/Check'
+import ColorChooser from './colorChooser/ColorChooser'
 
 export {
   ActionSheet,
@@ -26,8 +28,10 @@ export {
   NumpadButton,
   Section,
   SectionContent,
-  ThemeSwitch,
   Topbar,
   TopbarButtons,
-  ExpandCard
+  ExpandCard,
+  SettingsItem,
+  Check,
+  ColorChooser
 }

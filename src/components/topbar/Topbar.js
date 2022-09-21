@@ -7,7 +7,7 @@ import { Input, ExpandCard } from '../'
 function Topbar({title, subtitle = null, children = [], backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}, buttons = [], onTitleClick = () => {}}){
 	return (
 		<div className='topbar fade_in'>
-			<div className='topbar__top' style={{gridTemplateColumns: `${backURL || onBack ? 'fit-content(0)' : ''} fit-content(0) auto repeat(${buttons.length}, fit-content(0))`, gridTemplateAreas: `"${backURL || onBack ? 'back' : ''} title additional ${buttons.map((_, i) => 'button' + i).join(' ')}"`}}>
+			<div className='topbar__top' style={{gridTemplateColumns: `${backURL || onBack ? 'fit-content(0)' : ''} fit-content(0) auto ${buttons.length > 0 ? `repeat(${buttons.length}, fit-content(0))` : ''}`, gridTemplateAreas: `"${backURL || onBack ? 'back' : ''} title additional ${buttons.map((_, i) => 'button' + i).join(' ')}"`}}>
 				{
 					backURL ?
 					<Link to={backURL}>
@@ -31,7 +31,7 @@ function Topbar({title, subtitle = null, children = [], backURL = null, onBack =
 						<p className='topbar__subtitle'>{subtitle}</p>
 					</ExpandCard>	
 				}
-				<div className='topbar__top__additional' style={{gridTemplateColumns: `repeat(${children.length}, fit-content(0))`}}>
+				<div className='topbar__top__additional' style={{gridTemplateColumns: `repeat(${children?.length || 0}, fit-content(0))`}}>
 					{children}
 				</div>
 				{buttons}

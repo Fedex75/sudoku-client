@@ -1,0 +1,14 @@
+.check {
+  display: grid;
+  place-items: center;
+  border: solid 2px gray;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+}
+
+.check.checked {
+  background-color: var(--theme-color);
+  border: none;
+}

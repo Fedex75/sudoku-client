@@ -17,6 +17,7 @@ const options = {
 
 function App() {
 	const [theme, setTheme] = useLocalStorage('theme', matchMediaColorScheme?.matches ? 'dark' : 'light', options)
+	const [accentColor, setAccentColor] = useLocalStorage('accent_color', 'darkBlue')
 
 	useEffect(() => {
 		const scrollEvent = document.body.addEventListener('scroll', (e) => {
@@ -34,13 +35,13 @@ function App() {
 		}
 		// eslint-disable-next-line
 	}, [])
-  
+
   return (
-		<div className='app' data-theme={theme} onClick={()=>{}}>
+		<div className='app' data-theme={theme} data-accent-color={accentColor} onClick={()=>{}}>
 			<Routes>
-				<Route exact path="/" element={<Home theme={theme} />} />
-				<Route exact path="/sudoku" element={<Sudoku theme={theme} />} />
-				<Route exact path="/settings" element={<Settings theme={theme} toggleTheme={() => {setTheme(t => t === 'dark' ? 'light' : 'dark')}}/>} />
+				<Route exact path="/" element={<Home theme={theme} accentColor={accentColor} />} />
+				<Route exact path="/sudoku" element={<Sudoku theme={theme} accentColor={accentColor} />} />
+				<Route path="/settings/*" element={<Settings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor}/>} />
 				<Route exact path="/bookmarks" element={<Bookmarks theme={theme} />}/>
 			</Routes>
 		</div>

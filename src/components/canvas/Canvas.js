@@ -31,8 +31,6 @@ const themes = {
 		canvasQuadrantBorderColor: '#344861',
 		canvasQuadrantBorderColorRGBA: '52, 72, 97',
 		canvasClueColor: '#344861',
-		canvasSolutionColor: '#4b7bec',
-		canvasSelectedCellBackground: '#bbdefb',
 		canvasSameValueCellBackground: '#c3d7ea',
 		canvasNoteHighlightColor: 'black',
 		canvasAnimationBaseColor: '0, 0, 0',
@@ -49,8 +47,6 @@ const themes = {
 		canvasQuadrantBorderColor: 'black',
 		canvasQuadrantBorderColorRGBA: '0, 0, 0',
 		canvasClueColor: '#75747c',
-		canvasSolutionColor: '#6f90c3',
-		canvasSelectedCellBackground: '#153b79',
 		canvasSameValueCellBackground: '#0f0e12',
 		canvasNoteHighlightColor: 'white',
 		canvasAnimationBaseColor: '255, 255, 255',
@@ -59,6 +55,17 @@ const themes = {
 		canvasKillerCageColor: '#75747c',
   	canvasKillerHighlightedCageColor: 'white',
 	}
+}
+
+const solutionColors = {
+	red: '#fc7e84',
+	orange: '#fcb77e',
+	yellow: '#ffe173',
+	green: '#6fdea7',
+	blueGreen: '#66ccc2',
+	lightBlue: '#79c0f2',
+	darkBlue: '#6f90c3',
+	purple: '#c298eb'
 }
 
 const k = 0.2
@@ -94,7 +101,7 @@ const spaceBetweenDigits = 5
 function drawSVGNumber(ctx, n, x, y, size, center){
 	const scale = size / SVGHeight
 	String(n).split('').map((digit, i) => {
-		ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)), y - (center ? SVGHeight * scale / 2 : 0))
+		ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
 		ctx.scale(scale, scale)
 	
 		ctx.lineWidth = 1
@@ -118,6 +125,7 @@ const Canvas = forwardRef(({
 		showSelectedCell = true,
 		noTouch = false,
 		theme,
+		accentColor,
 		style,
 		paused
 }, ref) => {
@@ -163,6 +171,7 @@ const Canvas = forwardRef(({
 	const showLinksRef = useRef()
 	const colors = useRef()
 	const darkColors = useRef()
+	const selectedCellColors = useRef()
 	const pausedRef = useRef()
 
 	const canvasRef = useRef(null)
@@ -338,7 +347,7 @@ const Canvas = forwardRef(({
 		let newCellPositions = []
 		let newValuePositions = []
 
-		let pos = quadrantBorderWidth + canvasPadding.current
+		let pos = quadrantBorderWidth
 		for (let i = 0; i < nSquares; i++){
 			newCellPositions.push(pos)
 			newValuePositions.push(pos + squareSize.current / 2)
@@ -388,6 +397,17 @@ const Canvas = forwardRef(({
 			darkBlue: '#315099',
 			purple: '#6b3d99'
 		}
+
+		selectedCellColors.current = theme === 'light' ? {
+			red: '#fcbdc0',
+			orange: '#fcdabd',
+			yellow: '#ffe999',
+			green: '#a6dec2',
+			blueGreen: '#8fccc6',
+			lightBlue: '#b6d9f2',
+			darkBlue: '#b2c4ed',
+			purple: '#d3bceb'
+		} : darkColors.current
 	}
 
 	function renderFrame(){
@@ -424,7 +444,7 @@ const Canvas = forwardRef(({
 
 					ctx.fillStyle =
 					!showSelectedCell ? colors.current.default :
-					isSelectedCell ? themes[theme].canvasSelectedCellBackground :
+					isSelectedCell ? selectedCellColors.current[accentColor] /*themes[theme].canvasSelectedCellBackground*/ :
 					hasSameValueAsSelected ? themes[theme].canvasSameValueCellBackground : //Cell has same value as selected cell
 					highlitedCells[x][y] ? darkColors.current.default : //Cell in same row or column as any cell with the same value as the selected cell
 					colors.current.default //Default
@@ -440,9 +460,9 @@ const Canvas = forwardRef(({
 						//Value
 						const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
 						ctx.strokeStyle = ctx.fillStyle = 
-							isError ? '#fc5c65' :
+							isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
 							cell.clue ? themes[theme].canvasClueColor :
-							themes[theme].canvasSolutionColor
+							solutionColors[accentColor] /*themes[theme].canvasSolutionColor*/
 						if (isError && cell.color !== 'default') ctx.strokeStyle = 'white'
 						else ctx.strokeStyle = ctx.fillStyle
 						drawSVGNumber(ctx, cell.value, valuePositions.current[x], valuePositions.current[y], squareSize.current * 0.55, true)
@@ -523,7 +543,7 @@ const Canvas = forwardRef(({
 			if (showLinksRef.current && (lockedInputRef.current > 0 || selectedCell.value > 0)){
 				const target = lockedInputRef.current > 0 ? lockedInputRef.current : selectedCell.value
 				let links = game.calculateLinks(target)
-				ctx.fillStyle = ctx.strokeStyle = '#ff5252'
+				ctx.fillStyle = ctx.strokeStyle = accentColor === 'red' ? '#c298eb' : '#ff5252'
 				links.forEach(link => {
 					const noteDelta = noteDeltas.current[target - 1]
 					link.forEach(cell => {

@@ -10,15 +10,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark, faPause, faPlay, faPlus} from '@fortawesome/free-solid-svg-icons'
 import { useStopwatch } from 'react-timer-hook'
 
-const defaultLockedColor = 'purple'
-
-export default function Sudoku({theme}){
+export default function Sudoku({theme, accentColor}){
 	const [showLinks, setShowLinks] = useState(false)
 	const [win, setWin] = useState(false)
 	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
 	const [possibleValues, setPossibleValues] = useState([])
 	const [completedNumbers, setCompletedNumbers] = useState([])
-	const [lockedColor, setLockedColor] = useState(defaultLockedColor)
+	const [lockedColor, setLockedColor] = useState(accentColor)
 	const [brush, setBrush] = useState(false)
 	const [lockedInput, setLockedInput] = useState(0)
 	const [noteMode, setNoteMode] = useState(true)
@@ -51,7 +49,7 @@ export default function Sudoku({theme}){
 			setWin(true)
 			setShowLinks(false)
 			setLockedInput(0)
-			setLockedColor(defaultLockedColor)
+			setLockedColor(accentColor)
 		}, 1350) //Must be equal to animation duration in Canvas.js
 	}
 
@@ -294,6 +292,9 @@ export default function Sudoku({theme}){
 
 		const windowVisibilityChangeEvent = window.addEventListener('visibilitychange', () => {
 			if (GameHandler.game && !GameHandler.game.checkComplete()) GameHandler.game.saveToLocalStorage()
+			/*if (document.visibilityState === 'visible') {
+				if (!paused) startTimer()
+			} else pauseTimer()*/
 		})
 
 		return () => {
@@ -341,7 +342,7 @@ export default function Sudoku({theme}){
 					</div> :
 					<div className="game">
 						<div ref={sudokuRef} className="sudoku">
-							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} paused={paused}/>
+							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused}/>
 						</div>
 						<Numpad
 							onUndo={handleUndo}
