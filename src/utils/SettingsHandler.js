@@ -15,7 +15,7 @@ class SettingsHandler {
 			},
 			{
 				name: 'showPossibleValues',
-				default: true
+				default: false
 			},
 			{
 				name: 'autoRemoveCandidates',
