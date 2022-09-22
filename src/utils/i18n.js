@@ -163,7 +163,4 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
   }
 })
 
-// TEST
-i18n.changeLanguage('en')
-
 export default i18n
