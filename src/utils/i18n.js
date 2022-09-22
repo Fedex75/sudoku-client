@@ -55,7 +55,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           clearColorSolved: 'Clear color when solved',
           fullNotation: 'Full notation',
           nakedSingle: 'Naked single',
-          onlyInBox: 'Only in box',
+          onlyInBox: 'Single in box',
           version: 'Version',
           madeWith: 'Made with',
           inArgentina: 'in Argentina'
@@ -135,7 +135,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           clearColorSolved: 'Eliminar color al resolver',
           fullNotation: 'Notación completa',
           nakedSingle: 'Candidato único',
-          onlyInBox: 'Único en la caja',
+          onlyInBox: 'Único candidato en la caja',
           version: 'Versión',
           madeWith: 'Hecho con',
           inArgentina: 'en Argentina'
