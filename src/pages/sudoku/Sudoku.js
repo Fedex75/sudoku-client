@@ -1,5 +1,5 @@
 import './sudoku.css'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button, ExpandCard, Numpad } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import GameHandler from '../../utils/GameHandler'
