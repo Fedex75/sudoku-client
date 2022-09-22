@@ -21,7 +21,6 @@ export default function Sudoku({theme, accentColor}){
 	const [lockedInput, setLockedInput] = useState(0)
 	const [noteMode, setNoteMode] = useState(true)
 	const [noteDragMode, setNoteDragMode] = useState(null)
-	const [paused, setPaused] = useState(false)
 
 	const newGameActionSheetRef = useRef()
 	const exportActionSheetRef = useRef()
@@ -38,10 +37,23 @@ export default function Sudoku({theme, accentColor}){
 	const [shareExpanded, setShareExpanded] = useState(false)
 	const [bookmarkExpanded, setBookmarkExpanded] = useState(false)
 
-	const timerOffset = new Date()
-	timerOffset.setSeconds(timerOffset.getSeconds() + GameHandler.game?.timer)
+	const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [paused, setPaused] = useState(false)
+  const [time, setTime] = useState(GameHandler.game?.timer || 0)
 
-	const {seconds, minutes, hours, days, start: startTimer, pause: pauseTimer, reset: resetTimer} = useStopwatch({autoStart: true, offsetTimestamp: timerOffset})
+	function startTimer(){
+    setIsActive(true)
+    setIsPaused(false)
+  }
+  
+  function pause(){ 
+    setIsPaused(!paused)
+  }
+  
+  const handleReset = () => {
+    setIsActive(false)
+    setTime(0)
+  }
 
 	function handleComplete(){
 		pauseTimer()
