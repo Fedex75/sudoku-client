@@ -13,7 +13,10 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           cancel: 'Cancel',
           delete: 'Delete',
           discard: 'Discard',
-          discardGame: 'Discard current game?'
+          discardGame: 'Discard current game?',
+          newVersionAvailable: "There's a new version available",
+          lightTheme: 'Light',
+          darkTheme: 'Dark'
         },
         sectionNames: {
           bookmarks: 'Bookmarks',
@@ -55,7 +58,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           onlyInBox: 'Only in box',
           version: 'Version',
           madeWith: 'Made with',
-          in: 'in'
+          inArgentina: 'in Argentina'
         },
         sudoku: {
           saved: 'Bookmarked',
@@ -89,7 +92,10 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           cancel: 'Cancelar',
           delete: 'Eliminar',
           discard: 'Descartar',
-          discardGame: '¿Descartar el juego en progreso?'
+          discardGame: '¿Descartar el juego en progreso?',
+          newVersionAvailable: 'Hay una nueva versión disponible',
+          lightTheme: 'Claro',
+          darkTheme: 'Oscuro'
         },
         sectionNames: {
           bookmarks: 'Marcadores',
@@ -132,7 +138,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           onlyInBox: 'Único en la caja',
           version: 'Versión',
           madeWith: 'Hecho con',
-          in: 'en'
+          inArgentina: 'en Argentina'
         },
         sudoku: {
           saved: 'Guardado',

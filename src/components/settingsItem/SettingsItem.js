@@ -1,3 +1,5 @@
+import { t } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import ReactSwitch from 'react-switch'
 import Board from '../../utils/Board'
 import SettingsHandler from '../../utils/SettingsHandler'
@@ -6,6 +8,8 @@ import Check from '../check/Check'
 import './settingsItem.css'
 
 export default function SettingsItem({title, name, handleSettingChange, type = 'boolean', theme, setTheme, accentColor, info}){  
+  const {t} = useTranslation()
+
   if (type === 'boolean') return (
     <div className="settings__item">
       <p className="settings__item__title">{title}</p>
@@ -34,12 +38,12 @@ export default function SettingsItem({title, name, handleSettingChange, type = '
       <div className='settings__item theme'>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('light')}}>
           <Canvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme='light' accentColor={accentColor} />
-          <p>Claro</p>
+          <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('dark')}}>
           <Canvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme='dark' accentColor={accentColor} />
-          <p>Oscuro</p>
+          <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>
       </div>
