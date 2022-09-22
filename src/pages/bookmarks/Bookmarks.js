@@ -6,9 +6,10 @@ import { useNavigate } from "react-router"
 import { Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, ExpandCard } from '../../components'
 import Board from "../../utils/Board"
 import Decoder from "../../utils/Decoder"
-import { difficultyDecoder, difficultyTranslations, modeDecoder, modeTranslations } from "../../utils/Difficulties"
+import { difficultyDecoder, modeDecoder } from "../../utils/Difficulties"
 import GameHandler from "../../utils/GameHandler"
 import missions from '../../data/missions.json'
+import { useTranslation } from 'react-i18next'
 
 function Bookmarks({theme}){
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
@@ -21,6 +22,8 @@ function Bookmarks({theme}){
 	const removeBookmarkActionSheetRef = useRef(null)
 	const playBookmarkActionSheetRef = useRef(null)
 	const topbarDeleteAllRef = useRef(null)
+
+	const {t} = useTranslation()
 
 	function handleRemoveBookmark(bm){
 		setRemoveBookmarkData(bm)
@@ -65,12 +68,12 @@ function Bookmarks({theme}){
 	return (
 		<Section>
 			<Topbar
-				title="Marcadores"
+				title={t('sectionNames.bookmarks')}
 				backURL="/"
 				buttons={[
 					bookmarks.length > 0 ?
 					<ExpandCard key={0} ref={topbarDeleteAllRef} className='topbar__button' style={{backgroundColor: 'var(--red)', color: 'white'}} onClick={handleClearBookmarksClick}>
-						{deleteAllExpanded ? 'Eliminar todos' : <FontAwesomeIcon icon={faTrashCan} className="topbar__button" style={{color: 'white'}}/>}
+						{deleteAllExpanded ? t('bookmarks.deleteAll') : <FontAwesomeIcon icon={faTrashCan} className="topbar__button" style={{color: 'white'}}/>}
 					</ExpandCard> : null
 				]}
 			/>
@@ -97,7 +100,7 @@ function Bookmarks({theme}){
 								return (
 									<div key={i} className="bookmarks__item">
 										<div className="bookmarks_item__top">
-											<p className="bookmarks__item__top__title">{`${modeTranslations[board.mode]} - ${difficultyTranslations[board.difficulty]}`}</p>
+											<p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
 											{solved ? <FontAwesomeIcon style={{color: 'var(--green)'}} icon={faCheck} /> : null}
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => {handleRemoveBookmark(bm)}}/>
 										</div>
@@ -111,30 +114,30 @@ function Bookmarks({theme}){
 					</div> :
 					<div className="bookmarks__empty">
 						<FontAwesomeIcon icon={faBookmark} style={{fontSize: 70, marginBottom: 10}}/>
-						<p style={{fontSize: 20}}>No hay marcadores</p>
+						<p style={{fontSize: 20}}>{t('bookmarks.empty')}</p>
 					</div>
 				}
 			</SectionContent>
 
 			<ActionSheet
 				reference={clearBookmarksActionSheetRef}
-				title="¿Eliminar todos los marcadores?"
-				cancelTitle="Cancelar"
+				title={t('bookmarks.promptDeleteAll')}
+				cancelTitle={t('common.cancel')}
 				onClose={() => {
 					setDeleteAllExpanded(false)
 					topbarDeleteAllRef.current.collapseH('var(--red)', 'white')
 				}}
 				showTopbar
 			>
-				<ActionSheetButton title="Eliminar" color="var(--red)" onClick={clearBookmarks}/>
+				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks}/>
 			</ActionSheet>
 
-			<ActionSheet reference={removeBookmarkActionSheetRef} title="¿Eliminar marcador?" cancelTitle="Cancelar">
-				<ActionSheetButton title="Eliminar" color="var(--red)" onClick={removeBookmark}/>
+			<ActionSheet reference={removeBookmarkActionSheetRef} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')}>
+				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark}/>
 			</ActionSheet>
 
-			<ActionSheet reference={playBookmarkActionSheetRef} title="¿Descartar el juego en progreso?" cancelTitle="Cancelar">
-				<ActionSheetButton title="Descartar" color="var(--red)" onClick={() => {playBookmark(playBookmarkData)}}/>
+			<ActionSheet reference={playBookmarkActionSheetRef} title={t('common.discardGame')} cancelTitle={t('common.cancel')}>
+				<ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => {playBookmark(playBookmarkData)}}/>
 			</ActionSheet>
 		</Section>
 	)

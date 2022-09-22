@@ -7,7 +7,7 @@ const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 
 const animationLengths = {
 	row: 500,
 	col: 500,
-	quadrant: 500,
+	box: 500,
 	board: 1350, //Must be equal to the timeout delay on Sudoku.js,
 	fadein_long: 1350,
 	fadein: 500,
@@ -16,7 +16,7 @@ const animationLengths = {
 
 const roundedRatio = Math.round(window.devicePixelRatio)
 
-const quadrantBorderWidth = roundedRatio === 1 ? 4 : 6
+const boxBorderWidth = roundedRatio === 1 ? 4 : 6
 const cellBorderWidth = roundedRatio === 1 ? 2 : 3
 const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 1 : 3
@@ -28,8 +28,8 @@ const themes = {
 		canvasDarkDefaultCellColor: '#e2ebf3',
 		canvasCellBorderColor: '#bec6d4',
 		canvasCellBorderColorRGBA: '190, 198, 212',
-		canvasQuadrantBorderColor: '#344861',
-		canvasQuadrantBorderColorRGBA: '52, 72, 97',
+		canvasBoxBorderColor: '#344861',
+		canvasBoxBorderColorRGBA: '52, 72, 97',
 		canvasClueColor: '#344861',
 		canvasSameValueCellBackground: '#c3d7ea',
 		canvasNoteHighlightColor: 'black',
@@ -44,8 +44,8 @@ const themes = {
 		canvasDarkDefaultCellColor: '#161620',
 		canvasCellBorderColor: 'black',
 		canvasCellBorderColorRGBA: '0, 0, 0',
-		canvasQuadrantBorderColor: 'black',
-		canvasQuadrantBorderColorRGBA: '0, 0, 0',
+		canvasBoxBorderColor: 'black',
+		canvasBoxBorderColorRGBA: '0, 0, 0',
 		canvasClueColor: '#75747c',
 		canvasSameValueCellBackground: '#0f0e12',
 		canvasNoteHighlightColor: 'white',
@@ -334,9 +334,9 @@ const Canvas = forwardRef(({
 		canvasRef.current.width = logicalSize.current
 		canvasRef.current.height = logicalSize.current
 
-		const numberOfQuadrantBorders = (Math.floor(nSquares / 3) + 1)
-		const numberOfCellBorders = nSquares + 1 - numberOfQuadrantBorders
-		const totalBorderThickness = numberOfQuadrantBorders * quadrantBorderWidth + numberOfCellBorders * cellBorderWidth
+		const numberOfBoxBorders = (Math.floor(nSquares / 3) + 1)
+		const numberOfCellBorders = nSquares + 1 - numberOfBoxBorders
+		const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
 		squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / nSquares)
 		const previousLogicalSize = logicalSize.current
 		logicalSize.current = squareSize.current * nSquares + totalBorderThickness
@@ -347,12 +347,12 @@ const Canvas = forwardRef(({
 		let newCellPositions = []
 		let newValuePositions = []
 
-		let pos = quadrantBorderWidth
+		let pos = boxBorderWidth
 		for (let i = 0; i < nSquares; i++){
 			newCellPositions.push(pos)
 			newValuePositions.push(pos + squareSize.current / 2)
 			pos += squareSize.current + cellBorderWidth
-			if ((i + 1) % 3 === 0) pos += quadrantBorderWidth - cellBorderWidth
+			if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
 		}
 
 		//Candidate positions
@@ -424,12 +424,12 @@ const Canvas = forwardRef(({
 		ctx.fillRect(0, 0, logicalSize.current, logicalSize.current)
 
 		//Borders
-		ctx.fillStyle = themes[theme].canvasQuadrantBorderColor
-		ctx.fillRect(0, 0, quadrantBorderWidth, logicalSize.current)
-		ctx.fillRect(0, 0, logicalSize.current, quadrantBorderWidth)
+		ctx.fillStyle = themes[theme].canvasBoxBorderColor
+		ctx.fillRect(0, 0, boxBorderWidth, logicalSize.current)
+		ctx.fillRect(0, 0, logicalSize.current, boxBorderWidth)
 		for (let i = 2; i < nSquares; i += 3){
-			ctx.fillRect(cellPositions.current[i] + squareSize.current, 0, quadrantBorderWidth, logicalSize.current)
-			ctx.fillRect(0, cellPositions.current[i] + squareSize.current, logicalSize.current, quadrantBorderWidth)
+			ctx.fillRect(cellPositions.current[i] + squareSize.current, 0, boxBorderWidth, logicalSize.current)
+			ctx.fillRect(0, cellPositions.current[i] + squareSize.current, logicalSize.current, boxBorderWidth)
 		}
 
 		if (!pausedRef.current || (currentAnimations.current.length > 0 && currentAnimations.current[0].data.type === 'fadeout')){
@@ -521,16 +521,16 @@ const Canvas = forwardRef(({
 						if (x === (nSquares - 1) || game.board[x+1][y].color !== cell.color) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
 						else {
 							//Right bridges
-							if (!(y > 0 && game.board[x+1][y-1].color === cell.color && game.board[x][y-1].color === cell.color)) ctx.fillRect(right, top, padding * 2 + quadrantBorderWidth, colorBorderLineWidth)
-							if (!(y < (nSquares - 1) && game.board[x+1][y+1].color === cell.color && game.board[x][y+1].color === cell.color)) ctx.fillRect(right, bottom, padding * 2 + quadrantBorderWidth, colorBorderLineWidth)
+							if (!(y > 0 && game.board[x+1][y-1].color === cell.color && game.board[x][y-1].color === cell.color)) ctx.fillRect(right, top, padding * 2 + boxBorderWidth, colorBorderLineWidth)
+							if (!(y < (nSquares - 1) && game.board[x+1][y+1].color === cell.color && game.board[x][y+1].color === cell.color)) ctx.fillRect(right, bottom, padding * 2 + boxBorderWidth, colorBorderLineWidth)
 						}
 
 						//Bottom
 						if (y === (nSquares - 1) || game.board[x][y+1].color !== cell.color) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
 						else {
 							//Bottom bridges
-							if (!(x > 0 && game.board[x-1][y].color === cell.color && game.board[x-1][y+1].color === cell.color)) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + quadrantBorderWidth)
-							if (!(x < (nSquares - 1) && game.board[x+1][y].color === cell.color && game.board[x+1][y+1].color === cell.color)) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + quadrantBorderWidth)
+							if (!(x > 0 && game.board[x-1][y].color === cell.color && game.board[x-1][y+1].color === cell.color)) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
+							if (!(x < (nSquares - 1) && game.board[x+1][y].color === cell.color && game.board[x+1][y+1].color === cell.color)) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
 						}
 
 						//Left
@@ -544,6 +544,7 @@ const Canvas = forwardRef(({
 				const target = lockedInputRef.current > 0 ? lockedInputRef.current : selectedCell.value
 				let links = game.calculateLinks(target)
 				ctx.fillStyle = ctx.strokeStyle = accentColor === 'red' ? '#c298eb' : '#ff5252'
+				ctx.lineWidth = linksLineWidth
 				links.forEach(link => {
 					const noteDelta = noteDeltas.current[target - 1]
 					link.forEach(cell => {
@@ -552,7 +553,12 @@ const Canvas = forwardRef(({
 						ctx.fill()
 					})
 					if (link.length === 2){
-						const correction = Math.floor(linksLineWidth / 2)
+						ctx.beginPath()
+						ctx.moveTo(cellPositions.current[link[0].x] + noteDelta.x, cellPositions.current[link[0].y] + noteDelta.y)
+						ctx.lineTo(cellPositions.current[link[1].x] + noteDelta.x, cellPositions.current[link[1].y] + noteDelta.y)
+						ctx.stroke()
+						/*const correction = Math.floor(linksLineWidth / 2)
+						
 						let linkLength = Math.abs(cellPositions.current[link[1].x] - cellPositions.current[link[0].x]) + Math.abs(cellPositions.current[link[1].y] - cellPositions.current[link[0].y])
 						//Right
 						if (link[0].x < link[1].x) ctx.fillRect(cellPositions.current[link[0].x] + noteDelta.x, cellPositions.current[link[0].y] + noteDelta.y - correction, linkLength, linksLineWidth)
@@ -561,7 +567,7 @@ const Canvas = forwardRef(({
 						//Down
 						else if (link[0].y < link[1].y) ctx.fillRect(cellPositions.current[link[0].x] + noteDelta.x - correction, cellPositions.current[link[0].y] + noteDelta.y, linksLineWidth, linkLength)
 						//Up
-						else ctx.fillRect(cellPositions.current[link[1].x] + noteDelta.x - correction, cellPositions.current[link[1].y] + noteDelta.y, linksLineWidth, linkLength)
+						else ctx.fillRect(cellPositions.current[link[1].x] + noteDelta.x - correction, cellPositions.current[link[1].y] + noteDelta.y, linksLineWidth, linkLength)*/
 					}
 				})
 			}
@@ -574,12 +580,12 @@ const Canvas = forwardRef(({
 						ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 
 						//Right border
-						ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[theme].canvasQuadrantBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas.current[y]})`
-						ctx.fillRect(cellPositions.current[x] + squareSize.current, cellPositions.current[y], x % 3 === 2 ? quadrantBorderWidth : cellBorderWidth, squareSize.current)
+						ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas.current[y]})`
+						ctx.fillRect(cellPositions.current[x] + squareSize.current, cellPositions.current[y], x % 3 === 2 ? boxBorderWidth : cellBorderWidth, squareSize.current)
 
 						//Bottom border
-						ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[theme].canvasQuadrantBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas.current[y]})`
-						ctx.fillRect(cellPositions.current[x], cellPositions.current[y] + squareSize.current, squareSize.current, y % 3 === 2 ? quadrantBorderWidth : cellBorderWidth)
+						ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas.current[y]})`
+						ctx.fillRect(cellPositions.current[x], cellPositions.current[y] + squareSize.current, squareSize.current, y % 3 === 2 ? boxBorderWidth : cellBorderWidth)
 					}
 				}
 			}
@@ -616,8 +622,8 @@ const Canvas = forwardRef(({
 					case 'col':
 						for (let y = 0; y < nSquares; y++) animationColors.current[animation.data.center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
 						break
-					case 'quadrant':
-						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.quadrantX*3+x][animation.data.quadrantY*3+y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y*3+x, progress, 8, 8)})`
+					case 'box':
+						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.boxX*3+x][animation.data.boxY*3+y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y*3+x, progress, 8, 8)})`
 						break
 					case 'board':
 						for (let x = 0; x < nSquares; x++) for (let y = 0; y < nSquares; y++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`

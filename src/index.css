@@ -58,7 +58,7 @@
   --canvasLightDefaultCellColor: #25242c;
   --canvasDarkDefaultCellColor: #161620;
   --canvasCellBorderColor: black;
-  --canvasQuadrantBorderColor: black;
+  --canvasBoxBorderColor: black;
   --canvasClueColor: #75747c;
   --canvasSolutionColor: #6f90c3;
   --canvasSelectedCellBackground: #153b79;

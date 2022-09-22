@@ -1,6 +1,7 @@
 #home {
   display: grid;
   grid-template-rows: fit-content(0) auto;
+  padding-top: 30px;
 }
 
 .home__grid {

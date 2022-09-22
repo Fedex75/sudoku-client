@@ -11,7 +11,7 @@ class SettingsHandler {
 			},
 			{
 				name: 'advancedHighlight',
-				default: true
+				default: false
 			},
 			{
 				name: 'showPossibleValues',
@@ -27,7 +27,7 @@ class SettingsHandler {
 			},
 			{
 				name: 'autoChangeInputLock',
-				default: true
+				default: false
 			},
 			{
 				name: 'lockCellsWithColor',
@@ -35,14 +35,14 @@ class SettingsHandler {
 			},
 			{
 				name: 'autoSolveCellsWithColor',
-				default: true
+				default: false
 			},
 			{
 				name: 'autoSolveCellsFullNotation',
-				default: true
+				default: false
 			},
 			{
-				name: 'autoSolveOnlyInQuadrant',
+				name: 'autoSolveOnlyInBox',
 				default: false
 			},
 			{

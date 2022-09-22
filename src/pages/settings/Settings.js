@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPalette, faChevronRight, faBorderAll, faGear, faInfo, faHeart } from '@fortawesome/free-solid-svg-icons'
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
+import { useTranslation } from 'react-i18next'
 
 function SectionLink({color, icon, title, link}){
 	return (
@@ -21,15 +22,17 @@ function SectionLink({color, icon, title, link}){
 }
 
 function Main(){
+	const {t} = useTranslation()
+
 	return (
 		<Section>
-			<Topbar title='Opciones' backURL="/" />
+			<Topbar title={t('sectionNames.settings')} backURL="/" />
 			<SectionContent id="settings">
 				<div className="settings__section__list fade_in">
-					<SectionLink color='var(--darkBlue)' icon={faPalette} title='Apariencia' link='appearance'/>
-					<SectionLink color='var(--red)' icon={faBorderAll} title='Juego' link='game'/>
-					<SectionLink color='var(--lightGray)' icon={faGear} title='Avanzado' link='advanced'/>
-					<SectionLink color='var(--darkBlue)' icon={faInfo} title='Acerca de' link='about'/>
+					<SectionLink color='var(--darkBlue)' icon={faPalette} title={t('settings.sectionAppearance')} link='appearance'/>
+					<SectionLink color='var(--red)' icon={faBorderAll} title={t('settings.sectionGame')} link='game'/>
+					<SectionLink color='var(--lightGray)' icon={faGear} title={t('settings.sectionAdvanced')} link='advanced'/>
+					<SectionLink color='var(--darkBlue)' icon={faInfo} title={t('settings.sectionAbout')} link='about'/>
 				</div>
 			</SectionContent>
 		</Section>
@@ -37,16 +40,18 @@ function Main(){
 }
 
 function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccentColor}){
+	const {t} = useTranslation()
+	
 	return (
 		<Section>
-			<Topbar title='Opciones' subtitle='Apariencia' backURL="/settings"/>
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className="settings__list fade_in" >
 					<SettingsItem title='' name='' handleSettingChange={handleSettingChange} type='theme' theme={theme} setTheme={setTheme} accentColor={accentColor} />
-					<SettingsItem title='Automático' name='autoTheme' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.automatic')} name='autoTheme' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<div className='settings__label fade_in'>COLOR DE ACENTO</div>
+				<div className='settings__label fade_in'>{t('settings.accentColor')}</div>
 
 				<ExpandCard className='fade_in'>
 					<ColorChooser value={accentColor} colors={['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple']} onChange={setAccentColor} />
@@ -57,20 +62,22 @@ function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccen
 }
 
 function Game({handleSettingChange}){
+	const {t} = useTranslation()
+	
 	return (
 		<Section>
-			<Topbar title='Opciones' subtitle='Juego' backURL="/settings"/>
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className="settings__list fade_in">
-					<SettingsItem title='Mostrar errores' name='checkMistakes' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Señalamiento completo' name='advancedHighlight' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} />
 				</div>
 				
-				<div className='settings__label fade_in'>CANDIDATOS</div>
+				<div className='settings__label fade_in'>{t('settings.candidates')}</div>
 				
 				<div className="settings__list fade_in">
-					<SettingsItem title='Mostrar solo posibles' name='showPossibleValues' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Remover automáticamente' name='autoRemoveCandidates' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} />
 				</div>
 			</SectionContent>
 		</Section>
@@ -78,30 +85,32 @@ function Game({handleSettingChange}){
 }
 
 function Advanced({handleSettingChange}){
+	const {t} = useTranslation()
+
 	return (
 		<Section>
-			<Topbar title='Opciones' subtitle='Avanzado' backURL="/settings"/>
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className='settings__label fade_in'>BLOQUEO DE ENTRADA</div>
+				<div className='settings__label fade_in'>{t('settings.inputLock')}</div>
 				
 				<div className="settings__list fade_in">
-					<SettingsItem title='Cambiar automáticamente' name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoChange')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<div className='settings__label fade_in'>CELDAS CON COLOR</div>
+				<div className='settings__label fade_in'>{t('settings.coloredCells')}</div>
 
 				<div className="settings__list fade_in">
-					<SettingsItem title='Bloquear' name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Solución automática' name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Eliminar color al resolver' name='clearColorOnInput' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.lock')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<div className='settings__label fade_in'>SOLUCIÓN AUTOMÁTICA</div>
+				<div className='settings__label fade_in'>{t('settings.autoSolveTitle')}</div>
 
 				<div className="settings__list fade_in">
-					<SettingsItem title='Notación completa' name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Candidato único' name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} />
-					<SettingsItem title='Único en cuadrante' name='autoSolveOnlyInQuadrant' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} />
 				</div>
 			</SectionContent>
 		</Section>
@@ -109,15 +118,17 @@ function Advanced({handleSettingChange}){
 }
 
 function About(){
+	const {t} = useTranslation()
+
 	return (
 		<Section>
-			<Topbar title='Opciones' subtitle='Acerca de' backURL="/settings"/>
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAbout')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className="settings__list fade_in">
-					<SettingsItem type='info' title='Versión' info={API.clientVersion} />
+					<SettingsItem type='info' title={t('settings.version')} info={API.clientVersion} />
 				</div>
 
-				<p style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>Hecho con <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> en 🇦🇷 </p>
+				<p style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.in')} 🇦🇷 </p>
 			</SectionContent>
 		</Section>
 	)

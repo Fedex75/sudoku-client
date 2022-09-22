@@ -98,12 +98,12 @@ export default class Board {
 		this.selectedCell = c
 	}
 
-	onlyAvailableInQuadrant(c, n){
-		const quadrantX = Math.floor(c.x / 3)
-		const quadrantY = Math.floor(c.y / 3)
+	onlyAvailableInBox(c, n){
+		const boxX = Math.floor(c.x / 3)
+		const boxY = Math.floor(c.y / 3)
 		let found = 0
 		let highlightedCells = this.calculateHighlightedCells(null, n)
-		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y]) found++
+		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (!highlightedCells[boxX * 3 + x][boxY * 3 + y]) found++
 		return found === 1
 	}
 
@@ -112,8 +112,8 @@ export default class Board {
 
 		if (cell.value > 0) return [null, []]
 		
-		//Check if only available place in quadrant
-		if (SettingsHandler.settings.autoSolveOnlyInQuadrant && checkAutoSolution && this.onlyAvailableInQuadrant(c, n)){
+		//Check if only available place in box
+		if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInBox(c, n)){
 			return [true, this.setValue(c, n)]
 		}
 
@@ -197,12 +197,12 @@ export default class Board {
 			if (flagRow) animations.push({type: 'row', center: c})
 			if (flagCol) animations.push({type: 'col', center: c})
 
-			const quadrantX = Math.floor(c.x / 3)
-			const quadrantY = Math.floor(c.y / 3)
+			const boxX = Math.floor(c.x / 3)
+			const boxY = Math.floor(c.y / 3)
 
-			let quadrantFlag = true
-			for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (this.board[quadrantX * 3 + x][quadrantY * 3 + y].value === 0) quadrantFlag = false
-			if (quadrantFlag) animations.push({type: 'quadrant', quadrantX, quadrantY})
+			let boxFlag = true
+			for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (this.board[boxX * 3 + x][boxY * 3 + y].value === 0) boxFlag = false
+			if (boxFlag) animations.push({type: 'box', boxX, boxY})
 		}
 
 		return animations
@@ -237,8 +237,8 @@ export default class Board {
 				if (visibleCell.value > 0 && !values.includes(visibleCell.value)) values.push(visibleCell.value)
 			}
 
-			//Check cells with color in quadrant
-			for (const coords of this.getQuadrantCells(c)){
+			//Check cells with color in box
+			for (const coords of this.getBoxCells(c)){
 				const visibleCell = this.get(coords)
 				if (visibleCell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor){
 					for (const candidate of visibleCell.notes){
@@ -267,22 +267,22 @@ export default class Board {
 		return completedNumbers
 	}
 
-	getQuadrantCells(c){
-		let quadrantCells = []
-		const quadrantX = Math.floor(c.x / 3)
-		const quadrantY = Math.floor(c.y / 3)
-		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) quadrantCells.push({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
-		return quadrantCells
+	getBoxCells(c){
+		let boxCells = []
+		const boxX = Math.floor(c.x / 3)
+		const boxY = Math.floor(c.y / 3)
+		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) boxCells.push({x: boxX * 3 + x, y: boxY * 3 + y})
+		return boxCells
 	}
 
 	getVisibleCells(c){
 		let visibleCells = []
-		const quadrantX = Math.floor(c.x / 3)
-		const quadrantY = Math.floor(c.y / 3)
-		visibleCells = visibleCells.concat(this.getQuadrantCells(c))
+		const boxX = Math.floor(c.x / 3)
+		const boxY = Math.floor(c.y / 3)
+		visibleCells = visibleCells.concat(this.getBoxCells(c))
 		for (let i = 0; i < this.nSquares; i++){
-			if (i < quadrantX * 3 || i >= quadrantX * 3 + 3) visibleCells.push({x: i, y: c.y})
-			if (i < quadrantY * 3 || i >= quadrantY * 3 + 3) visibleCells.push({x: c.x, y: i})
+			if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push({x: i, y: c.y})
+			if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push({x: c.x, y: i})
 		}
 		return visibleCells
 	}
@@ -315,12 +315,12 @@ export default class Board {
 				}
 			}
 			if (this.nSquares === 9){
-				for (let quadrantX = 0; quadrantX < 3; quadrantX++){
-					for (let quadrantY = 0; quadrantY < 3; quadrantY++){
+				for (let boxX = 0; boxX < 3; boxX++){
+					for (let boxY = 0; boxY < 3; boxY++){
 						let found = false
 						for (let x = 0; x < 3; x++){
 							for (let y = 0; y < 3; y++){
-								const cell = this.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
+								const cell = this.get({x: boxX * 3 + x, y: boxY * 3 + y})
 								if (cell.color !== 'default' && cell.notes.includes(targetValue)){
 									found = true
 									break
@@ -330,8 +330,8 @@ export default class Board {
 						if (found){
 							for (let x = 0; x < 3; x++){
 								for (let y = 0; y < 3; y++){
-									if (!this.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y}).notes.includes(targetValue))
-										highlightedCells[quadrantX * 3 + x][quadrantY * 3 + y] = true
+									if (!this.get({x: boxX * 3 + x, y: boxY * 3 + y}).notes.includes(targetValue))
+										highlightedCells[boxX * 3 + x][boxY * 3 + y] = true
 								}
 							}
 						}
@@ -373,10 +373,10 @@ export default class Board {
 				links.push(newLink)
 			}
 		}
-		//Count candidates in quadrants
+		//Count candidates in boxs
 		for (let qx = 0; qx < 3; qx++){
 			for (let qy = 0; qy < 3; qy++){
-				//Count candidates in quadrant
+				//Count candidates in box
 				let newLink = []
 				for (let x = 0; x < 3; x++){
 					for (let y = 0; y < 3; y++){
@@ -424,12 +424,12 @@ export default class Board {
 		if (this.fullNotation && !force) return
 		
 		for (let n = 1; n <= 9; n++){
-			for (let quadrantX = 0; quadrantX < 3; quadrantX++){
-				for (let quadrantY = 0; quadrantY < 3; quadrantY++){
+			for (let boxX = 0; boxX < 3; boxX++){
+				for (let boxY = 0; boxY < 3; boxY++){
 					let found = false
 					for (let x = 0; x < 3; x++){
 						for (let y = 0; y < 3; y++){
-							const cell = this.get({x: quadrantX * 3 + x, y: quadrantY * 3 + y})
+							const cell = this.get({x: boxX * 3 + x, y: boxY * 3 + y})
 							if (cell.value === n || cell.notes.includes(n)){
 								found = true
 								break

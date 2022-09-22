@@ -4,6 +4,7 @@ import App from './App'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import { BrowserRouter } from 'react-router-dom'
 import GameHandler from './utils/GameHandler'
+import './utils/i18n';
 import './index.css'
 
 GameHandler.init()

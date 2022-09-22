@@ -1,5 +1,6 @@
 #bookmarks {
   overflow-y: scroll;
+  padding-top: 30px;
 }
 
 .bookmarks__wrapper {
