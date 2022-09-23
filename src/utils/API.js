@@ -3,7 +3,7 @@ import axios from "axios"
 class API {
 	constructor(){
 		this.host = 'https://sudoku.zaifo.com.ar'
-		this.clientVersion = '2.3.4'
+		this.clientVersion = '2.4.0'
 		this.clientVersionIsBeta = false
 	}
 
