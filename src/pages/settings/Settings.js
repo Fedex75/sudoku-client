@@ -143,7 +143,7 @@ function About(){
 					<SettingsItem type='info' title={t('settings.version')} info={API.clientVersion} />
 				</div>
 
-				<p style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} 🇦🇷 </p>
+				<p className='fade_in' style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} 🇦🇷 </p>
 			</SectionContent>
 		</Section>
 	)
