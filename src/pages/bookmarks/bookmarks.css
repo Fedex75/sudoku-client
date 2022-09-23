@@ -1,5 +1,5 @@
 #bookmarks {
-  overflow-y: scroll;
+  overflow-y: auto;
   padding-top: 30px;
 }
 
@@ -34,9 +34,9 @@
   place-items: center;
 }
 
-.bookmarks__item__canvas-wrapper canvas {
+/*.bookmarks__item__canvas-wrapper canvas {
   width: calc(100vw - 60px);
-}
+}*/
 
 .bookmarks__empty {
   display: flex;
@@ -45,4 +45,11 @@
   align-items: center;
   height: 100%;
   color: var(--bookmarksEmptyColor);
+}
+
+@media (min-aspect-ratio: 1 / 1){
+  .bookmarks__item {
+    max-width: 400px;
+    max-height: 400px;
+  }
 }

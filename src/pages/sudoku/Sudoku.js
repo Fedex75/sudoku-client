@@ -75,7 +75,7 @@ export default function Sudoku({theme, accentColor}){
   }
 
 	function handleComplete(){
-		pauseTimer()
+		setIsTimerRunning(false)
 		setTimeout(() => {
 			setWin(true)
 			setShowLinks(false)

@@ -68,17 +68,21 @@ function Game({handleSettingChange}){
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className="settings__list fade_in">
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} />
 				</div>
 				
+				<p className='settings__explanation fade_in'>{t('settings.advancedHighlightExplanation')}</p>
+
 				<div className='settings__label fade_in'>{t('settings.candidates')}</div>
 				
-				<div className="settings__list fade_in">
-					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} />
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} />
 				</div>
+
+				<p className='settings__explanation fade_in'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
 			</SectionContent>
 		</Section>
 	)
@@ -93,25 +97,36 @@ function Advanced({handleSettingChange}){
 			<SectionContent id="settings">
 				<div className='settings__label fade_in'>{t('settings.inputLock')}</div>
 				
-				<div className="settings__list fade_in">
-					<SettingsItem title={t('settings.autoChange')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+					<SettingsItem title={t('settings.autoChangeInputLock')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
 				</div>
+
+				<p className='settings__explanation fade_in'>{t('settings.autoChangeInputLockExplanation')}</p>
 
 				<div className='settings__label fade_in'>{t('settings.coloredCells')}</div>
 
-				<div className="settings__list fade_in">
-					<SettingsItem title={t('settings.lock')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
 				</div>
+
+				<p className='settings__explanation fade_in' style={{marginBottom: 10}}>{t('settings.lockColoredCellsExplanation')}</p>
+
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
+				</div>
+
+				<p className='settings__explanation fade_in'>{t('settings.autoSolveColoredCellsExplanation')}</p>
 
 				<div className='settings__label fade_in'>{t('settings.autoSolveTitle')}</div>
 
-				<div className="settings__list fade_in">
-					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
 				</div>
+
+				<p className='settings__explanation fade_in'>{t('settings.fullNotationExplanation')}</p>
 			</SectionContent>
 		</Section>
 	)

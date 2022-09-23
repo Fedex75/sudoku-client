@@ -1,16 +1,18 @@
 #settings {
-  overflow-y: scroll;
+  overflow-y: auto;
   padding-top: 30px;
 }
 
-.settings {
-  padding-top: 40px;
-}
-
 .settings__label {
-  color: gray;
+  color: var(--secondaryTextColor);
   padding-left: 15px;
   margin-bottom: 5px;
+}
+
+.settings__explanation {
+  color: var(--secondaryTextColor);
+  padding: 10px;
+  margin-bottom: 30px;
 }
 
 .settings__list {
@@ -41,4 +43,10 @@
   border-radius: 5px;
   color: white;
   font-size: 20px;
+}
+
+@media (min-aspect-ratio: 21 / 20) {
+  #settings {
+    width: 400px;
+  }
 }
