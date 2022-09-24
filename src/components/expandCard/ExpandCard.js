@@ -45,6 +45,7 @@ const ExpandCard = forwardRef(({children, className, style, expanded = false, on
             divRef.current.style.right = `${animation.target.right}px`
             break
           case 'collapseH':
+            console.log(animation);
             divRef.current.style.left = `${animation.target.left}px`
             divRef.current.style.right = `${animation.target.right}px`
             divRef.current.style.position = 'static'
@@ -58,6 +59,9 @@ const ExpandCard = forwardRef(({children, className, style, expanded = false, on
       }
 
       if (currentAnimations.current.length > 0) requestAnimationFrame((ts) => {doAnimation(ts)})
+      else {
+        rectBeforeAnimation.current = null
+      }
     }
   }
 
@@ -82,6 +86,7 @@ const ExpandCard = forwardRef(({children, className, style, expanded = false, on
       requestAnimationFrame((timestamp) => {doAnimation(timestamp)})
     },
     collapseH(newBackgroundColor, newFontColor){
+      if (rectBeforeAnimation.current === null) return
       const rect = divRef.current.getBoundingClientRect()
       currentAnimations.current.push({
         type: 'collapseH',

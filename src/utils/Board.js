@@ -69,7 +69,7 @@ export default class Board {
 
 			if (SettingsHandler.settings.killerAutoSolveLastInCage && this.nSquares > 3){
 				for (let cageIndex = 0; cageIndex < this.cages.length; cageIndex++){
-					this.solveLastInCage(cageIndex, null)
+					this.solveLastInCage(cageIndex)
 				}
 			}
 		}
@@ -154,7 +154,7 @@ export default class Board {
 		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false, false)
 	}
 
-	solveLastInCage(cageIndex, s = null){
+	solveLastInCage(cageIndex){
 		let animations = []
 
 		let remaining = this.cages[cageIndex].length
@@ -164,7 +164,6 @@ export default class Board {
 			let x = coords[0]
 			let y = coords[1]
 			const cell = this.get({x, y})
-			if (s !== null) this.setNote({x, y}, s, false, false, false)
 			if (cell.value > 0) remaining--
 			sum += cell.value
 			if (cell.cageValue > 0) realSum = cell.cageValue
@@ -194,8 +193,16 @@ export default class Board {
 		
 		let animations = []
 
+		const cageIndex = this.get(c).cageIndex
+
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
-			animations = this.solveLastInCage(this.get(c).cageIndex)
+			this.cages[cageIndex].forEach(coords => {
+				this.setNote({x: coords[0], y: coords[1]}, s, false, false, false)
+			})
+		}
+
+		if (this.mode === 'killer' && SettingsHandler.settings.killerAutoSolveLastInCage){
+			animations = this.solveLastInCage(cageIndex)
 		}
 
 		//Check animations

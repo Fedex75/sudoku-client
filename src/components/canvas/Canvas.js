@@ -16,7 +16,7 @@ const animationLengths = {
 
 const roundedRatio = Math.round(window.devicePixelRatio)
 
-const boxBorderWidth = roundedRatio === 1 ? 4 : 6
+const boxBorderWidth = roundedRatio === 1 ? 3 : 6
 const cellBorderWidth = roundedRatio === 1 ? 2 : 3
 const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 1 : 3
@@ -149,9 +149,6 @@ const Canvas = forwardRef(({
 		},
 		stopAnimations(){
 			currentAnimations.current = []
-		},
-		clearCageVectors(){
-			cageVectors.current = null
 		}
 	}))
 
@@ -412,8 +409,6 @@ const Canvas = forwardRef(({
 
 	function renderFrame(){
 		if (canvasRef.current === null) return
-
-		if (cageVectors.current === null) calculateCageVectors()
 
 		const ctx = canvasRef.current.getContext('2d')
 		const selectedCell = game.getSelectedCell()
@@ -736,6 +731,7 @@ const Canvas = forwardRef(({
 	useEffect(() => {
 		updateColors()
 		resizeCanvas()
+
 		if (nSquares > 3) addAnimations([{type: 'fadein_long'}])
 
 		let resizeEvent = window.addEventListener('resize', resizeCanvas, false)
@@ -747,6 +743,10 @@ const Canvas = forwardRef(({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
+
+	useEffect(() => {
+		calculateCageVectors()
+	})
 
 	useEffect(() => {
 		updateColors()

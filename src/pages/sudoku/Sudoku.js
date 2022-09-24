@@ -239,8 +239,6 @@ export default function Sudoku({theme, accentColor}){
 
 	function handleNewGame(difficulty){
 		GameHandler.newGame(GameHandler.game.mode, difficulty)
-		
-		if (GameHandler.game.mode === 'killer') canvasRef.current.clearCageVectors()
 
 		setNoteMode(true)
 		setBrush(false)
