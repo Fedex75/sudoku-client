@@ -56,7 +56,7 @@ export default class Board {
 					let x = cell[0]
 					let y = cell[1]
 					this.board[x][y].cageIndex = cageIndex
-					if (this.cages[cageIndex].length === 1 && this.nSquares > 3) this.board[x][y].value = this.board[x][y].solution
+					if (SettingsHandler.settings.killerAutoSolveLastInCage && this.cages[cageIndex].length === 1 && this.nSquares > 3) this.board[x][y].value = this.board[x][y].solution
 					if (cellIndex === 0){
 						let sum = 0
 						for (const cell2 of this.cages[cageIndex]) sum += this.board[cell2[0]][cell2[1]].solution
@@ -65,6 +65,12 @@ export default class Board {
 						this.board[x][y].cageValue = 0
 					}
 				})
+			}
+
+			if (SettingsHandler.settings.killerAutoSolveLastInCage && this.nSquares > 3){
+				for (let cageIndex = 0; cageIndex < this.cages.length; cageIndex++){
+					this.solveLastInCage(cageIndex, null)
+				}
 			}
 		}
 	}
@@ -148,6 +154,34 @@ export default class Board {
 		if (SettingsHandler.settings.autoRemoveCandidates) for (const cell of this.getVisibleCells(c)) this.setNote(cell, s, false, false, false)
 	}
 
+	solveLastInCage(cageIndex, s = null){
+		let animations = []
+
+		let remaining = this.cages[cageIndex].length
+		let sum = 0
+		let realSum
+		this.cages[cageIndex].forEach(coords => {
+			let x = coords[0]
+			let y = coords[1]
+			const cell = this.get({x, y})
+			if (s !== null) this.setNote({x, y}, s, false, false, false)
+			if (cell.value > 0) remaining--
+			sum += cell.value
+			if (cell.cageValue > 0) realSum = cell.cageValue
+		})
+		if (remaining === 1 && realSum - sum <= 9){
+			this.cages[cageIndex].forEach(coords => {
+				let x = coords[0]
+				let y = coords[1]
+				if (this.get({x, y}).value === 0){
+					animations.concat(this.setValue({x, y}, realSum - sum, false))
+				}
+			})
+		}
+
+		return animations
+	}
+
 	setValue(c, s, push = true){
 		if (this.board[c.x][c.y].clue) return
 
@@ -161,28 +195,7 @@ export default class Board {
 		let animations = []
 
 		if (this.mode === 'killer' && SettingsHandler.settings.autoRemoveCandidates){
-			const cageIndex = this.get(c).cageIndex
-			let remaining = this.cages[cageIndex].length
-			let sum = 0
-			let realSum
-			this.cages[cageIndex].forEach(coords => {
-				let x = coords[0]
-				let y = coords[1]
-				const cell = this.get({x, y})
-				this.setNote({x, y}, s, false, false, false)
-				if (cell.value > 0) remaining--
-				sum += cell.value
-				if (cell.cageValue > 0) realSum = cell.cageValue
-			})
-			if (remaining === 1 && realSum - sum <= 9){
-				this.cages[cageIndex].forEach(coords => {
-					let x = coords[0]
-					let y = coords[1]
-					if (this.get({x, y}).value === 0){
-						animations.concat(this.setValue({x, y}, realSum - sum, false))
-					}
-				})
-			}
+			animations = this.solveLastInCage(this.get(c).cageIndex)
 		}
 
 		//Check animations

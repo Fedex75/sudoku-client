@@ -83,6 +83,14 @@ function Game({handleSettingChange}){
 				</div>
 
 				<p className='settings__explanation fade_in'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
+
+				<div className='settings__label fade_in'>{t('settings.killer')}</div>
+				
+				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} name='killerAutoSolveLastInCage' handleSettingChange={handleSettingChange} />
+				</div>
+
+				<p className='settings__explanation fade_in'>{t('settings.killerAutoSolveLastInCageExplanation')}</p>
 			</SectionContent>
 		</Section>
 	)

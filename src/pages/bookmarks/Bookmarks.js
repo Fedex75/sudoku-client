@@ -89,7 +89,7 @@ function Bookmarks({theme}){
 								if (bm.c){
 									board = new Board({
 										id: 'cc0',
-										m: Decoder.decode(bm.m),
+										m: Decoder.decode(bm.m)
 									}, true)
 								} else {
 									board = new Board(missions[modeDecoder[bm.id[0]]][difficultyDecoder[bm.id[1]]].find(mission => mission.id === bm.id), true)

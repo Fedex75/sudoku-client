@@ -3,52 +3,69 @@ class SettingsHandler {
 		this.template = [
 			{
 				name: 'autoTheme',
+				type: 'boolean',
 				default: true
 			},
 			{
 				name: 'checkMistakes',
+				type: 'boolean',
 				default: true
 			},
 			{
 				name: 'advancedHighlight',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'showPossibleValues',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'autoRemoveCandidates',
+				type: 'boolean',
 				default: true
 			},
 			{
 				name: 'clearColorOnInput',
+				type: 'boolean',
 				default: true
 			},
 			{
 				name: 'autoChangeInputLock',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'lockCellsWithColor',
+				type: 'boolean',
 				default: true
 			},
 			{
 				name: 'autoSolveCellsWithColor',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'autoSolveCellsFullNotation',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'autoSolveOnlyInBox',
+				type: 'boolean',
 				default: false
 			},
 			{
 				name: 'autoSolveNakedSingles',
+				type: 'boolean',
 				default: false
 			},
+			{
+				name: 'killerAutoSolveLastInCage',
+				type: 'boolean',
+				default: false
+			}
 		]
 
 		this.settings = {}
@@ -58,7 +75,9 @@ class SettingsHandler {
 		if (data){
 			//Add valid entries to settings
 			Object.entries(data).forEach(v => {
-				if (this.template.map(x => x.name).includes(v[0]) && typeof v[1] === this.template.find(x => x.name === v[0]).type) this.settings[v[0]] = v[1]
+				if (this.template.map(x => x.name).includes(v[0]) && typeof v[1] === this.template.find(x => x.name === v[0]).type){
+					this.settings[v[0]] = v[1]
+				}
 			})
 			//Add missing entries
 			this.template.map(x => x.name).filter(x => !(Object.entries(this.settings).map(x => x[0]).includes(x))).forEach(k => {

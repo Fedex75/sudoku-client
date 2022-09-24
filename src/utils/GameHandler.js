@@ -103,10 +103,12 @@ class GameHandler {
 	}
 
 	setComplete(){
-		this.complete = true
-		localStorage.removeItem('game')
-		if (this.game.difficulty !== 'custom' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
-		localStorage.setItem('solved', JSON.stringify(this.solved))
+		if (this.game){
+			this.complete = true
+			localStorage.removeItem('game')
+			if (this.game.difficulty !== 'custom' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
+			localStorage.setItem('solved', JSON.stringify(this.solved))
+		}
 	}
 
 	currentGameIsBookmarked(){
