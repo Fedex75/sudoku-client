@@ -16,7 +16,7 @@ const animationLengths = {
 
 const roundedRatio = Math.round(window.devicePixelRatio)
 
-const boxBorderWidth = roundedRatio === 1 ? 3 : 6
+const boxBorderWidth = roundedRatio === 1 ? 4 : 8
 const cellBorderWidth = roundedRatio === 1 ? 2 : 3
 const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 1 : 3
