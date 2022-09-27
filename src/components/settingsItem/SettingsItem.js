@@ -1,5 +1,4 @@
 import { t } from 'i18next'
-import { useTranslation } from 'react-i18next'
 import ReactSwitch from 'react-switch'
 import Board from '../../utils/Board'
 import SettingsHandler from '../../utils/SettingsHandler'
@@ -8,8 +7,6 @@ import Check from '../check/Check'
 import './settingsItem.css'
 
 export default function SettingsItem({title, name, handleSettingChange, type = 'boolean', theme, setTheme, accentColor, info}){  
-  const {t} = useTranslation()
-
   if (type === 'boolean') return (
     <div className="settings__item">
       <p className="settings__item__title">{title}</p>

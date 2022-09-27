@@ -69,7 +69,7 @@ function Home({theme, accentColor}){
 			</Topbar>
 
 			<SectionContent id="home">
-				<div className="home__grid fade_in">
+				<div className="home__grid">
 					<ExpandCard className="home__grid__item" onClick={() => {openNewGameActionSheet('classic')}}>
 						<Canvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme={theme} accentColor={accentColor} />
 						<p className="home__grid__item__title">{t('gameModes.classic')}</p>
@@ -91,7 +91,7 @@ function Home({theme, accentColor}){
 						<p className="home__grid__item__title">{t('home.import')}</p>
 					</ExpandCard>
 				</div>
-				<div className="home__continue-wrapper fade_in">
+				<div className="home__continue-wrapper">
 					{
 						GameHandler.game && !GameHandler.complete ?
 						<>

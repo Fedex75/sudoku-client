@@ -28,7 +28,7 @@ function Main(){
 		<Section>
 			<Topbar title={t('sectionNames.settings')} backURL="/" />
 			<SectionContent id="settings">
-				<div className="settings__section__list fade_in">
+				<div className="settings__section__list">
 					<SectionLink color='var(--darkBlue)' icon={faPalette} title={t('settings.sectionAppearance')} link='appearance'/>
 					<SectionLink color='var(--red)' icon={faBorderAll} title={t('settings.sectionGame')} link='game'/>
 					<SectionLink color='var(--lightGray)' icon={faGear} title={t('settings.sectionAdvanced')} link='advanced'/>
@@ -46,14 +46,14 @@ function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccen
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className="settings__list fade_in" >
+				<div className="settings__list" >
 					<SettingsItem title='' name='' handleSettingChange={handleSettingChange} type='theme' theme={theme} setTheme={setTheme} accentColor={accentColor} />
 					<SettingsItem title={t('settings.automatic')} name='autoTheme' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<div className='settings__label fade_in'>{t('settings.accentColor')}</div>
+				<div className='settings__label'>{t('settings.accentColor')}</div>
 
-				<ExpandCard className='fade_in'>
+				<ExpandCard>
 					<ColorChooser value={accentColor} colors={['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple']} onChange={setAccentColor} />
 				</ExpandCard>
 			</SectionContent>
@@ -68,29 +68,29 @@ function Game({handleSettingChange}){
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} />
 				</div>
 				
-				<p className='settings__explanation fade_in'>{t('settings.advancedHighlightExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.advancedHighlightExplanation')}</p>
 
-				<div className='settings__label fade_in'>{t('settings.candidates')}</div>
+				<div className='settings__label'>{t('settings.candidates')}</div>
 				
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
 
-				<div className='settings__label fade_in'>{t('settings.killer')}</div>
+				<div className='settings__label'>{t('settings.killer')}</div>
 				
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} name='killerAutoSolveLastInCage' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in'>{t('settings.killerAutoSolveLastInCageExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.killerAutoSolveLastInCageExplanation')}</p>
 			</SectionContent>
 		</Section>
 	)
@@ -103,38 +103,38 @@ function Advanced({handleSettingChange}){
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className='settings__label fade_in'>{t('settings.inputLock')}</div>
+				<div className='settings__label'>{t('settings.inputLock')}</div>
 				
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.autoChangeInputLock')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in'>{t('settings.autoChangeInputLockExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.autoChangeInputLockExplanation')}</p>
 
-				<div className='settings__label fade_in'>{t('settings.coloredCells')}</div>
+				<div className='settings__label'>{t('settings.coloredCells')}</div>
 
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in' style={{marginBottom: 10}}>{t('settings.lockColoredCellsExplanation')}</p>
+				<p className='settings__explanation' style={{marginBottom: 10}}>{t('settings.lockColoredCellsExplanation')}</p>
 
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in'>{t('settings.autoSolveColoredCellsExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.autoSolveColoredCellsExplanation')}</p>
 
-				<div className='settings__label fade_in'>{t('settings.autoSolveTitle')}</div>
+				<div className='settings__label'>{t('settings.autoSolveTitle')}</div>
 
-				<div className="settings__list fade_in" style={{marginBottom: 0}}>
+				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
 				</div>
 
-				<p className='settings__explanation fade_in'>{t('settings.fullNotationExplanation')}</p>
+				<p className='settings__explanation'>{t('settings.fullNotationExplanation')}</p>
 			</SectionContent>
 		</Section>
 	)
@@ -147,11 +147,11 @@ function About(){
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAbout')} backURL="/settings"/>
 			<SectionContent id="settings">
-				<div className="settings__list fade_in">
+				<div className="settings__list">
 					<SettingsItem type='info' title={t('settings.version')} info={API.clientVersion} />
 				</div>
 
-				<p className='fade_in' style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} 🇦🇷 </p>
+				<p style={{color: 'var(--primaryTextColor)', textAlign: 'center'}}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} 🇦🇷 </p>
 			</SectionContent>
 		</Section>
 	)

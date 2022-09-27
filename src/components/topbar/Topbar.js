@@ -6,7 +6,7 @@ import { Input, ExpandCard } from '../'
 
 function Topbar({title, subtitle = null, children = [], backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}, buttons = [], onTitleClick = () => {}}){
 	return (
-		<div className='topbar fade_in'>
+		<div className='topbar'>
 			<div className='topbar__top' style={{gridTemplateColumns: `${backURL || onBack ? 'fit-content(0)' : ''} fit-content(0) auto ${buttons.length > 0 ? `repeat(${buttons.length}, fit-content(0))` : ''}`, gridTemplateAreas: `"${backURL || onBack ? 'back' : ''} title additional ${buttons.map((_, i) => 'button' + i).join(' ')}"`}}>
 				{
 					backURL ?
