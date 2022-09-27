@@ -31,6 +31,8 @@ const themes = {
 		canvasBoxBorderColor: '#344861',
 		canvasBoxBorderColorRGBA: '52, 72, 97',
 		canvasClueColor: '#344861',
+		canvasSelectedCellClueColor: '#344861',
+		canvasSelectedCellCandidateColor: '#75747c',
 		canvasSameValueCellBackground: '#c3d7ea',
 		canvasNoteHighlightColor: 'black',
 		canvasAnimationBaseColor: '0, 0, 0',
@@ -47,13 +49,15 @@ const themes = {
 		canvasBoxBorderColor: 'black',
 		canvasBoxBorderColorRGBA: '0, 0, 0',
 		canvasClueColor: '#75747c',
+		canvasSelectedCellClueColor: 'black',
+		canvasSelectedCellCandidateColor: 'black',
 		canvasSameValueCellBackground: '#0f0e12',
 		canvasNoteHighlightColor: 'white',
 		canvasAnimationBaseColor: '255, 255, 255',
 		canvasAnimationDarkColor: '0, 0, 0',
 		canvasAnimationFadeBaseColor: '22, 22, 32',
 		canvasKillerCageColor: '#75747c',
-  	canvasKillerHighlightedCageColor: 'white',
+  		canvasKillerHighlightedCageColor: 'white',
 	}
 }
 
@@ -389,7 +393,7 @@ const Canvas = forwardRef(({
 			orange: '#995c29',
 			yellow: '#997e1d',
 			green: '#1a995a',
-			blueGreen: '#2bcbba',
+			blueGreen: '#1d877d',
 			lightBlue: '#2c6c99',
 			darkBlue: '#315099',
 			purple: '#6b3d99'
@@ -432,7 +436,7 @@ const Canvas = forwardRef(({
 			for (let x = 0; x < nSquares; x++){
 				for (let y = 0; y < nSquares; y++){
 					const cell = game.get({x, y})
-					const isSelectedCell = game.selectedCell.x === x && game.selectedCell.y === y
+					const isSelectedCell = showSelectedCell && game.selectedCell.x === x && game.selectedCell.y === y
 					const hasSameValueAsSelected = ((lockedInputRef.current > 0 && lockedInputRef.current === cell.value) || (lockedInputRef.current === 0 && selectedCell.value > 0 && selectedCell.value === cell.value))
 
 					//Background
@@ -456,17 +460,16 @@ const Canvas = forwardRef(({
 						const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
 						ctx.strokeStyle = ctx.fillStyle = 
 							isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-							cell.clue ? themes[theme].canvasClueColor :
-							solutionColors[accentColor] /*themes[theme].canvasSolutionColor*/
-						if (isError && cell.color !== 'default') ctx.strokeStyle = 'white'
-						else ctx.strokeStyle = ctx.fillStyle
+							cell.clue ? (isSelectedCell ? themes[theme].canvasSelectedCellClueColor : themes[theme].canvasClueColor) :
+							solutionColors[accentColor]
+						if (isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
 						drawSVGNumber(ctx, cell.value, valuePositions.current[x], valuePositions.current[y], squareSize.current * 0.55, true)
 					} else {
-						//Candidates					
+						//Candidates
 						for (const n of cell.notes){
 							ctx.strokeStyle = ctx.fillStyle = 
 							(lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n ? themes[theme].canvasNoteHighlightColor :
-							'#75747c'
+							(isSelectedCell ? themes[theme].canvasSelectedCellCandidateColor : '#75747c')
 							
 							drawSVGNumber(ctx, n, cellPositions.current[x] + noteDeltas.current[n-1].x, cellPositions.current[y] + noteDeltas.current[n-1].y, squareSize.current * (game.mode === 'classic' ? 0.2 : 0.16), true)
 						}
