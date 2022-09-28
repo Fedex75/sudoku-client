@@ -5,9 +5,9 @@ import o9n from 'o9n'
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
 
 const animationLengths = {
-	row: 500,
-	col: 500,
-	box: 500,
+	row: 750,
+	col: 750,
+	box: 750,
 	board: 1350, //Must be equal to the timeout delay on Sudoku.js,
 	fadein_long: 1350,
 	fadein: 500,
