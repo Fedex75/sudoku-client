@@ -21,7 +21,7 @@ function Bookmarks({theme}){
 	const clearBookmarksActionSheetRef = useRef(null)
 	const removeBookmarkActionSheetRef = useRef(null)
 	const playBookmarkActionSheetRef = useRef(null)
-	const topbarDeleteAllRef = useRef(null)
+	const topbarRef = useRef(null)
 
 	const {t} = useTranslation()
 
@@ -31,7 +31,7 @@ function Bookmarks({theme}){
 	}
 
 	function clearBookmarks(){
-		topbarDeleteAllRef.current.collapseH('var(--red)', 'white')
+		topbarRef.current.collapse({newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 		GameHandler.clearBookmarks()
 		clearBookmarksActionSheetRef.current.close()
 		setBookmarks([])
@@ -41,7 +41,7 @@ function Bookmarks({theme}){
 	function handleClearBookmarksClick(){
 		setDeleteAllExpanded(true)
 		clearBookmarksActionSheetRef.current.open()
-		topbarDeleteAllRef.current.expandH('var(--red)', 'white')
+		topbarRef.current.expand({buttonIndex: 0, newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 	}
 
 	function removeBookmark(){
@@ -68,11 +68,12 @@ function Bookmarks({theme}){
 	return (
 		<Section>
 			<Topbar
+				ref={topbarRef}
 				title={t('sectionNames.bookmarks')}
 				backURL="/"
 				buttons={[
 					bookmarks.length > 0 ?
-					<ExpandCard key={0} ref={topbarDeleteAllRef} className='topbar__button' style={{backgroundColor: 'var(--red)', color: 'white'}} onClick={handleClearBookmarksClick}>
+					<ExpandCard key={0} className='topbar__button' style={{backgroundColor: 'var(--red)', color: 'white'}} onClick={handleClearBookmarksClick}>
 						{deleteAllExpanded ? t('bookmarks.deleteAll') : <FontAwesomeIcon icon={faTrashCan} className="topbar__button" style={{color: 'white'}}/>}
 					</ExpandCard> : null
 				]}
@@ -125,7 +126,7 @@ function Bookmarks({theme}){
 				cancelTitle={t('common.cancel')}
 				onClose={() => {
 					setDeleteAllExpanded(false)
-					topbarDeleteAllRef.current.collapseH('var(--red)', 'white')
+					topbarRef.current.collapse({newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 				}}
 				showTopbar
 			>

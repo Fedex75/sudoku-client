@@ -29,50 +29,52 @@ export default function Sudoku({theme, accentColor}){
 	const canvasRef = useRef(null)
 	const sudokuRef = useRef(null)
 
-	const topbarNewGameRef = useRef(null)
+	const topbarRef = useRef(null)
+
+	/*const topbarNewGameRef = useRef(null)
 	const topbarShareRef = useRef(null)
-	const topbarBookmarkRef = useRef(null)
+	const topbarBookmarkRef = useRef(null)*/
 
 	const [newGameExpanded, setNewGameExpanded] = useState(false)
 	const [shareExpanded, setShareExpanded] = useState(false)
 	const [bookmarkExpanded, setBookmarkExpanded] = useState(false)
 
 	const [isTimerRunning, setIsTimerRunning] = useState(true)
-  const [paused, setPaused] = useState(false)
-  const [time, setTime] = useState(GameHandler.game?.timer || 0)
+	const [paused, setPaused] = useState(false)
+	const [time, setTime] = useState(GameHandler.game?.timer || 0)
 
 	const {t} = useTranslation()
 
 	useEffect(() => {
-    let interval = null
+	let interval = null
   
-    if (isTimerRunning && !paused){
-      interval = setInterval(() => {
-        setTime((time) => {
+	if (isTimerRunning && !paused){
+	  interval = setInterval(() => {
+		setTime((time) => {
 					GameHandler.game.setTimer(time + 100)
 					return time + 100
 				})
-      }, 100)
-    } else clearInterval(interval)
+	  }, 100)
+	} else clearInterval(interval)
 
-    return () => { clearInterval(interval) }
+	return () => { clearInterval(interval) }
   }, [isTimerRunning, paused])
 
 	function startTimer(){
-    setIsTimerRunning(true)
-    setPaused(false)
+	setIsTimerRunning(true)
+	setPaused(false)
   }
   
-  function pauseTimer(){ 
-    setIsTimerRunning(false)
+	function pauseTimer(){ 
+		setIsTimerRunning(false)
 		setPaused(true)
-  }
+	}
   
-  function resetTimer(){
-    setIsTimerRunning(true)
+  	function resetTimer(){
+		setIsTimerRunning(true)
 		setPaused(false)
-    setTime(0)
-  }
+		setTime(0)
+	}
 
 	function handleComplete(){
 		setIsTimerRunning(false)
@@ -248,25 +250,32 @@ export default function Sudoku({theme, accentColor}){
 		setNewGameExpanded(false)
 		setBookmark(GameHandler.currentGameIsBookmarked())
 		newGameActionSheetRef.current.close()
-		topbarNewGameRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')
+		topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 		resetTimer()
 	}
 
 	function handleNewGameClick(){
-		if (GameHandler.game.difficulty === 'custom') newGameActionSheetRef.current.open()
+		if (GameHandler.game.difficulty === 'custom'){
+			newGameActionSheetRef.current.open()
+			exportActionSheetRef.current.close()
+		}
 		else handleNewGame(GameHandler.game.difficulty)
 	}
 
 	function topbarNewGameClick(){
 		setNewGameExpanded(true)
+		setShareExpanded(false)
 		newGameActionSheetRef.current.open()
-		topbarNewGameRef.current.expandH('var(--theme-color)', 'white')
+		exportActionSheetRef.current.close()
+		topbarRef.current.expand({buttonIndex: 3, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
 	}
 
 	function topbarShareClick(){
 		setShareExpanded(true)
+		setNewGameExpanded(false)
 		exportActionSheetRef.current.open()
-		topbarShareRef.current.expandH('var(--theme-color)', 'white')
+		newGameActionSheetRef.current.close()
+		topbarRef.current.expand({buttonIndex: 2, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
 	}
 
 	function topbarBookmarkClick(){
@@ -279,17 +288,17 @@ export default function Sudoku({theme, accentColor}){
 				mission: GameHandler.game.mission
 			})
 
-			topbarBookmarkRef.current.expandH('var(--red)', 'white')
+			topbarRef.current.expand({buttonIndex: 1, newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 		} else {
 			setBookmark(true)
 			GameHandler.bookmarkCurrentGame()
 
-			topbarBookmarkRef.current.expandH('var(--theme-color)', 'white')
+			topbarRef.current.expand({buttonIndex: 1, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
 		}
 
 		setTimeout(() => {
 			setBookmarkExpanded(false)
-			topbarBookmarkRef.current.collapseH('var(--darkBackground)', bookmark ? 'var(--theme-color)' : 'white')
+			topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: bookmark ? 'var(--theme-color)' : 'white'})
 		}, 1000)
 	}
 
@@ -339,6 +348,7 @@ export default function Sudoku({theme, accentColor}){
 	return (
 		<Section>
 			<Topbar
+				ref={topbarRef}
 				title={t(`gameModes.${GameHandler.game.mode}`)}
 				subtitle={t(`gameDifficulties.${GameHandler.game.difficulty}`)}
 				titleSize={20}
@@ -348,9 +358,9 @@ export default function Sudoku({theme, accentColor}){
 						<p style={{fontSize: 18}}>{`${totalHours}${paddedMinutes}:${paddedSeconds}`}</p>
 						{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18}/> : null}
 					</ExpandCard>,
-					<ExpandCard key={1} ref={topbarBookmarkRef} className='topbar__button' expanded={bookmarkExpanded} onClick={topbarBookmarkClick}>{bookmarkExpanded ? (bookmark ? t('sudoku.saved') : t('sudoku.removed')) : <FontAwesomeIcon className={`topbar__buttons__button bookmark-${bookmark ? 'on' : 'off'}`} icon={faBookmark} />}</ExpandCard>,
-					<ExpandCard key={2} ref={topbarShareRef} className='topbar__button' expanded={shareExpanded} onClick={topbarShareClick}>{shareExpanded ? t('sudoku.share') : <FontAwesomeIcon className='topbar__buttons__button' icon={faArrowUpFromBracket} />}</ExpandCard>,
-					<ExpandCard key={3} ref={topbarNewGameRef} className='topbar__button' expanded={newGameExpanded} onClick={topbarNewGameClick}>{newGameExpanded ? t('sudoku.newGame') : <FontAwesomeIcon className='topbar__buttons__button' icon={faPlus} />}</ExpandCard>
+					<ExpandCard key={1} className='topbar__button' expanded={bookmarkExpanded} onClick={topbarBookmarkClick}>{bookmarkExpanded ? (bookmark ? t('sudoku.saved') : t('sudoku.removed')) : <FontAwesomeIcon className={`topbar__buttons__button bookmark-${bookmark ? 'on' : 'off'}`} icon={faBookmark} />}</ExpandCard>,
+					<ExpandCard key={2} className='topbar__button' expanded={shareExpanded} onClick={topbarShareClick}>{shareExpanded ? t('sudoku.share') : <FontAwesomeIcon className='topbar__buttons__button' icon={faArrowUpFromBracket} />}</ExpandCard>,
+					<ExpandCard key={3} className='topbar__button' expanded={newGameExpanded} onClick={topbarNewGameClick}>{newGameExpanded ? t('sudoku.newGame') : <FontAwesomeIcon className='topbar__buttons__button' icon={faPlus} />}</ExpandCard>
 				]}
 				onTitleClick={topbarNewGameClick}
 			>
@@ -398,8 +408,8 @@ export default function Sudoku({theme, accentColor}){
 				cancelTitle={t('common.cancel')}
 				onClose={() => {
 					setNewGameExpanded(false)
-					topbarNewGameRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')}
-				}
+					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
+				}}
 				showTopbar
 			>
 				{
@@ -415,7 +425,7 @@ export default function Sudoku({theme, accentColor}){
 				cancelTitle={t('common.cancel')}
 				onClose={() => {
 					setShareExpanded(false)
-					topbarShareRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')
+					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 				}}
 				showTopbar
 			>
@@ -425,7 +435,7 @@ export default function Sudoku({theme, accentColor}){
 						exportActionSheetRef.current.close()
 
 						setShareExpanded(false)
-						topbarShareRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')
+						topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 					} catch(e){
 						alert(t('sudoku.exportError'))
 					}
@@ -436,7 +446,7 @@ export default function Sudoku({theme, accentColor}){
 						exportActionSheetRef.current.close()
 
 						setShareExpanded(false)
-						topbarShareRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')
+						topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 					} catch(e){
 						alert(t('sudoku.exportError'))
 					}
@@ -449,7 +459,7 @@ export default function Sudoku({theme, accentColor}){
 							exportActionSheetRef.current.close()
 
 							setShareExpanded(false)
-							topbarShareRef.current.collapseH('var(--darkBackground)', 'var(--theme-color)')
+							topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 						} catch(e){
 							alert(t('sudoku.exportError'))
 						}

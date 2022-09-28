@@ -10,7 +10,7 @@
   display: grid;
   align-items: center;
   width: 100%;
-  /*width: calc(100% - 14px);*/
+  min-height: 37px;
   overflow-x: hidden;
 }
 

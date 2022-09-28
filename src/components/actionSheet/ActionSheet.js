@@ -23,7 +23,7 @@ export default function ActionSheet({reference, title = null, cancelTitle = null
 			}}
 			bgStyle={{
 				backgroundColor: "rgba(1, 1, 1, 0.5)",
-				inset: `${showTopbar ? topbarRect?.bottom + 7 || 0 : 0}px 0 0 0`
+				inset: 0
 			}}
 			sheetTransition='transform 0.2s ease-in-out'
 			bgTransition='opacity 0.2s ease-in-out, z-index 0.2s ease-in-out'
