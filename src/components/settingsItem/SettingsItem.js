@@ -51,7 +51,7 @@ export default function SettingsItem({title, name, handleSettingChange, type = '
     return (
       <div className="settings__item">
         <p className="settings__item__title">{title}</p>
-        <p style={{color: 'var(--secondaryTextColor)'}}>{info}</p>
+        <p style={{color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap'}}>{info}</p>
       </div>
     )
   }
