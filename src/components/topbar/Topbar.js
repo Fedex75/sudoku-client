@@ -78,6 +78,11 @@ const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = nul
 						const child = topbarRef.current.children[animation.index]
 						child.style.left = `${animation.target.left}px`
 						child.style.right = `${animation.target.right}px`
+						Array.from(topbarRef.current.children).forEach((child, i) => {
+							if (i !== animation.index){
+								child.style.visibility = 'hidden'
+							}
+						})
 						break
 					case 'collapse':
 						Array.from(topbarRef.current.children).forEach((child, i) => {
@@ -151,6 +156,7 @@ const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = nul
 			rectsBeforeAnimation.current = Array(topbarRef.current.children.length).fill(null)
 
 			Array.from(topbarRef.current.children).forEach((child, i) => {
+				child.style.visibility = 'visible'
 				const rect = child.getBoundingClientRect()
 				rectsBeforeAnimation.current[i] = {left: rect.left, right: window.innerWidth - rect.right, top: topbarRect.top, bottom: window.innerHeight - topbarRect.bottom}
 			})

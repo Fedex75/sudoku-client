@@ -8,8 +8,6 @@ export default function ActionSheet({reference, title = null, cancelTitle = null
 		onClose()
 	}
 
-	const topbarRect = document.getElementsByClassName('topbar__top')[0]?.getBoundingClientRect()
-
 	return (
 		<ActionSheetReact
 			ref={reference}
