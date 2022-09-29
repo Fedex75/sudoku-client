@@ -65,6 +65,11 @@ class SettingsHandler {
 				name: 'killerAutoSolveLastInCage',
 				type: 'boolean',
 				default: false
+			},
+			{
+				name: 'clearColorFullNotation',
+				type: 'boolean',
+				default: false
 			}
 		]
 

@@ -465,6 +465,8 @@ export default class Board {
 		}
 
 		this.fullNotation = true
+
+		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors()
 	}
 
 	getTextRepresentation(cluesOnly){

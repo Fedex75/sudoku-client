@@ -115,6 +115,7 @@ function Advanced({handleSettingChange}){
 
 				<div className="settings__list" style={{marginBottom: 0}}>
 					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.clearColorFullNotation')} name='clearColorFullNotation' handleSettingChange={handleSettingChange} />
 					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
 				</div>
 
