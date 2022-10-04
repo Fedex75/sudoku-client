@@ -27,7 +27,6 @@ export default function Sudoku({theme, accentColor}){
 	const navigate = useNavigate()
 
 	const canvasRef = useRef(null)
-	const sudokuRef = useRef(null)
 
 	const topbarRef = useRef(null)
 
@@ -377,7 +376,7 @@ export default function Sudoku({theme, accentColor}){
 						</div>
 					</div> :
 					<div className="game">
-						<div ref={sudokuRef} className="sudoku">
+						<div className="sudoku">
 							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused}/>
 						</div>
 						<Numpad
