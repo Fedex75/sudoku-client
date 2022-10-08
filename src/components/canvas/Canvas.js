@@ -450,7 +450,7 @@ const Canvas = forwardRef(({
 
 					ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 
-					if (animationColors.current && animationColors.current[x][y] && currentAnimations.current[0].data.type !== 'fadein' && currentAnimations.current[0].data.type !== 'fadeout' && currentAnimations.current[0].data.type !== 'fadein_long'){
+					if (animationColors.current && animationColors.current[x][y] && currentAnimations.current.length > 0 && currentAnimations.current[0].data.type !== 'fadein' && currentAnimations.current[0].data.type !== 'fadeout' && currentAnimations.current[0].data.type !== 'fadein_long'){
 						ctx.fillStyle = animationColors.current[x][y]
 						ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 					}
@@ -555,17 +555,6 @@ const Canvas = forwardRef(({
 						ctx.moveTo(cellPositions.current[link[0].x] + noteDelta.x, cellPositions.current[link[0].y] + noteDelta.y)
 						ctx.lineTo(cellPositions.current[link[1].x] + noteDelta.x, cellPositions.current[link[1].y] + noteDelta.y)
 						ctx.stroke()
-						/*const correction = Math.floor(linksLineWidth / 2)
-						
-						let linkLength = Math.abs(cellPositions.current[link[1].x] - cellPositions.current[link[0].x]) + Math.abs(cellPositions.current[link[1].y] - cellPositions.current[link[0].y])
-						//Right
-						if (link[0].x < link[1].x) ctx.fillRect(cellPositions.current[link[0].x] + noteDelta.x, cellPositions.current[link[0].y] + noteDelta.y - correction, linkLength, linksLineWidth)
-						//Left
-						else if (link[0].x > link[1].x) ctx.fillRect(cellPositions.current[link[1].x] + noteDelta.x, cellPositions.current[link[1].y] + noteDelta.y - correction, linkLength, linksLineWidth)
-						//Down
-						else if (link[0].y < link[1].y) ctx.fillRect(cellPositions.current[link[0].x] + noteDelta.x - correction, cellPositions.current[link[0].y] + noteDelta.y, linksLineWidth, linkLength)
-						//Up
-						else ctx.fillRect(cellPositions.current[link[1].x] + noteDelta.x - correction, cellPositions.current[link[1].y] + noteDelta.y, linksLineWidth, linkLength)*/
 					}
 				})
 			}
