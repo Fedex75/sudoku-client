@@ -70,6 +70,11 @@ class SettingsHandler {
 				name: 'clearColorFullNotation',
 				type: 'boolean',
 				default: false
+			},
+			{
+				name: 'highlightCandidatesWithColor',
+				type: 'boolean',
+				default: false
 			}
 		]
 

@@ -53,9 +53,15 @@ function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccen
 
 				<div className='settings__label'>{t('settings.accentColor')}</div>
 
-				<ExpandCard>
+				<ExpandCard style={{marginBottom: 30}}>
 					<ColorChooser value={accentColor} colors={['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple']} onChange={setAccentColor} />
 				</ExpandCard>
+
+				<div className='settings__label'>{t('settings.candidates')}</div>
+
+				<div className="settings__list" style={{marginBottom: 0}}>
+					<SettingsItem title={t('settings.highlightWithColor')} name='highlightCandidatesWithColor' handleSettingChange={handleSettingChange} />
+				</div>
 			</SectionContent>
 		</Section>
 	)

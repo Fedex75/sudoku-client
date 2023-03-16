@@ -102,8 +102,24 @@ const SVGHeight = 30
 const SVGWidth = 20
 const spaceBetweenDigits = 5
 
-function drawSVGNumber(ctx, n, x, y, size, center){
+function drawSVGNumber(ctx, n, x, y, size, center, background){
 	const scale = size / SVGHeight
+
+	if (background !== null){
+		const prevFillStyle = ctx.fillStyle
+		const backgroundScaleFactor = 1.4
+
+		ctx.translate(x, y)
+		ctx.scale(scale, scale)
+
+		ctx.fillStyle = background
+		ctx.fillRect(0 - (SVGWidth / 2) * backgroundScaleFactor, 0 - (SVGHeight / 2) * backgroundScaleFactor, SVGWidth * backgroundScaleFactor, SVGHeight * backgroundScaleFactor)
+
+		ctx.fillStyle = prevFillStyle
+
+		ctx.setTransform(1, 0, 0, 1, 0, 0)
+	}
+
 	String(n).split('').map((digit, i) => {
 		ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
 		ctx.scale(scale, scale)
@@ -114,7 +130,7 @@ function drawSVGNumber(ctx, n, x, y, size, center){
 	
 		ctx.stroke(p)
 		ctx.fill(p)
-		
+
 		ctx.setTransform(1, 0, 0, 1, 0, 0)
 		return null
 	})
@@ -463,15 +479,20 @@ const Canvas = forwardRef(({
 							cell.clue ? (isSelectedCell ? themes[theme].canvasSelectedCellClueColor : themes[theme].canvasClueColor) :
 							solutionColors[accentColor]
 						if (isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
-						drawSVGNumber(ctx, cell.value, valuePositions.current[x], valuePositions.current[y], squareSize.current * 0.55, true)
+						drawSVGNumber(ctx, cell.value, valuePositions.current[x], valuePositions.current[y], squareSize.current * 0.55, true, null)
 					} else {
 						//Candidates
 						for (const n of cell.notes){
+							const highlightCandidate = (lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n
+
 							ctx.strokeStyle = ctx.fillStyle = 
-							(lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n ? themes[theme].canvasNoteHighlightColor :
-							(isSelectedCell ? themes[theme].canvasSelectedCellCandidateColor : '#75747c')
+							/*highlightCandidate ? themes[theme].canvasNoteHighlightColor :
+							(isSelectedCell ? themes[theme].canvasSelectedCellCandidateColor : '#75747c')*/
 							
-							drawSVGNumber(ctx, n, cellPositions.current[x] + noteDeltas.current[n-1].x, cellPositions.current[y] + noteDeltas.current[n-1].y, squareSize.current * (game.mode === 'classic' ? 0.2 : 0.16), true)
+							highlightCandidate ? 'white' :
+							(isSelectedCell ? themes[theme].canvasSelectedCellCandidateColor : '#75747c')
+
+							drawSVGNumber(ctx, n, cellPositions.current[x] + noteDeltas.current[n-1].x, cellPositions.current[y] + noteDeltas.current[n-1].y, squareSize.current * (game.mode === 'classic' ? 0.2 : 0.16), true, highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors.current[accentColor] : null)
 						}
 					}
 
@@ -479,7 +500,7 @@ const Canvas = forwardRef(({
 					
 					if (game.mode === 'killer' && cell.cageValue > 0){
 						ctx.strokeStyle = ctx.fillStyle = cell.cageIndex === selectedCell.cageIndex && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-						drawSVGNumber(ctx, cell.cageValue, cellPositions.current[x] + cagePadding + squareSize.current * 0.05, cellPositions.current[y] + cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, true)
+						drawSVGNumber(ctx, cell.cageValue, cellPositions.current[x] + cagePadding + squareSize.current * 0.05, cellPositions.current[y] + cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, true, false)
 					}
 				}
 			}
