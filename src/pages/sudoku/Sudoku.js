@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark, faPause, faPlay, faPlus} from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
+import { millisecondsToHMS } from '../../utils/Statistics'
 
 export default function Sudoku({theme, accentColor}){
 	const [showLinks, setShowLinks] = useState(false)
@@ -29,10 +30,6 @@ export default function Sudoku({theme, accentColor}){
 	const canvasRef = useRef(null)
 
 	const topbarRef = useRef(null)
-
-	/*const topbarNewGameRef = useRef(null)
-	const topbarShareRef = useRef(null)
-	const topbarBookmarkRef = useRef(null)*/
 
 	const [newGameExpanded, setNewGameExpanded] = useState(false)
 	const [shareExpanded, setShareExpanded] = useState(false)
@@ -339,11 +336,6 @@ export default function Sudoku({theme, accentColor}){
 
 	if (GameHandler.game === null) return null
 
-	let totalHours = Math.floor((time / 3600000) % 60)
-	totalHours = totalHours > 0 ? totalHours + ':' : ''
-	const paddedMinutes = ('0' + Math.floor((time / 60000) % 60)).slice(-2)
-	const paddedSeconds = ('0' + Math.floor((time / 1000) % 60)).slice(-2)
-
 	return (
 		<Section>
 			<Topbar
@@ -354,7 +346,7 @@ export default function Sudoku({theme, accentColor}){
 				backURL="/"
 				buttons={[
 					<ExpandCard key={0} className='topbar__button' style={{display: 'flex', gap: 5, color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)'}} onClick={handleTimerClick}>
-						<p style={{fontSize: 18}}>{`${totalHours}${paddedMinutes}:${paddedSeconds}`}</p>
+						<p style={{fontSize: 18}}>{millisecondsToHMS(time)}</p>
 						{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18}/> : null}
 					</ExpandCard>,
 					<ExpandCard key={1} className='topbar__button' expanded={bookmarkExpanded} onClick={topbarBookmarkClick}>{bookmarkExpanded ? (bookmark ? t('sudoku.saved') : t('sudoku.removed')) : <FontAwesomeIcon className={`topbar__buttons__button bookmark-${bookmark ? 'on' : 'off'}`} icon={faBookmark} />}</ExpandCard>,
@@ -372,6 +364,18 @@ export default function Sudoku({theme, accentColor}){
 					<div className='sudoku__win-screen-wrapper'>
 						<div className='sudoku__win-screen'>
 							<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
+							<div className='sudoku__win-screen__stat'>
+								<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
+								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.game.timer)}</div>
+							</div>
+							<div className='sudoku__win-screen__stat'>
+								<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
+								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].average)}</div>
+							</div>
+							<div className='sudoku__win-screen__stat'>
+								<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
+								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].best)}</div>
+							</div>
 							<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
 						</div>
 					</div> :
@@ -409,7 +413,6 @@ export default function Sudoku({theme, accentColor}){
 					setNewGameExpanded(false)
 					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 				}}
-				showTopbar
 			>
 				{
 					(GameHandler.game.mode === 'classic' ? classicDifficulties : killerDifficulties).map(diff => (
@@ -426,7 +429,6 @@ export default function Sudoku({theme, accentColor}){
 					setShareExpanded(false)
 					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
 				}}
-				showTopbar
 			>
 				<ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
 					try {

@@ -23,6 +23,7 @@
 .action-sheet__button:first-child {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
+  border-top: none;
 }
 
 .action-sheet__button:last-child {

@@ -55,10 +55,21 @@
 
 .sudoku__win-screen__title {
   grid-area: title;
-  color: white;
   font-size: 30px;
   color: var(--primaryTextColor);
   margin-bottom: 15px;
+}
+
+.sudoku__win-screen__stat {
+  display: grid;
+  grid-template-columns: auto fit-content(0);
+  color: var(--secondaryTextColor);
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.sudoku__win-screen__stat__value {
+  color: var(--primaryTextColor);
 }
 
 .bookmark-off {

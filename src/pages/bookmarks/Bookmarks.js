@@ -128,7 +128,6 @@ function Bookmarks({theme}){
 					setDeleteAllExpanded(false)
 					topbarRef.current.collapse({newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 				}}
-				showTopbar
 			>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks}/>
 			</ActionSheet>

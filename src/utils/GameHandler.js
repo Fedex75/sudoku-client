@@ -3,9 +3,10 @@ import Board from './Board'
 import missions from '../data/missions.json'
 import Decoder from './Decoder'
 import { difficultyDecoder, modeDecoder } from './Difficulties'
+import { defaultStatistics, updateStatistic } from './Statistics'
 
 const BOARD_API_VERSION = 6
-const STORAGE_SCHEMA_VERSION = 2
+const STORAGE_SCHEMA_VERSION = 3
 
 class GameHandler {
 	init(){
@@ -39,6 +40,10 @@ class GameHandler {
 		const lsKillerDifficulty = localStorage.getItem('killerDifficulty')
 		this.killerDifficulty = lsKillerDifficulty || (this.game?.mode === 'killer' ? this.game.difficulty : 'easy')
 		localStorage.setItem('killerDifficulty', this.killerDifficulty)
+
+		const lsStatistics = localStorage.getItem('statistics')
+		this.statistics = lsStatistics ? JSON.parse(lsStatistics) : defaultStatistics
+		localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
 	}
 
 	setCurrentGame(board){
@@ -108,6 +113,8 @@ class GameHandler {
 			localStorage.removeItem('game')
 			if (this.game.difficulty !== 'custom' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
 			localStorage.setItem('solved', JSON.stringify(this.solved))
+			updateStatistic(this.statistics[this.game.mode][this.game.difficulty], this.game.timer)
+			localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
 		}
 	}
 
@@ -154,6 +161,11 @@ class GameHandler {
 		} else {
 			this.setCurrentGame(new Board(missions[modeDecoder[bm.id[0]]][difficultyDecoder[bm.id[1]]].find(mission => mission.id === bm.id), true))
 		}
+	}
+
+	resetStatistics(){
+		this.statistics = defaultStatistics
+		localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
 	}
 }
 

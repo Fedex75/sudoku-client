@@ -2,7 +2,7 @@ import './actionSheet.css'
 import ActionSheetReact from 'actionsheet-react'
 import { ActionSheetButton } from '../'
 
-export default function ActionSheet({reference, title = null, cancelTitle = null, onClose = () => {}, showTopbar = false, children}){
+export default function ActionSheet({reference, title = null, cancelTitle = null, onClose = () => {}, children}){
 	function cancel(){
 		reference.current.close()
 		onClose()

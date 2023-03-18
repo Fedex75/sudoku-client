@@ -1,6 +1,6 @@
 import './settings.css'
-import { useState } from 'react'
-import { Section, SectionContent, Topbar, ExpandCard, ColorChooser } from '../../components'
+import { useRef, useState } from 'react'
+import { Section, SectionContent, Topbar, ExpandCard, ColorChooser, Button, ActionSheet, ActionSheetButton } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -8,6 +8,7 @@ import { faPalette, faChevronRight, faBorderAll, faGear, faInfo, faHeart } from 
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
+import GameHandler from '../../utils/GameHandler'
 
 function SectionLink({color, icon, title, link}){
 	return (
@@ -105,6 +106,8 @@ function Game({handleSettingChange}){
 function Advanced({handleSettingChange}){
 	const {t} = useTranslation()
 
+	const resetStatisticsActionSheetRef = useRef()
+
 	return (
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/settings"/>
@@ -142,7 +145,23 @@ function Advanced({handleSettingChange}){
 				</div>
 
 				<p className='settings__explanation'>{t('settings.fullNotationExplanation')}</p>
+
+				<div className='settings__label'>{t('settings.statistics')}</div>
+
+				<Button title={t('settings.resetStatistics')} color='var(--red)' backgroundColor='transparent' borderColor='var(--secondaryTextColor)' fontSize={18} onClick={() => {
+					resetStatisticsActionSheetRef.current.open()
+				}} />
 			</SectionContent>
+
+			<ActionSheet
+				reference={resetStatisticsActionSheetRef}
+				cancelTitle={t('common.cancel')}
+			>
+				<ActionSheetButton title={t('settings.resetStatistics')} color='var(--red)' onClick={() => {
+					GameHandler.resetStatistics()
+					resetStatisticsActionSheetRef.current.close()
+				}} />
+			</ActionSheet>
 		</Section>
 	)
 }
