@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { Route, Routes } from 'react-router'
 import './utils/SettingsHandler'
-import o9n from 'o9n'
 import { Home, Sudoku, Settings, Bookmarks } from './pages'
 import useLocalStorage from 'use-local-storage'
 
@@ -26,8 +25,6 @@ function App() {
 		}, {passive: false})
 
 		if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
-
-		o9n.orientation.lock('portrait').then(() => {}).catch(() => {})
 
 		return () => {
 			document.body.removeEventListener('scroll', scrollEvent)
