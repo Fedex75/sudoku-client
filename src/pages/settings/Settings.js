@@ -148,7 +148,7 @@ function Advanced({handleSettingChange}){
 
 				<div className='settings__label'>{t('settings.statistics')}</div>
 
-				<Button title={t('settings.resetStatistics')} color='var(--red)' backgroundColor='transparent' borderColor='var(--secondaryTextColor)' fontSize={18} onClick={() => {
+				<Button title={t('settings.resetStatistics')} color='white' backgroundColor='var(--red)' fontSize={18} onClick={() => {
 					resetStatisticsActionSheetRef.current.open()
 				}} />
 			</SectionContent>
