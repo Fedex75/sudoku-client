@@ -75,6 +75,11 @@ class SettingsHandler {
 				name: 'highlightCandidatesWithColor',
 				type: 'boolean',
 				default: false
+			},
+			{
+				name: 'highContrastGrid',
+				type: 'boolean',
+				default: true
 			}
 		]
 

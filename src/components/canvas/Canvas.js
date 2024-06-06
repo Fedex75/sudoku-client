@@ -123,11 +123,11 @@ function drawSVGNumber(ctx, n, x, y, size, center, background){
 	String(n).split('').map((digit, i) => {
 		ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
 		ctx.scale(scale, scale)
-	
+
 		ctx.lineWidth = 1
-	
+
 		const p = new Path2D(numberPaths[digit])
-	
+
 		ctx.stroke(p)
 		ctx.fill(p)
 
@@ -175,6 +175,7 @@ const Canvas = forwardRef(({
 	const logicalSize = useRef(null)
 	const canvasPadding = useRef(0)
 	const squareSize = useRef(0)
+	const cagePadding = useRef(0)
 	const cellPositions = useRef([])
 	const valuePositions = useRef([])
 	const noteDeltas = useRef([])
@@ -197,13 +198,12 @@ const Canvas = forwardRef(({
 		if (game.mode === 'classic') return
 
 		//Cage vectors
-		
-		const cagePadding = Math.floor(squareSize.current * 0.08)
+		cagePadding.current = Math.floor(squareSize.current * 0.08)
 		let cageLinePositions = Array(nSquares*2).fill(0)
 
 		for (let i = 0; i < nSquares; i++){
-			cageLinePositions[i*2] = cellPositions.current[i] + cagePadding
-			cageLinePositions[i*2+1] = cellPositions.current[i] + squareSize.current - cagePadding - cageLineWidth
+			cageLinePositions[i*2] = cellPositions.current[i] + cagePadding.current
+			cageLinePositions[i*2+1] = cellPositions.current[i] + squareSize.current - cagePadding.current - cageLineWidth
 		}
 
 		let newCageVectors = []
@@ -237,7 +237,7 @@ const Canvas = forwardRef(({
 
 			for (let x = 0; x < nSquares; x++){
 				const cell = game.board[x][y]
-				
+
 				const hShift = cell.cageValue > 9 ? Math.ceil(squareSize.current * 0.28) : (cell.cageValue > 0 ? Math.ceil(squareSize.current * 0.15) : 0)
 
 				const left = cageLinePositions[x*2]
@@ -293,7 +293,7 @@ const Canvas = forwardRef(({
 
 			for (let y = 0; y < nSquares; y++){
 				const cell = game.board[x][y]
-				
+
 				const vShift = cell.cageValue > 0 ? Math.ceil(squareSize.current * 0.20) : 0
 
 				const top = cageLinePositions[y*2]
@@ -402,7 +402,7 @@ const Canvas = forwardRef(({
 			darkBlue: '#4b7bec',
 			purple: '#a55eea'
 		}
-		
+
 		darkColors.current = {
 			default: themes[theme].canvasDarkDefaultCellColor,
 			red: '#99393d',
@@ -438,15 +438,6 @@ const Canvas = forwardRef(({
 		ctx.fillStyle = themes[theme].canvasCellBorderColor
 		ctx.fillRect(0, 0, logicalSize.current, logicalSize.current)
 
-		//Borders
-		ctx.fillStyle = themes[theme].canvasBoxBorderColor
-		ctx.fillRect(0, 0, boxBorderWidth, logicalSize.current)
-		ctx.fillRect(0, 0, logicalSize.current, boxBorderWidth)
-		for (let i = 2; i < nSquares; i += 3){
-			ctx.fillRect(cellPositions.current[i] + squareSize.current, 0, boxBorderWidth, logicalSize.current)
-			ctx.fillRect(0, cellPositions.current[i] + squareSize.current, logicalSize.current, boxBorderWidth)
-		}
-
 		if (!pausedRef.current || (currentAnimations.current.length > 0 && currentAnimations.current[0].data.type === 'fadeout')){
 			//Cell background, value, candidates and cage value
 			for (let x = 0; x < nSquares; x++){
@@ -464,7 +455,18 @@ const Canvas = forwardRef(({
 					highlitedCells[x][y] ? darkColors.current.default : //Cell in same row or column as any cell with the same value as the selected cell
 					colors.current.default //Default
 
-					ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
+					/*if (game.mode === 'killer' && isSelectedCell){
+						ctx.fillStyle =
+						highlitedCells[x][y] ? darkColors.current.default : //Cell in same row or column as any cell with the same value as the selected cell
+						colors.current.default //Default
+						ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
+						ctx.fillStyle = selectedCellColors.current[accentColor]
+						ctx.fillRect(cellPositions.current[x] + cagePadding.current, cellPositions.current[y] + cagePadding.current, squareSize.current - cagePadding.current * 2, squareSize.current - cagePadding.current * 2)
+					} else {*/
+						ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
+					//}
+
+					//ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 
 					if (animationColors.current && animationColors.current[x][y] && currentAnimations.current.length > 0 && currentAnimations.current[0].data.type !== 'fadein' && currentAnimations.current[0].data.type !== 'fadeout' && currentAnimations.current[0].data.type !== 'fadein_long'){
 						ctx.fillStyle = animationColors.current[x][y]
@@ -474,7 +476,7 @@ const Canvas = forwardRef(({
 					if (cell.value > 0){
 						//Value
 						const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
-						ctx.strokeStyle = ctx.fillStyle = 
+						ctx.strokeStyle = ctx.fillStyle =
 							isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
 							cell.clue ? (isSelectedCell ? themes[theme].canvasSelectedCellClueColor : themes[theme].canvasClueColor) :
 							solutionColors[accentColor]
@@ -485,7 +487,7 @@ const Canvas = forwardRef(({
 						for (const n of cell.notes){
 							const highlightCandidate = (lockedInputRef.current === 0 && selectedCell.value === n) || lockedInputRef.current === n
 
-							ctx.strokeStyle = ctx.fillStyle = 
+							ctx.strokeStyle = ctx.fillStyle =
 							highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) :
 							(isSelectedCell ? themes[theme].canvasSelectedCellCandidateColor : '#75747c')
 
@@ -493,11 +495,9 @@ const Canvas = forwardRef(({
 						}
 					}
 
-					const cagePadding = Math.floor(squareSize.current * 0.08)
-					
 					if (game.mode === 'killer' && cell.cageValue > 0){
 						ctx.strokeStyle = ctx.fillStyle = cell.cageIndex === selectedCell.cageIndex && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-						drawSVGNumber(ctx, cell.cageValue, cellPositions.current[x] + cagePadding + squareSize.current * 0.05, cellPositions.current[y] + cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, true, null)
+						drawSVGNumber(ctx, cell.cageValue, cellPositions.current[x] + cagePadding.current + squareSize.current * 0.05, cellPositions.current[y] + cagePadding.current + squareSize.current * 0.08, squareSize.current * 0.15, true, null)
 					}
 				}
 			}
@@ -532,7 +532,7 @@ const Canvas = forwardRef(({
 
 						//Top
 						if (y === 0 || game.board[x][y-1].color !== cell.color) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
-						
+
 						//Right
 						if (x === (nSquares - 1) || game.board[x+1][y].color !== cell.color) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
 						else {
@@ -601,6 +601,23 @@ const Canvas = forwardRef(({
 					ctx.strokeStyle = ctx.fillStyle = darkColors.current.default
 					ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 				}
+			}
+		}
+
+		//Borders
+		if (theme == 'light'){
+			ctx.fillStyle = themes[theme].canvasBoxBorderColor
+			ctx.fillRect(0, 0, boxBorderWidth, logicalSize.current)
+			ctx.fillRect(0, 0, logicalSize.current, boxBorderWidth)
+			for (let i = 2; i < nSquares; i += 3){
+				ctx.fillRect(cellPositions.current[i] + squareSize.current, 0, boxBorderWidth, logicalSize.current)
+				ctx.fillRect(0, cellPositions.current[i] + squareSize.current, logicalSize.current, boxBorderWidth)
+			}
+		} else if (SettingsHandler.settings.highContrastGrid) {
+			ctx.fillStyle = 'white'
+			for (let i = 2; i < nSquares - 1; i += 3){
+				ctx.fillRect(cellPositions.current[i] + squareSize.current, boxBorderWidth, boxBorderWidth, logicalSize.current - boxBorderWidth * 2)
+				ctx.fillRect(boxBorderWidth, cellPositions.current[i] + squareSize.current, logicalSize.current - boxBorderWidth * 2, boxBorderWidth)
 			}
 		}
 	}
@@ -697,7 +714,7 @@ const Canvas = forwardRef(({
 				lastMouseCell.current = coords
 				onClick(coords, 'primary', false)
 			}
-		}	
+		}
 	}
 
 	function onMouseDown(e){

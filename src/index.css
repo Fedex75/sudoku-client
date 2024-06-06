@@ -34,7 +34,7 @@
   --cancelButtonBackround: white;
   --cancelButtonFontWeight: regular;
   --homeGridBackground: var(--darkBackground);
-  --homeGridShadow: 0px 0px 10px #aaaaaa;
+  --homeGridShadow: 5px 5px 5px #aaaaaa;
   --homeGridIconColor: #444444;
   --bookmarksEmptyColor: #444444;
   --checkIconColor: white;

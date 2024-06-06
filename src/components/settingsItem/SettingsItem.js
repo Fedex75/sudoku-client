@@ -6,14 +6,14 @@ import Canvas from '../canvas/Canvas'
 import Check from '../check/Check'
 import './settingsItem.css'
 
-export default function SettingsItem({title, name, handleSettingChange, type = 'boolean', theme, setTheme, accentColor, info}){  
+export default function SettingsItem({title, name, handleSettingChange, type = 'boolean', theme, setTheme, accentColor, accentColorHex, info}){
   if (type === 'boolean') return (
     <div className="settings__item">
       <p className="settings__item__title">{title}</p>
       <ReactSwitch
         className="react-switch"
         width={50}
-        onColor='#00d039'
+        onColor={accentColorHex}
         checkedIcon={false}
         uncheckedIcon={false}
         handleDiameter={24}

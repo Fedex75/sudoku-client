@@ -40,16 +40,16 @@ function Main(){
 	)
 }
 
-function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccentColor}){
+function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccentColor, accentColorHex}){
 	const {t} = useTranslation()
-	
+
 	return (
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className="settings__list" >
 					<SettingsItem title='' name='' handleSettingChange={handleSettingChange} type='theme' theme={theme} setTheme={setTheme} accentColor={accentColor} />
-					<SettingsItem title={t('settings.automatic')} name='autoTheme' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.automatic')} name='autoTheme' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<div className='settings__label'>{t('settings.accentColor')}</div>
@@ -58,43 +58,44 @@ function Appearance({handleSettingChange, theme, setTheme, accentColor, setAccen
 					<ColorChooser value={accentColor} colors={['red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple']} onChange={setAccentColor} />
 				</ExpandCard>
 
-				<div className='settings__label'>{t('settings.candidates')}</div>
+				<div className='settings__label'>{t('settings.highContrast')}</div>
 
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.highlightWithColor')} name='highlightCandidatesWithColor' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.candidates')} name='highlightCandidatesWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.grid')} name='highContrastGrid' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 			</SectionContent>
 		</Section>
 	)
 }
 
-function Game({handleSettingChange}){
+function Game({handleSettingChange, accentColorHex}){
 	const {t} = useTranslation()
-	
+
 	return (
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
-				
+
 				<p className='settings__explanation'>{t('settings.advancedHighlightExplanation')}</p>
 
 				<div className='settings__label'>{t('settings.candidates')}</div>
-				
+
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
 
 				<div className='settings__label'>{t('settings.killer')}</div>
-				
+
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} name='killerAutoSolveLastInCage' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} name='killerAutoSolveLastInCage' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.killerAutoSolveLastInCageExplanation')}</p>
@@ -103,7 +104,7 @@ function Game({handleSettingChange}){
 	)
 }
 
-function Advanced({handleSettingChange}){
+function Advanced({handleSettingChange, accentColorHex}){
 	const {t} = useTranslation()
 
 	const resetStatisticsActionSheetRef = useRef()
@@ -113,9 +114,9 @@ function Advanced({handleSettingChange}){
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/settings"/>
 			<SectionContent id="settings">
 				<div className='settings__label'>{t('settings.inputLock')}</div>
-				
+
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.autoChangeInputLock')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoChangeInputLock')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.autoChangeInputLockExplanation')}</p>
@@ -123,15 +124,15 @@ function Advanced({handleSettingChange}){
 				<div className='settings__label'>{t('settings.coloredCells')}</div>
 
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.clearColorFullNotation')} name='clearColorFullNotation' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.clearColorFullNotation')} name='clearColorFullNotation' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation' style={{marginBottom: 10}}>{t('settings.lockColoredCellsExplanation')}</p>
 
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.autoSolveColoredCellsExplanation')}</p>
@@ -139,9 +140,9 @@ function Advanced({handleSettingChange}){
 				<div className='settings__label'>{t('settings.autoSolveTitle')}</div>
 
 				<div className="settings__list" style={{marginBottom: 0}}>
-					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} />
-					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} />
+					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.fullNotationExplanation')}</p>
@@ -186,6 +187,8 @@ function About(){
 export default function Settings({theme, setTheme, accentColor, setAccentColor}){
 	const [, setRender] = useState(0)
 
+	const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue(`--${accentColor}`)
+
 	function handleSettingChange(name, value){
 		SettingsHandler.setSetting(name, value)
 		setRender(r => r === 100 ? 0 : r+1)
@@ -194,10 +197,10 @@ export default function Settings({theme, setTheme, accentColor, setAccentColor})
 	return (
 		<Routes>
 			<Route path="/" element={<Main />} />
-			<Route path='/appearance' element={<Appearance theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor}  handleSettingChange={handleSettingChange} />} />
-			<Route path='/game' element={<Game handleSettingChange={handleSettingChange} />} />
-			<Route path='/advanced' element={<Advanced handleSettingChange={handleSettingChange} />} />
-			<Route path='/about' element={<About/>} />
+			<Route path='/appearance' element={<Appearance theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor}  handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
+			<Route path='/game' element={<Game handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
+			<Route path='/advanced' element={<Advanced handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
+			<Route path='/about' element={<About/>} accentColorHex={accentColorHex} />
 		</Routes>
 	)
 }
