@@ -7,6 +7,7 @@ import GameHandler from './utils/GameHandler'
 import './utils/i18n'
 import i18n from 'i18next'
 import './index.css'
+import './fonts/fonts.css'
 
 GameHandler.init()
 

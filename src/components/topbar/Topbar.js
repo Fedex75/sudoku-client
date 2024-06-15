@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom'
 import { Input, ExpandCard } from '../'
 import { useRef } from 'react'
 import './topbar.css'
+import SVGLogo from '../../svg/logo'
 
 const animationDurations = {
 	'expand': 150,
 	'collapse': 150
 }
 
-const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}, buttons = [], onTitleClick = () => {}}, ref) => {
+const Topbar = forwardRef(({logo = false, title = null, subtitle = null, children = [], backURL = null, onBack = null, search = false, searchValue = '', onSearch = () => {}, buttons = [], onTitleClick = () => {}}, ref) => {
 	const topbarRef = useRef(null)
 
 	const currentAnimations = useRef([])
@@ -110,7 +111,7 @@ const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = nul
 			if (window.innerWidth >= 800) return
 
 			const topbarRect = topbarRef.current.getBoundingClientRect()
-			
+
 			rectsBeforeAnimation.current = Array(topbarRef.current.children.length).fill(null)
 			marginsBeforeAnimation.current = Array(topbarRef.current.children.length).fill(null)
 
@@ -186,7 +187,7 @@ const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = nul
 							<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} />
 						</ExpandCard>
 					</Link> :
-					onBack ? 
+					onBack ?
 					<ExpandCard className='topbar__top__back'>
 						<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} onClick={onBack} />
 					</ExpandCard> : null
@@ -197,10 +198,14 @@ const Topbar = forwardRef(({title, subtitle = null, children = [], backURL = nul
 						<p className='topbar__title'>{title}</p>
 						<p className='topbar__subtitle'>{subtitle}</p>
 					</div> :
+					title ?
 					<ExpandCard className='topbar__title-wrapper' style={{width: 'fit-content'}} onClick={onTitleClick}>
 						<p className='topbar__title'>{title}</p>
 						<p className='topbar__subtitle'>{subtitle}</p>
-					</ExpandCard>	
+					</ExpandCard> :
+					logo ?
+					<SVGLogo fill='var(--primaryTextColor)' height={16} />
+					: null
 				}
 				<div className='topbar__top__additional' style={{gridTemplateColumns: `repeat(${children?.length || 0}, fit-content(0))`}}>
 					{children}

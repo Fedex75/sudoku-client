@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import './utils/SettingsHandler'
-import { Home, Sudoku, Settings, Bookmarks } from './pages'
+import { Home, Sudoku, Settings } from './pages'
 import useLocalStorage from 'use-local-storage'
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
@@ -36,10 +36,10 @@ function App() {
   return (
 		<div className='app' data-theme={theme} data-accent-color={accentColor} onClick={()=>{}}>
 			<Routes>
-				<Route exact path="/" element={<Home theme={theme} accentColor={accentColor} />} />
+				<Route exact path="/" element={<Navigate to="/home" replace />} />
+				<Route path="/home/*" element={<Home theme={theme} accentColor={accentColor} />} />
 				<Route exact path="/sudoku" element={<Sudoku theme={theme} accentColor={accentColor} />} />
 				<Route path="/settings/*" element={<Settings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor}/>} />
-				<Route exact path="/bookmarks" element={<Bookmarks theme={theme} />}/>
 			</Routes>
 		</div>
   )

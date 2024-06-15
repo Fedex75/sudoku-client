@@ -1,7 +1,7 @@
 import './actionSheetButton.css'
 import { useState } from "react"
 
-export default function ActionSheetButton({title, color = 'var(--theme-color)', onClick = () => {}, cancel = false}){
+export default function ActionSheetButton({title, color = '', onClick = () => {}, cancel = false}){
 	const [clicked, setClicked] = useState(false)
 
 	return (
@@ -14,7 +14,7 @@ export default function ActionSheetButton({title, color = 'var(--theme-color)', 
 				color: color,
 				filter: clicked ? 'brightness(90%)' : 'none'
 			}}
-		>	
+		>
 			{title}
 		</div>
 	)

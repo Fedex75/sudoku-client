@@ -26,7 +26,24 @@
   align-items: center;
 }
 
-.sudoku canvas {
+.sudoku__timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 5px;
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.sudoku__timer__time {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.sudoku-canvas {
   width: 100%;
   max-height: calc(100vh - 79vw - 75px);
   aspect-ratio: 1 / 1;
@@ -87,13 +104,33 @@
   max-height: calc(100vw - 14px);
 }
 
+.sudoku__context-menu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: fit-content(0) fit-content(0) auto;
+  grid-template-areas:
+    "save share"
+    "rules rules"
+    "buttons buttons";
+  width: 100%;
+  gap: 10px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.sudoku__context-menu__buttons {
+  display: flex;
+  flex-flow: column;
+  gap: 10px;
+}
+
 @media (min-aspect-ratio: 46/89){
   /*Tablets*/
   .game {
     grid-template-rows: auto 200px;
   }
 
-  .sudoku canvas {
+  .sudoku-canvas {
     max-width: calc(100vh - 280px);
     max-height: calc(100vh - 280px);
   }
@@ -112,7 +149,7 @@
     max-height: 500px;
   }
 
-  .sudoku canvas {
+  .sudoku-canvas {
     height: 500px;
     max-height: 500px;
   }
@@ -135,8 +172,8 @@
       grid-template-columns: 85vh 80vh;
       grid-template-rows: 80vh;
     }
-  
-    .sudoku canvas {
+
+    .sudoku-canvas {
       max-height: 100%;
       max-width: 100%;
     }

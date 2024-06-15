@@ -117,7 +117,7 @@ export default class Board {
 		const cell = this.get(c)
 
 		if (cell.value > 0) return [null, []]
-		
+
 		//Check if only available place in box
 		if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInBox(c, n)){
 			return [true, this.setValue(c, n)]
@@ -188,9 +188,9 @@ export default class Board {
 		this.board[c.x][c.y].value = s
 		this.board[c.x][c.y].notes = []
 		this.clearCandidatesFromVisibleCells(c, s)
-		
+
 		if (SettingsHandler.settings.clearColorOnInput) this.board[c.x][c.y].color = 'default'
-		
+
 		let animations = []
 
 		const cageIndex = this.get(c).cageIndex
@@ -250,7 +250,7 @@ export default class Board {
 		let values = []
 		if (SettingsHandler.settings.showPossibleValues){
 			if (cell.color !== 'default' && SettingsHandler.settings.lockCellsWithColor) return cell.notes
-			
+
 			//Check value of visible cells
 			for (const coords of this.getVisibleCells(c)){
 				const visibleCell = this.get(coords)
@@ -373,7 +373,7 @@ export default class Board {
 			let newLink = []
 			for (let i = 0; i < this.nSquares; i++){
 				if (this.board[i][r].notes.includes(n)){
-					newLink.push({x: i, y: r});		
+					newLink.push({x: i, y: r});
 				}
 			}
 			if (newLink.length <= 2){
@@ -402,7 +402,7 @@ export default class Board {
 					for (let y = 0; y < 3; y++){
 						if (this.board[qx*3+x][qy*3+y].notes.includes(n)){
 							newLink.push({x: qx*3+x, y: qy*3+y})
-						}		
+						}
 					}
 				}
 				if (newLink.length <= 2){
@@ -442,7 +442,7 @@ export default class Board {
 
 	checkFullNotation(force = false){
 		if (this.fullNotation && !force) return
-		
+
 		for (let n = 1; n <= 9; n++){
 			for (let boxX = 0; boxX < 3; boxX++){
 				for (let boxY = 0; boxY < 3; boxY++){

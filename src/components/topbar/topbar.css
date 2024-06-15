@@ -40,22 +40,22 @@
 }
 
 .topbar__title {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .topbar__title-wrapper.subtitle {
   display: flex;
   flex-flow: column;
-  gap: 2px;
 }
 
 .topbar__title-wrapper.subtitle .topbar__title {
-  font-size: 12px;
+  font-size: 14px;
   color: gray;
 }
 
 .topbar__top__additional {
   display: grid;
+  justify-content: center;
   gap: 10px;
 }
 

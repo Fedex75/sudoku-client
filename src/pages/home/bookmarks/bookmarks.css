@@ -1,12 +1,16 @@
-#bookmarks {
-	overflow-y: auto;
-	padding-top: 30px;
+.home__bookmarks {
+	display: grid;
+	grid-template-rows: fit-content(0) auto fit-content(0);
+	height: 100%;
+	align-items: center;
+	gap: 15px;
 }
 
 .bookmarks__wrapper {
 	display: flex;
 	flex-flow: column;
 	gap: 20px;
+	overflow-y: auto;
 }
 
 .bookmarks__item {

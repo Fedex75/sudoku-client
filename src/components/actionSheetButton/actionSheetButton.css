@@ -1,15 +1,10 @@
-.action-sheet__list .action-sheet__button {
-  border-radius: 0;
-}
-
 .action-sheet__button {
   display: grid;
   place-items: center;
   font-size: 22px;
-  border-radius: 15px;
   padding: 14px 0;
   border-top: solid 1px var(--actionSheetButtonBorder);
-  background-color: var(--actionSheetButtonBackground);
+  color: var(--contextMenuButtonColor);
   width: 100%;
 }
 
@@ -18,15 +13,10 @@
   background-color: var(--actionSheetCancelBackground);
   margin-bottom: 10px;
   max-width: 450px;
+  border-radius: 15px;
+  color: var(--contextMenuButtonColor);
 }
 
 .action-sheet__button:first-child {
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
   border-top: none;
-}
-
-.action-sheet__button:last-child {
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
 }

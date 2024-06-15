@@ -9,18 +9,50 @@
 .action-sheet__list {
   display: flex;
   flex-flow: column;
+  align-items: center;
   margin-bottom: 10px;
   width: 100%;
   max-width: 450px;
+  background-color: var(--actionSheetBackground);
+  border-radius: 15px;
 }
 
 .action-sheet__list__title {
   display: grid;
   place-items: center;
   border-radius: 15px 15px 0 0;
-  background-color: var(--actionSheetButtonBackground);
+  background-color: var(--actionSheetBackground);
   color: var(--secondaryTextColor);
   padding: 10px;
   text-align: center;
 }
 
+.action-sheet__list__handle {
+  background-color: lightgray;
+  height: 5px;
+  width: 50px;
+  border-radius: 2.5px;
+  margin-bottom: 7px;
+  margin-top: 7px;
+}
+
+.context-menu__button {
+  display: grid;
+  grid-template-columns: 35px auto;
+  align-items: center;
+  width: 100%;
+  font-size: 20px;
+  color: var(--contextMenuButtonColor);
+  background-color: var(--contextMenuButtonBackground);
+  border-radius: 17px;
+  padding: 11px;
+  box-sizing: border-box;
+}
+
+.context-menu__button.vertical {
+  display: flex;
+  flex-flow: column;
+  gap: 5px;
+  align-items: center;
+  font-size: 14px;
+}

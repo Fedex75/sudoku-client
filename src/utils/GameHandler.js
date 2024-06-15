@@ -4,13 +4,14 @@ import missions from '../data/missions.json'
 import Decoder from './Decoder'
 import { difficultyDecoder, modeDecoder } from './Difficulties'
 import { defaultStatistics, updateStatistic } from './Statistics'
+import { newGameFromMode } from '../gameModes/Common'
 
 const BOARD_API_VERSION = 6
 const STORAGE_SCHEMA_VERSION = 3
 
 class GameHandler {
 	init(){
-		const ls_schema_version = localStorage.getItem('SCHEMA_VERSION') 
+		const ls_schema_version = localStorage.getItem('SCHEMA_VERSION')
 		if (ls_schema_version === null || ls_schema_version < STORAGE_SCHEMA_VERSION){
 			localStorage.clear()
 			localStorage.setItem('SCHEMA_VERSION', STORAGE_SCHEMA_VERSION)
@@ -21,7 +22,7 @@ class GameHandler {
 		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION){
-			this.setCurrentGame(new Board(data, false))
+			this.setCurrentGame(newGameFromMode(data.mode, data, false))
 		} else {
 			this.game = null
 			this.complete = false
@@ -33,31 +34,38 @@ class GameHandler {
 		const lsSolved = localStorage.getItem('solved')
 		this.solved = lsSolved ? JSON.parse(lsSolved) : []
 
-		const lsClassicDifficulty = localStorage.getItem('classicDifficulty')
-		this.classicDifficulty = lsClassicDifficulty || (this.game?.mode === 'classic' ? this.game.difficulty : 'easy')
-		localStorage.setItem('classicDifficulty', this.classicDifficulty)
-
-		const lsKillerDifficulty = localStorage.getItem('killerDifficulty')
-		this.killerDifficulty = lsKillerDifficulty || (this.game?.mode === 'killer' ? this.game.difficulty : 'easy')
-		localStorage.setItem('killerDifficulty', this.killerDifficulty)
+		const lsRecommendations = localStorage.getItem('recommendations')
+		this.recommendations = lsRecommendations ? JSON.parse(lsRecommendations) : {
+			newGame: {
+				mode: 'classic',
+				difficulty: 'easy'
+			},
+			perMode: {
+				classic: 'easy',
+				killer: 'easy',
+				sudokuX: 'unrated',
+				sandwich: 'unrated',
+				thermo: 'unrated'
+			}
+		}
+		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 
 		const lsStatistics = localStorage.getItem('statistics')
 		this.statistics = lsStatistics ? JSON.parse(lsStatistics) : defaultStatistics
 		localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
 	}
 
-	setCurrentGame(board){
-		this.game = board
+	setCurrentGame(game){
+		this.game = game
 		this.complete = false
-		this.game.version = BOARD_API_VERSION
-		this.saveGame(JSON.stringify(this.game))
-		if (this.game.mode === 'classic'){
-			this.classicDifficulty = this.game.difficulty
-			localStorage.setItem('classicDifficulty', this.classicDifficulty)
-		} else {
-			this.killerDifficulty = this.game.difficulty
-			localStorage.setItem('killerDifficulty', this.killerDifficulty)
+		this.game.board.version = BOARD_API_VERSION
+		this.saveGame(JSON.stringify(this.game.board))
+		this.recommendations.newGame = {
+			mode: this.game.mode,
+			difficulty: this.game.difficulty
 		}
+		this.recommendations.perMode[this.game.mode] = this.game.difficulty
+		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 	}
 
 	newGame(mode, difficulty){
@@ -69,7 +77,7 @@ class GameHandler {
 
 		let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
 		if (candidates.length === 0) candidates = missions[mode][difficulty]
-		this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], true))
+		this.setCurrentGame(newGameFromMode(mode, candidates[Math.floor(Math.random() * candidates.length)], true))
 	}
 
 	boardFromCustomMission(mission){

@@ -14,6 +14,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           delete: 'Delete',
           discard: 'Discard',
           discardGame: 'Discard current game?',
+          save: 'Save',
+          share: 'Share',
           newVersionAvailable: "There's a new version available",
           lightTheme: 'Light',
           darkTheme: 'Dark'
@@ -27,6 +29,9 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           importPrompt: 'Enter the board:',
           incompatibleData: 'Incompatible data',
           continue: 'Continue',
+          play: 'Play',
+          bookmarks: 'Bookmarks',
+          statistics: 'Statistics'
         },
         bookmarks: {
           deleteAll: 'Delete all',
@@ -87,11 +92,15 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           exortError: 'Error copying to clipboard',
           copyClues: 'Copy clues',
           copyFullBoard: 'Copy full board',
-          copyMission: 'Copy mission'
+          copyMission: 'Copy mission',
+          rules: 'Rules'
         },
         gameModes: {
           classic: 'Classic',
-          killer: 'Killer'
+          killer: 'Killer',
+          sandwich: 'Sandwich',
+          sudokuX: 'Sudoku X',
+          thermo: 'Thermo'
         },
         gameDifficulties: {
           easy: 'Easy',
@@ -110,6 +119,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           delete: 'Eliminar',
           discard: 'Descartar',
           discardGame: '¿Descartar el juego en progreso?',
+          save: 'Guardar',
+          share: 'Compartir',
           newVersionAvailable: 'Hay una nueva versión disponible',
           lightTheme: 'Claro',
           darkTheme: 'Oscuro'
@@ -123,7 +134,9 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           importPrompt: 'Ingrese el tablero:',
           incompatibleData: 'Datos incompatibles',
           continue: 'Continuar',
-
+          play: 'Jugar',
+          bookmarks: 'Marcadores',
+          statistics: 'Estadísticas'
         },
         bookmarks: {
           deleteAll: 'Eliminar todos',
@@ -184,11 +197,15 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           exortError: 'Error al copiar',
           copyClues: 'Copiar pistas',
           copyFullBoard: 'Copiar tablero completo',
-          copyMission: 'Copiar misión'
+          copyMission: 'Copiar misión',
+          rules: 'Reglas'
         },
         gameModes: {
           classic: 'Clásico',
-          killer: 'Killer'
+          killer: 'Killer',
+          sandwich: 'Sandwich',
+          sudokuX: 'Sudoku X',
+          thermo: 'Termo'
         },
         gameDifficulties: {
           easy: 'Fácil',

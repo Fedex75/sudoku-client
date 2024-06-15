@@ -1,0 +1,16 @@
+.home__statistics {
+    display: grid;
+    grid-template-rows: fit-content(0) auto fit-content(0);
+    height: 100%;
+    align-items: center;
+    gap: 15px;
+}
+
+.home__statistics-list {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--primaryTextColor);
+    font-size: 40px;
+}

@@ -17,7 +17,7 @@ function ColorButton({onClick = () => {}, color, locked}){
         green: '#26de81',
         blueGreen: '#2bcbba',
         lightBlue: '#45aaf2',
-        darkBlue: '#4b7bec',
+        darkBlue: '#2e69f2',
         purple: '#a55eea'
     }
 

@@ -1,17 +1,20 @@
 import './sudoku.css'
 import { useEffect, useRef, useState } from 'react'
-import { Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button, ExpandCard, Numpad } from '../../components'
+import { Canvas, Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button, Numpad } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import GameHandler from '../../utils/GameHandler'
 import { classicDifficulties, killerDifficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowUpFromBracket, faBookmark, faPause, faPlay, faPlus} from '@fortawesome/free-solid-svg-icons'
+import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faClock, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
+import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { millisecondsToHMS } from '../../utils/Statistics'
+import SVGMenu from '../../svg/menu'
+import SVGRestart from '../../svg/restart'
 
-export default function Sudoku({theme, accentColor}){
+export default function Sudoku({ theme, accentColor }) {
 	const [showLinks, setShowLinks] = useState(false)
 	const [win, setWin] = useState(false)
 	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
@@ -23,56 +26,50 @@ export default function Sudoku({theme, accentColor}){
 	const [noteMode, setNoteMode] = useState(true)
 	const [noteDragMode, setNoteDragMode] = useState(null)
 
-	const newGameActionSheetRef = useRef()
+	const menuActionSheetRef = useRef()
 	const exportActionSheetRef = useRef()
 	const navigate = useNavigate()
 
 	const canvasRef = useRef(null)
 
-	const topbarRef = useRef(null)
-
-	const [newGameExpanded, setNewGameExpanded] = useState(false)
-	const [shareExpanded, setShareExpanded] = useState(false)
-	const [bookmarkExpanded, setBookmarkExpanded] = useState(false)
-
 	const [isTimerRunning, setIsTimerRunning] = useState(true)
 	const [paused, setPaused] = useState(false)
-	const [time, setTime] = useState(GameHandler.game?.timer || 0)
+	const [time, setTime] = useState(GameHandler.game?.board.timer || 0)
 
-	const {t} = useTranslation()
+	const { t } = useTranslation()
 
 	useEffect(() => {
-	let interval = null
-  
-	if (isTimerRunning && !paused){
-	  interval = setInterval(() => {
-		setTime((time) => {
-					GameHandler.game.setTimer(time + 100)
+		let interval = null
+
+		if (isTimerRunning && !paused) {
+			interval = setInterval(() => {
+				setTime((time) => {
+					GameHandler.game.board.setTimer(time + 100)
 					return time + 100
 				})
-	  }, 100)
-	} else clearInterval(interval)
+			}, 100)
+		} else clearInterval(interval)
 
-	return () => { clearInterval(interval) }
-  }, [isTimerRunning, paused])
+		return () => { clearInterval(interval) }
+	}, [isTimerRunning, paused])
 
-	function startTimer(){
-	setIsTimerRunning(true)
-	setPaused(false)
-  }
-  
-	function pauseTimer(){ 
+	function startTimer() {
+		setIsTimerRunning(true)
+		setPaused(false)
+	}
+
+	function pauseTimer() {
 		setIsTimerRunning(false)
 		setPaused(true)
 	}
-  
-  	function resetTimer(){
+
+	function resetTimer() {
 		setIsTimerRunning(true)
 		setPaused(false)
 		setTime(0)
 	}
 
-	function handleComplete(){
+	function handleComplete() {
 		setIsTimerRunning(false)
 		setTimeout(() => {
 			setWin(true)
@@ -82,10 +79,10 @@ export default function Sudoku({theme, accentColor}){
 		}, 1350) //Must be equal to animation duration in Canvas.js
 	}
 
-	function onClick(coords, type, hold){
-		let animations = []
+	function onClick(coords, type, hold) {
+		/*let animations = []
 
-		if (brush){
+		if (brush) {
 			GameHandler.game.setSelectedCell(coords)
 			if (lockedColor !== null) handleSetColor(coords, lockedColor)
 		} else {
@@ -94,13 +91,13 @@ export default function Sudoku({theme, accentColor}){
 
 			if (type === 'tertiary') handleSetColor(coords)
 			else {
-				if (lockedInput === 0){
+				if (lockedInput === 0) {
 					GameHandler.game.setSelectedCell(coords)
 					if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') setLockedInput(cell.value)
 				} else {
-					if (hold){
-						if (cellPossibleValues.includes(lockedInput)){
-							if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)){
+					if (hold) {
+						if (cellPossibleValues.includes(lockedInput)) {
+							if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 								if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInBox(coords, lockedInput)) [, animations] = GameHandler.game.setNote(coords, lockedInput)
 							} else {
 								if (cell.value === 0) animations = GameHandler.game.setValue(coords, lockedInput)
@@ -108,14 +105,14 @@ export default function Sudoku({theme, accentColor}){
 						}
 					} else {
 						GameHandler.game.setSelectedCell(coords)
-						if (cell.value > 0){
+						if (cell.value > 0) {
 							setLockedInput(li => cell.value === li ? 0 : cell.value)
 						} else {
-							if ((noteMode || type === 'secondary')){
-								if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1){
+							if ((noteMode || type === 'secondary')) {
+								if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1) {
 									if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
 								} else {
-									if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)){
+									if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
 										let newNoteMode
 										[newNoteMode, animations] = GameHandler.game.setNote(coords, lockedInput)
 										setNoteDragMode(newNoteMode)
@@ -131,20 +128,20 @@ export default function Sudoku({theme, accentColor}){
 		}
 		updatePossibleValues()
 
-		if (animations.length > 0){
+		if (animations.length > 0) {
 			canvasRef.current?.doAnimation(animations)
 			if (animations[0].type === 'board') handleComplete()
-		}
+		}*/
 	}
 
-	function handleNumpadButtonClick(number, type){
+	function handleNumpadButtonClick(number, type) {
 		if (GameHandler.complete) return
 
 		let animations = []
 
-		if (type === 'primary'){
-			if (possibleValues.includes(number)){
-				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)){
+		if (type === 'primary') {
+			if (possibleValues.includes(number)) {
+				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCell, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
@@ -154,49 +151,49 @@ export default function Sudoku({theme, accentColor}){
 		} else setLockedInput(li => li === number ? 0 : number)
 		updatePossibleValues()
 
-		if (animations.length > 0){
+		if (animations.length > 0) {
 			canvasRef.current?.doAnimation(animations)
 			if (animations[0].type === 'board') handleComplete()
 		}
 	}
 
-	function invertNoteMode(){
+	function invertNoteMode() {
 		setNoteMode(nm => !nm)
 		updatePossibleValues()
 	}
 
-	function invertShowLinks(){
+	function invertShowLinks() {
 		setShowLinks(v => !v)
 	}
 
-	function eraseSelectedCell(){
+	function eraseSelectedCell() {
 		if (GameHandler.complete) return
 
-		if (GameHandler.game.selectedCell !== null){
+		if (GameHandler.game.selectedCell !== null) {
 			GameHandler.game.erase(GameHandler.game.selectedCell)
 			updatePossibleValues()
 			canvasRef.current?.stopAnimations()
 		}
 	}
 
-	function handleHintClick(){
+	function handleHintClick() {
 		if (GameHandler.complete) return
 
 		let animations = GameHandler.game.hint(GameHandler.game.selectedCell)
 		updatePossibleValues()
 
-		if (animations.length > 0){
+		if (animations.length > 0) {
 			canvasRef.current?.doAnimation(animations)
 			if (animations[0].type === 'board') handleComplete()
 		}
 	}
 
-	function handleEraseInkClick(){
+	function handleEraseInkClick() {
 		GameHandler.game.clearColors()
 		canvasRef.current.renderFrame()
 	}
 
-	function handleUndo(){
+	function handleUndo() {
 		if (GameHandler.complete) return
 
 		GameHandler.game.popBoard()
@@ -204,38 +201,38 @@ export default function Sudoku({theme, accentColor}){
 		updatePossibleValues()
 	}
 
-	function handleBrushClick(){
+	function handleBrushClick() {
 		setBrush(b => !b)
 	}
 
-	function handleSetColor(coords, color = accentColor){
+	function handleSetColor(coords, color = accentColor) {
 		if (GameHandler.complete) return
 
 		const cell = GameHandler.game.get(coords)
 		if (
 			cell.value === 0 &&
 			(GameHandler.game.mode === 'killer' || cell.notes.length > 1)
-		){
+		) {
 			GameHandler.game.setColor(coords, cell.color !== color ? color : 'default')
 			canvasRef.current.renderFrame()
 		}
 	}
 
-	function handleColorButtonClick(color, type){
+	function handleColorButtonClick(color, type) {
 		if (type === 'primary') handleSetColor(GameHandler.game.selectedCell, color)
 		else {
 			setLockedColor(oldColor => oldColor === color ? null : color)
 		}
 	}
 
-	function updatePossibleValues(){
+	function updatePossibleValues() {
 		if (noteMode && GameHandler.game.getSelectedCell().value > 0) setPossibleValues([])
 		else setPossibleValues(GameHandler.game.getPossibleValues(GameHandler.game.selectedCell))
 
 		setCompletedNumbers(GameHandler.game.getCompletedNumbers())
 	}
 
-	function handleNewGame(difficulty){
+	function handleNewGame(difficulty) {
 		GameHandler.newGame(GameHandler.game.mode, difficulty)
 
 		setNoteMode(true)
@@ -243,77 +240,58 @@ export default function Sudoku({theme, accentColor}){
 		setWin(false)
 		setShowLinks(false)
 		updatePossibleValues()
-		setNewGameExpanded(false)
 		setBookmark(GameHandler.currentGameIsBookmarked())
-		newGameActionSheetRef.current.close()
-		topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
+		menuActionSheetRef.current.close()
 		resetTimer()
 	}
 
-	function handleNewGameClick(){
-		if (GameHandler.game.difficulty === 'custom'){
-			newGameActionSheetRef.current.open()
+	function handleNewGameClick() {
+		if (GameHandler.game.difficulty === 'custom') {
+			menuActionSheetRef.current.open()
 			exportActionSheetRef.current.close()
 		}
 		else handleNewGame(GameHandler.game.difficulty)
 	}
 
-	function topbarNewGameClick(){
-		setNewGameExpanded(true)
-		setShareExpanded(false)
-		newGameActionSheetRef.current.open()
+	function topbarMenuClick() {
+		menuActionSheetRef.current.open()
 		exportActionSheetRef.current.close()
-		topbarRef.current.expand({buttonIndex: 3, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
 	}
 
-	function topbarShareClick(){
-		setShareExpanded(true)
-		setNewGameExpanded(false)
+	function menuShareClick() {
 		exportActionSheetRef.current.open()
-		newGameActionSheetRef.current.close()
-		topbarRef.current.expand({buttonIndex: 2, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
+		menuActionSheetRef.current.close()
 	}
 
-	function topbarBookmarkClick(){
-		setBookmarkExpanded(true)
-
-		if (bookmark){
+	function menuBookmarkClick() {
+		if (bookmark) {
 			setBookmark(false)
 			GameHandler.removeBookmark({
 				id: GameHandler.game.id,
 				mission: GameHandler.game.mission
 			})
-
-			topbarRef.current.expand({buttonIndex: 1, newBackgroundColor: 'var(--red)', newFontColor: 'white'})
 		} else {
 			setBookmark(true)
 			GameHandler.bookmarkCurrentGame()
-
-			topbarRef.current.expand({buttonIndex: 1, newBackgroundColor: 'var(--theme-color)', newFontColor: 'white'})
 		}
-
-		setTimeout(() => {
-			setBookmarkExpanded(false)
-			topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: bookmark ? 'var(--theme-color)' : 'white'})
-		}, 1000)
 	}
 
-	function handleTimerClick(){
+	function handleTimerClick() {
 		if (win) return
 		canvasRef.current.stopAnimations()
-		if (paused){
+		if (paused) {
 			startTimer()
 			setPaused(false)
-			canvasRef.current.doAnimation([{type: 'fadein'}])
+			canvasRef.current.doAnimation([{ type: 'fadein' }])
 		} else {
 			pauseTimer()
 			setPaused(true)
-			canvasRef.current.doAnimation([{type: 'fadeout'}])
+			canvasRef.current.doAnimation([{ type: 'fadeout' }])
 		}
 	}
 
 	useEffect(() => {
-		if (GameHandler.game === null){
+		if (GameHandler.game === null) {
 			navigate('/')
 			return
 		}
@@ -339,105 +317,110 @@ export default function Sudoku({theme, accentColor}){
 	return (
 		<Section>
 			<Topbar
-				ref={topbarRef}
 				title={t(`gameModes.${GameHandler.game.mode}`)}
 				subtitle={t(`gameDifficulties.${GameHandler.game.difficulty}`)}
 				titleSize={20}
 				backURL="/"
 				buttons={[
-					<ExpandCard key={0} className='topbar__button' style={{display: 'flex', gap: 5, color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)'}} onClick={handleTimerClick}>
-						<p style={{fontSize: 18}}>{millisecondsToHMS(time)}</p>
-						{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18}/> : null}
-					</ExpandCard>,
-					<ExpandCard key={1} className='topbar__button' expanded={bookmarkExpanded} onClick={topbarBookmarkClick}>{bookmarkExpanded ? (bookmark ? t('sudoku.saved') : t('sudoku.removed')) : <FontAwesomeIcon className={`topbar__buttons__button bookmark-${bookmark ? 'on' : 'off'}`} icon={faBookmark} />}</ExpandCard>,
-					<ExpandCard key={2} className='topbar__button' expanded={shareExpanded} onClick={topbarShareClick}>{shareExpanded ? t('sudoku.share') : <FontAwesomeIcon className='topbar__buttons__button' icon={faArrowUpFromBracket} />}</ExpandCard>,
-					<ExpandCard key={3} className='topbar__button' expanded={newGameExpanded} onClick={topbarNewGameClick}>{newGameExpanded ? t('sudoku.newGame') : <FontAwesomeIcon className='topbar__buttons__button' icon={faPlus} />}</ExpandCard>
+					<div key={0} style={{ display: 'grid', placeContent: 'center', marginRight: 5 }} onClick={topbarMenuClick}><SVGMenu height={12} strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
 				]}
-				onTitleClick={topbarNewGameClick}
 			>
-				
+				<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={handleTimerClick}>
+					<p className='sudoku__timer__time'>{millisecondsToHMS(time)}</p>
+					{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
+				</div>
 			</Topbar>
-			
+
 			<SectionContent>
 				{
-					win ? 
-					<div className='sudoku__win-screen-wrapper'>
-						<div className='sudoku__win-screen'>
-							<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
-							<div className='sudoku__win-screen__stat'>
-								<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
-								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.game.timer)}</div>
+					win ?
+						<div className='sudoku__win-screen-wrapper'>
+							<div className='sudoku__win-screen'>
+								<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
+								<div className='sudoku__win-screen__stat'>
+									<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
+									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.game.timer)}</div>
+								</div>
+								<div className='sudoku__win-screen__stat'>
+									<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
+									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].average)}</div>
+								</div>
+								<div className='sudoku__win-screen__stat'>
+									<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
+									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].best)}</div>
+								</div>
+								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
 							</div>
-							<div className='sudoku__win-screen__stat'>
-								<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
-								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].average)}</div>
+						</div> :
+						<div className="game">
+							<div className="sudoku">
+								<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused} />
 							</div>
-							<div className='sudoku__win-screen__stat'>
-								<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
-								<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].best)}</div>
-							</div>
-							<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
+							<Numpad
+								onUndo={handleUndo}
+								onErase={eraseSelectedCell}
+								onNote={invertNoteMode}
+								noteState={noteMode}
+								onHint={handleHintClick}
+								onLinks={invertShowLinks}
+								linkState={showLinks}
+								onColor={handleBrushClick}
+								colorState={brush}
+								onEraseInk={handleEraseInkClick}
+								lockedInput={lockedInput}
+								lockedColor={lockedColor}
+								possibleValues={possibleValues}
+								completedNumbers={completedNumbers}
+								onColorButtonClick={handleColorButtonClick}
+								onNumpadButtonClick={handleNumpadButtonClick}
+							/>
 						</div>
-					</div> :
-					<div className="game">
-						<div className="sudoku">
-							<Canvas ref={canvasRef} onClick={onClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused}/>
-						</div>
-						<Numpad
-							onUndo={handleUndo}
-							onErase={eraseSelectedCell}
-							onNote={invertNoteMode}
-							noteState={noteMode}
-							onHint={handleHintClick}
-							onLinks={invertShowLinks}
-							linkState={showLinks}
-							onColor={handleBrushClick}
-							colorState={brush}
-							onEraseInk={handleEraseInkClick}
-							lockedInput={lockedInput}
-							lockedColor={lockedColor}
-							possibleValues={possibleValues}
-							completedNumbers={completedNumbers}
-							onColorButtonClick={handleColorButtonClick}
-							onNumpadButtonClick={handleNumpadButtonClick}
-						/>
-					</div>
 				}
 			</SectionContent>
-			
+
 			<ActionSheet
-				reference={newGameActionSheetRef}
-				title={t('sudoku.newGame')}
-				cancelTitle={t('common.cancel')}
-				onClose={() => {
-					setNewGameExpanded(false)
-					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
-				}}
+				reference={menuActionSheetRef}
+				showHandle
 			>
-				{
-					(GameHandler.game.mode === 'classic' ? classicDifficulties : killerDifficulties).map(diff => (
-						<ActionSheetButton key={diff} title={t(`gameDifficulties.${diff}`)} color={diff === 'restart' ? 'var(--red)' : 'var(--theme-color)'} onClick={() => {handleNewGame(diff)}} />
-					))
-				}
+				<div className='sudoku__context-menu'>
+					<div className='context-menu__button vertical' style={{ gridArea: 'save' }} onClick={menuBookmarkClick}>
+						<FontAwesomeIcon icon={bookmark ? bookmarkSolid : bookmarkRegular} fontSize={24} />
+						<p>{t('common.save')}</p>
+					</div>
+					<div className='context-menu__button vertical' style={{ gridArea: 'share' }} onClick={menuShareClick}>
+						<FontAwesomeIcon icon={faArrowUpFromBracket} fontSize={24} />
+						<p>{t('common.share')}</p>
+					</div>
+					<div className='context-menu__button' style={{ gridArea: 'rules', marginTop: 25, marginBottom: 25 }}>
+						<FontAwesomeIcon icon={faInfoCircle} fontSize={24} />
+						<p>{t('sudoku.rules')}</p>
+					</div>
+					<div className='sudoku__context-menu__buttons' style={{ gridArea: 'buttons' }}>
+						{
+							(GameHandler.game.mode === 'classic' ? classicDifficulties : killerDifficulties).map(diff => (
+								<div key={diff} className='context-menu__button' onClick={() => handleNewGame(diff)}>
+									<FontAwesomeIcon icon={faPlusSquare} fontSize={24} />
+									<p>{t(`gameDifficulties.${diff}`)}</p>
+								</div>
+							))
+						}
+						<div className='context-menu__button' style={{color: 'white', backgroundColor: 'var(--red)'}}>
+							<SVGRestart fill='white' stroke='white' height={24} />
+							<p>{t('gameDifficulties.restart')}</p>
+						</div>
+					</div>
+				</div>
 			</ActionSheet>
 
 			<ActionSheet
 				reference={exportActionSheetRef}
-				title={t('sudoku.export')}
 				cancelTitle={t('common.cancel')}
-				onClose={() => {
-					setShareExpanded(false)
-					topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
-				}}
 			>
 				<ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
 					try {
 						copy(GameHandler.game.getTextRepresentation(true))
 						exportActionSheetRef.current.close()
-
-						setShareExpanded(false)
-						topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
-					} catch(e){
+					} catch (e) {
 						alert(t('sudoku.exportError'))
 					}
 				}} />
@@ -445,27 +428,21 @@ export default function Sudoku({theme, accentColor}){
 					try {
 						copy(GameHandler.game.getTextRepresentation(false))
 						exportActionSheetRef.current.close()
-
-						setShareExpanded(false)
-						topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
-					} catch(e){
+					} catch (e) {
 						alert(t('sudoku.exportError'))
 					}
 				}} />
 				{
 					GameHandler.game.difficulty !== 'custom' ?
-					<ActionSheetButton title={t('sudoku.copyMission')} onClick={() => {
-						try {
-							copy(GameHandler.exportMission())
-							exportActionSheetRef.current.close()
-
-							setShareExpanded(false)
-							topbarRef.current.collapse({newBackgroundColor: 'var(--darkBackground)', newFontColor: 'var(--theme-color)'})
-						} catch(e){
-							alert(t('sudoku.exportError'))
-						}
-					}} /> : null
-				}				
+						<ActionSheetButton title={t('sudoku.copyMission')} onClick={() => {
+							try {
+								copy(GameHandler.exportMission())
+								exportActionSheetRef.current.close()
+							} catch (e) {
+								alert(t('sudoku.exportError'))
+							}
+						}} /> : null
+				}
 			</ActionSheet>
 		</Section>
 	)
