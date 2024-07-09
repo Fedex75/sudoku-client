@@ -26,6 +26,10 @@
   gap: 7px;
 }
 
+.edit-buttons__button .icon, .special-buttons__button .icon {
+  width: 50% !important;
+}
+
 .numpad__rows-wrapper {
   grid-area: rows;
   display: grid;
