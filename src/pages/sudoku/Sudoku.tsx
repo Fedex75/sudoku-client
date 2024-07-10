@@ -1,13 +1,12 @@
 import './sudoku.css'
 import { useEffect, useRef, useState } from 'react'
-import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button, Numpad } from '../../components'
-import SettingsHandler from '../../utils/SettingsHandler'
+import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button } from '../../components'
 import GameHandler from '../../utils/GameHandler'
 import { DifficultyName, difficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faClock, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
+import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
 import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { millisecondsToHMS } from '../../utils/Statistics'
@@ -129,7 +128,11 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 	function handleTimerClick() {
 		if (win) return
-
+		if (paused){
+			startTimer()
+		} else {
+			pauseTimer()
+		}
 	}
 
 	useEffect(() => {

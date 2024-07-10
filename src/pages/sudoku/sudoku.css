@@ -9,13 +9,12 @@
 .game {
   display: grid;
   grid-template-columns: auto;
-  grid-template-rows: auto calc(79vw);
+  grid-template-rows: 1fr 1fr;
   grid-template-areas:
     "sudoku"
     "numpad";
   gap: 10px;
   width: 100%;
-  height: 100%;
 }
 
 .sudoku {
@@ -45,8 +44,12 @@
 
 .sudoku-canvas {
   width: 100%;
-  max-height: calc(100vh - 79vw - 75px);
-  aspect-ratio: 1 / 1;
+}
+
+.sudoku-canvas:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
 }
 
 .sudoku__win-screen-wrapper {

@@ -1,16 +1,14 @@
 import './bookmarks.css'
-import { faBookmark, faCheck, faTrashCan, faPlay, faChartSimple } from "@fortawesome/free-solid-svg-icons"
+import { faBookmark, faCheck, faChartSimple, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import { Link } from "react-router-dom";
 import { ActionSheet, ActionSheetButton } from '../../../components'
-import { decodeMissionString } from "../../../utils/Decoder"
 import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import missions from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import ClassicBoard from '../../../gameModes/classic/ClassicBoard'
 import { newGameFromMode } from '../../../gameModes/Common'
 import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
 import { ActionSheetRef } from 'actionsheet-react'
@@ -40,10 +38,6 @@ function Bookmarks({ theme }: Props) {
 		GameHandler.clearBookmarks()
 		clearBookmarksActionSheetRef.current?.close()
 		setBookmarks([])
-	}
-
-	function handleClearBookmarksClick() {
-		clearBookmarksActionSheetRef.current?.open()
 	}
 
 	function removeBookmark() {

@@ -11,9 +11,7 @@ import './numpad.css'
 import MagicWandSVG from '../../svg/magic_wand'
 import SelectSVG from '../../svg/select'
 import ColorCirclePaintedSVG from '../../svg/color_circle_painted'
-import { colorNames } from '../../utils/Colors'
-import GameHandler from '../../utils/GameHandler'
-import ColorCircleSVG from '../../svg/color_circle'
+import { ColorName, colorNames } from '../../utils/Colors'
 import { MouseButtonType } from '../../utils/DataTypes'
 
 type Props = {
@@ -24,13 +22,16 @@ type Props = {
   onMagicWand: () => void;
   onSelect: () => void;
   onColor: () => void;
-  onColorButtonClick: () => void;
+  onColorButtonClick: (color: ColorName, type: MouseButtonType) => void;
   onNumpadButtonClick: (number: number, type: MouseButtonType) => void;
+
+  enableHint?: boolean;
+  enableUndo?: boolean;
+  enableErase?: boolean;
 
   noteHighlighted: boolean;
   magicWandHighlighted: boolean;
   selectHighlighted: boolean;
-  colorOn: boolean;
   colorMode: boolean;
 
   lockedInput: number;
@@ -38,7 +39,7 @@ type Props = {
   completedNumbers: number[];
 }
 
-export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorOn, colorMode, possibleValues, completedNumbers}: Props): React.JSX.Element {
+export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, enableErase = true, enableHint = true, enableUndo = true}: Props): React.JSX.Element {
   const [hintState, setHintState] = useState(false);
 
   function handleHintClick(){
@@ -52,16 +53,16 @@ export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, on
   }
 
   const editButtons = [
-    <EditButton key={0} icon={<UndoSVG />} onClick={onUndo}/>,
-    <EditButton key={1} icon={<EraserSVG />} onClick={onErase}/>,
+    <EditButton key={0} icon={<UndoSVG />} onClick={onUndo} enabled={enableUndo}/>,
+    <EditButton key={1} icon={<EraserSVG />} onClick={onErase} enabled={enableErase}/>,
     <EditButton key={2} icon={<PencilSVG />} highlight={noteHighlighted} onClick={onNote}/>,
-    <EditButton key={3} icon={<BulbSVG />} yellow={hintState} onClick={handleHintClick}/>
+    <EditButton key={3} icon={<BulbSVG />} yellow={hintState} onClick={handleHintClick} enabled={enableHint}/>
   ]
 
   const specialButtons = [
     <EditButton key={4} icon={<MagicWandSVG />} highlight={magicWandHighlighted} onClick={onMagicWand}/>,
     <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect}/>,
-    <EditButton key={6} icon={colorOn ? <ColorCirclePaintedSVG /> : <ColorCircleSVG />} onClick={onColor}/>
+    <EditButton key={6} icon={<ColorCirclePaintedSVG />} highlight={colorMode} onClick={onColor}/>
   ]
 
   const rows: React.JSX.Element[][] = [[], [], []]

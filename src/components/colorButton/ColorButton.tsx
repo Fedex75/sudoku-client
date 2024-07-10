@@ -2,11 +2,11 @@ import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { ColorDefinitions, ColorName } from '../../utils/Colors'
-
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
+import { isTouchDevice } from '../../utils/isTouchDevice'
+import { MouseButtonType } from '../../utils/DataTypes'
 
 type Props = {
-    onClick: (color: string, type: 'primary' | 'secondary') => void;
+    onClick: (color: ColorName, type: MouseButtonType) => void;
     color: ColorName;
     locked?: boolean;
 }

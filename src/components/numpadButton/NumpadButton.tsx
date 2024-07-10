@@ -4,8 +4,7 @@ import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { MouseButtonType } from '../../utils/DataTypes'
-
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
+import { isTouchDevice } from '../../utils/isTouchDevice'
 
 type Props = {
 	onClick: (number: number, type: MouseButtonType) => void;

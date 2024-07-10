@@ -1,4 +1,4 @@
-import { Ref, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import ClassicBoard from "./ClassicBoard";
 import { BoardAnimation, CanvasRef, CellCoordinates, Coordinates, DigitChar, MouseButtonType, ThemeName } from "../../utils/DataTypes";
 import { AccentColor } from "../../utils/Colors";
@@ -23,7 +23,6 @@ const roundedRatio = Math.round(window.devicePixelRatio)
 const cellBorderWidth = roundedRatio === 1 ? 2 : 3
 const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 1 : 3
-const cageLineWidth = roundedRatio === 1 ? 2 : 2
 
 const themes = {
 	light: {
@@ -80,12 +79,6 @@ const k = 0.2
 function brightness(x: number, p: number, q: number, l: number) {
 	let t = (-q - l) * p + l
 	return Math.max(0, k * (1 - Math.abs(2 / l * (x + t) - 1)))
-}
-
-function dashedLine(ctx: CanvasRenderingContext2D, c1: Coordinates, c2: Coordinates, ratio: number) {
-	const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
-	if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
-	else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
 }
 
 const numberPaths: Record<DigitChar, string> = {
@@ -193,52 +186,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		}
 	}));
 
-    function resizeCanvas() {
-		if (!canvasRef.current) return
-
-		logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
-		canvasRef.current.width = logicalSize.current
-		canvasRef.current.height = logicalSize.current
-
-		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
-		const numberOfBoxBorders = (Math.floor(nSquares / 3) + 1)
-		const numberOfCellBorders = nSquares + 1 - numberOfBoxBorders
-		const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
-		squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / nSquares)
-		const previousLogicalSize = logicalSize.current
-		logicalSize.current = squareSize.current * nSquares + totalBorderThickness
-		canvasPadding.current = Math.floor((previousLogicalSize - logicalSize.current) / 2)
-
-		//Cell and value positions
-
-		let newCellPositions = []
-		let newValuePositions = []
-
-		let pos = boxBorderWidth
-		for (let i = 0; i < nSquares; i++) {
-			newCellPositions.push(pos)
-			newValuePositions.push(pos + squareSize.current / 2)
-			pos += squareSize.current + cellBorderWidth
-			if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
-		}
-
-		//Candidate positions
-		let newNoteDeltas = []
-
-		const notePaddingH = game.mode === 'classic' ? squareSize.current * 0.2 : squareSize.current * 0.28
-		const notePaddingTop = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.34
-		const notePaddingBottom = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.22
-
-		for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
-
-		cellPositions.current = newCellPositions
-		valuePositions.current = newValuePositions
-		noteDeltas.current = newNoteDeltas
-
-		renderFrame()
-	}
-
-    function updateColors() {
+    const updateColors = useCallback(() => {
 		colors.current = {
 			default: themes[theme].canvasLightDefaultCellColor,
 			red: '#fc5c65',
@@ -273,7 +221,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 			darkBlue: '#b2c4ed',
 			purple: '#d3bceb'
 		} : darkColors.current
-	}
+	}, [theme]);
 
     function doAnimation(timestamp: number) {
 		//Init colors.current
@@ -409,7 +357,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		e.stopPropagation();
 	}
 
-    function renderFrame() {
+    const renderFrame = useCallback(() => {
 		if (canvasRef.current === null) return;
 
 		const ctx = canvasRef.current.getContext('2d');
@@ -434,6 +382,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 
 					ctx.fillStyle =
 					!showSelectedCell ? colors.current!.default :
+					cell.color !== 'default' ? colors.current![cell.color] :
 					hasSameValueAsSelected ? themes[theme].canvasSameValueCellBackground : //Cell has same value as selected cell
 					highlitedCells[x][y] ? (darkColors.current!.default) : //Cell in same row or column as any cell with the same value as the selected cell
 					(colors.current!.default); //Default
@@ -522,7 +471,6 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 
 			//Selection
 			for (const c of game.selectedCells){
-				const cell = game.get({ x: c.x, y: c.y });
 				ctx.fillStyle = ctx.strokeStyle = 'white';
 
 				const padding = 1;
@@ -606,7 +554,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		}
 
 		//Borders
-		if (theme == 'light') {
+		if (theme === 'light') {
 			ctx.fillStyle = themes[theme].canvasBoxBorderColor
 			ctx.fillRect(0, 0, boxBorderWidth, logicalSize.current)
 			ctx.fillRect(0, 0, logicalSize.current, boxBorderWidth)
@@ -621,7 +569,52 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 				ctx.fillRect(boxBorderWidth, cellPositions.current[i] + squareSize.current, logicalSize.current - boxBorderWidth * 2, boxBorderWidth)
 			}
 		}
-	}
+	}, [theme, accentColor, boxBorderWidthFactor, game, lockedInput, nSquares, paused, showLinks, showSelectedCell]);
+
+	const resizeCanvas = useCallback(() => {
+		if (!canvasRef.current) return
+
+		logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
+		canvasRef.current.width = logicalSize.current
+		canvasRef.current.height = logicalSize.current
+
+		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
+		const numberOfBoxBorders = (Math.floor(nSquares / 3) + 1)
+		const numberOfCellBorders = nSquares + 1 - numberOfBoxBorders
+		const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
+		squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / nSquares)
+		const previousLogicalSize = logicalSize.current
+		logicalSize.current = squareSize.current * nSquares + totalBorderThickness
+		canvasPadding.current = Math.floor((previousLogicalSize - logicalSize.current) / 2)
+
+		//Cell and value positions
+
+		let newCellPositions = []
+		let newValuePositions = []
+
+		let pos = boxBorderWidth
+		for (let i = 0; i < nSquares; i++) {
+			newCellPositions.push(pos)
+			newValuePositions.push(pos + squareSize.current / 2)
+			pos += squareSize.current + cellBorderWidth
+			if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
+		}
+
+		//Candidate positions
+		let newNoteDeltas = []
+
+		const notePaddingH = game.mode === 'classic' ? squareSize.current * 0.2 : squareSize.current * 0.28
+		const notePaddingTop = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.34
+		const notePaddingBottom = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.22
+
+		for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
+
+		cellPositions.current = newCellPositions
+		valuePositions.current = newValuePositions
+		noteDeltas.current = newNoteDeltas
+
+		renderFrame()
+	}, [renderFrame, boxBorderWidthFactor, game.mode, nSquares]);
 
     useEffect(() => {
 		updateColors();
@@ -629,9 +622,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 			resizeCanvas();
 
 			const resizeObserver = new ResizeObserver((entries) => {
-				for (const entry of entries) {
-					resizeCanvas();
-				}
+				resizeCanvas();
 			})
 
 			resizeObserver.observe(canvasRef.current);
@@ -640,7 +631,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 				resizeObserver.disconnect();
 			}
 		}
-	}, []);
+	}, [updateColors, resizeCanvas]);
 
 	useEffect(() => {
 		if (nSquares > 3) addAnimations([{ type: 'fadein_long' }])
@@ -659,7 +650,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		updateColors()
 		renderFrame()
 		// eslint-disable-next-line
-	}, [theme])
+	}, [theme, updateColors, renderFrame]);
 
     /*useEffect(() => {
         lockedInputRef.current = lockedInput;

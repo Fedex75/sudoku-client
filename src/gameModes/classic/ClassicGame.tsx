@@ -1,10 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import GameHandler from "../../utils/GameHandler";
 import Numpad from "../../components/numpad/Numpad";
 import ClassicCanvas from "./ClassicCanvas";
 import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../../utils/DataTypes";
 import { Navigate } from "react-router";
-import { AccentColor } from "../../utils/Colors";
+import { AccentColor, ColorName } from "../../utils/Colors";
 import SettingsHandler from "../../utils/SettingsHandler";
 import { isTouchDevice } from "../../utils/isTouchDevice";
 
@@ -20,7 +20,10 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	const [noteDragMode, setNoteDragMode] = useState<boolean | null>(null);
 	const [showLinks, setShowLinks] = useState(false);
 	const [lockedInput, setLockedInput] = useState(0);
-	const [showColors, setShowColors] = useState(false);
+
+	const [enableHint, setEnableHint] = useState(false);
+	const [enableErase, setEnableErase] = useState(false);
+	const [enableUndo, setEnableUndo] = useState(false);
 
 	const [colorMode, setColorMode] = useState(false);
 	const [selectMode, setSelectMode] = useState(false);
@@ -55,7 +58,7 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 		if (selectMode){
 			GameHandler.game.selectCell(coords);
 		} else if (type === 'tertiary'){
-			handleSetColor(coords);
+			handleSetColor([coords]);
 		} else {
 			if (lockedInput === 0){
 				GameHandler.game.selectedCells = [coords];
@@ -92,7 +95,7 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 			}
 		}
 
-		updatePossibleValues();
+		updateNumpadButtons();
 
 		if (animations.length > 0){
 			canvasRef.current?.doAnimations(animations);
@@ -107,14 +110,14 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 
 		GameHandler.game.popBoard();
 		canvasRef.current.stopAnimations();
-		updatePossibleValues();
+		updateNumpadButtons();
 		setRender(r => r === 100 ? 0 : r + 1);
 	}
 
 	function onErase() {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return;
 		GameHandler.game.erase(GameHandler.game.selectedCells);
-		updatePossibleValues();
+		updateNumpadButtons();
 		canvasRef.current.stopAnimations();
 		setRender(r => r === 100 ? 0 : r + 1);
 	}
@@ -124,7 +127,17 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	}
 
 	function onHint() {
+		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
 
+		let animations = GameHandler.game.hint(GameHandler.game.selectedCells)
+		updateNumpadButtons()
+
+		if (animations.length > 0){
+			canvasRef.current.doAnimations(animations)
+			if (animations[0].type === 'board') handleComplete()
+		}
+
+		setRender(r => r === 100 ? 0 : r + 1);
 	}
 
 	function onMagicWand() {
@@ -154,11 +167,12 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	}
 
 	function onColor() {
-		setShowColors(c => !c);
+		setColorMode(c => !c);
 	}
 
-	function onColorButtonClick() {
-
+	function onColorButtonClick(color: ColorName, type: MouseButtonType) {
+		if (!GameHandler.game) return;
+		handleSetColor(GameHandler.game.selectedCells, color);
 	}
 
 	function onNumpadButtonClick(number: number, type: MouseButtonType) {
@@ -176,7 +190,7 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 				}
 			}
 		} else setLockedInput(li => li === number ? 0 : number);
-		updatePossibleValues();
+		updateNumpadButtons();
 
 		if (animations.length > 0){
 			canvasRef.current.doAnimations(animations);
@@ -186,17 +200,13 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 		setRender(r => r === 100 ? 0 : r + 1);
 	}
 
-	function handleSetColor(coords: CellCoordinates, color = accentColor){
+	function handleSetColor(coords: CellCoordinates[], color: ColorName = 'default'){
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return;
-
-		const cell = GameHandler.game.get(coords);
-		//if (cell.value === 0 && cell.notes.length > 1){
-		GameHandler.game.setColor(coords, cell.color !== color ? color : 'default');
+		GameHandler.game.setColor(coords, color);
 		canvasRef.current.renderFrame();
-		//}
 	}
 
-	function updatePossibleValues(){
+	const updateNumpadButtons = useCallback(() => {
 		if (!GameHandler.game) return;
 
 		let newPossibleValues: number[] = [];
@@ -210,15 +220,37 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 
 		setPossibleValues(newPossibleValues);
 		setCompletedNumbers(GameHandler.game.completedNumbers);
-	}
+
+		setEnableUndo(GameHandler.game.history.length > 0);
+
+		let anySelectedCellsNotEmpty = false;
+		for (const c of GameHandler.game.selectedCells){
+			const cell = GameHandler.game.get(c);
+			if (cell.color !== 'default' || cell.notes.length > 0 || cell.value !== 0){
+				anySelectedCellsNotEmpty = true;
+				break;
+			}
+		}
+		setEnableErase(anySelectedCellsNotEmpty);
+
+		let anySelectedCellsNotClue = false;
+		for (const c of GameHandler.game.selectedCells){
+			const cell = GameHandler.game.get(c);
+			if (!cell.clue){
+				anySelectedCellsNotClue = true;
+				break;
+			}
+		}
+		setEnableHint(anySelectedCellsNotClue);
+	}, [noteMode]);
 
 	useEffect(() => {
-		updatePossibleValues();
-	}, []);
+		updateNumpadButtons();
+	}, [updateNumpadButtons]);
 
 	useEffect(() => {
 		canvasRef.current?.renderFrame();
-	}, [render, lockedInput, showColors, showLinks, selectMode]);
+	}, [render, lockedInput, showLinks, selectMode]);
 
 	if (!GameHandler.game) return <Navigate to="/"></Navigate>;
 
@@ -238,12 +270,14 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 				onColorButtonClick={onColorButtonClick}
 				onNumpadButtonClick={onNumpadButtonClick}
 
+				enableErase={enableErase}
+				enableHint={enableHint}
+				enableUndo={enableUndo}
+
 				noteHighlighted={noteMode}
 				magicWandHighlighted={showLinks}
 				selectHighlighted={selectMode}
-				colorOn={showColors}
-
-				colorMode={false}
+				colorMode={colorMode}
 
 				lockedInput={lockedInput}
 				possibleValues={possibleValues}

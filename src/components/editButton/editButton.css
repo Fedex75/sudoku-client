@@ -27,3 +27,7 @@
 .edit-buttons__button__icon {
   font-size: 35px;
 }
+
+.edit-buttons__button.disabled {
+  filter: brightness(0.3);
+}

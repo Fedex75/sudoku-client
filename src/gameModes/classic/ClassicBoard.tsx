@@ -445,12 +445,21 @@ export default class ClassicBoard {
 		return links
 	}
 
-	setColor(coords: CellCoordinates, newColor: ColorName){
+	setColor(coords: CellCoordinates[], newColor: ColorName){
 		if (GameHandler.complete) return;
 
 		this.pushBoard();
-		this.board[coords.x][coords.y].color = newColor;
-		//this.saveToLocalStorage()
+		let color: ColorName = 'default';
+		for (const c of coords){
+			if (this.board[c.x][c.y].color !== newColor){
+				color = newColor;
+				break;
+			}
+		}
+		for (const c of coords){
+			this.board[c.x][c.y].color = color;
+		}
+		this.saveToLocalStorage();
 	}
 
 	clearColors(){

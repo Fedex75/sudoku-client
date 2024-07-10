@@ -1,33 +1,33 @@
 import React from 'react';
 import './editButton.css'
-
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
+import { isTouchDevice } from '../../utils/isTouchDevice';
 
 type Props = {
 	onClick: () => void;
 	highlight?: boolean;
 	yellow?: boolean;
 	icon: React.ReactNode;
+	enabled?: boolean;
 }
 
-function EditButton({onClick, highlight = false, yellow = false, icon}: Props): React.JSX.Element {
+function EditButton({onClick, highlight = false, yellow = false, icon, enabled = true}: Props): React.JSX.Element {
 	return (
 		<div
-			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''}`}
+			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${enabled ? '' : 'disabled'}`}
 			onTouchStart={e => {
-				e.stopPropagation()
-				onClick()
+				e.stopPropagation();
+				onClick();
 			}}
 			onClick={e => {
-				e.stopPropagation()
-				if (isTouchDevice) return
-				onClick()
+				e.stopPropagation();
+				if (isTouchDevice) return;
+				if (enabled) onClick();
 			}}
 			onContextMenu={e => {
-				e.stopPropagation()
-				e.preventDefault()
-				if (isTouchDevice) return
-				onClick()
+				e.stopPropagation();
+				e.preventDefault();
+				if (isTouchDevice) return;
+				if (enabled) onClick();
 			}}
 		>
 			{icon}
