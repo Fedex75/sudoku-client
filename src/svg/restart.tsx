@@ -1,15 +1,10 @@
 import React from "react";
-import { resize } from "./resize";
 
-export default function SVGRestart({ stroke = '#000', fill = '#000', width = 0, height = 0, className = 'icon' }): React.JSX.Element {
-  const [w, h] = resize(64.556, 68.963, width, height);
-
+export default function SVGRestart({ stroke = '#000', className = 'icon' }): React.JSX.Element {
   return (
     <svg
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      width={w}
-      height={h}
       version="1.1"
       viewBox="0 0 17.08 18.247"
       xmlSpace="preserve"

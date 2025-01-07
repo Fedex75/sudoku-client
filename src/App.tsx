@@ -41,7 +41,7 @@ function App() {
 	}, []);
 
   return (
-		<div className='app' data-theme={theme} data-accent-color={accentColor} onClick={()=>{}}>
+		<div id='app' className='app' data-theme={theme} data-accent-color={accentColor} onClick={()=>{}}>
 			<Routes>
 				<Route path="/" element={<Navigate to="/home" replace />} />
 				<Route path="/home/*" element={<Home theme={theme} accentColor={accentColor} />} />

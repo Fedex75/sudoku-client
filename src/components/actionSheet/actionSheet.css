@@ -2,7 +2,7 @@
   display: flex;
   flex-flow: column;
   align-items: center;
-  width: calc(100vw - 20px);
+  width: 100%;
   max-width: 450px;
 }
 

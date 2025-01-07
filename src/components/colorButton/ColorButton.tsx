@@ -6,7 +6,7 @@ import { ColorDefinitions, ColorName } from '../../utils/Colors'
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
 type Props = {
-    onClick: (color: string, type: 'primary' | 'secondary') => void;
+    onClick: (color: ColorName, type: 'primary' | 'secondary') => void;
     color: ColorName;
     locked?: boolean;
 }

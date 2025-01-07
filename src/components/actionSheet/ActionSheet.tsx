@@ -1,24 +1,51 @@
 import './actionSheet.css'
-import ActionSheetReact, { ActionSheetRef } from 'actionsheet-react'
 import { ActionSheetButton } from '..'
-import { MutableRefObject, PropsWithChildren } from 'react'
+import {Sheet} from 'react-modal-sheet'
+import { PropsWithChildren } from 'react'
 
 type Props = {
-	reference: MutableRefObject<ActionSheetRef | undefined>;
+	isOpen: boolean;
 	title?: string | null;
 	cancelTitle?: string | null;
 	cancelColor?: string;
 	onClose?: () => void;
-	showHandle?: boolean;
+	buttonsMode?: boolean;
 }
 
-export default function ActionSheet({reference, title = null, cancelTitle = null, cancelColor = 'var(--red)', onClose = () => {}, showHandle = false, children}: PropsWithChildren<Props>){
+export default function ActionSheet({isOpen, title = null, cancelTitle = null, cancelColor = 'var(--red)', onClose = () => {}, buttonsMode = false, children}: PropsWithChildren<Props>){
 	function cancel(){
-		reference.current?.close();
 		onClose();
 	}
 
 	return (
+		<Sheet
+			isOpen={isOpen}
+			onClose={onClose}
+			dragVelocityThreshold={100}
+			dragCloseThreshold={0.1}
+			detent='content-height'
+			mountPoint={document.getElementById('app')!}
+		>
+			<Sheet.Container style={{backgroundColor: 'transparent'}}>
+				{ !buttonsMode ? <Sheet.Header  /> : null }
+				<Sheet.Content className={`action-sheet__wrapper ${cancelTitle ? 'cancel' : ''}`} style={{height: 'fit-content !important', paddingBottom: buttonsMode ? '20px' : 0}}>
+					<div className='action-sheet__list'>
+						{
+							title !== null ?
+							<div className='action-sheet__list__title'>
+								{title}
+							</div> : null
+						}
+						{children}
+					</div>
+					{cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={cancel} color={cancelColor} /> : null}
+				</Sheet.Content>
+			</Sheet.Container>
+			<Sheet.Backdrop onTap={() => {onClose()}} />
+		</Sheet>
+	)
+
+	/*return (
 		<ActionSheetReact
 			ref={reference}
 			sheetStyle={{
@@ -53,5 +80,5 @@ export default function ActionSheet({reference, title = null, cancelTitle = null
 				{cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={cancel} color={cancelColor} /> : null}
 			</div>
 		</ActionSheetReact>
-	)
+	)*/
 }

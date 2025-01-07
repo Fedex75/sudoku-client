@@ -1,15 +1,10 @@
 import React from "react";
-import { resize } from "./resize";
 
-export default function SVGImport({ width = 0, height = 0, className = 'icon' }): React.JSX.Element {
-  const [w, h] = resize(64.702, 68.343, width, height);
-
+export default function SVGImport({ className = 'icon' }): React.JSX.Element {
   return (
     <svg
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      width={w}
-      height={h}
       version="1.1"
       viewBox="0 0 21.207 18.468"
       xmlSpace="preserve"

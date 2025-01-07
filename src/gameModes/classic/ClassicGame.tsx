@@ -1,12 +1,16 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import GameHandler from "../../utils/GameHandler";
 import Numpad from "../../components/numpad/Numpad";
 import ClassicCanvas from "./ClassicCanvas";
 import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../../utils/DataTypes";
 import { Navigate } from "react-router";
-import { AccentColor } from "../../utils/Colors";
+import { AccentColor, ColorName } from "../../utils/Colors";
 import SettingsHandler from "../../utils/SettingsHandler";
 import { isTouchDevice } from "../../utils/isTouchDevice";
+import MagicWandSVG from "../../svg/magic_wand";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLink } from "@fortawesome/free-solid-svg-icons";
+import ColorCircleSVG from "../../svg/color_circle";
 
 type Props = {
 	theme: ThemeName;
@@ -20,10 +24,11 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	const [noteDragMode, setNoteDragMode] = useState<boolean | null>(null);
 	const [showLinks, setShowLinks] = useState(false);
 	const [lockedInput, setLockedInput] = useState(0);
-	const [showColors, setShowColors] = useState(false);
-
 	const [colorMode, setColorMode] = useState(false);
-	const [selectMode, setSelectMode] = useState(false);
+
+	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'clearColors'>();
+
+	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false);
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<CellCoordinates | null>(null);
 
 	const [possibleValues, setPossibleValues] = useState<number[]>([]);
@@ -33,59 +38,53 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 
 	const canvasRef = useRef<CanvasRef>(null);
 
-	useImperativeHandle(ref, () => ({
-		timerClick() {
-			canvasRef.current?.stopAnimations()
-			if (paused) {
-				canvasRef.current?.doAnimations([{ type: 'fadein' }])
-			} else {
-				canvasRef.current?.doAnimations([{ type: 'fadeout' }])
-			}
-		}
-	}));
-
-	function onCanvasClick(coords: CellCoordinates, type: MouseButtonType, hold: boolean) {
+	function onCanvasClick(coords: CellCoordinates[], type: MouseButtonType, hold: boolean) {
 		if (!GameHandler.game || !canvasRef.current) return;
 
 		let animations: BoardAnimation[] = [];
 
-		const cell = GameHandler.game.get(coords);
-		const cellPossibleValues = GameHandler.game.possibleValues[coords.x][coords.y];
+		if (coords.length === 2){
+			setSelectMode(true);
+			GameHandler.game.selectBox(coords[0], coords[1]);
+		} else if (coords.length === 1){
+			const cell = GameHandler.game.get(coords[0]);
+			const cellPossibleValues = GameHandler.game.possibleValues[coords[0].x][coords[0].y];
 
-		if (selectMode){
-			GameHandler.game.selectCell(coords);
-		} else if (type === 'tertiary'){
-			handleSetColor(coords);
-		} else {
-			if (lockedInput === 0){
-				GameHandler.game.selectedCells = [coords];
-				if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') setLockedInput(cell.value);
+			if (selectMode){
+				GameHandler.game.selectCell(coords[0]);
+			} else if (type === 'tertiary'){
+				handleSetColor(coords[0]);
 			} else {
-				if (hold){
-					if (cellPossibleValues.includes(lockedInput)){
-						if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)){
-							if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInBox(coords, lockedInput)) [, animations] = GameHandler.game.setNote([coords], lockedInput);
-						} else {
-							if (cell.value === 0) animations = GameHandler.game.setValue([coords], lockedInput);
-						}
-					}
+				if (lockedInput === 0){
+					GameHandler.game.selectedCells = [coords[0]];
+					if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock && GameHandler.game.mode === 'classic') setLockedInput(cell.value);
 				} else {
-					GameHandler.game.selectedCells = [coords];
-					if (cell.value > 0){
-						setLockedInput(li => cell.value === li ? 0 : cell.value);
-					} else {
-						if ((noteMode || type === 'secondary')){
-							if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1){
-								if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue([coords], lockedInput);
+					if (hold){
+						if (cellPossibleValues.includes(lockedInput)){
+							if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)){
+								if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInBox(coords[0], lockedInput)) [, animations] = GameHandler.game.setNote(coords, lockedInput);
 							} else {
-								if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)){
-									let newNoteMode;
-									[newNoteMode, animations] = GameHandler.game.setNote([coords], lockedInput);
-									setNoteDragMode(newNoteMode);
-								}
+								if (cell.value === 0) animations = GameHandler.game.setValue([coords[0]], lockedInput);
 							}
+						}
+					} else {
+						GameHandler.game.selectedCells = coords;
+						if (cell.value > 0){
+							setLockedInput(li => cell.value === li ? 0 : cell.value);
 						} else {
-							if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue([coords], lockedInput);
+							if ((noteMode || type === 'secondary')){
+								if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1){
+									if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput);
+								} else {
+									if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)){
+										let newNoteMode;
+										[newNoteMode, animations] = GameHandler.game.setNote(coords, lockedInput);
+										setNoteDragMode(newNoteMode);
+									}
+								}
+							} else {
+								if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput);
+							}
 						}
 					}
 				}
@@ -128,14 +127,15 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	}
 
 	function onMagicWand() {
-		if (selectMode){
-			//Auto color selected cells
-			//This is actually a bit more involved than it seems
-			//I should change the color system so that cells can be grouped together
-			//Cells that are painted at the same time should form a group
-			//This means they can be locked and auto-solved if permitted
-		} else {
-			setShowLinks(s => !s);
+		if (GameHandler.complete || !GameHandler.game) return;
+		switch (magicWandMode){
+			case 'links':
+				setShowLinks(l => !l);
+				break;
+			case 'clearColors':
+				GameHandler.game.clearColors();
+				setRender(r => r === 100 ? 0 : r + 1);
+				break;
 		}
 	}
 
@@ -154,11 +154,19 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 	}
 
 	function onColor() {
-		setShowColors(c => !c);
+		setColorMode(c => !c);
 	}
 
-	function onColorButtonClick() {
+	function onColorButtonClick(color: ColorName, type: "primary" | "secondary") {
+		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return;
 
+		if (type === 'primary'){
+			if (colorMode){
+				for (const c of GameHandler.game.selectedCells){
+					handleSetColor(c, color);
+				}
+			}
+		}
 	}
 
 	function onNumpadButtonClick(number: number, type: MouseButtonType) {
@@ -186,7 +194,7 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 		setRender(r => r === 100 ? 0 : r + 1);
 	}
 
-	function handleSetColor(coords: CellCoordinates, color = accentColor){
+	function handleSetColor(coords: CellCoordinates, color: ColorName = accentColor){
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return;
 
 		const cell = GameHandler.game.get(coords);
@@ -196,29 +204,46 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 		//}
 	}
 
-	function updatePossibleValues(){
+	const updatePossibleValues = useCallback(() => {
 		if (!GameHandler.game) return;
 
 		let newPossibleValues: number[] = [];
-		for (const c of GameHandler.game.selectedCells){
-			if (noteMode && GameHandler.game.get(c).value === 0){
-				for (const v of GameHandler.game.possibleValues[c.x][c.y]){
-					if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v);
+		if (SettingsHandler.settings.showPossibleValues){
+			for (const c of GameHandler.game.selectedCells){
+				if (GameHandler.game.get(c).value === 0){
+					for (const v of GameHandler.game.possibleValues[c.x][c.y]){
+						if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v);
+					}
 				}
+			}
+		} else {
+			for (let i = 1; i <= GameHandler.game.nSquares; i++){
+				newPossibleValues.push(i);
 			}
 		}
 
 		setPossibleValues(newPossibleValues);
 		setCompletedNumbers(GameHandler.game.completedNumbers);
-	}
-
-	useEffect(() => {
-		updatePossibleValues();
 	}, []);
 
 	useEffect(() => {
+		updatePossibleValues();
+	}, [updatePossibleValues]);
+
+	useEffect(() => {
 		canvasRef.current?.renderFrame();
-	}, [render, lockedInput, showColors, showLinks, selectMode]);
+	}, [render, lockedInput, showLinks, selectMode]);
+
+	useEffect(() => {
+		if (!GameHandler.game) return;
+		if (colorMode){
+			setMagicWandMode('clearColors');
+		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)){
+			setMagicWandMode('links')
+		} else {
+			setMagicWandMode('disabled');
+		}
+	});
 
 	if (!GameHandler.game) return <Navigate to="/"></Navigate>;
 
@@ -240,10 +265,16 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 
 				noteHighlighted={noteMode}
 				magicWandHighlighted={showLinks}
+				magicWandIcon={magicWandMode === 'disabled' ? <MagicWandSVG /> : (magicWandMode === 'links' ? <FontAwesomeIcon icon={faLink} fontSize={30} color="var(--primaryIconColor)" /> : <ColorCircleSVG />)}
+				magicWandDisabled={magicWandMode === 'disabled'}
 				selectHighlighted={selectMode}
-				colorOn={showColors}
 
-				colorMode={false}
+				undoDisabled={GameHandler.complete || GameHandler.game.history.length === 0}
+				eraseDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every(c => (GameHandler.game!.get(c).clue || (GameHandler.game!.get(c).value === 0 && GameHandler.game!.get(c).notes.length === 0)))}
+				hintDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every(c => GameHandler.game!.get(c).clue)}
+				colorDisabled={false}
+
+				colorMode={colorMode}
 
 				lockedInput={lockedInput}
 				possibleValues={possibleValues}

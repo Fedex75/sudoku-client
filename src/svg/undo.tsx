@@ -1,15 +1,10 @@
 import React from "react";
-import { resize } from "./resize";
 
-export default function UndoSVG({width = 0, height = 0, className = 'icon'}): React.JSX.Element {
-    const [w, h] = resize(70.459, 58.38, width, height);
-
+export default function UndoSVG({className = 'icon'}): React.JSX.Element {
     return (
         <svg
             className={className}
             xmlns="http://www.w3.org/2000/svg"
-            width={w}
-            height={h}
             version="1.1"
             viewBox="0 0 18.642 15.446"
             xmlSpace="preserve"

@@ -1,15 +1,10 @@
 import React from "react";
-import { resize } from "./resize";
 
-export default function BulbSVG({ width = 0, height = 0, className = 'icon' }): React.JSX.Element {
-  const [w, h] = resize(56.631, 80.9, width, height);
-
+export default function BulbSVG({ className = 'icon' }): React.JSX.Element {
   return (
     <svg
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      width={w}
-      height={h}
       version="1.1"
       viewBox="0 0 14.984 21.405"
       xmlSpace="preserve"
@@ -28,7 +23,7 @@ export default function BulbSVG({ width = 0, height = 0, className = 'icon' }): 
           transform="matrix(1.07024 0 0 1.07024 4.235 28.385)"
         >
           <path
-            fill='var(--secondaryIconColor)'
+            fill='var(--primaryIconColor)'
             fillOpacity="1"
             stroke='var(--secondaryIconColor)'
             strokeLinecap="round"

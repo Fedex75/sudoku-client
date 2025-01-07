@@ -1,12 +1,13 @@
-import { Ref, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import ClassicBoard from "./ClassicBoard";
-import { BoardAnimation, CanvasRef, CellCoordinates, Coordinates, DigitChar, MouseButtonType, ThemeName } from "../../utils/DataTypes";
+import { BoardAnimation, CanvasRef, Cell, CellCoordinates, Coordinates, DigitChar, MouseButtonType, ThemeName } from "../../utils/DataTypes";
 import { AccentColor } from "../../utils/Colors";
 import SettingsHandler from "../../utils/SettingsHandler";
 //@ts-ignore
 import o9n from 'o9n';
 import { isTouchDevice } from "../../utils/isTouchDevice";
 import { indexOfCoordsInArray } from "../../utils/CoordsUtils";
+import { animations } from "motion/dist/react";
 
 const animationLengths = {
 	row: 750,
@@ -23,7 +24,6 @@ const roundedRatio = Math.round(window.devicePixelRatio)
 const cellBorderWidth = roundedRatio === 1 ? 2 : 3
 const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 1 : 3
-const cageLineWidth = roundedRatio === 1 ? 2 : 2
 
 const themes = {
 	light: {
@@ -64,6 +64,45 @@ const themes = {
 	}
 }
 
+function updateColors(theme: ThemeName){
+	const newColors = {
+		default: themes[theme].canvasLightDefaultCellColor,
+		red: '#fc5c65',
+		orange: '#fd9644',
+		yellow: '#fed330',
+		green: '#26de81',
+		blueGreen: '#2bcbba',
+		lightBlue: '#45aaf2',
+		darkBlue: '#2e69f2',
+		purple: '#a55eea'
+	};
+
+	const newDarkColors = {
+		default: themes[theme].canvasDarkDefaultCellColor,
+		red: '#99393d',
+		orange: '#995c29',
+		yellow: '#997e1d',
+		green: '#1a995a',
+		blueGreen: '#1d877d',
+		lightBlue: '#2c6c99',
+		darkBlue: '#315099',
+		purple: '#6b3d99'
+	};
+
+	const newSelectedCellColors = theme === 'light' ? {
+		red: '#fcbdc0',
+		orange: '#fcdabd',
+		yellow: '#ffe999',
+		green: '#a6dec2',
+		blueGreen: '#8fccc6',
+		lightBlue: '#b6d9f2',
+		darkBlue: '#b2c4ed',
+		purple: '#d3bceb'
+	} : newDarkColors;
+
+	return [newColors, newDarkColors, newSelectedCellColors];
+}
+
 const solutionColors = {
 	red: '#fc7e84',
 	orange: '#fcb77e',
@@ -80,12 +119,6 @@ const k = 0.2
 function brightness(x: number, p: number, q: number, l: number) {
 	let t = (-q - l) * p + l
 	return Math.max(0, k * (1 - Math.abs(2 / l * (x + t) - 1)))
-}
-
-function dashedLine(ctx: CanvasRenderingContext2D, c1: Coordinates, c2: Coordinates, ratio: number) {
-	const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
-	if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
-	else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
 }
 
 const numberPaths: Record<DigitChar, string> = {
@@ -140,21 +173,21 @@ function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: number, y: n
 }
 
 type Props = {
-    onClick?: (coords: CellCoordinates, type: MouseButtonType, hold: boolean) => void;
+    onClick?: (coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => void;
     showLinks?: boolean;
     game: ClassicBoard;
     lockedInput?: number;
     theme: ThemeName;
     accentColor: AccentColor;
     paused?: boolean;
-    noTouch?: boolean;
+    notPlayable?: boolean;
     nSquares: number;
     showSelectedCell?: boolean;
     style?: React.CSSProperties;
     boxBorderWidthFactor?: number;
 }
 
-const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, noTouch = false, nSquares, showSelectedCell = true, style, boxBorderWidthFactor = 0.01}: Props, ref: Ref<CanvasRef>) => {
+const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, notPlayable = false, nSquares, showSelectedCell = true, style, boxBorderWidthFactor = 0.01}: Props, ref: Ref<CanvasRef>) => {
     const logicalSize = useRef(0);
 	const canvasPadding = useRef(0);
 	const squareSize = useRef(0);
@@ -171,16 +204,6 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 	const selectedCellColors = useRef<Record<string, string>>();
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    function addAnimations(data: BoardAnimation[]) {
-		data.forEach(animation => {
-			currentAnimations.current.push({
-				data: animation,
-				startTime: null
-			})
-		})
-		requestAnimationFrame((timestamp) => { doAnimation(timestamp) })
-	}
-
     useImperativeHandle(ref, () => ({
 		renderFrame() {
             renderFrame();
@@ -193,237 +216,21 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		}
 	}));
 
-    function resizeCanvas() {
-		if (!canvasRef.current) return
-
-		logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
-		canvasRef.current.width = logicalSize.current
-		canvasRef.current.height = logicalSize.current
-
-		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
-		const numberOfBoxBorders = (Math.floor(nSquares / 3) + 1)
-		const numberOfCellBorders = nSquares + 1 - numberOfBoxBorders
-		const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
-		squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / nSquares)
-		const previousLogicalSize = logicalSize.current
-		logicalSize.current = squareSize.current * nSquares + totalBorderThickness
-		canvasPadding.current = Math.floor((previousLogicalSize - logicalSize.current) / 2)
-
-		//Cell and value positions
-
-		let newCellPositions = []
-		let newValuePositions = []
-
-		let pos = boxBorderWidth
-		for (let i = 0; i < nSquares; i++) {
-			newCellPositions.push(pos)
-			newValuePositions.push(pos + squareSize.current / 2)
-			pos += squareSize.current + cellBorderWidth
-			if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
-		}
-
-		//Candidate positions
-		let newNoteDeltas = []
-
-		const notePaddingH = game.mode === 'classic' ? squareSize.current * 0.2 : squareSize.current * 0.28
-		const notePaddingTop = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.34
-		const notePaddingBottom = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.22
-
-		for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
-
-		cellPositions.current = newCellPositions
-		valuePositions.current = newValuePositions
-		noteDeltas.current = newNoteDeltas
-
-		renderFrame()
-	}
-
-    function updateColors() {
-		colors.current = {
-			default: themes[theme].canvasLightDefaultCellColor,
-			red: '#fc5c65',
-			orange: '#fd9644',
-			yellow: '#fed330',
-			green: '#26de81',
-			blueGreen: '#2bcbba',
-			lightBlue: '#45aaf2',
-			darkBlue: '#2e69f2',
-			purple: '#a55eea'
-		}
-
-		darkColors.current = {
-			default: themes[theme].canvasDarkDefaultCellColor,
-			red: '#99393d',
-			orange: '#995c29',
-			yellow: '#997e1d',
-			green: '#1a995a',
-			blueGreen: '#1d877d',
-			lightBlue: '#2c6c99',
-			darkBlue: '#315099',
-			purple: '#6b3d99'
-		}
-
-		selectedCellColors.current = theme === 'light' ? {
-			red: '#fcbdc0',
-			orange: '#fcdabd',
-			yellow: '#ffe999',
-			green: '#a6dec2',
-			blueGreen: '#8fccc6',
-			lightBlue: '#b6d9f2',
-			darkBlue: '#b2c4ed',
-			purple: '#d3bceb'
-		} : darkColors.current
-	}
-
-    function doAnimation(timestamp: number) {
-		//Init colors.current
-		animationColors.current = []
-		for (let x = 0; x < nSquares; x++) {
-			animationColors.current.push(Array(nSquares).fill(''))
-		}
-
-		let i = 0
-
-		while (i < currentAnimations.current.length) {
-			const animation = currentAnimations.current[i]
-			if (animation.startTime === null) animation.startTime = timestamp
-			const progress = (timestamp - animation.startTime) / animationLengths[animation.data.type]
-
-			if (progress < 1) {
-				switch (animation.data.type) {
-					case 'row':
-						for (let x = 0; x < nSquares; x++) animationColors.current[x][animation.data.center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - x), progress, 8, 4)})`
-						break
-					case 'col':
-						for (let y = 0; y < nSquares; y++) animationColors.current[animation.data.center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
-						break
-					case 'box':
-						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.boxX * 3 + x][animation.data.boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
-						break
-					case 'board':
-						for (let x = 0; x < nSquares; x++) for (let y = 0; y < nSquares; y++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`
-						break
-					case 'fadein':
-					case 'fadein_long':
-						animationGammas.current = []
-                        for (let y = 0; y < nSquares; y++) {
-                            const gamma = Math.min(Math.max((y - 2 * progress * (nSquares - 1)) / (nSquares - 1) + 1, 0), 1)
-                            for (let x = 0; x < nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
-                            animationGammas.current.push(gamma)
-                        }
-						break
-					case 'fadeout':
-						animationGammas.current = []
-						for (let y = 0; y < nSquares; y++) {
-							const gamma = Math.min(Math.max((y - 2 * progress * (nSquares - 1)) / (-nSquares + 1), 0), 1)
-							for (let x = 0; x < nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
-							animationGammas.current.push(gamma)
-						}
-						break
-					default:
-						break
-				}
-				i++
-			} else {
-				currentAnimations.current.splice(i, 1)
-			}
-		}
-
-		renderFrame()
-
-		if (currentAnimations.current.length > 0) {
-			requestAnimationFrame((ts) => { doAnimation(ts) })
-		} else {
-			animationColors.current = null
-			animationGammas.current = null
-			renderFrame()
-		}
-	}
-
-    function screenCoordsToBoardCoords(clientX: number, clientY: number) {
-		if (!canvasRef.current) return;
-        const rect = canvasRef.current.getBoundingClientRect();
-		const clickX = (clientX - rect.left) / canvasRef.current.offsetWidth * logicalSize.current;
-		const clickY = (clientY - rect.top) / canvasRef.current.offsetHeight * logicalSize.current;
-		for (let x = 0; x < nSquares; x++) {
-			if (clickX <= cellPositions.current[x] + squareSize.current) {
-				for (let y = 0; y < nSquares; y++) {
-					if (clickY <= cellPositions.current[y] + squareSize.current) return { x, y };
-				}
-			}
-		}
-		return null;
-	}
-
-    function handleInputStart(coords: CellCoordinates, type: MouseButtonType) {
-        lastMouseCell.current = coords;
-		onClick(coords, type, false);
-	}
-
-	function onTouchStart(e: React.TouchEvent<HTMLCanvasElement>) {
-		if (!noTouch && !paused) {
-			e.stopPropagation()
-			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY)
-			if (coords) {
-				lastMouseCell.current = coords
-				onClick(coords, 'primary', false)
-			}
-		}
-	}
-
-	function onMouseDown(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-		e.stopPropagation();
-		e.preventDefault();
-		if (!noTouch && !isTouchDevice && !paused) {
-			lastMouseButton.current = e.button === 0 ? 'primary' : (e.button === 2 ? 'secondary' : 'tertiary')
-			const coords = screenCoordsToBoardCoords(e.clientX, e.clientY);
-			if (coords) handleInputStart(coords, lastMouseButton.current);
-		}
-	}
-
-	function handleInputMove(coords: CellCoordinates, type: MouseButtonType) {
-		if (lastMouseCell.current && (lastMouseCell.current.x !== coords.x || lastMouseCell.current.y !== coords.y)) {
-			lastMouseCell.current = coords
-			onClick(coords, type, true)
-		}
-	}
-
-	function onTouchMove(e: React.TouchEvent<HTMLCanvasElement>) {
-		if (!noTouch && !paused) {
-			e.stopPropagation();
-			const coords = screenCoordsToBoardCoords(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
-			if (!noTouch && !paused && coords) handleInputMove(coords, 'primary');
-		}
-	}
-
-	function onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-		e.stopPropagation();
-		if (!noTouch && !isTouchDevice && !paused && lastMouseCell.current && lastMouseButton.current) {
-			const coords = screenCoordsToBoardCoords(e.clientX, e.clientY);
-			if (coords) handleInputMove(coords, lastMouseButton.current);
-		}
-	}
-
-	function onContextMenu(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-		e.preventDefault();
-		e.stopPropagation();
-	}
-
-    function renderFrame() {
+	function renderFrame(){
 		if (canvasRef.current === null) return;
 
 		const ctx = canvasRef.current.getContext('2d');
-        if (!ctx) return;
+		if (!ctx) return;
 		const highlitedCells = game.calculateHighlightedCells(game.selectedCells, lockedInput);
 		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor;
 
 		let selectedCellValue = game.selectedCells.length === 1 ? game.get(game.selectedCells[0]).value : 0;
 
-		//Background
+		// Background
 		ctx.fillStyle = themes[theme].canvasCellBorderColor;
 		ctx.fillRect(0, 0, logicalSize.current, logicalSize.current);
 
-		if (!paused || (currentAnimations.current.length > 0 && currentAnimations.current[0].data.type === 'fadeout')) {
+		if (!paused || (currentAnimations.current.length > 0 && ['fadein', 'fadeout'].includes(currentAnimations.current[0].data.type))) {
 			//Cell background, value, candidates and cage value
 			for (let x = 0; x < nSquares; x++) {
 				for (let y = 0; y < nSquares; y++) {
@@ -432,11 +239,16 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 
 					//Background
 
-					ctx.fillStyle =
+					/*ctx.fillStyle =
 					!showSelectedCell ? colors.current!.default :
 					hasSameValueAsSelected ? themes[theme].canvasSameValueCellBackground : //Cell has same value as selected cell
 					highlitedCells[x][y] ? (darkColors.current!.default) : //Cell in same row or column as any cell with the same value as the selected cell
-					(colors.current!.default); //Default
+					(colors.current!.default); //Default*/
+
+					ctx.fillStyle =
+					!showSelectedCell ? colors.current!.default :
+					(hasSameValueAsSelected || highlitedCells[x][y]) ? darkColors.current![cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
+					(colors.current![cell.color]); //Cell color
 
 					/*if (game.mode === 'killer' && isSelectedCell){
 						ctx.fillStyle =
@@ -461,7 +273,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 						const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
 						ctx.strokeStyle = ctx.fillStyle =
 						isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-						cell.clue ? themes[theme].canvasClueColor :
+						cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
 						solutionColors[accentColor]
 						if (isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
 						drawSVGNumber(ctx, cell.value, valuePositions.current[x], valuePositions.current[y], squareSize.current * 0.55, true, null)
@@ -470,7 +282,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 						for (const n of cell.notes) {
 							const highlightCandidate = (lockedInput === 0 && selectedCellValue === n) || lockedInput === n
 
-							ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) : '#75747c'
+							ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) : (cell.color === 'default' ? '#75747c' : 'black')
 
 							drawSVGNumber(ctx, n, cellPositions.current[x] + noteDeltas.current[n - 1].x, cellPositions.current[y] + noteDeltas.current[n - 1].y, squareSize.current * (game.mode === 'classic' ? 0.2 : 0.16), true, highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors.current![accentColor] : null)
 						}
@@ -522,7 +334,6 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 
 			//Selection
 			for (const c of game.selectedCells){
-				const cell = game.get({ x: c.x, y: c.y });
 				ctx.fillStyle = ctx.strokeStyle = 'white';
 
 				const padding = 1;
@@ -606,7 +417,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		}
 
 		//Borders
-		if (theme == 'light') {
+		if (theme === 'light') {
 			ctx.fillStyle = themes[theme].canvasBoxBorderColor
 			ctx.fillRect(0, 0, boxBorderWidth, logicalSize.current)
 			ctx.fillRect(0, 0, logicalSize.current, boxBorderWidth)
@@ -621,17 +432,213 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 				ctx.fillRect(boxBorderWidth, cellPositions.current[i] + squareSize.current, logicalSize.current - boxBorderWidth * 2, boxBorderWidth)
 			}
 		}
+    }
+
+	function doAnimation(timestamp: number){
+		//Init colors.current
+		animationColors.current = []
+		for (let x = 0; x < nSquares; x++) {
+			animationColors.current.push(Array(nSquares).fill(''))
+		}
+
+		let i = 0
+
+		while (i < currentAnimations.current.length) {
+			const animation = currentAnimations.current[i]
+			if (animation.startTime === null) animation.startTime = timestamp
+			const progress = (timestamp - animation.startTime) / animationLengths[animation.data.type]
+
+			if (progress < 1) {
+				switch (animation.data.type) {
+					case 'row':
+						for (let x = 0; x < nSquares; x++) animationColors.current[x][animation.data.center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - x), progress, 8, 4)})`
+						break
+					case 'col':
+						for (let y = 0; y < nSquares; y++) animationColors.current[animation.data.center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
+						break
+					case 'box':
+						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.boxX * 3 + x][animation.data.boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
+						break
+					case 'board':
+						for (let x = 0; x < nSquares; x++) for (let y = 0; y < nSquares; y++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`
+						break
+					case 'fadein':
+					case 'fadein_long':
+						animationGammas.current = []
+                        for (let y = 0; y < nSquares; y++) {
+                            const gamma = Math.min(Math.max((y - 2 * progress * (nSquares - 1)) / (nSquares - 1) + 1, 0), 1)
+                            for (let x = 0; x < nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            animationGammas.current.push(gamma)
+                        }
+						break
+					case 'fadeout':
+						animationGammas.current = []
+						for (let y = 0; y < nSquares; y++) {
+							const gamma = Math.min(Math.max((y - 2 * progress * (nSquares - 1)) / (-nSquares + 1), 0), 1)
+							for (let x = 0; x < nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
+							animationGammas.current.push(gamma)
+						}
+						break
+					default:
+						break
+				}
+				i++
+			} else {
+				currentAnimations.current.splice(i, 1)
+			}
+		}
+
+		renderFrame()
+
+		if (currentAnimations.current.length > 0) {
+			requestAnimationFrame((ts) => { doAnimation(ts) })
+		} else {
+			animationColors.current = null
+			animationGammas.current = null
+			renderFrame()
+		}
+	}
+
+    function addAnimations(data: BoardAnimation[]){
+		data.forEach(animation => {
+			currentAnimations.current.push({
+				data: animation,
+				startTime: null
+			})
+		})
+		requestAnimationFrame((timestamp) => { doAnimation(timestamp) })
+	}
+
+	function resizeCanvas(){
+		if (!canvasRef.current) return
+
+		logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
+		canvasRef.current.width = logicalSize.current
+		canvasRef.current.height = logicalSize.current
+
+		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
+		const numberOfBoxBorders = (Math.floor(nSquares / 3) + 1)
+		const numberOfCellBorders = nSquares + 1 - numberOfBoxBorders
+		const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
+		squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / nSquares)
+		const previousLogicalSize = logicalSize.current
+		logicalSize.current = squareSize.current * nSquares + totalBorderThickness
+		canvasPadding.current = Math.floor((previousLogicalSize - logicalSize.current) / 2)
+
+		//Cell and value positions
+
+		let newCellPositions = []
+		let newValuePositions = []
+
+		let pos = boxBorderWidth
+		for (let i = 0; i < nSquares; i++) {
+			newCellPositions.push(pos)
+			newValuePositions.push(pos + squareSize.current / 2)
+			pos += squareSize.current + cellBorderWidth
+			if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
+		}
+
+		//Candidate positions
+		let newNoteDeltas = []
+
+		const notePaddingH = game.mode === 'classic' ? squareSize.current * 0.2 : squareSize.current * 0.28
+		const notePaddingTop = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.34
+		const notePaddingBottom = game.mode === 'classic' ? squareSize.current * 0.17 : squareSize.current * 0.22
+
+		for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
+
+		cellPositions.current = newCellPositions
+		valuePositions.current = newValuePositions
+		noteDeltas.current = newNoteDeltas
+
+		renderFrame()
+	}
+
+    function screenCoordsToBoardCoords(clientX: number, clientY: number) {
+		if (!canvasRef.current) return undefined;
+        const rect = canvasRef.current.getBoundingClientRect();
+		const clickX = (clientX - rect.left) / canvasRef.current.offsetWidth * logicalSize.current;
+		const clickY = (clientY - rect.top) / canvasRef.current.offsetHeight * logicalSize.current;
+		for (let x = 0; x < nSquares; x++) {
+			if (clickX <= cellPositions.current[x] + squareSize.current) {
+				for (let y = 0; y < nSquares; y++) {
+					if (clickY <= cellPositions.current[y] + squareSize.current) return { x, y };
+				}
+			}
+		}
+		return undefined;
+	}
+
+    function handleInputStart(coords: CellCoordinates[], type: MouseButtonType) {
+        if (coords.length === 1) lastMouseCell.current = coords[0];
+		onClick(coords, type, false);
+	}
+
+	function onTouchStart(e: React.TouchEvent<HTMLCanvasElement>) {
+		if (!notPlayable && !paused) {
+			e.stopPropagation()
+			let coords: CellCoordinates[] = [];
+			for (let i = 0; i < e.targetTouches.length; i++) {
+				const newCoord = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY);
+				if (newCoord !== undefined) coords.push(newCoord);
+			}
+			if (coords.length > 0) {
+				if (coords.length === 1) lastMouseCell.current = coords[0];
+				onClick(coords, 'primary', false)
+			}
+		}
+	}
+
+	function onMouseDown(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+		e.stopPropagation();
+		e.preventDefault();
+		if (!notPlayable && !isTouchDevice && !paused) {
+			lastMouseButton.current = e.button === 0 ? 'primary' : (e.button === 2 ? 'secondary' : 'tertiary')
+			const coords = screenCoordsToBoardCoords(e.clientX, e.clientY);
+			if (coords) handleInputStart([coords], lastMouseButton.current);
+		}
+	}
+
+	function handleInputMove(coords: CellCoordinates[], type: MouseButtonType) {
+		if (coords.length === 2) onClick(coords, type, false);
+		else if (lastMouseCell.current && coords.length === 1 && (lastMouseCell.current.x !== coords[0].x || lastMouseCell.current.y !== coords[0].y)) {
+			lastMouseCell.current = coords[0]
+			onClick(coords, type, true)
+		}
+	}
+
+	function onTouchMove(e: React.TouchEvent<HTMLCanvasElement>) {
+		if (!notPlayable && !paused) {
+			e.stopPropagation();
+			let coords: CellCoordinates[] = [];
+			for (let i = 0; i < e.targetTouches.length; i++) {
+				const newCoord = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY);
+				if (newCoord !== undefined) coords.push(newCoord);
+			}
+			if (!notPlayable && !paused && coords.length > 0) handleInputMove(coords, 'primary');
+		}
+	}
+
+	function onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+		e.stopPropagation();
+		if (!notPlayable && !isTouchDevice && !paused && lastMouseCell.current && lastMouseButton.current) {
+			const coords = screenCoordsToBoardCoords(e.clientX, e.clientY);
+			if (coords) handleInputMove([coords], lastMouseButton.current);
+		}
+	}
+
+	function onContextMenu(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+		e.preventDefault();
+		e.stopPropagation();
 	}
 
     useEffect(() => {
-		updateColors();
+		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme);
 		if (canvasRef.current) {
 			resizeCanvas();
 
-			const resizeObserver = new ResizeObserver((entries) => {
-				for (const entry of entries) {
-					resizeCanvas();
-				}
+			const resizeObserver = new ResizeObserver(() => {
+				resizeCanvas();
 			})
 
 			resizeObserver.observe(canvasRef.current);
@@ -643,7 +650,8 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 	}, []);
 
 	useEffect(() => {
-		if (nSquares > 3) addAnimations([{ type: 'fadein_long' }])
+		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme);
+		if (!notPlayable) addAnimations([{ type: 'fadein_long' }]);
 
 		window.addEventListener('resize', resizeCanvas, false)
 		o9n.orientation.addEventListener('change', resizeCanvas)
@@ -653,23 +661,25 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 			o9n.orientation.removeEventListener('change', resizeCanvas)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+	}, []);
 
-    useEffect(() => {
-		updateColors()
-		renderFrame()
-		// eslint-disable-next-line
-	}, [theme])
+	useEffect(() => {
+		if (paused){
+			addAnimations([{type: 'fadeout'}])
+		} else {
+			if (currentAnimations.current.length === 0) addAnimations([{type: 'fadein'}])
+		}
+	}, [paused]);
 
-    /*useEffect(() => {
-        lockedInputRef.current = lockedInput;
-        showLinksRef.current = showLinks;
-    }, [lockedInput, showLinks]);*/
+	useEffect(() => {
+		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme);
+		renderFrame();
+	}, [theme]);
 
     return <canvas
         ref={canvasRef}
         className='sudoku-canvas'
-        style={{ ...style, touchAction: (noTouch || paused) ? 'auto' : 'none', boxSizing: 'border-box' }}
+        style={{ ...style, touchAction: (notPlayable || paused) ? 'auto' : 'none', boxSizing: 'border-box' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onContextMenu={onContextMenu}

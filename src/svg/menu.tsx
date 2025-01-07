@@ -1,15 +1,10 @@
 import React from "react";
-import { resize } from "./resize";
 
-export default function SVGMenu({ strokeTop = '#000', strokeBottom = '#000', width = 0, height = 0, className = 'icon' }): React.JSX.Element {
-  const [w, h] = resize(72.952, 34.739, width, height);
-
+export default function SVGMenu({ strokeTop = '#000', strokeBottom = '#000', className = 'icon' }): React.JSX.Element {
   return (
     <svg
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      width={w}
-      height={h}
       version="1.1"
       viewBox="0 0 19.302 9.191"
       xmlSpace="preserve"

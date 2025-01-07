@@ -28,7 +28,7 @@ export default class ClassicBoard {
 		this.id = data.id;
 		this.nSquares = nSquares;
 		this.fullNotation = false;
-		this.selectedCells = [{x: 0, y: 0}];
+		this.selectedCells = [];
 		this.history = [];
 		this.board = [];
 		this.possibleValues = [];
@@ -60,7 +60,7 @@ export default class ClassicBoard {
 
 	initBoard() {
 		//Create game from raw data
-		this.selectedCells = [{x: 0, y: 0}];
+		this.selectedCells = [];
 		this.history = [];
 		this.board = [];
 		this.timer = 0;
@@ -106,7 +106,7 @@ export default class ClassicBoard {
 		}
 
 		for (let x = (c?.x || 0); x <= (c?.x || this.nSquares - 1); x++){
-			for (let y = (c?.x || 0); y <= (c?.y || this.nSquares - 1); y++){
+			for (let y = (c?.y || 0); y <= (c?.y || this.nSquares - 1); y++){
 				const value = this.get({x, y}).value;
 				if (value > 0){
 					const boxX = Math.floor(x / 3)
@@ -161,6 +161,19 @@ export default class ClassicBoard {
 		const index = indexOfCoordsInArray(this.selectedCells, c);
 		if (index === -1) this.selectedCells.push(c);
 		return this.selectedCells = this.selectedCells.filter((_, i) => i !== index);
+	}
+
+	selectBox(c1: CellCoordinates, c2: CellCoordinates){
+		const minX = Math.min(c1.x, c2.x);
+		const maxX = Math.max(c1.x, c2.x);
+		const minY = Math.min(c1.y, c2.y);
+		const maxY = Math.max(c1.y, c2.y);
+		this.selectedCells = [];
+		for (let x = minX; x <= maxX; x++){
+			for (let y = minY; y <= maxY; y++){
+				this.selectedCells.push({x, y});
+			}
+		}
 	}
 
 	onlyAvailableInBox(c: CellCoordinates, n: number){

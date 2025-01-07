@@ -9,7 +9,7 @@
 .game {
   display: grid;
   grid-template-columns: auto;
-  grid-template-rows: auto calc(79vw);
+  grid-template-rows: fit-content(0) auto;
   grid-template-areas:
     "sudoku"
     "numpad";
@@ -122,6 +122,14 @@
   display: flex;
   flex-flow: column;
   gap: 10px;
+}
+
+.sudoku__open-menu-button {
+  width: 25px;
+}
+
+.sudoku__restart-icon {
+  width: 24px;
 }
 
 @media (min-aspect-ratio: 46/89){

@@ -1,19 +1,16 @@
 import './bookmarks.css'
-import { faBookmark, faCheck, faTrashCan, faPlay, faChartSimple } from "@fortawesome/free-solid-svg-icons"
+import { faBookmark, faCheck, faPlay, faChartSimple, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router"
 import { Link } from "react-router-dom";
 import { ActionSheet, ActionSheetButton } from '../../../components'
-import { decodeMissionString } from "../../../utils/Decoder"
 import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import missions from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import ClassicBoard from '../../../gameModes/classic/ClassicBoard'
 import { newGameFromMode } from '../../../gameModes/Common'
 import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
-import { ActionSheetRef } from 'actionsheet-react'
 
 type Props = {
 	theme: ThemeName;
@@ -23,34 +20,33 @@ function Bookmarks({ theme }: Props) {
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
 	const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
 	const [playBookmarkData, setPlayBookmarkData] = useState<Bookmark>()
+	const [clearBookmarksActionSheetIsOpen, setClearBookmarksActionSheetIsOpen] = useState(false)
+	const [removeBookmarkActionSheetIsOpen, setRemoveBookmarkActionSheetIsOpen] = useState(false)
+	const [playBookmarkActionSheetIsOpen, setPlayBookmarkActionSheetIsOpen] = useState(false)
+
 	const navigate = useNavigate()
-
-	const clearBookmarksActionSheetRef = useRef<ActionSheetRef>()
-	const removeBookmarkActionSheetRef = useRef<ActionSheetRef>()
-	const playBookmarkActionSheetRef = useRef<ActionSheetRef>()
-
 	const { t } = useTranslation()
 
 	function handleRemoveBookmark(bm: Bookmark) {
 		setRemoveBookmarkData(bm)
-		removeBookmarkActionSheetRef.current?.open()
+		setRemoveBookmarkActionSheetIsOpen(true)
 	}
 
 	function clearBookmarks() {
 		GameHandler.clearBookmarks()
-		clearBookmarksActionSheetRef.current?.close()
+		setClearBookmarksActionSheetIsOpen(false)
 		setBookmarks([])
 	}
 
 	function handleClearBookmarksClick() {
-		clearBookmarksActionSheetRef.current?.open()
+		setClearBookmarksActionSheetIsOpen(true)
 	}
 
 	function removeBookmark() {
 		if (removeBookmarkData){
 			GameHandler.removeBookmark(removeBookmarkData);
 			setBookmarks(GameHandler.bookmarks);
-			removeBookmarkActionSheetRef.current?.close();
+			setRemoveBookmarkActionSheetIsOpen(false);
 		}
 	}
 
@@ -59,7 +55,7 @@ function Bookmarks({ theme }: Props) {
 			playBookmark(bm)
 		} else {
 			setPlayBookmarkData(bm)
-			playBookmarkActionSheetRef.current?.open()
+			setPlayBookmarkActionSheetIsOpen(true)
 		}
 	}
 
@@ -72,7 +68,10 @@ function Bookmarks({ theme }: Props) {
 
 	return (
 		<div className='home__bookmarks'>
-			<p className='home__section-title'>{t('home.bookmarks')}</p>
+			<div style={{display: 'grid', gridTemplateColumns: 'auto fit-content(0)'}}>
+				<p className='home__section-title'>{t('home.bookmarks')}</p>
+				<FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20}/>
+			</div>
 			{
 				bookmarks.length > 0 ?
 					<div className="bookmarks__wrapper">
@@ -98,7 +97,7 @@ function Bookmarks({ theme }: Props) {
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
 										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											{/*<Canvas game={board} autoSize={false} showSelectedCell={false} noTouch theme={theme} />*/}
+											{/*<Canvas game={board} autoSize={false} showSelectedCell={false} notPlayable theme={theme} />*/}
 										</div>
 									</div>
 								)
@@ -132,18 +131,19 @@ function Bookmarks({ theme }: Props) {
 			</div>
 
 			<ActionSheet
-				reference={clearBookmarksActionSheetRef}
+				isOpen={clearBookmarksActionSheetIsOpen}
 				title={t('bookmarks.promptDeleteAll')}
 				cancelTitle={t('common.cancel')}
+				buttonsMode
 			>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
 			</ActionSheet>
 
-			<ActionSheet reference={removeBookmarkActionSheetRef} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')}>
+			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
 			</ActionSheet>
 
-			<ActionSheet reference={playBookmarkActionSheetRef} title={t('common.discardGame')} cancelTitle={t('common.cancel')}>
+			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode>
 				<ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
 			</ActionSheet>
 		</div>

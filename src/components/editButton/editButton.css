@@ -10,6 +10,11 @@
   transition: all 0.1s ease-in-out;
 }
 
+.edit-buttons__button.disabled {
+  filter: brightness(0.4);
+  cursor: default;
+}
+
 .edit-buttons__button.highlight {
   background-color: var(--theme-color);
   color: white;
@@ -17,7 +22,6 @@
 
 .edit-buttons__button.yellow {
   background-color: #fed330;
-  color: white;
 }
 
 .edit-buttons__button:hover {

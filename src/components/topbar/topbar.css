@@ -72,6 +72,10 @@
   margin-right: 0;
 }
 
+.topbar__logo {
+  height: 16px;
+}
+
 @media (min-aspect-ratio: 21 / 20) {
   .topbar__top {
     width: 100%;

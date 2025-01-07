@@ -49,12 +49,12 @@ export default function SettingsItem({title, name = '', handleSettingChange = ()
     return (
       <div className='settings__item theme'>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('light')}}>
-          <ClassicCanvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme='light' accentColor={accentColor} />
+          <ClassicCanvas notPlayable game={classicMiniature} nSquares={3} showSelectedCell={false} theme='light' accentColor={accentColor} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('dark')}}>
-          <ClassicCanvas noTouch game={classicMiniature} nSquares={3} showSelectedCell={false} theme='dark' accentColor={accentColor} />
+          <ClassicCanvas notPlayable game={classicMiniature} nSquares={3} showSelectedCell={false} theme='dark' accentColor={accentColor} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>

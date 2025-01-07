@@ -1,4 +1,4 @@
-import { faChevronLeft, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
 import './topbar.css'
@@ -43,7 +43,7 @@ export default function Topbar({logo = false, title = null, subtitle = null, chi
 						<p className='topbar__subtitle'>{subtitle}</p>
 					</div> :
 					logo ?
-					<SVGLogo fill='var(--primaryTextColor)' height={16} />
+					<SVGLogo className='topbar__logo' fill='var(--primaryTextColor)' />
 					: null
 				}
 				<div className='topbar__top__additional' style={{gridTemplateColumns: `repeat(${(children as ReactNode[]).length || 0}, fit-content(0))`}}>

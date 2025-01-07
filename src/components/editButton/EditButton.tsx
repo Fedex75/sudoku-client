@@ -5,28 +5,30 @@ const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 
 
 type Props = {
 	onClick: () => void;
-	highlight?: boolean;
-	yellow?: boolean;
+	highlight?: Boolean;
+	yellow?: Boolean;
 	icon: React.ReactNode;
+	disabled?: Boolean;
 }
 
-function EditButton({onClick, highlight = false, yellow = false, icon}: Props): React.JSX.Element {
+function EditButton({onClick, highlight = false, yellow = false, icon, disabled = false}: Props) {
 	return (
 		<div
-			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''}`}
+			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''}`}
 			onTouchStart={e => {
 				e.stopPropagation()
+				if (disabled) return
 				onClick()
 			}}
 			onClick={e => {
 				e.stopPropagation()
-				if (isTouchDevice) return
+				if (isTouchDevice || disabled) return
 				onClick()
 			}}
 			onContextMenu={e => {
 				e.stopPropagation()
 				e.preventDefault()
-				if (isTouchDevice) return
+				if (isTouchDevice || disabled) return
 				onClick()
 			}}
 		>

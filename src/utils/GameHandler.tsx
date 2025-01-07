@@ -5,7 +5,7 @@ import { defaultStatistics, updateStatistic } from './Statistics'
 import { newGameFromMode } from '../gameModes/Common'
 import { AnyBoard } from '../gameModes/Common'
 import ClassicBoard from '../gameModes/classic/ClassicBoard'
-import { Bookmark, RawGameData, isIDBookmark } from './DataTypes'
+import { Bookmark, CellCoordinates, RawGameData, isIDBookmark } from './DataTypes'
 
 const BOARD_API_VERSION = 6
 const STORAGE_SCHEMA_VERSION = 3

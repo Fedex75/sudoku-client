@@ -114,6 +114,10 @@
   font-size: 18px;
 }
 
+.home__play__settings {
+  width: 25px;
+}
+
 /*.home__continue-wrapper {
   padding: 0 15px;
 }
