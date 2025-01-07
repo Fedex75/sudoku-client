@@ -1,13 +1,12 @@
-import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { Ref, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import ClassicBoard from "./ClassicBoard";
-import { BoardAnimation, CanvasRef, Cell, CellCoordinates, Coordinates, DigitChar, MouseButtonType, ThemeName } from "../../utils/DataTypes";
+import { BoardAnimation, CanvasRef, CellCoordinates, Coordinates, DigitChar, MouseButtonType, ThemeName } from "../../utils/DataTypes";
 import { AccentColor } from "../../utils/Colors";
 import SettingsHandler from "../../utils/SettingsHandler";
 //@ts-ignore
 import o9n from 'o9n';
 import { isTouchDevice } from "../../utils/isTouchDevice";
 import { indexOfCoordsInArray } from "../../utils/CoordsUtils";
-import { animations } from "motion/dist/react";
 
 const animationLengths = {
 	row: 750,
@@ -238,30 +237,12 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 					const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellValue > 0 && selectedCellValue === cell.value))
 
 					//Background
-
-					/*ctx.fillStyle =
-					!showSelectedCell ? colors.current!.default :
-					hasSameValueAsSelected ? themes[theme].canvasSameValueCellBackground : //Cell has same value as selected cell
-					highlitedCells[x][y] ? (darkColors.current!.default) : //Cell in same row or column as any cell with the same value as the selected cell
-					(colors.current!.default); //Default*/
-
 					ctx.fillStyle =
 					!showSelectedCell ? colors.current!.default :
 					(hasSameValueAsSelected || highlitedCells[x][y]) ? darkColors.current![cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
 					(colors.current![cell.color]); //Cell color
 
-					/*if (game.mode === 'killer' && isSelectedCell){
-						ctx.fillStyle =
-						highlitedCells[x][y] ? darkColors.current.default : //Cell in same row or column as any cell with the same value as the selected cell
-						colors.current.default //Default
-						ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
-						ctx.fillStyle = selectedCellColors.current[accentColor]
-						ctx.fillRect(cellPositions.current[x] + cagePadding.current, cellPositions.current[y] + cagePadding.current, squareSize.current - cagePadding.current * 2, squareSize.current - cagePadding.current * 2)
-					} else {*/
 					ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
-					//}
-
-					//ctx.fillRect(cellPositions.current[x], cellPositions.current[y], squareSize.current, squareSize.current)
 
 					if (animationColors.current && animationColors.current[x][y] && currentAnimations.current.length > 0 && currentAnimations.current[0].data.type !== 'fadein' && currentAnimations.current[0].data.type !== 'fadeout' && currentAnimations.current[0].data.type !== 'fadein_long') {
 						ctx.fillStyle = animationColors.current[x][y]
@@ -289,48 +270,6 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 					}
 				}
 			}
-
-			//Colors
-			/*for (let x = 0; x < nSquares; x++) {
-				for (let y = 0; y < nSquares; y++) {
-					const cell = game.get({ x, y })
-
-					//Color
-					if (cell.color !== 'default') {
-						ctx.fillStyle = ctx.strokeStyle = colors.current![cell.color]
-
-						const padding = 1
-						const left = cellPositions.current[x] + padding
-						const right = cellPositions.current[x] + squareSize.current - padding - colorBorderLineWidth
-						const top = cellPositions.current[y] + padding
-						const bottom = cellPositions.current[y] + squareSize.current - padding - colorBorderLineWidth
-
-						const lineLength = squareSize.current - padding * 2
-
-						//Top
-						if (y === 0 || game.board[x][y - 1].color !== cell.color) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
-
-						//Right
-						if (x === (nSquares - 1) || game.board[x + 1][y].color !== cell.color) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
-						else {
-							//Right bridges
-							if (!(y > 0 && game.board[x + 1][y - 1].color === cell.color && game.board[x][y - 1].color === cell.color)) ctx.fillRect(right, top, padding * 2 + boxBorderWidth, colorBorderLineWidth)
-							if (!(y < (nSquares - 1) && game.board[x + 1][y + 1].color === cell.color && game.board[x][y + 1].color === cell.color)) ctx.fillRect(right, bottom, padding * 2 + boxBorderWidth, colorBorderLineWidth)
-						}
-
-						//Bottom
-						if (y === (nSquares - 1) || game.board[x][y + 1].color !== cell.color) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
-						else {
-							//Bottom bridges
-							if (!(x > 0 && game.board[x - 1][y].color === cell.color && game.board[x - 1][y + 1].color === cell.color)) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
-							if (!(x < (nSquares - 1) && game.board[x + 1][y].color === cell.color && game.board[x + 1][y + 1].color === cell.color)) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
-						}
-
-						//Left
-						if (x === 0 || game.board[x - 1][y].color !== cell.color) ctx.fillRect(left, top, colorBorderLineWidth, lineLength)
-					}
-				}
-			}*/
 
 			//Selection
 			for (const c of game.selectedCells){
@@ -647,6 +586,7 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 				resizeObserver.disconnect();
 			}
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
@@ -669,11 +609,13 @@ const ClassicCanvas = forwardRef(({onClick = () => {}, showLinks = false, game, 
 		} else {
 			if (currentAnimations.current.length === 0) addAnimations([{type: 'fadein'}])
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [paused]);
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme);
 		renderFrame();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [theme]);
 
     return <canvas

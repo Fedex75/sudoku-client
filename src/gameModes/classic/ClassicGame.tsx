@@ -242,6 +242,7 @@ const ClassicGame = forwardRef(({ theme, accentColor, paused, handleComplete }: 
 			setMagicWandMode('links')
 		} else {
 			setMagicWandMode('disabled');
+			setShowLinks(false);
 		}
 	});
 
