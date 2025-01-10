@@ -11,12 +11,16 @@ import missions from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
 import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
 import CommonBoard from '../../../gameModes/CommonBoard'
+import CommonCanvas from '../../../gameModes/CommonCanvas'
+import { AccentColor } from '../../../utils/Colors'
+import { gameModeDefinitions } from '../../../gameModes/GameModeDefinitions'
 
 type Props = {
 	theme: ThemeName;
+	accentColor: AccentColor;
 }
 
-function Bookmarks({ theme }: Props) {
+function Bookmarks({ theme, accentColor }: Props) {
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
 	const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
 	const [playBookmarkData, setPlayBookmarkData] = useState<Bookmark>()
@@ -97,7 +101,7 @@ function Bookmarks({ theme }: Props) {
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
 										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											{/*<Canvas game={board} autoSize={false} showSelectedCell={false} notPlayable theme={theme} />*/}
+											<CommonCanvas game={board} accentColor={accentColor} notPlayable theme={theme} definition={gameModeDefinitions[board.mode]} />
 										</div>
 									</div>
 								)

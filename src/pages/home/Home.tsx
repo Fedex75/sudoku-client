@@ -45,7 +45,7 @@ function Home({ theme, accentColor }: Props) {
 			<SectionContent id="home">
 				<Routes>
 					<Route path="/" element={<Play theme={theme} accentColor={accentColor} />} />
-					<Route path="/bookmarks" element={<Bookmarks theme={theme} />} />
+					<Route path="/bookmarks" element={<Bookmarks theme={theme} accentColor={accentColor} />} />
 					<Route path="/statistics" element={<Statistics theme={theme} accentColor={accentColor} />} />
 				</Routes>
 			</SectionContent>

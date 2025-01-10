@@ -1,8 +1,13 @@
+#home {
+	height: 100%;
+	overflow: hidden;
+	padding-top: 5px;
+}
+
 .home__bookmarks {
 	display: grid;
 	grid-template-rows: fit-content(0) auto fit-content(0);
 	height: 100%;
-	align-items: center;
 	gap: 15px;
 }
 
