@@ -69,7 +69,7 @@ const CommonGame = forwardRef(({ theme, accentColor, paused, handleComplete, def
 		}
 
 		setPossibleValues(newPossibleValues)
-		setCompletedNumbers(GameHandler.game.completedNumbers)
+		setCompletedNumbers(GameHandler.game.getCompletedNumbers())
 	}, [])
 
 	const updateMagicWandMode = useCallback(() => {

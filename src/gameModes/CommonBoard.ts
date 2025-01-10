@@ -21,7 +21,6 @@ export default class CommonBoard {
 	selectedCells: CellCoordinates[]
 	history: History
 	board: Board
-	completedNumbers: number[]
 	version: number = 0;
 	definition: GameModeDefinition
 
@@ -32,7 +31,6 @@ export default class CommonBoard {
 		this.selectedCells = []
 		this.history = []
 		this.board = []
-		this.completedNumbers = []
 		this.cages = []
 		this.timer = 0
 		this.difficulty = 'unrated'
@@ -125,8 +123,10 @@ export default class CommonBoard {
 				}
 			}
 		}
+	}
 
-		this.completedNumbers = []
+	getCompletedNumbers(){
+		let completedNumbers = []
 		let count = Array(this.nSquares).fill(0)
 		for (let x = 0; x < this.nSquares; x++) {
 			for (let y = 0; y < this.nSquares; y++) {
@@ -134,11 +134,13 @@ export default class CommonBoard {
 				if (cell.value === cell.solution) {
 					count[cell.value - 1]++
 					if (count[cell.value - 1] === this.nSquares) {
-						this.completedNumbers.push(cell.value)
+						completedNumbers.push(cell.value)
 					}
 				}
 			}
 		}
+
+		return completedNumbers
 	}
 
 	pushBoard() {
