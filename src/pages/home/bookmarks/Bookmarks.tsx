@@ -47,6 +47,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 	}, [])
 
 	const removeBookmark = useCallback(() => {
+		console.log(removeBookmarkData)
 		if (removeBookmarkData){
 			GameHandler.removeBookmark(removeBookmarkData);
 			setBookmarks(GameHandler.bookmarks);
@@ -74,7 +75,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 		<div className='home__bookmarks'>
 			<div style={{display: 'grid', gridTemplateColumns: 'auto fit-content(0)'}}>
 				<p className='home__section-title'>{t('home.bookmarks')}</p>
-				<FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20}/>
+				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20}/> : null}
 			</div>
 			{
 				bookmarks.length > 0 ?
@@ -139,15 +140,16 @@ function Bookmarks({ theme, accentColor }: Props) {
 				title={t('bookmarks.promptDeleteAll')}
 				cancelTitle={t('common.cancel')}
 				buttonsMode
+				onClose={() => {setClearBookmarksActionSheetIsOpen(false)}}
 			>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
 			</ActionSheet>
 
-			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode>
+			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => {setRemoveBookmarkActionSheetIsOpen(false)}}>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
 			</ActionSheet>
 
-			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode>
+			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => {setPlayBookmarkActionSheetIsOpen(false)}}>
 				<ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
 			</ActionSheet>
 		</div>

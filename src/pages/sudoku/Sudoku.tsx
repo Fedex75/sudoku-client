@@ -147,6 +147,8 @@ export default function Sudoku({ theme, accentColor }: Props) {
 			setBookmark(true);
 			GameHandler.bookmarkCurrentGame();
 		}
+
+		setMenuActionSheetIsOpen(false);
 	}, [bookmark])
 
 	const handleTimerClick = useCallback(() => {

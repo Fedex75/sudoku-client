@@ -193,7 +193,7 @@ class GameHandler {
 
 	removeBookmark(bm: Bookmark){
 		const bmString = JSON.stringify(bm);
-		this.bookmarks = this.bookmarks.filter(bm2 => bmString === JSON.stringify(bm2));
+		this.bookmarks = this.bookmarks.filter(bm2 => bmString !== JSON.stringify(bm2));
 		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 	}
 
