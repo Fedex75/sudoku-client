@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useState } from 'react'
 import ColorButton from '../colorButton/ColorButton'
 import EditButton from '../editButton/EditButton'
@@ -36,15 +36,16 @@ type Props = {
   magicWandDisabled: boolean;
 
   lockedInput: number;
+  lockedColor: ColorName | null;
   possibleValues: number[];
   completedNumbers: number[];
   colorDisabled: boolean;
 }
 
-export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, undoDisabled, eraseDisabled, hintDisabled, magicWandIcon, magicWandDisabled}: Props): React.JSX.Element {
+export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, undoDisabled, eraseDisabled, hintDisabled, magicWandIcon, magicWandDisabled, lockedColor}: Props): React.JSX.Element {
   const [hintState, setHintState] = useState(false);
 
-  function handleHintClick(){
+  const handleHintClick = useCallback(() => {
     if (hintState){
       onHint()
       setHintState(false)
@@ -52,7 +53,7 @@ export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, on
       setHintState(true)
       setTimeout(() => {setHintState(false)}, 2000)
     }
-  }
+  }, [hintState, onHint])
 
   const editButtons = [
     <EditButton key={0} icon={<UndoSVG />} onClick={onUndo} disabled={undoDisabled}/>,
@@ -78,6 +79,7 @@ export default function Numpad({onUndo, onErase, onNote, onHint, onMagicWand, on
           key={buttonIndex + 7}
           color={colorNames[buttonIndex]}
           onClick={onColorButtonClick}
+          locked={lockedColor === colorNames[buttonIndex]}
         /> :
         <NunmpadButton
           key={buttonIndex + 7}

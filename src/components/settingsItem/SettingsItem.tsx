@@ -3,9 +3,10 @@ import ReactSwitch from 'react-switch'
 import SettingsHandler from '../../utils/SettingsHandler'
 import Check from '../check/Check'
 import './settingsItem.css'
-import ClassicBoard from '../../gameModes/classic/ClassicBoard'
-import ClassicCanvas from '../../gameModes/classic/ClassicCanvas'
+import CommonBoard from '../../gameModes/CommonBoard'
+import CommonCanvas from '../../gameModes/CommonCanvas'
 import { AccentColor } from '../../utils/Colors'
+import { gameModeDefinitions } from '../../gameModes/GameModeDefinitions'
 
 type Props = {
   title: string;
@@ -40,7 +41,7 @@ export default function SettingsItem({title, name = '', handleSettingChange = ()
   )
 
   if (type === 'theme'){
-    let classicMiniature = new ClassicBoard({id: 'ce0', m: '1.3:4.8.'}, 3)
+    let classicMiniature = new CommonBoard({id: 'ce0', m: '1.3:4.8.'}, 3)
     classicMiniature.setValue([{x: 1, y: 0}], 2)
     classicMiniature.setValue([{x: 0, y: 1}], 6)
     classicMiniature.setValue([{x: 0, y: 2}], 7)
@@ -49,12 +50,12 @@ export default function SettingsItem({title, name = '', handleSettingChange = ()
     return (
       <div className='settings__item theme'>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('light')}}>
-          <ClassicCanvas notPlayable game={classicMiniature} nSquares={3} showSelectedCell={false} theme='light' accentColor={accentColor} />
+          <CommonCanvas notPlayable game={classicMiniature} theme='light' accentColor={accentColor} definition={gameModeDefinitions.classic} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
         <div className='settings__item__theme-wrapper' onClick={() => {setTheme('dark')}}>
-          <ClassicCanvas notPlayable game={classicMiniature} nSquares={3} showSelectedCell={false} theme='dark' accentColor={accentColor} />
+          <CommonCanvas notPlayable game={classicMiniature} theme='dark' accentColor={accentColor} definition={gameModeDefinitions.classic} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>

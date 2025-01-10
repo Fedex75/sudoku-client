@@ -1,133 +1,152 @@
-import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faBookmark, faChartSimple, faPlay } from "@fortawesome/free-solid-svg-icons";
-import GameHandler from "../../../utils/GameHandler";
-import { ActionSheet, ActionSheetButton } from "../../../components";
-import './play.css';
-import ClassicBoard from "../../../gameModes/classic/ClassicBoard";
-import { GameModeName } from "../../../utils/Difficulties";
-import { ThemeName } from "../../../utils/DataTypes";
-import { AccentColor } from "../../../utils/Colors";
-import ClassicCanvas from "../../../gameModes/classic/ClassicCanvas";
-import SVGSettings from "../../../svg/settings";
+import { useState, useRef, useEffect, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router"
+import { Link } from "react-router-dom"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faChevronRight, faBookmark, faChartSimple, faPlay } from "@fortawesome/free-solid-svg-icons"
+import GameHandler from "../../../utils/GameHandler"
+import { ActionSheet, ActionSheetButton } from "../../../components"
+import './play.css'
+import CommonBoard from "../../../gameModes/CommonBoard"
+import { GameModeName } from "../../../utils/Difficulties"
+import { ThemeName } from "../../../utils/DataTypes"
+import { AccentColor } from "../../../utils/Colors"
+import CommonCanvas from "../../../gameModes/CommonCanvas"
+import SVGSettings from "../../../svg/settings"
+import { gameModeDefinitions } from "../../../gameModes/GameModeDefinitions"
 
 type Props = {
-    theme: ThemeName;
-    accentColor: AccentColor;
+    theme: ThemeName
+    accentColor: AccentColor
 }
 
 export default function Play({ theme, accentColor }: Props) {
-    const [newGameMode, setNewGameMode] = useState<GameModeName>();
-    const [snappedIndex, setSnappedIndex] = useState(2);
+    const [newGameMode, setNewGameMode] = useState<GameModeName>()
+    const [snappedIndex, setSnappedIndex] = useState(2)
 
-    const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false);
 
-    const carouselRef = useRef<HTMLDivElement>(null);
+    const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
+
+    const carouselRef = useRef<HTMLDivElement>(null)
     let navigate = useNavigate()
 
     const { t } = useTranslation()
 
-    let classicMiniature = new ClassicBoard({ id: '', m: '1.3:4.8.' }, 3)
+    let classicMiniature = new CommonBoard({ id: 'cu0', m: '1.3:4.8.' }, 3)
     classicMiniature.setValue([{ x: 1, y: 0 }], 2)
     classicMiniature.setValue([{ x: 0, y: 1 }], 6)
     classicMiniature.setValue([{ x: 0, y: 2 }], 7)
     classicMiniature.setValue([{ x: 2, y: 2 }], 9)
 
-    /*let killerMiniature = new Board({ id: '', m: '1.3:4.8.', s: '123654789', c: '0010,2021,0102,11,1222' }, true, 3)
+    /*let killerMiniature = new CommonBoard({ id: 'ku0', m: '1.3:4.8.', s: '123654789', c: '0010,2021,0102,11,1222' }, 3, true)
     killerMiniature.setValue({ x: 1, y: 0 }, 2)
     killerMiniature.setValue({ x: 0, y: 1 }, 6)
     killerMiniature.setValue({ x: 0, y: 2 }, 7)
     killerMiniature.setValue({ x: 2, y: 2 }, 9)*/
 
-    function openNewGameActionSheet(mode: GameModeName) {
-        setNewGameMode(mode);
-        if (GameHandler.game === null || GameHandler.complete) handleNewGame(mode);
-        else setDiscardGameActionSheetIsOpen(true);
-    }
-
-    function handleNewGame(mode: GameModeName) {
+    const handleNewGame = useCallback((mode: GameModeName) => {
         GameHandler.newGame(mode, GameHandler.recommendations.perMode[mode])
         navigate('/sudoku')
-    }
+    }, [navigate])
 
-    const handleScroll = () => {
-        if (!carouselRef.current) return;
-        const carousel = carouselRef.current;
-        const items = carousel.querySelectorAll('.home__gameMode');
-        const carouselRect = carousel.getBoundingClientRect();
-        const carouselCenter = carouselRect.left + carouselRect.width / 2;
+    const openNewGameActionSheet = useCallback((mode: GameModeName) => {
+        setNewGameMode(mode)
+        if (GameHandler.game === null || GameHandler.complete) handleNewGame(mode)
+        else setDiscardGameActionSheetIsOpen(true)
+    }, [handleNewGame])
 
-        let closestIndex = 0;
-        let closestDistance = Infinity;
+    const handleScroll = useCallback(() => {
+        if (!carouselRef.current) return
+        const carousel = carouselRef.current
+        const items = carousel.querySelectorAll('.home__gameMode')
+        const carouselRect = carousel.getBoundingClientRect()
+        const carouselCenter = carouselRect.left + carouselRect.width / 2
+
+        let closestIndex = 0
+        let closestDistance = Infinity
 
         items.forEach((item, index) => {
-            const itemRect = item.getBoundingClientRect();
-            const itemCenter = itemRect.left + itemRect.width / 2;
-            const distance = Math.abs(carouselCenter - itemCenter);
+            const itemRect = item.getBoundingClientRect()
+            const itemCenter = itemRect.left + itemRect.width / 2
+            const distance = Math.abs(carouselCenter - itemCenter)
 
             if (distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = index;
+                closestDistance = distance
+                closestIndex = index
             }
-        });
+        })
 
-        setSnappedIndex(closestIndex);
-    };
+        setSnappedIndex(closestIndex)
+    }, [])
+
+    const handleGameModeClick = useCallback((mode: GameModeName, index: number) => {
+        if (!carouselRef.current) return
+        const carousel = carouselRef.current
+        const items = carousel.querySelectorAll('.home__gameMode')
+        const carouselRect = carousel.getBoundingClientRect()
+        const carouselCenter = carouselRect.left + carouselRect.width / 2
+
+
+        const itemRect = items[index].getBoundingClientRect()
+        const itemCenter = itemRect.left + itemRect.width / 2
+
+        carouselRef.current.scrollLeft += itemCenter - carouselCenter
+
+        openNewGameActionSheet(mode)
+        setSnappedIndex(index)
+    }, [openNewGameActionSheet])
 
     useEffect(() => {
-        if (carouselRef.current){
-            const carousel = carouselRef.current;
+        if (carouselRef.current) {
+            const carousel = carouselRef.current
 
             // Calculate the initial scroll position to center the first item
-            const initialScrollPosition = (carousel.scrollWidth - carousel.clientWidth) / 2;
-            carousel.scrollLeft = initialScrollPosition;
+            const initialScrollPosition = (carousel.scrollWidth - carousel.clientWidth) / 2
+            carousel.scrollLeft = initialScrollPosition
 
-            carousel.addEventListener('scroll', handleScroll);
+            carousel.addEventListener('scroll', handleScroll)
 
             return () => {
-                carousel.removeEventListener('scroll', handleScroll);
-            };
+                carousel.removeEventListener('scroll', handleScroll)
+            }
         }
-    }, []);
+    }, [handleScroll])
 
     return (
         <div className='home__play'>
-            <div style={{display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: '10px'}}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: '10px' }}>
                 <p className='home__section-title'>{t('home.play')}</p>
                 <Link to='/settings'><SVGSettings className='home__play__settings' /></Link>
             </div>
             <div className='home__carousel-wrapper'>
                 <div ref={carouselRef} className='home__carousel'>
                     <div className='home__carousel__item-wrapper'>
-                        <div className={`home__gameMode ${snappedIndex === 0 ? 'snapped' : ''}`} onClick={() => { openNewGameActionSheet('sandwich') }}>
-                            <ClassicCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} nSquares={3} showSelectedCell={false} theme="light" accentColor={accentColor} />
+                        <div className={`home__gameMode ${snappedIndex === 0 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sandwich', 0) }}>
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.sandwich')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
-                        <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { openNewGameActionSheet('sudokuX') }}>
-                            <ClassicCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} nSquares={3} showSelectedCell={false} theme="light" accentColor={accentColor} />
+                        <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sudokuX', 1) }}>
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.sudokuX')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
-                        <div className={`home__gameMode ${snappedIndex === 2 ? 'snapped' : ''}`} onClick={() => { openNewGameActionSheet('classic') }}>
-                            <ClassicCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} nSquares={3} showSelectedCell={false} theme="light" accentColor={accentColor} />
+                        <div className={`home__gameMode ${snappedIndex === 2 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('classic', 2) }}>
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.classic')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
-                        <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { openNewGameActionSheet('killer') }}>
-                            <ClassicCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} nSquares={3} showSelectedCell={false} theme="light" accentColor={accentColor} />
+                        <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('killer', 3) }}>
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.killer')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
-                        <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { openNewGameActionSheet('thermo') }}>
-                            <ClassicCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} nSquares={3} showSelectedCell={false} theme="light" accentColor={accentColor} />
+                        <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('thermo', 4) }}>
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.thermo')}</div>
                         </div>
                     </div>
@@ -195,5 +214,5 @@ export default function Play({ theme, accentColor }: Props) {
                 <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (newGameMode) handleNewGame(newGameMode) }} />
             </ActionSheet>
         </div>
-    );
+    )
 }

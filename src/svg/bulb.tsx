@@ -23,7 +23,7 @@ export default function BulbSVG({ className = 'icon' }): React.JSX.Element {
           transform="matrix(1.07024 0 0 1.07024 4.235 28.385)"
         >
           <path
-            fill='var(--primaryIconColor)'
+            fill='white'
             fillOpacity="1"
             stroke='var(--secondaryIconColor)'
             strokeLinecap="round"

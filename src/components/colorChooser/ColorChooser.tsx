@@ -23,13 +23,9 @@ type ColorChooserProps = {
 }
 
 export default function ColorChooser({style, value, onChange = () => {}, colors}: ColorChooserProps){
-  function handleTagChange(c: string){
-      onChange(c);
-  }
-
   return (
     <div className="color-chooser" style={style}>
-      {colors.map((c, i) => <ColorButton key={i} selected={value === c} color={c} onClick={handleTagChange}/>)}
+      {colors.map((c, i) => <ColorButton key={i} selected={value === c} color={c} onClick={() => {onChange(c)}}/>)}
     </div>
   )
 }

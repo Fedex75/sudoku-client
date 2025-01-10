@@ -11,6 +11,7 @@ import Bookmarks from './bookmarks/Bookmarks'
 import Statistics from './statistics/Statistics'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
+import { useCallback } from 'react'
 
 type Props = {
 	theme: ThemeName;
@@ -21,7 +22,7 @@ function Home({ theme, accentColor }: Props) {
 	const { t } = useTranslation();
 	let navigate = useNavigate()
 
-	function handleImport() {
+	const handleImport = useCallback(() => {
 		const board = prompt(t('home.importPrompt'));
 		if (board) {
 			if (GameHandler.importGame(board)) {
@@ -30,14 +31,14 @@ function Home({ theme, accentColor }: Props) {
 				alert(t('home.incompatibleData'));
 			}
 		}
-	}
+	}, [navigate, t])
 
 	return (
 		<Section className="home">
 			<Topbar logo buttons={[
-				<div key={1} onClick={handleImport} style={{marginRight: 15}}><SVGImport height={28} /></div>,
+				<div key={1} onClick={handleImport} style={{marginRight: 15}}><SVGImport /></div>,
 				<Link key={2} to="/settings">
-					<SVGSettings height={24} />
+					<SVGSettings />
 				</Link>
 			]} />
 

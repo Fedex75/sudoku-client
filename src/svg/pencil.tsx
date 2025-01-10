@@ -9,7 +9,7 @@ export default function PencilSVG({ className = 'icon' }): React.JSX.Element {
             viewBox="0 0 19.956 21.226"
             xmlSpace="preserve"
         >
-            <g fill='var(--primaryIconColor)' fillOpacity="1" transform="translate(-222.55 -2.45)">
+            <g fill='white' fillOpacity="1" transform="translate(-222.55 -2.45)">
                 <path
                     fillRule="evenodd"
                     stroke='var(--secondaryIconColor)'

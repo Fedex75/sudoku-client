@@ -23,13 +23,13 @@ export default function EraserSVG({ className = 'icon' }): React.JSX.Element {
                     opacity="1"
                 ></path>
                 <path
-                    fill='var(--primaryIconColor)'
+                    fill='white'
                     fillOpacity="1"
                     strokeWidth="1.186"
                     d="M205.407 19.32l-8.4-8.399-1.179 1.18c-1.98 1.98-2.97 2.97-2.97 4.2s.99 2.22 2.97 4.2c1.98 1.98 2.97 2.97 4.2 2.97s2.22-.99 4.2-2.97z"
                 ></path>
                 <g
-                    fill='var(--primaryIconColor)'
+                    fill='white'
                     opacity="1"
                     transform="matrix(1.1855 0 0 1.1855 189.302 -1.426)"
                 >

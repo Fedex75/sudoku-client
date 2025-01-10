@@ -11,7 +11,7 @@
 }
 
 .edit-buttons__button.disabled {
-  filter: brightness(0.4);
+  filter: var(--editButtonDisabledFilter);
   cursor: default;
 }
 

@@ -1,5 +1,5 @@
 import './settings.css'
-import { useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser, Button, ActionSheet, ActionSheetButton } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import { Link, Route, Routes } from 'react-router-dom'
@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next'
 import GameHandler from '../../utils/GameHandler'
 import { colorNames } from '../../utils/Colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { ActionSheetRef } from 'actionsheet-react'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 
@@ -24,13 +23,13 @@ type SectionLinkProps = {
 
 function SectionLink({color, icon, title, link}: SectionLinkProps){
 	return (
-		<div>
-			<Link to={link} className='settings__section-link'>
-				<div className='settings__section-link__icon' style={{backgroundColor: color}}><FontAwesomeIcon icon={icon} color={link === 'advanced' ? 'gray' : 'white'}/></div>
+		<Link to={link} className='settings__section-link'>
+			<div className='settings__section-link__icon' style={{backgroundColor: color}}><FontAwesomeIcon icon={icon} color={link === 'advanced' ? 'gray' : 'white'}/></div>
+			<div className='settings__section-link__right-wrapper'>
 				<p>{title}</p>
 				<FontAwesomeIcon icon={faChevronRight} color='gray'/>
-			</Link>
-		</div>
+			</div>
+		</Link>
 	)
 }
 
@@ -228,10 +227,10 @@ export default function Settings({theme, setTheme, accentColor, setAccentColor}:
 
 	const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue(`--${accentColor}`)
 
-	function handleSettingChange(name: string, value: any){
+	const handleSettingChange = useCallback((name: string, value: any) => {
 		SettingsHandler.setSetting(name, value)
 		setRender(r => r === 100 ? 0 : r+1)
-	}
+	}, [])
 
 	return (
 		<Routes>

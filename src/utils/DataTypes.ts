@@ -26,6 +26,7 @@ export type Cell = {
     clue: boolean;
     cageIndex?: number;
     cageValue?: number;
+    possibleValues: number[];
 }
 
 export type CellCoordinates = {
@@ -48,6 +49,7 @@ export type GameData = {
     mission: string;
     clues: string;
     solution: string;
+    cages: number[][][];
     timer: number;
     board: Board;
     selectedCells: CellCoordinates[];

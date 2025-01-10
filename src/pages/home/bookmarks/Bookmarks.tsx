@@ -1,7 +1,7 @@
 import './bookmarks.css'
 import { faBookmark, faCheck, faPlay, faChartSimple, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
 import { Link } from "react-router-dom";
 import { ActionSheet, ActionSheetButton } from '../../../components'
@@ -9,8 +9,8 @@ import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier 
 import GameHandler from "../../../utils/GameHandler"
 import missions from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import { newGameFromMode } from '../../../gameModes/Common'
 import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
+import CommonBoard from '../../../gameModes/CommonBoard'
 
 type Props = {
 	theme: ThemeName;
@@ -27,44 +27,44 @@ function Bookmarks({ theme }: Props) {
 	const navigate = useNavigate()
 	const { t } = useTranslation()
 
-	function handleRemoveBookmark(bm: Bookmark) {
+	const handleRemoveBookmark = useCallback((bm: Bookmark) => {
 		setRemoveBookmarkData(bm)
 		setRemoveBookmarkActionSheetIsOpen(true)
-	}
+	}, [])
 
-	function clearBookmarks() {
+	const clearBookmarks = useCallback(() => {
 		GameHandler.clearBookmarks()
 		setClearBookmarksActionSheetIsOpen(false)
 		setBookmarks([])
-	}
+	}, [])
 
-	function handleClearBookmarksClick() {
+	const handleClearBookmarksClick = useCallback(() => {
 		setClearBookmarksActionSheetIsOpen(true)
-	}
+	}, [])
 
-	function removeBookmark() {
+	const removeBookmark = useCallback(() => {
 		if (removeBookmarkData){
 			GameHandler.removeBookmark(removeBookmarkData);
 			setBookmarks(GameHandler.bookmarks);
 			setRemoveBookmarkActionSheetIsOpen(false);
 		}
-	}
+	}, [removeBookmarkData])
 
-	function handlePlayBookmark(bm: Bookmark) {
+	const playBookmark = useCallback((bm: Bookmark) => {
+		if (bm){
+			GameHandler.loadGameFromBookmark(bm)
+			navigate('/sudoku')
+		}
+	}, [navigate])
+
+	const handlePlayBookmark = useCallback((bm: Bookmark) => {
 		if (GameHandler.game === null || GameHandler.complete) {
 			playBookmark(bm)
 		} else {
 			setPlayBookmarkData(bm)
 			setPlayBookmarkActionSheetIsOpen(true)
 		}
-	}
-
-	function playBookmark(bm: Bookmark) {
-		if (bm){
-			GameHandler.loadGameFromBookmark(bm)
-			navigate('/sudoku')
-		}
-	}
+	}, [playBookmark])
 
 	return (
 		<div className='home__bookmarks'>
@@ -82,7 +82,7 @@ function Bookmarks({ theme }: Props) {
 
 								if (isIDBookmark(bm)){
 									const mode = decodeMode(bm.id[0] as GameModeIdentifier);
-									board = newGameFromMode(mode, missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData);
+									board = new CommonBoard(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9);
 									solved = GameHandler.solved.includes(bm.id);
 								} else {
 									board = GameHandler.boardFromCustomMission(bm.m);

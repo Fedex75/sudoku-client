@@ -29,6 +29,7 @@
   --contextMenuButtonBackground: #e7e7e7;
   --editButtonColor: var(--theme-color);
   --editButtonBackground: var(--lightGray);
+  --editButtonDisabledFilter: brightness(0.7);
   --numpadButtonBackground: var(--lightGray);
   --disabledButtonBackground: transparent;
   --disabledButtonBorderColor: transparent;
@@ -44,6 +45,7 @@
   --tabSwitcherSelectedTabIconColor: white;
   --tabSwitcherSelectedTabBackground: black;
   --carouselDotColor: #c8c8c8;
+  --settingsBorderColor: #dddddd;
 }
 
 [data-theme='dark'] {
@@ -62,6 +64,7 @@
   --contextMenuButtonBackground: #2b2b2b;
   --editButtonColor: #75747c;
   --editButtonBackground: var(--darkBackground);
+  --editButtonDisabledFilter: brightness(0.4);
   --numpadButtonBackground: var(--darkBackground);
   --disabledButtonBackground: transparent;
   --disabledButtonBorderColor: #25242c;
@@ -87,6 +90,7 @@
   --tabSwitcherSelectedTabIconColor: black;
   --tabSwitcherSelectedTabBackground: white;
   --carouselDotColor: #949494;
+  --settingsBorderColor: #333333;
 }
 
 [data-accent-color='red'] {

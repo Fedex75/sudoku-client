@@ -13,10 +13,6 @@ type Props = {
 }
 
 export default function ActionSheet({isOpen, title = null, cancelTitle = null, cancelColor = 'var(--red)', onClose = () => {}, buttonsMode = false, children}: PropsWithChildren<Props>){
-	function cancel(){
-		onClose();
-	}
-
 	return (
 		<Sheet
 			isOpen={isOpen}
@@ -38,7 +34,7 @@ export default function ActionSheet({isOpen, title = null, cancelTitle = null, c
 						}
 						{children}
 					</div>
-					{cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={cancel} color={cancelColor} /> : null}
+					{cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={() => {onClose()}} color={cancelColor} /> : null}
 				</Sheet.Content>
 			</Sheet.Container>
 			<Sheet.Backdrop onTap={() => {onClose()}} />
