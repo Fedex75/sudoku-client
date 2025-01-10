@@ -383,7 +383,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
 		renderFrame()
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [theme])
+	}, [theme, accentColor])
 
 	useEffect(() => {
 		for (const func of definition.render.init) func({game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth})
