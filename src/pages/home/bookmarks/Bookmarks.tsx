@@ -47,7 +47,6 @@ function Bookmarks({ theme, accentColor }: Props) {
 	}, [])
 
 	const removeBookmark = useCallback(() => {
-		console.log(removeBookmarkData)
 		if (removeBookmarkData){
 			GameHandler.removeBookmark(removeBookmarkData);
 			setBookmarks(GameHandler.bookmarks);
