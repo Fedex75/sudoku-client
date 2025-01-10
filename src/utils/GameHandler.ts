@@ -1,7 +1,7 @@
 import missions from '../data/missions.json'
 import { decodeMissionString } from './Decoder'
 import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, decodeDifficulty, decodeMode } from './Difficulties'
-import { defaultStatistics, updateStatistic } from './Statistics'
+import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
 import CommonBoard from '../gameModes/CommonBoard'
 import { Bookmark, RawGameData, isIDBookmark } from './DataTypes'
 
@@ -28,7 +28,7 @@ class GameHandler {
 	bookmarks: Bookmark[] = [];
 	solved: string[] = [];
 	recommendations: Recommendations;
-	statistics: any;
+	statistics: Statistics<GameModeName, DifficultyName>;
 
 	constructor(){
 		this.recommendations = {

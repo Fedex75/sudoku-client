@@ -150,7 +150,6 @@ a {
 
 p {
   margin: 0;
-  line-height: 16px;
 }
 
 @media (min-aspect-ratio: 21 / 20) {

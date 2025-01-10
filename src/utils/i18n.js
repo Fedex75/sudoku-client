@@ -18,7 +18,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           share: 'Share',
           newVersionAvailable: "There's a new version available",
           lightTheme: 'Light',
-          darkTheme: 'Dark'
+          darkTheme: 'Dark',
+          reset: 'Reset'
         },
         sectionNames: {
           bookmarks: 'Bookmarks',
@@ -38,6 +39,9 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           promptDeleteAll: 'Delete all markers?',
           promptDeleteOne: 'Delete marker?',
           empty: 'No bookmarks'
+        },
+        statistics: {
+          promptReset: 'Reset statistics?'
         },
         settings: {
           sectionAppearance: 'Appearance',
@@ -108,7 +112,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           hard: 'Hard',
           expert: 'Expert',
           evil: 'Evil',
-          restart: 'Restart'
+          restart: 'Restart',
+          unrated: 'Unrated'
         }
       },
     },
@@ -123,7 +128,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           share: 'Compartir',
           newVersionAvailable: 'Hay una nueva versión disponible',
           lightTheme: 'Claro',
-          darkTheme: 'Oscuro'
+          darkTheme: 'Oscuro',
+          reset: 'Reiniciar'
         },
         sectionNames: {
           bookmarks: 'Marcadores',
@@ -143,6 +149,9 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           promptDeleteAll: '¿Eliminar todos los marcadores?',
           promptDeleteOne: '¿Eliminar marcador?',
           empty: 'No hay marcadores'
+        },
+        statistics: {
+          promptReset: '¿Reiniciar estadísticas?'
         },
         settings: {
           sectionAppearance: 'Apariencia',
@@ -213,7 +222,8 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           hard: 'Difícil',
           expert: 'Experto',
           evil: 'Malvado',
-          restart: 'Reiniciar'
+          restart: 'Reiniciar',
+          unrated: 'Sin clasificar'
         }
       }
     }
