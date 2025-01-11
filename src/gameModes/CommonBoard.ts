@@ -57,6 +57,7 @@ export default class CommonBoard {
 			this.history = data.history
 			this.checkFullNotation()
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
+			this.ruleset.game.checkErrors(this)
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
@@ -92,6 +93,7 @@ export default class CommonBoard {
 		}
 
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
+		this.ruleset.game.checkErrors(this)
 	}
 
 	getCompletedNumbers() {
@@ -124,6 +126,7 @@ export default class CommonBoard {
 			this.checkFullNotation(true)
 			this.history.pop()
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
+			this.ruleset.game.checkErrors(this)
 		}
 	}
 
@@ -251,8 +254,12 @@ export default class CommonBoard {
 		}
 
 		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
+		this.ruleset.game.checkErrors(this)
 
-		if (this.checkComplete()) animations = [{ type: 'board', center: coords[0] }]
+		if (this.ruleset.game.checkComplete(this)) {
+			animations = [{ type: 'board', center: coords[0] }]
+			GameHandler.setComplete()
+		}
 
 		return animations
 	}
@@ -287,6 +294,7 @@ export default class CommonBoard {
 		}
 
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
+		this.ruleset.game.checkErrors(this)
 	}
 
 	calculateHighlightedCells(selectedCoords: CellCoordinates[], lockedInput: number) {
@@ -364,12 +372,6 @@ export default class CommonBoard {
 
 	saveToLocalStorage() {
 		GameHandler.saveGame(JSON.stringify(this))
-	}
-
-	checkComplete() {
-		for (let x = 0; x < this.nSquares; x++) for (let y = 0; y < this.nSquares; y++) if (this.board[x][y].value !== this.board[x][y].solution) return false
-		GameHandler.setComplete()
-		return true
 	}
 
 	checkFullNotation(force = false) {

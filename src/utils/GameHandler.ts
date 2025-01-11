@@ -6,20 +6,20 @@ import CommonBoard from '../gameModes/CommonBoard'
 import { Bookmark, RawGameData, isIDBookmark } from './DataTypes'
 
 const BOARD_API_VERSION = 6
-const STORAGE_SCHEMA_VERSION = 3
+const STORAGE_SCHEMA_VERSION = 4
 
 type Recommendations = {
 	newGame: {
-		mode: GameModeName;
-		difficulty: DifficultyName;
-	};
+		mode: GameModeName
+		difficulty: DifficultyName
+	}
 	perMode: {
-		classic: DifficultyName;
-		killer: DifficultyName;
-		sudokuX: DifficultyName;
-		sandwich: DifficultyName;
-		thermo: DifficultyName;
-	};
+		classic: DifficultyName
+		killer: DifficultyName
+		sudokuX: DifficultyName
+		sandwich: DifficultyName
+		thermo: DifficultyName
+	}
 }
 
 class GameHandler {
@@ -27,10 +27,10 @@ class GameHandler {
 	complete: boolean = false;
 	bookmarks: Bookmark[] = [];
 	solved: string[] = [];
-	recommendations: Recommendations;
-	statistics: Statistics<GameModeName, DifficultyName>;
+	recommendations: Recommendations
+	statistics: Statistics<GameModeName, DifficultyName>
 
-	constructor(){
+	constructor() {
 		this.recommendations = {
 			newGame: {
 				mode: 'classic',
@@ -45,25 +45,25 @@ class GameHandler {
 			}
 		}
 
-		this.statistics = defaultStatistics;
+		this.statistics = defaultStatistics
 	}
 
-	init(){
+	init() {
 		const ls_schema_version = localStorage.getItem('SCHEMA_VERSION')
-		if (ls_schema_version === null || parseInt(ls_schema_version) < STORAGE_SCHEMA_VERSION){
+		if (ls_schema_version === null || parseInt(ls_schema_version) < STORAGE_SCHEMA_VERSION) {
 			localStorage.clear()
 			localStorage.setItem('SCHEMA_VERSION', STORAGE_SCHEMA_VERSION.toString())
 		}
 
 		const lsRecommendations = localStorage.getItem('recommendations')
-		if (lsRecommendations) this.recommendations = JSON.parse(lsRecommendations);
-		localStorage.setItem('recommendations', JSON.stringify(this.recommendations));
+		if (lsRecommendations) this.recommendations = JSON.parse(lsRecommendations)
+		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 
 		let data
-		const lsGame = localStorage.getItem('game');
+		const lsGame = localStorage.getItem('game')
 		data = lsGame ? JSON.parse(lsGame) : null
 
-		if (data?.version && data.version === BOARD_API_VERSION){
+		if (data?.version && data.version === BOARD_API_VERSION) {
 			this.setCurrentGame(new CommonBoard(data, 9))
 		} else {
 			this.game = null
@@ -77,10 +77,10 @@ class GameHandler {
 
 		const lsStatistics = localStorage.getItem('statistics')
 		if (lsStatistics) this.statistics = JSON.parse(lsStatistics)
-		localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
+		localStorage.setItem('statistics', JSON.stringify(this.statistics))
 	}
 
-	setCurrentGame(board: CommonBoard){
+	setCurrentGame(board: CommonBoard) {
 		this.game = board
 		this.complete = false
 		this.game.version = BOARD_API_VERSION
@@ -93,9 +93,9 @@ class GameHandler {
 		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 	}
 
-	newGame(mode: GameModeName, difficulty: DifficultyName | 'restart'){
-		if (difficulty === 'restart'){
-			if (this.game){
+	newGame(mode: GameModeName, difficulty: DifficultyName | 'restart') {
+		if (difficulty === 'restart') {
+			if (this.game) {
 				this.game.restart()
 				this.complete = false
 			}
@@ -106,108 +106,108 @@ class GameHandler {
 		}
 	}
 
-	boardFromCustomMission(mission: string){
+	boardFromCustomMission(mission: string) {
 		return new CommonBoard({
 			id: '',
 			m: mission
 		}, 9)
 	}
 
-	importGame(data: string){
-		if (data[0] === '{'){
+	importGame(data: string) {
+		if (data[0] === '{') {
 			//Data is mission JSON
 			try {
-				const gameData = JSON.parse(data) as RawGameData;
+				const gameData = JSON.parse(data) as RawGameData
 				this.setCurrentGame(new CommonBoard(gameData, 9))
-				return(true)
-			} catch(e){
-				return(false)
+				return (true)
+			} catch (e) {
+				return (false)
 			}
 		} else {
 			//Data is board text representation
-			if (decodeMissionString(data).length === 81){
+			if (decodeMissionString(data).length === 81) {
 				this.setCurrentGame(this.boardFromCustomMission(data))
-				return(true)
+				return (true)
 			} else {
-				return(false)
+				return (false)
 			}
 		}
 	}
 
-	findMissionFromID(id: string){
-		return missions[decodeMode(id[0] as GameModeIdentifier)][decodeDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData;
+	findMissionFromID(id: string) {
+		return missions[decodeMode(id[0] as GameModeIdentifier)][decodeDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData
 	}
 
-	exportMission(){
-		if (this.game){
-			return JSON.stringify(this.findMissionFromID(this.game.id));
+	exportMission() {
+		if (this.game) {
+			return JSON.stringify(this.findMissionFromID(this.game.id))
 		}
-		return '';
+		return ''
 	}
 
-	saveGame(data: string){
+	saveGame(data: string) {
 		localStorage.setItem('game', data)
 	}
 
-	setComplete(){
-		if (this.game){
+	setComplete() {
+		if (this.game) {
 			this.complete = true
 			localStorage.removeItem('game')
 			if (this.game.difficulty !== 'unrated' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
 			localStorage.setItem('solved', JSON.stringify(this.solved))
 			updateStatistic(this.statistics[this.game.mode][this.game.difficulty], this.game.timer)
-			localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
+			localStorage.setItem('statistics', JSON.stringify(this.statistics))
 		}
 	}
 
-	currentGameIsBookmarked(){
-		if (this.game === null) return false;
+	currentGameIsBookmarked() {
+		if (this.game === null) return false
 
-		if (this.game.id === ''){
-			return this.bookmarks.some(bm => bm.m === this.game?.mission);
+		if (this.game.id === '') {
+			return this.bookmarks.some(bm => bm.m === this.game?.mission)
 		} else {
-			return this.bookmarks.some(bm => bm.id === this.game?.id);
+			return this.bookmarks.some(bm => bm.id === this.game?.id)
 		}
 	}
 
-	bookmarkCurrentGame(){
-		if (this.game === null) return;
-		if (!this.currentGameIsBookmarked()){
-			if (this.game.id !== ''){
+	bookmarkCurrentGame() {
+		if (this.game === null) return
+		if (!this.currentGameIsBookmarked()) {
+			if (this.game.id !== '') {
 				this.bookmarks.push({
 					id: this.game.id
-				});
+				})
 			} else {
 				this.bookmarks.push({
 					m: this.game.mission
-				});
+				})
 			}
-			localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks));
+			localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 		}
 	}
 
-	clearBookmarks(){
-		this.bookmarks = [];
+	clearBookmarks() {
+		this.bookmarks = []
 		localStorage.setItem('bookmarks', '[]')
 	}
 
-	removeBookmark(bm: Bookmark){
-		const bmString = JSON.stringify(bm);
-		this.bookmarks = this.bookmarks.filter(bm2 => bmString !== JSON.stringify(bm2));
+	removeBookmark(bm: Bookmark) {
+		const bmString = JSON.stringify(bm)
+		this.bookmarks = this.bookmarks.filter(bm2 => bmString !== JSON.stringify(bm2))
 		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
 	}
 
-	loadGameFromBookmark(bm: Bookmark){
-		if (isIDBookmark(bm)){
-			this.setCurrentGame(new CommonBoard(this.findMissionFromID(bm.id), 9));
+	loadGameFromBookmark(bm: Bookmark) {
+		if (isIDBookmark(bm)) {
+			this.setCurrentGame(new CommonBoard(this.findMissionFromID(bm.id), 9))
 		} else {
-			this.setCurrentGame(this.boardFromCustomMission(bm.m));
+			this.setCurrentGame(this.boardFromCustomMission(bm.m))
 		}
 	}
 
-	resetStatistics(){
+	resetStatistics() {
 		this.statistics = defaultStatistics
-		localStorage.setItem('statistics', 	JSON.stringify(this.statistics))
+		localStorage.setItem('statistics', JSON.stringify(this.statistics))
 	}
 }
 
