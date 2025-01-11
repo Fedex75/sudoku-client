@@ -217,11 +217,11 @@ export default function Sudoku({ theme, accentColor }: Props) {
 								</div>
 								<div className='sudoku__win-screen__stat'>
 									<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
-									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].average)}</div>
+									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
 								</div>
 								<div className='sudoku__win-screen__stat'>
 									<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
-									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty].best)}</div>
+									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
 								</div>
 								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
 							</div>

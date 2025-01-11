@@ -745,8 +745,6 @@ function sudokuXInitGameData({ game, data }: InitGameProps) {
 }
 
 function classicCalculatePossibleValues(game: CommonBoard) {
-    if (!SettingsHandler.settings.showPossibleValues) return []
-
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
             const cell = game.get({ x, y })
