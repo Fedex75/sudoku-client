@@ -4,7 +4,7 @@ import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "..
 import { Board, BoardAnimation, CellCoordinates, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
-import { GameModeDefinition, gameModeDefinitions } from "./GameModeDefinitions"
+import { Ruleset, rulesets } from "./Rulesets"
 
 export default class CommonBoard {
 	id: string
@@ -21,7 +21,7 @@ export default class CommonBoard {
 	history: History
 	board: Board
 	version: number = 0;
-	definition: GameModeDefinition
+	ruleset: Ruleset
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -43,7 +43,7 @@ export default class CommonBoard {
 			this.mode = decodeMode(data.id[0] as GameModeIdentifier)
 		}
 
-		this.definition = gameModeDefinitions[this.mode]
+		this.ruleset = rulesets[this.mode]
 
 		if (isGameData(data)) {
 			this.difficulty = data.difficulty
@@ -56,9 +56,9 @@ export default class CommonBoard {
 			this.selectedCells = data.selectedCells
 			this.history = data.history
 			this.checkFullNotation()
-			for (const func of this.definition.game.afterValuesChanged) func(this)
+			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		} else {
-			this.definition.game.initGameData({game: this, data})
+			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
 		}
 	}
@@ -87,14 +87,14 @@ export default class CommonBoard {
 			}
 		}
 
-		for (const func of this.definition.game.initBoardMatrix) {
+		for (const func of this.ruleset.game.initBoardMatrix) {
 			func(this)
 		}
 
-		for (const func of this.definition.game.afterValuesChanged) func(this)
+		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 	}
 
-	getCompletedNumbers(){
+	getCompletedNumbers() {
 		let completedNumbers = []
 		let count = Array(this.nSquares).fill(0)
 		for (let x = 0; x < this.nSquares; x++) {
@@ -123,7 +123,7 @@ export default class CommonBoard {
 			this.board = this.history[this.history.length - 1].board
 			this.checkFullNotation(true)
 			this.history.pop()
-			for (const func of this.definition.game.afterValuesChanged) func(this)
+			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		}
 	}
 
@@ -153,7 +153,7 @@ export default class CommonBoard {
 	onlyAvailableInBox(c: CellCoordinates, n: number) {
 		if (!this.get(c).possibleValues.includes(n)) return false
 		let found = 0
-		for (const coords of this.definition.game.getBoxCellsCoordinates(c)) {
+		for (const coords of this.ruleset.game.getBoxCellsCoordinates(c)) {
 			const cell = this.get(coords)
 			if (cell.value === 0 && cell.possibleValues.includes(n)) {
 				found++
@@ -223,7 +223,7 @@ export default class CommonBoard {
 
 		for (const c of coords) {
 			if (!this.get(c).clue) {
-				const visibleCells = this.definition.game.getVisibleCells(this, c)
+				const visibleCells = this.ruleset.game.getVisibleCells(this, c)
 
 				if (push && !hasPushed) {
 					this.pushBoard()
@@ -239,7 +239,7 @@ export default class CommonBoard {
 				if (SettingsHandler.settings.clearColorOnInput) this.get(c).color = 'default'
 
 				//Check animations
-				for (const func of this.definition.game.checkAnimations) {
+				for (const func of this.ruleset.game.checkAnimations) {
 					animations = animations.concat(func(this, c))
 				}
 
@@ -250,7 +250,7 @@ export default class CommonBoard {
 			}
 		}
 
-		for (const func of this.definition.game.afterValuesChanged) animations = animations.concat(func(this))
+		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
 
 		if (this.checkComplete()) animations = [{ type: 'board', center: coords[0] }]
 
@@ -276,7 +276,7 @@ export default class CommonBoard {
 					this.pushBoard()
 					hasPushed = true
 				}
-				for (const visibleCell of this.definition.game.getVisibleCells(this, c)) {
+				for (const visibleCell of this.ruleset.game.getVisibleCells(this, c)) {
 					this.get(visibleCell).possibleValues = this.get(visibleCell).possibleValues.filter(n => n !== cell.value)
 				}
 
@@ -286,7 +286,7 @@ export default class CommonBoard {
 			}
 		}
 
-		for (const func of this.definition.game.afterValuesChanged) func(this)
+		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 	}
 
 	calculateHighlightedCells(selectedCoords: CellCoordinates[], lockedInput: number) {
@@ -294,7 +294,7 @@ export default class CommonBoard {
 		for (const coords of selectedCoords) {
 			let targetValue = lockedInput > 0 ? lockedInput : this.get(coords).value
 
-			if (lockedInput === 0) for (const cell of this.definition.game.getVisibleCells(this, coords)) highlightedCells[cell.x][cell.y] = true
+			if (lockedInput === 0) for (const cell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[cell.x][cell.y] = true
 
 			if (SettingsHandler.settings.advancedHighlight) {
 				let highlightCages = []
@@ -314,7 +314,7 @@ export default class CommonBoard {
 							(this.mode === 'killer' && highlightCages.includes(cell.cageIndex)) ||
 							(SettingsHandler.settings.lockCellsWithColor && cell.color !== 'default' && !cell.notes.includes(targetValue))
 						) highlightedCells[x][y] = true
-						if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.definition.game.getVisibleCells(this, { x, y })) highlightedCells[visibleCell.x][visibleCell.y] = true
+						if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.ruleset.game.getVisibleCells(this, { x, y })) highlightedCells[visibleCell.x][visibleCell.y] = true
 					}
 				}
 
@@ -322,7 +322,7 @@ export default class CommonBoard {
 					for (let y = 0; y < this.nSquares; y++) {
 						const cell = this.get({ x, y })
 						if (cell.color !== 'default' && cell.notes.includes(targetValue)) {
-							for (const boxCell of this.definition.game.getBoxCellsCoordinates({ x, y })) {
+							for (const boxCell of this.ruleset.game.getBoxCellsCoordinates({ x, y })) {
 								highlightedCells[boxCell.x][boxCell.y] = true
 							}
 						}
@@ -330,7 +330,7 @@ export default class CommonBoard {
 				}
 
 			} else {
-				for (const visibleCell of this.definition.game.getVisibleCells(this, coords)) highlightedCells[visibleCell.x][visibleCell.y] = true
+				for (const visibleCell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[visibleCell.x][visibleCell.y] = true
 			}
 		}
 
@@ -339,7 +339,7 @@ export default class CommonBoard {
 
 	calculateLinks(n: number) {
 		let links: CellCoordinates[][] = []
-		for (const func of this.definition.game.findLinks) {
+		for (const func of this.ruleset.game.findLinks) {
 			links = links.concat(func(this, n))
 		}
 		return links

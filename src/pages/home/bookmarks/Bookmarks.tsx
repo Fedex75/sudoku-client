@@ -3,7 +3,7 @@ import { faBookmark, faCheck, faPlay, faChartSimple, faTrash } from "@fortawesom
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 import { ActionSheet, ActionSheetButton } from '../../../components'
 import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
@@ -13,11 +13,11 @@ import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/D
 import CommonBoard from '../../../gameModes/CommonBoard'
 import CommonCanvas from '../../../gameModes/CommonCanvas'
 import { AccentColor } from '../../../utils/Colors'
-import { gameModeDefinitions } from '../../../gameModes/GameModeDefinitions'
+import { rulesets } from '../../../gameModes/Rulesets'
 
 type Props = {
-	theme: ThemeName;
-	accentColor: AccentColor;
+	theme: ThemeName
+	accentColor: AccentColor
 }
 
 function Bookmarks({ theme, accentColor }: Props) {
@@ -47,15 +47,15 @@ function Bookmarks({ theme, accentColor }: Props) {
 	}, [])
 
 	const removeBookmark = useCallback(() => {
-		if (removeBookmarkData){
-			GameHandler.removeBookmark(removeBookmarkData);
-			setBookmarks(GameHandler.bookmarks);
-			setRemoveBookmarkActionSheetIsOpen(false);
+		if (removeBookmarkData) {
+			GameHandler.removeBookmark(removeBookmarkData)
+			setBookmarks(GameHandler.bookmarks)
+			setRemoveBookmarkActionSheetIsOpen(false)
 		}
 	}, [removeBookmarkData])
 
 	const playBookmark = useCallback((bm: Bookmark) => {
-		if (bm){
+		if (bm) {
 			GameHandler.loadGameFromBookmark(bm)
 			navigate('/sudoku')
 		}
@@ -72,25 +72,25 @@ function Bookmarks({ theme, accentColor }: Props) {
 
 	return (
 		<div className='home__bookmarks'>
-			<div style={{display: 'grid', gridTemplateColumns: 'auto fit-content(0)'}}>
+			<div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)' }}>
 				<p className='home__section-title'>{t('home.bookmarks')}</p>
-				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20}/> : null}
+				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20} /> : null}
 			</div>
 			{
 				bookmarks.length > 0 ?
 					<div className="bookmarks__wrapper">
 						{
 							bookmarks.map((bm, i) => {
-								let board;
-								let solved;
+								let board
+								let solved
 
-								if (isIDBookmark(bm)){
-									const mode = decodeMode(bm.id[0] as GameModeIdentifier);
-									board = new CommonBoard(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9);
-									solved = GameHandler.solved.includes(bm.id);
+								if (isIDBookmark(bm)) {
+									const mode = decodeMode(bm.id[0] as GameModeIdentifier)
+									board = new CommonBoard(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
+									solved = GameHandler.solved.includes(bm.id)
 								} else {
-									board = GameHandler.boardFromCustomMission(bm.m);
-									solved = false;
+									board = GameHandler.boardFromCustomMission(bm.m)
+									solved = false
 								}
 
 								return (
@@ -101,7 +101,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
 										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											<CommonCanvas game={board} accentColor={accentColor} notPlayable theme={theme} definition={gameModeDefinitions[board.mode]} />
+											<CommonCanvas game={board} accentColor={accentColor} notPlayable theme={theme} ruleset={rulesets[board.mode]} />
 										</div>
 									</div>
 								)
@@ -139,16 +139,16 @@ function Bookmarks({ theme, accentColor }: Props) {
 				title={t('bookmarks.promptDeleteAll')}
 				cancelTitle={t('common.cancel')}
 				buttonsMode
-				onClose={() => {setClearBookmarksActionSheetIsOpen(false)}}
+				onClose={() => { setClearBookmarksActionSheetIsOpen(false) }}
 			>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
 			</ActionSheet>
 
-			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => {setRemoveBookmarkActionSheetIsOpen(false)}}>
+			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setRemoveBookmarkActionSheetIsOpen(false) }}>
 				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
 			</ActionSheet>
 
-			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => {setPlayBookmarkActionSheetIsOpen(false)}}>
+			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setPlayBookmarkActionSheetIsOpen(false) }}>
 				<ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
 			</ActionSheet>
 		</div>

@@ -11,17 +11,17 @@ import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
-import { GameModeDefinition } from "./GameModeDefinitions"
+import { Ruleset } from "./Rulesets"
 
 type Props = {
 	theme: ThemeName
 	accentColor: AccentColor
 	paused: boolean
 	handleComplete: () => void
-	definition: GameModeDefinition
+	ruleset: Ruleset
 }
 
-const CommonGame = forwardRef(({ theme, accentColor, paused, handleComplete, definition }: Props, ref) => {
+function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
 	const [noteDragMode, setNoteDragMode] = useState<boolean | null>(null)
 	const [showLinks, setShowLinks] = useState(false)
@@ -281,9 +281,9 @@ const CommonGame = forwardRef(({ theme, accentColor, paused, handleComplete, def
 	}, [render, lockedInput, showLinks, selectMode])
 
 	const magicWandIcon = useMemo(() => {
-		if (magicWandMode === 'disabled'){
+		if (magicWandMode === 'disabled') {
 			return <MagicWandSVG />
-		} else if (magicWandMode === 'links'){
+		} else if (magicWandMode === 'links') {
 			return <FontAwesomeIcon icon={faLink} fontSize={30} color="var(--primaryIconColor)" />
 		} else if (magicWandMode === 'clearColors') {
 			return <ColorCircleSVG />
@@ -299,7 +299,7 @@ const CommonGame = forwardRef(({ theme, accentColor, paused, handleComplete, def
 	return (
 		<div className="game">
 			<div className="sudoku">
-				<CommonCanvas ref={canvasRef} onClick={onCanvasClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused} definition={definition} />
+				<CommonCanvas ref={canvasRef} onClick={onCanvasClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused} ruleset={ruleset} />
 			</div>
 			<Numpad
 				onUndo={onUndo}
@@ -332,6 +332,6 @@ const CommonGame = forwardRef(({ theme, accentColor, paused, handleComplete, def
 			/>
 		</div>
 	)
-})
+}
 
 export default CommonGame

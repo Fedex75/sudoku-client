@@ -338,7 +338,7 @@ function classicGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoor
     let visibleCells: CellCoordinates[] = []
     const boxX = Math.floor(c.x / 3)
     const boxY = Math.floor(c.y / 3)
-    visibleCells = visibleCells.concat(game.definition.game.getBoxCellsCoordinates(c))
+    visibleCells = visibleCells.concat(game.ruleset.game.getBoxCellsCoordinates(c))
     for (let i = 0; i < game.nSquares; i++) {
         if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push({ x: i, y: c.y })
         if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push({ x: c.x, y: i })
@@ -396,7 +396,7 @@ function classicCheckColumnAnimation(game: CommonBoard, c: CellCoordinates): Boa
 }
 
 function classicCheckBoxAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[] {
-    for (const cell of game.definition.game.getBoxCellsCoordinates(c)) {
+    for (const cell of game.ruleset.game.getBoxCellsCoordinates(c)) {
         if (game.get(cell).value === 0) return []
     }
     return [{ type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3) }]
@@ -760,7 +760,7 @@ function classicCalculatePossibleValues(game: CommonBoard) {
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
             const cell = game.get({ x, y })
-            for (const c of game.definition.game.getVisibleCells(game, { x, y })) {
+            for (const c of game.ruleset.game.getVisibleCells(game, { x, y })) {
                 game.get(c).possibleValues = game.get(c).possibleValues.filter(n => n !== cell.value)
             }
         }
@@ -775,13 +775,6 @@ function detectErrorsFromSolution(game: CommonBoard) {
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
             const cell = game.get({ x, y })
-            /*if (cell.value > 0 && !cell.clue) {
-                for (const vc of game.definition.game.getVisibleCells(game, { x, y })) {
-                    if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
-                        cell.isError = game.get(vc).isError = true
-                    }
-                }
-            }*/
             cell.isError = cell.solution > 0 && cell.value > 0 && cell.value !== cell.solution
         }
     }
@@ -802,7 +795,7 @@ function sudokuXDetectErrors(game: CommonBoard) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
             const cell = game.get({ x, y })
             if (cell.value > 0 && !cell.clue) {
-                for (const vc of game.definition.game.getVisibleCells(game, { x, y })) {
+                for (const vc of game.ruleset.game.getVisibleCells(game, { x, y })) {
                     if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
                         cell.isError = game.get(vc).isError = true
                     }
@@ -849,7 +842,7 @@ function sudokuXDiagonals({ ctx, theme, game, rendererState, squareSize }: Rende
     ctx.fill()
 }
 
-export interface GameModeDefinition {
+export interface Ruleset {
     render: {
         init: ((props: StateProps) => void)[]
         onResize: ((props: StateProps) => void)[]
@@ -871,7 +864,7 @@ export interface GameModeDefinition {
     }
 }
 
-export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } = {
+export const rulesets: { [key in GameModeName]: Ruleset } = {
     classic: {
         render: {
             init: [],

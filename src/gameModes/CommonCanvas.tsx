@@ -5,7 +5,7 @@ import { AccentColor } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
 import { isTouchDevice } from "../utils/isTouchDevice"
-import { GameModeDefinition } from "./GameModeDefinitions"
+import { Ruleset } from "./Rulesets"
 
 const animationLengths = {
 	row: 750,
@@ -131,10 +131,10 @@ type Props = {
 	notPlayable?: boolean
 	style?: React.CSSProperties
 	boxBorderWidthFactor?: number
-	definition: GameModeDefinition
+	ruleset: Ruleset
 }
 
-const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, notPlayable = false, style, boxBorderWidthFactor = 0.01, definition }: Props, ref: Ref<CanvasRef>) => {
+const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, notPlayable = false, style, boxBorderWidthFactor = 0.01, ruleset }: Props, ref: Ref<CanvasRef>) => {
 	const logicalSize = useRef(0)
 	const squareSize = useRef(0)
 	const rendererState = useRef<any>({})
@@ -172,13 +172,13 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 
 		const props = { ctx, themes, theme, logicalSize: logicalSize.current, game, lockedInput, notPlayable, colors: colors.current!, darkColors: darkColors.current!, highlightedCells, selectedCellValue, squareSize: squareSize.current, animationColors: animationColors.current, currentAnimations: currentAnimations.current, accentColor, solutionColors, colorBorderLineWidth, boxBorderWidth, showLinks, linksLineWidth, animationGammas: animationGammas.current, cellBorderWidth, rendererState: rendererState.current, cageLineWidth }
 
-		for (const func of definition.render.before) func(props)
+		for (const func of ruleset.render.before) func(props)
 
-		if (!paused || (currentAnimations.current.length > 0 && ['fadein', 'fadeout'].includes(currentAnimations.current[0].data.type))) for (const func of definition.render.unpaused) func(props)
-		else for (const func of definition.render.paused) func(props)
+		if (!paused || (currentAnimations.current.length > 0 && ['fadein', 'fadeout'].includes(currentAnimations.current[0].data.type))) for (const func of ruleset.render.unpaused) func(props)
+		else for (const func of ruleset.render.paused) func(props)
 
-		for (const func of definition.render.after) func(props)
-	}, [accentColor, boxBorderWidthFactor, definition.render.after, definition.render.before, definition.render.paused, definition.render.unpaused, game, lockedInput, notPlayable, paused, showLinks, theme])
+		for (const func of ruleset.render.after) func(props)
+	}, [accentColor, boxBorderWidthFactor, ruleset.render.after, ruleset.render.before, ruleset.render.paused, ruleset.render.unpaused, game, lockedInput, notPlayable, paused, showLinks, theme])
 
 	const doAnimation = useCallback((timestamp: number) => {
 		//Init colors.current
@@ -262,18 +262,18 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 		canvasRef.current.width = logicalSize.current
 		canvasRef.current.height = logicalSize.current
 
-		for (const func of definition.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
+		for (const func of ruleset.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
 
 		renderFrame()
-	}, [boxBorderWidthFactor, definition.render.onResize, game, renderFrame])
+	}, [boxBorderWidthFactor, ruleset.render.onResize, game, renderFrame])
 
 	const screenCoordsToBoardCoords = useCallback((clientX: number, clientY: number) => {
 		if (!canvasRef.current) return undefined
 		const rect = canvasRef.current.getBoundingClientRect()
 		const clickX = (clientX - rect.left) / canvasRef.current.offsetWidth * logicalSize.current
 		const clickY = (clientY - rect.top) / canvasRef.current.offsetHeight * logicalSize.current
-		return definition.render.screenCoordsToBoardCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
-	}, [boxBorderWidthFactor, definition.render, game])
+		return ruleset.render.screenCoordsToBoardCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
+	}, [boxBorderWidthFactor, ruleset.render, game])
 
 	const handleInputStart = useCallback((coords: CellCoordinates[], type: MouseButtonType) => {
 		if (coords.length === 1) lastMouseCell.current = coords[0]
@@ -386,8 +386,8 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	}, [theme, accentColor])
 
 	useEffect(() => {
-		for (const func of definition.render.init) func({game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth})
-	}, [boxBorderWidthFactor, definition.render.init, game])
+		for (const func of ruleset.render.init) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
+	}, [boxBorderWidthFactor, ruleset.render.init, game])
 
 	return <canvas
 		ref={canvasRef}

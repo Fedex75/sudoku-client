@@ -17,21 +17,21 @@ import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 
 type TimerProps = {
-	isTimerRunning: boolean;
-	paused: boolean;
-	win: boolean;
-	onClick: () => void;
+	isTimerRunning: boolean
+	paused: boolean
+	win: boolean
+	onClick: () => void
 }
 
 type TimerRef = {
-	resetTimer: () => void;
+	resetTimer: () => void
 }
 
-const Timer = forwardRef<TimerRef, TimerProps>(({isTimerRunning, paused, win, onClick}, ref) => {
+const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, onClick }, ref) => {
 	const [time, setTime] = useState(GameHandler.game?.timer || 0)
 
 	useImperativeHandle(ref, () => ({
-		resetTimer(){
+		resetTimer() {
 			setTime(0)
 		}
 	}))
@@ -47,14 +47,14 @@ const Timer = forwardRef<TimerRef, TimerProps>(({isTimerRunning, paused, win, on
 				})
 			}, 100)
 		} else {
-			if (interval) clearInterval(interval);
+			if (interval) clearInterval(interval)
 		}
 
 		return () => { if (interval) clearInterval(interval) }
 	}, [isTimerRunning, paused])
 
 	return (
-		<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => {onClick()}}>
+		<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
 			<p className='sudoku__timer__time'>{millisecondsToHMS(time)}</p>
 			{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
 		</div>
@@ -62,15 +62,15 @@ const Timer = forwardRef<TimerRef, TimerProps>(({isTimerRunning, paused, win, on
 })
 
 type Props = {
-	theme: ThemeName;
-	accentColor: AccentColor;
+	theme: ThemeName
+	accentColor: AccentColor
 }
 
 export default function Sudoku({ theme, accentColor }: Props) {
-	const [win, setWin] = useState(false);
-	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked());
-	const [menuActionSheetIsOpen, setMenuActionSheetIsOpen] = useState(false);
-	const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false);
+	const [win, setWin] = useState(false)
+	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
+	const [menuActionSheetIsOpen, setMenuActionSheetIsOpen] = useState(false)
+	const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false)
 
 	const navigate = useNavigate()
 
@@ -89,14 +89,14 @@ export default function Sudoku({ theme, accentColor }: Props) {
 	}, [])
 
 	const handleComplete = useCallback(() => {
-		setIsTimerRunning(false);
+		setIsTimerRunning(false)
 		setTimeout(() => {
-			setWin(true);
+			setWin(true)
 		}, 1350) //Must be equal to animation duration in canvas
 	}, [])
 
 	const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
-		if (!GameHandler.game) return;
+		if (!GameHandler.game) return
 		GameHandler.newGame(GameHandler.game.mode, difficulty)
 
 		setWin(false)
@@ -104,91 +104,91 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 		resetTimer()
 
-		setMenuActionSheetIsOpen(false);
-		setExportActionSheetIsOpen(false);
+		setMenuActionSheetIsOpen(false)
+		setExportActionSheetIsOpen(false)
 	}, [resetTimer])
 
 	const handleNewGameClick = useCallback(() => {
-		if (!GameHandler.game) return;
+		if (!GameHandler.game) return
 
 		if (GameHandler.game.difficulty === 'unrated') {
-			setMenuActionSheetIsOpen(true);
-			setExportActionSheetIsOpen(false);
+			setMenuActionSheetIsOpen(true)
+			setExportActionSheetIsOpen(false)
 		}
-		else handleNewGame(GameHandler.game.difficulty);
+		else handleNewGame(GameHandler.game.difficulty)
 	}, [handleNewGame])
 
 	const topbarMenuClick = useCallback(() => {
-		setMenuActionSheetIsOpen(true);
-		setExportActionSheetIsOpen(false);
-		setPaused(true);
+		setMenuActionSheetIsOpen(true)
+		setExportActionSheetIsOpen(false)
+		setPaused(true)
 	}, [])
 
 	const menuShareClick = useCallback(() => {
-		setMenuActionSheetIsOpen(false);
-		setExportActionSheetIsOpen(true);
+		setMenuActionSheetIsOpen(false)
+		setExportActionSheetIsOpen(true)
 	}, [])
 
 	const menuBookmarkClick = useCallback(() => {
-		if (!GameHandler.game) return;
+		if (!GameHandler.game) return
 
 		if (bookmark) {
-			setBookmark(false);
-			if (GameHandler.game.id !== ''){
+			setBookmark(false)
+			if (GameHandler.game.id !== '') {
 				GameHandler.removeBookmark({
 					id: GameHandler.game.id
-				});
+				})
 			} else {
 				GameHandler.removeBookmark({
 					m: GameHandler.game.mission
-				});
+				})
 			}
 		} else {
-			setBookmark(true);
-			GameHandler.bookmarkCurrentGame();
+			setBookmark(true)
+			GameHandler.bookmarkCurrentGame()
 		}
 
-		setMenuActionSheetIsOpen(false);
+		setMenuActionSheetIsOpen(false)
 	}, [bookmark])
 
 	const handleTimerClick = useCallback(() => {
-		if (win) return;
+		if (win) return
 
-		setPaused(p => !p);
+		setPaused(p => !p)
 	}, [win])
 
 	useEffect(() => {
 		if (GameHandler.game === null) {
-			navigate('/');
-			return;
+			navigate('/')
+			return
 		}
 
 		const windowVisibilityChangeEvent = () => {
-			if (!GameHandler.game?.checkComplete()) GameHandler.game?.saveToLocalStorage();
+			if (!GameHandler.game?.checkComplete()) GameHandler.game?.saveToLocalStorage()
 			if (document.visibilityState === 'visible') {
-				if (!paused) setIsTimerRunning(true);
-			} else setIsTimerRunning(false);
-		};
+				if (!paused) setIsTimerRunning(true)
+			} else setIsTimerRunning(false)
+		}
 
-		window.addEventListener('visibilitychange', windowVisibilityChangeEvent);
+		window.addEventListener('visibilitychange', windowVisibilityChangeEvent)
 
 		return () => {
-			window.removeEventListener('visibilitychange', windowVisibilityChangeEvent);
-			GameHandler.game?.saveToLocalStorage();
+			window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
+			GameHandler.game?.saveToLocalStorage()
 		}
 	}, [navigate, paused])
 
 	useEffect(() => {
-		if (paused){
-			setIsTimerRunning(false);
+		if (paused) {
+			setIsTimerRunning(false)
 		} else {
-			setIsTimerRunning(true);
+			setIsTimerRunning(true)
 		}
-	}, [paused]);
+	}, [paused])
 
 	useEffect(() => {
-		if (!menuActionSheetIsOpen) setPaused(false);
-	}, [menuActionSheetIsOpen]);
+		if (!menuActionSheetIsOpen) setPaused(false)
+	}, [menuActionSheetIsOpen])
 
 	if (GameHandler.game === null) return null
 
@@ -227,7 +227,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 							</div>
 						</div> :
 
-						<CommonGame theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} definition={GameHandler.game.definition} />
+						<CommonGame theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} />
 				}
 			</SectionContent>
 
@@ -257,7 +257,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 								</div>
 							))
 						}
-						<div className='context-menu__button' style={{color: 'white', backgroundColor: 'var(--red)'}} onClick={() => { handleNewGame('restart') }}>
+						<div className='context-menu__button' style={{ color: 'white', backgroundColor: 'var(--red)' }} onClick={() => { handleNewGame('restart') }}>
 							<SVGRestart className='sudoku__restart-icon' stroke='white' />
 							<p>{t('gameDifficulties.restart')}</p>
 						</div>
@@ -272,18 +272,18 @@ export default function Sudoku({ theme, accentColor }: Props) {
 			>
 				<ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
 					try {
-						if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(true));
-						setExportActionSheetIsOpen(false);
+						if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(true))
+						setExportActionSheetIsOpen(false)
 					} catch (e) {
-						alert(t('sudoku.exportError'));
+						alert(t('sudoku.exportError'))
 					}
 				}} />
 				<ActionSheetButton title={t('sudoku.copyFullBoard')} onClick={() => {
 					try {
-						if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(false));
-						setExportActionSheetIsOpen(false);
+						if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(false))
+						setExportActionSheetIsOpen(false)
 					} catch (e) {
-						alert(t('sudoku.exportError'));
+						alert(t('sudoku.exportError'))
 					}
 				}} />
 				{
@@ -291,7 +291,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 						<ActionSheetButton title={t('sudoku.copyMission')} onClick={() => {
 							try {
 								if (GameHandler.game) copy(GameHandler.exportMission())
-								setExportActionSheetIsOpen(false);
+								setExportActionSheetIsOpen(false)
 							} catch (e) {
 								alert(t('sudoku.exportError'))
 							}
