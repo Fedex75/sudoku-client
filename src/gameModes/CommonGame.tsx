@@ -189,7 +189,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				setShowLinks(l => !l)
 				break
 			case 'clearColors':
-				GameHandler.game.clearColors()
+				GameHandler.game.clearColors(true)
 				setRender(r => r === 100 ? 0 : r + 1)
 				break
 		}

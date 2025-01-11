@@ -55,7 +55,7 @@ export default class CommonBoard {
 			this.board = data.board
 			this.selectedCells = data.selectedCells
 			this.history = data.history
-			this.checkFullNotation()
+			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 			this.ruleset.game.checkErrors(this)
 		} else {
@@ -116,17 +116,16 @@ export default class CommonBoard {
 
 	pushBoard() {
 		this.history.push({
-			board: JSON.parse(JSON.stringify(this.board))
+			board: JSON.parse(JSON.stringify(this.board)),
+			fullNotation: this.fullNotation,
 		})
 	}
 
 	popBoard() {
 		if (this.history.length > 0) {
 			this.board = this.history[this.history.length - 1].board
-			this.checkFullNotation(true)
+			this.fullNotation = this.history[this.history.length - 1].fullNotation
 			this.history.pop()
-			for (const func of this.ruleset.game.afterValuesChanged) func(this)
-			this.ruleset.game.checkErrors(this)
 		}
 	}
 
@@ -207,7 +206,7 @@ export default class CommonBoard {
 							hasPushed = true
 						}
 						this.get(c).notes.push(n)
-						this.checkFullNotation()
+						this.checkFullNotation(false)
 						finalNoteState = true
 					}
 				}
@@ -358,11 +357,13 @@ export default class CommonBoard {
 
 		this.pushBoard()
 		this.board[coords.x][coords.y].color = newColor
-		//this.saveToLocalStorage()
+		for (const func of this.ruleset.game.afterValuesChanged) func(this)
+		this.ruleset.game.checkErrors(this)
+		this.saveToLocalStorage()
 	}
 
-	clearColors() {
-		this.pushBoard()
+	clearColors(push: boolean) {
+		if (push) this.pushBoard()
 		for (let x = 0; x < this.nSquares; x++) {
 			for (let y = 0; y < this.nSquares; y++) {
 				this.board[x][y].color = 'default'
@@ -374,7 +375,7 @@ export default class CommonBoard {
 		GameHandler.saveGame(JSON.stringify(this))
 	}
 
-	checkFullNotation(force = false) {
+	checkFullNotation(force: boolean) {
 		if (this.fullNotation && !force) return
 
 		for (let n = 1; n <= 9; n++) {
@@ -400,7 +401,7 @@ export default class CommonBoard {
 
 		this.fullNotation = true
 
-		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors()
+		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors(false)
 	}
 
 	getTextRepresentation(cluesOnly: boolean) {

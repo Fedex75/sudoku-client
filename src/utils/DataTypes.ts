@@ -1,9 +1,9 @@
-import { ColorName } from "./Colors";
-import { DifficultyName, GameModeName } from "./Difficulties";
+import { ColorName } from "./Colors"
+import { DifficultyName, GameModeName } from "./Difficulties"
 
-export type ThemeName = 'light' | 'dark';
+export type ThemeName = 'light' | 'dark'
 
-export type DigitChar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+export type DigitChar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
 export type Coordinates = {
     x: number,
@@ -11,103 +11,104 @@ export type Coordinates = {
 }
 
 export type CanvasRef = {
-	renderFrame: () => void;
-    doAnimations: (data: BoardAnimation[]) => void;
-    stopAnimations: () => void;
+    renderFrame: () => void
+    doAnimations: (data: BoardAnimation[]) => void
+    stopAnimations: () => void
 }
 
-export type MouseButtonType = 'primary' | 'secondary' | 'tertiary';
+export type MouseButtonType = 'primary' | 'secondary' | 'tertiary'
 
 export type Cell = {
-    value: number;
-    notes: number[];
-    color: ColorName;
-    solution: number;
-    clue: boolean;
-    cageIndex?: number;
-    cageValue?: number;
-    possibleValues: number[];
-    isError: boolean;
+    value: number
+    notes: number[]
+    color: ColorName
+    solution: number
+    clue: boolean
+    cageIndex?: number
+    cageValue?: number
+    possibleValues: number[]
+    isError: boolean
 }
 
 export type CellCoordinates = {
-    x: number;
-    y: number;
+    x: number
+    y: number
 }
 
-export type Board = Cell[][];
+export type Board = Cell[][]
 
 export type HistoryItem = {
-    board: Board;
+    board: Board
+    fullNotation: boolean
 }
 
-export type History = HistoryItem[];
+export type History = HistoryItem[]
 
 export type GameData = {
-	id: string;
-	mode: GameModeName;
-    difficulty: DifficultyName;
-    mission: string;
-    clues: string;
-    solution: string;
-    cages: number[][][];
-    timer: number;
-    board: Board;
-    selectedCells: CellCoordinates[];
-    history: History;
-    version: number;
+    id: string
+    mode: GameModeName
+    difficulty: DifficultyName
+    mission: string
+    clues: string
+    solution: string
+    cages: number[][][]
+    timer: number
+    board: Board
+    selectedCells: CellCoordinates[]
+    history: History
+    version: number
 }
 
 export type RawGameData = {
-	id: string;
-    m: string;
+    id: string
+    m: string
 }
 
 export function isGameData(data: GameData | RawGameData): data is GameData {
-    return (data as GameData).mode !== undefined;
+    return (data as GameData).mode !== undefined
 }
 
-export type AnimationType = 'box' | 'row' | 'col' | 'board' | 'fadein' | 'fadein_long' | 'fadeout';
+export type AnimationType = 'box' | 'row' | 'col' | 'board' | 'fadein' | 'fadein_long' | 'fadeout'
 
 export type BoxBoardAnimation = {
-    type: 'box';
-    boxX: number;
-    boxY: number;
+    type: 'box'
+    boxX: number
+    boxY: number
 }
 
 export type RowBoardAnimation = {
-    type: 'row';
-    center: CellCoordinates;
+    type: 'row'
+    center: CellCoordinates
 }
 
 export type ColBoardAnimation = {
-    type: 'col';
-    center: CellCoordinates;
+    type: 'col'
+    center: CellCoordinates
 }
 
 export type BoardBoardAnimation = {
-    type: 'board';
-    center: CellCoordinates;
+    type: 'board'
+    center: CellCoordinates
 }
 
 export type FadeBoardAnimation = {
-    type: 'fadein' | 'fadein_long' | 'fadeout';
+    type: 'fadein' | 'fadein_long' | 'fadeout'
 }
 
-export type BoardAnimation = BoxBoardAnimation | RowBoardAnimation | ColBoardAnimation | BoardBoardAnimation | FadeBoardAnimation;
+export type BoardAnimation = BoxBoardAnimation | RowBoardAnimation | ColBoardAnimation | BoardBoardAnimation | FadeBoardAnimation
 
 export type IDBookmark = {
-	id: string;
-	m?: never;
+    id: string
+    m?: never
 }
 
 export type MissionBookmark = {
-	id?: never;
-	m: string;
+    id?: never
+    m: string
 }
 
-export type Bookmark = IDBookmark | MissionBookmark;
+export type Bookmark = IDBookmark | MissionBookmark
 
 export function isIDBookmark(bm: Bookmark): bm is IDBookmark {
-    return (bm.id !== undefined);
+    return (bm.id !== undefined)
 }

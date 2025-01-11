@@ -455,6 +455,17 @@ function classicCalculatePossibleValues(game: CommonBoard) {
         }
     }
 
+    if (SettingsHandler.settings.lockCellsWithColor) {
+        for (let x = 0; x <= game.nSquares - 1; x++) {
+            for (let y = 0; y <= game.nSquares - 1; y++) {
+                const cell = game.get({ x, y })
+                if (cell.color !== 'default') {
+                    cell.possibleValues = [...cell.notes]
+                }
+            }
+        }
+    }
+
     return []
 }
 
