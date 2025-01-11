@@ -27,6 +27,7 @@ export type Cell = {
     cageIndex?: number;
     cageValue?: number;
     possibleValues: number[];
+    isError: boolean;
 }
 
 export type CellCoordinates = {

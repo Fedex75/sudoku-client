@@ -1,53 +1,53 @@
-import { AccentColor } from "../utils/Colors";
-import { BoardAnimation, Cell, CellCoordinates, DigitChar, RawGameData, ThemeName } from "../utils/DataTypes";
-import SettingsHandler from "../utils/SettingsHandler";
-import CommonBoard from "./CommonBoard";
-import { indexOfCoordsInArray } from "../utils/CoordsUtils";
-import { decodeDifficulty, DifficultyIdentifier, GameModeName } from "../utils/Difficulties";
-import { MutableRefObject } from "react";
+import { AccentColor } from "../utils/Colors"
+import { BoardAnimation, CellCoordinates, DigitChar, RawGameData, ThemeName } from "../utils/DataTypes"
+import SettingsHandler from "../utils/SettingsHandler"
+import CommonBoard from "./CommonBoard"
+import { indexOfCoordsInArray } from "../utils/CoordsUtils"
+import { decodeDifficulty, DifficultyIdentifier, GameModeName } from "../utils/Difficulties"
+import { MutableRefObject } from "react"
 import Solver from "../utils/Solver"
 import { decodeMissionString } from "../utils/Decoder"
 
 export interface RendererProps {
-    ctx: CanvasRenderingContext2D;
-    themes: any;
-    theme: ThemeName;
-    logicalSize: number;
-    game: CommonBoard;
-    lockedInput: number;
-    notPlayable: boolean;
-    colors: Record<string, string>;
-    darkColors: Record<string, string>;
-    highlightedCells: boolean[][];
-    selectedCellValue: number;
-    squareSize: number;
-    animationColors: string[][] | null;
-    currentAnimations: {data: BoardAnimation, startTime: number | null}[];
-    accentColor: AccentColor;
-    solutionColors: any;
-    colorBorderLineWidth: number;
-    boxBorderWidth: number;
-    showLinks: boolean;
-    linksLineWidth: number;
-    animationGammas: number[] | null;
-    cellBorderWidth: number;
-    rendererState: any;
-    cageLineWidth: number;
+    ctx: CanvasRenderingContext2D
+    themes: any
+    theme: ThemeName
+    logicalSize: number
+    game: CommonBoard
+    lockedInput: number
+    notPlayable: boolean
+    colors: Record<string, string>
+    darkColors: Record<string, string>
+    highlightedCells: boolean[][]
+    selectedCellValue: number
+    squareSize: number
+    animationColors: string[][] | null
+    currentAnimations: { data: BoardAnimation, startTime: number | null }[]
+    accentColor: AccentColor
+    solutionColors: any
+    colorBorderLineWidth: number
+    boxBorderWidth: number
+    showLinks: boolean
+    linksLineWidth: number
+    animationGammas: number[] | null
+    cellBorderWidth: number
+    rendererState: any
+    cageLineWidth: number
 }
 
 export interface StateProps {
-    game: CommonBoard;
-    rendererState: MutableRefObject<any>;
-    squareSize: MutableRefObject<number>;
-    logicalSize: MutableRefObject<number>;
-    boxBorderWidthFactor: number;
-    cellBorderWidth: number;
-    cageLineWidth: number;
+    game: CommonBoard
+    rendererState: MutableRefObject<any>
+    squareSize: MutableRefObject<number>
+    logicalSize: MutableRefObject<number>
+    boxBorderWidthFactor: number
+    cellBorderWidth: number
+    cageLineWidth: number
 }
 
 export interface InitGameProps {
-    game: CommonBoard;
-    data: RawGameData;
+    game: CommonBoard
+    data: RawGameData
 }
 
 const SVGHeight = 30
@@ -68,53 +68,52 @@ const numberPaths: Record<DigitChar, string> = {
 }
 
 function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: number, y: number, size: number, center: boolean, background: string | null) {
-	const scale = size / SVGHeight
+    const scale = size / SVGHeight
 
-	if (background !== null) {
-		const prevFillStyle = ctx.fillStyle
-		const backgroundScaleFactor = 1.4
+    if (background !== null) {
+        const prevFillStyle = ctx.fillStyle
+        const backgroundScaleFactor = 1.4
 
-		ctx.translate(x, y)
-		ctx.scale(scale, scale)
+        ctx.translate(x, y)
+        ctx.scale(scale, scale)
 
-		ctx.fillStyle = background
-		ctx.fillRect(0 - (SVGWidth / 2) * backgroundScaleFactor, 0 - (SVGHeight / 2) * backgroundScaleFactor, SVGWidth * backgroundScaleFactor, SVGHeight * backgroundScaleFactor)
+        ctx.fillStyle = background
+        ctx.fillRect(0 - (SVGWidth / 2) * backgroundScaleFactor, 0 - (SVGHeight / 2) * backgroundScaleFactor, SVGWidth * backgroundScaleFactor, SVGHeight * backgroundScaleFactor)
 
-		ctx.fillStyle = prevFillStyle
+        ctx.fillStyle = prevFillStyle
 
-		ctx.setTransform(1, 0, 0, 1, 0, 0)
-	}
+        ctx.setTransform(1, 0, 0, 1, 0, 0)
+    }
 
-	String(n).split('').map((digit, i) => {
-		ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
-		ctx.scale(scale, scale)
+    String(n).split('').map((digit, i) => {
+        ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
+        ctx.scale(scale, scale)
 
-		ctx.lineWidth = 1
+        ctx.lineWidth = 1
 
-		const p = new Path2D(numberPaths[digit as DigitChar])
+        const p = new Path2D(numberPaths[digit as DigitChar])
 
-		ctx.stroke(p)
-		ctx.fill(p)
+        ctx.stroke(p)
+        ctx.fill(p)
 
-		ctx.setTransform(1, 0, 0, 1, 0, 0)
-		return null
-	})
+        ctx.setTransform(1, 0, 0, 1, 0, 0)
+        return null
+    })
 }
 
-function dashedLine(ctx: CanvasRenderingContext2D, c1: CellCoordinates, c2: CellCoordinates, ratio: number, cageLineWidth: number){
-	const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
-	if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
-	else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
+function dashedLine(ctx: CanvasRenderingContext2D, c1: CellCoordinates, c2: CellCoordinates, ratio: number, cageLineWidth: number) {
+    const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
+    if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
+    else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
 }
 
-function classicBackground({ctx, themes, theme, logicalSize}: RendererProps){
+function classicBackground({ ctx, themes, theme, logicalSize }: RendererProps) {
     //Board background
-    ctx.fillStyle = themes[theme].canvasCellBorderColor;
-    ctx.fillRect(0, 0, logicalSize, logicalSize);
+    ctx.fillStyle = themes[theme].canvasCellBorderColor
+    ctx.fillRect(0, 0, logicalSize, logicalSize)
 }
 
-function classicCell({ctx, themes, theme, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellValue, squareSize, animationColors, currentAnimations, accentColor, solutionColors, rendererState}: RendererProps){
-    //Cell background, value, candidates and cage value
+function classicCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellValue, squareSize, animationColors, currentAnimations, rendererState }: RendererProps) {
     for (let x = 0; x < game.nSquares; x++) {
         for (let y = 0; y < game.nSquares; y++) {
             const cell = game.get({ x, y })
@@ -122,9 +121,9 @@ function classicCell({ctx, themes, theme, game, lockedInput, notPlayable, colors
 
             //Background
             ctx.fillStyle =
-            notPlayable ? colors.default :
-            (hasSameValueAsSelected || highlightedCells[x][y]) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
-            (colors[cell.color]); //Cell color
+                notPlayable ? colors.default :
+                    (hasSameValueAsSelected || highlightedCells[x][y]) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
+                        (colors[cell.color]) //Cell color
 
             ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
 
@@ -132,15 +131,22 @@ function classicCell({ctx, themes, theme, game, lockedInput, notPlayable, colors
                 ctx.fillStyle = animationColors[x][y]
                 ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
             }
+        }
+    }
+}
+
+function classicCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellValue, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
+    for (let x = 0; x < game.nSquares; x++) {
+        for (let y = 0; y < game.nSquares; y++) {
+            const cell = game.get({ x, y })
 
             if (cell.value > 0) {
                 //Value
-                const isError = SettingsHandler.settings.checkMistakes && cell.value !== cell.solution && cell.solution > 0
                 ctx.strokeStyle = ctx.fillStyle =
-                isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-                cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
-                solutionColors[accentColor]
-                if (isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+                    cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
+                        cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
+                            solutionColors[accentColor]
+                if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
                 drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, true, null)
             } else {
                 //Candidates
@@ -156,44 +162,44 @@ function classicCell({ctx, themes, theme, game, lockedInput, notPlayable, colors
     }
 }
 
-function classicSelection({ctx, accentColor, colors, game, squareSize, colorBorderLineWidth, boxBorderWidth, rendererState}: RendererProps){
+function classicSelection({ ctx, accentColor, colors, game, squareSize, colorBorderLineWidth, boxBorderWidth, rendererState }: RendererProps) {
     //Selection
-    for (const c of game.selectedCells){
-        ctx.fillStyle = ctx.strokeStyle = colors[accentColor];
+    for (const c of game.selectedCells) {
+        ctx.fillStyle = ctx.strokeStyle = colors[accentColor]
 
-        const padding = 1;
-        const left = rendererState.cellPositions[c.x] + padding;
-        const right = rendererState.cellPositions[c.x] + squareSize - padding - colorBorderLineWidth;
-        const top = rendererState.cellPositions[c.y] + padding;
-        const bottom = rendererState.cellPositions[c.y] + squareSize - padding - colorBorderLineWidth;
+        const padding = 1
+        const left = rendererState.cellPositions[c.x] + padding
+        const right = rendererState.cellPositions[c.x] + squareSize - padding - colorBorderLineWidth
+        const top = rendererState.cellPositions[c.y] + padding
+        const bottom = rendererState.cellPositions[c.y] + squareSize - padding - colorBorderLineWidth
 
-        const lineLength = squareSize - padding * 2;
+        const lineLength = squareSize - padding * 2
 
         //Top
-        if (c.y === 0 || (indexOfCoordsInArray(game.selectedCells, {x: c.x, y: c.y - 1}) === -1)) ctx.fillRect(left, top, lineLength, colorBorderLineWidth);
+        if (c.y === 0 || (indexOfCoordsInArray(game.selectedCells, { x: c.x, y: c.y - 1 }) === -1)) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
 
         //Right
-        if (c.x === (game.nSquares - 1) || (indexOfCoordsInArray(game.selectedCells, {x: c.x + 1, y: c.y}) === -1)) ctx.fillRect(right, top, colorBorderLineWidth, lineLength);
+        if (c.x === (game.nSquares - 1) || (indexOfCoordsInArray(game.selectedCells, { x: c.x + 1, y: c.y }) === -1)) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
         else {
             //Right bridges
-            if (!(c.y > 0 && (indexOfCoordsInArray(game.selectedCells, {x: c.x + 1, y: c.y - 1}) >= 0) && (indexOfCoordsInArray(game.selectedCells, {x: c.x, y: c.y - 1}) >= 0))) ctx.fillRect(right, top, padding * 2 + boxBorderWidth, colorBorderLineWidth);
-            if (!(c.y < (game.nSquares - 1) && (indexOfCoordsInArray(game.selectedCells, {x: c.x + 1, y: c.y + 1}) >= 0) && (indexOfCoordsInArray(game.selectedCells, {x: c.x, y: c.y + 1}) >= 0))) ctx.fillRect(right, bottom, padding * 2 + boxBorderWidth, colorBorderLineWidth);
+            if (!(c.y > 0 && (indexOfCoordsInArray(game.selectedCells, { x: c.x + 1, y: c.y - 1 }) >= 0) && (indexOfCoordsInArray(game.selectedCells, { x: c.x, y: c.y - 1 }) >= 0))) ctx.fillRect(right, top, padding * 2 + boxBorderWidth, colorBorderLineWidth)
+            if (!(c.y < (game.nSquares - 1) && (indexOfCoordsInArray(game.selectedCells, { x: c.x + 1, y: c.y + 1 }) >= 0) && (indexOfCoordsInArray(game.selectedCells, { x: c.x, y: c.y + 1 }) >= 0))) ctx.fillRect(right, bottom, padding * 2 + boxBorderWidth, colorBorderLineWidth)
         }
 
         //Bottom
-        if (c.y === (game.nSquares - 1) || (indexOfCoordsInArray(game.selectedCells, {x: c.x, y: c.y + 1}) === -1)) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth);
+        if (c.y === (game.nSquares - 1) || (indexOfCoordsInArray(game.selectedCells, { x: c.x, y: c.y + 1 }) === -1)) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
         else {
             //Bottom bridges
-            if (!(c.x > 0 && (indexOfCoordsInArray(game.selectedCells, {x: c.x - 1, y: c.y}) >= 0) && (indexOfCoordsInArray(game.selectedCells, {x: c.x - 1, y: c.y + 1}) >= 0))) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth);
-            if (!(c.x < (game.nSquares - 1) && (indexOfCoordsInArray(game.selectedCells, {x: c.x + 1, y: c.y}) >= 0) && (indexOfCoordsInArray(game.selectedCells, {x: c.x + 1, y: c.y + 1}) >= 0))) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth);
+            if (!(c.x > 0 && (indexOfCoordsInArray(game.selectedCells, { x: c.x - 1, y: c.y }) >= 0) && (indexOfCoordsInArray(game.selectedCells, { x: c.x - 1, y: c.y + 1 }) >= 0))) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
+            if (!(c.x < (game.nSquares - 1) && (indexOfCoordsInArray(game.selectedCells, { x: c.x + 1, y: c.y }) >= 0) && (indexOfCoordsInArray(game.selectedCells, { x: c.x + 1, y: c.y + 1 }) >= 0))) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
         }
 
         //Left
-        if (c.x === 0 || (indexOfCoordsInArray(game.selectedCells, {x: c.x - 1, y: c.y}) === -1)) ctx.fillRect(left, top, colorBorderLineWidth, lineLength);
+        if (c.x === 0 || (indexOfCoordsInArray(game.selectedCells, { x: c.x - 1, y: c.y }) === -1)) ctx.fillRect(left, top, colorBorderLineWidth, lineLength)
     }
 }
 
-function classicLinks({ctx, game, showLinks, lockedInput, selectedCellValue, accentColor, linksLineWidth, squareSize, rendererState}: RendererProps){
+function classicLinks({ ctx, game, showLinks, lockedInput, selectedCellValue, accentColor, linksLineWidth, squareSize, rendererState }: RendererProps) {
     //Links
     if (showLinks && (lockedInput > 0 || selectedCellValue > 0)) {
         const target = lockedInput > 0 ? lockedInput : selectedCellValue
@@ -217,7 +223,7 @@ function classicLinks({ctx, game, showLinks, lockedInput, selectedCellValue, acc
     }
 }
 
-function classicFadeAnimations({ctx, game, animationColors, animationGammas, currentAnimations, squareSize, themes, theme, boxBorderWidth, cellBorderWidth, rendererState}: RendererProps){
+function classicFadeAnimations({ ctx, game, animationColors, animationGammas, currentAnimations, squareSize, themes, theme, boxBorderWidth, cellBorderWidth, rendererState }: RendererProps) {
     //Fade animations
     if (animationColors && animationGammas && ['fadein', 'fadein_long', 'fadeout'].includes(currentAnimations[0]?.data.type)) {
         for (let y = 0; y < game.nSquares; y++) {
@@ -237,7 +243,7 @@ function classicFadeAnimations({ctx, game, animationColors, animationGammas, cur
     }
 }
 
-function classicPaused({ctx, game, darkColors, squareSize, rendererState}: RendererProps){
+function classicPaused({ ctx, game, darkColors, squareSize, rendererState }: RendererProps) {
     //Paused
     for (let x = 0; x < game.nSquares; x++) {
         for (let y = 0; y < game.nSquares; y++) {
@@ -247,7 +253,7 @@ function classicPaused({ctx, game, darkColors, squareSize, rendererState}: Rende
     }
 }
 
-function classicBorders({ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState}: RendererProps){
+function classicBorders({ ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState }: RendererProps) {
     //Borders
     if (theme === 'light') {
         ctx.fillStyle = themes[theme].canvasBoxBorderColor
@@ -266,10 +272,10 @@ function classicBorders({ctx, game, themes, theme, boxBorderWidth, logicalSize, 
     }
 }
 
-function killerSolveLastInCages(game: CommonBoard){
+function killerSolveLastInCages(game: CommonBoard) {
     let animations: BoardAnimation[] = []
-    if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3){
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++){
+    if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
+        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
             let remaining = game.cages[cageIndex].length
             let sum = 0
             let realSum = 0
@@ -296,14 +302,14 @@ function killerSolveLastInCages(game: CommonBoard){
     return animations
 }
 
-function killerInitCageIndex(game: CommonBoard){
-    for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++){
+function killerInitCageIndex(game: CommonBoard) {
+    for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
         game.cages[cageIndex].forEach((cell, cellIndex) => {
             let x = cell[0]
             let y = cell[1]
             game.board[x][y].cageIndex = cageIndex
             if (SettingsHandler.settings.killerAutoSolveLastInCage && game.cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
-            if (cellIndex === 0){
+            if (cellIndex === 0) {
                 let sum = 0
                 for (const cell2 of game.cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
                 game.board[x][y].cageValue = sum
@@ -313,73 +319,97 @@ function killerInitCageIndex(game: CommonBoard){
         })
     }
 
-    if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3){
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++){
-            killerSolveLastInCages(game);
+    if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
+        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
+            killerSolveLastInCages(game)
         }
     }
 }
 
-function classicGetBoxCellsCoordinates(c: CellCoordinates): CellCoordinates[]{
+function classicGetBoxCellsCoordinates(c: CellCoordinates): CellCoordinates[] {
     let boxCells = []
-		const boxX = Math.floor(c.x / 3)
-		const boxY = Math.floor(c.y / 3)
-		for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) boxCells.push({x: boxX * 3 + x, y: boxY * 3 + y})
-		return boxCells
+    const boxX = Math.floor(c.x / 3)
+    const boxY = Math.floor(c.y / 3)
+    for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) boxCells.push({ x: boxX * 3 + x, y: boxY * 3 + y })
+    return boxCells
 }
 
-function classicGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[]{
+function classicGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[] {
     let visibleCells: CellCoordinates[] = []
     const boxX = Math.floor(c.x / 3)
     const boxY = Math.floor(c.y / 3)
     visibleCells = visibleCells.concat(game.definition.game.getBoxCellsCoordinates(c))
-    for (let i = 0; i < game.nSquares; i++){
-        if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push({x: i, y: c.y})
-        if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push({x: c.x, y: i})
+    for (let i = 0; i < game.nSquares; i++) {
+        if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push({ x: i, y: c.y })
+        if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push({ x: c.x, y: i })
     }
     return visibleCells
 }
 
-function killerGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[]{
-    let visibleCells = classicGetVisibleCells(game, c);
+function killerGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[] {
+    let visibleCells = classicGetVisibleCells(game, c)
 
-    for (const cell of game.cages[game.get(c).cageIndex!]){
-        const coords = {x: cell[0], y: cell[1]};
-        if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords);
+    for (const cell of game.cages[game.get(c).cageIndex!]) {
+        const coords = { x: cell[0], y: cell[1] }
+        if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords)
     }
 
     return visibleCells
 }
 
-function classicCheckRowAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[]{
-    for (let i = 0; i < game.nSquares; i++){
-        if (game.get({x: i, y: c.y}).value === 0) return [];
+function sudokuXGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[] {
+    let visibleCells = classicGetVisibleCells(game, c)
+
+    // If the cell is in the NW-SE diagonal
+    if (c.x === c.y) {
+        for (let i = 0; i < game.nSquares; i++) {
+            if (i !== c.x && indexOfCoordsInArray(visibleCells, { x: i, y: i }) === -1) {
+                visibleCells.push({ x: i, y: i })
+            }
+        }
     }
-    return [{type: 'row', center: c}];
+
+    // If the cell is in the SW-NE diagonal
+    if (c.y === 8 - c.x) {
+        for (let i = 0; i < game.nSquares; i++) {
+            if (i !== c.x && indexOfCoordsInArray(visibleCells, { x: i, y: 8 - i }) === -1) {
+                visibleCells.push({ x: i, y: 8 - i })
+            }
+        }
+    }
+
+    return visibleCells
 }
 
-function classicCheckColumnAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[]{
-    for (let i = 0; i < game.nSquares; i++){
-        if (game.get({x: c.x, y: i}).value === 0) return [];
+function classicCheckRowAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[] {
+    for (let i = 0; i < game.nSquares; i++) {
+        if (game.get({ x: i, y: c.y }).value === 0) return []
     }
-    return [{type: 'col', center: c}];
+    return [{ type: 'row', center: c }]
 }
 
-function classicCheckBoxAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[]{
-    for (const cell of game.definition.game.getBoxCellsCoordinates(c)){
-        if (game.get(cell).value === 0) return [];
+function classicCheckColumnAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[] {
+    for (let i = 0; i < game.nSquares; i++) {
+        if (game.get({ x: c.x, y: i }).value === 0) return []
     }
-    return [{type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3)}];
+    return [{ type: 'col', center: c }]
 }
 
-function classicGetBoxes(game: CommonBoard): CellCoordinates[][]{
+function classicCheckBoxAnimation(game: CommonBoard, c: CellCoordinates): BoardAnimation[] {
+    for (const cell of game.definition.game.getBoxCellsCoordinates(c)) {
+        if (game.get(cell).value === 0) return []
+    }
+    return [{ type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3) }]
+}
+
+function classicGetBoxes(game: CommonBoard): CellCoordinates[][] {
     let boxes = []
-    for (let boxX = 0; boxX < 3; boxX++){
-        for (let boxY = 0; boxY < 3; boxY++){
+    for (let boxX = 0; boxX < 3; boxX++) {
+        for (let boxY = 0; boxY < 3; boxY++) {
             let box = []
-            for (let x = 0; x < 3; x++){
-                for (let y = 0; y < 3; y++){
-                    box.push({x: boxX * 3 + x, y: boxY * 3 + y})
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    box.push({ x: boxX * 3 + x, y: boxY * 3 + y })
                 }
             }
             boxes.push(box)
@@ -388,51 +418,51 @@ function classicGetBoxes(game: CommonBoard): CellCoordinates[][]{
     return boxes
 }
 
-function classicFindLinksRow(game: CommonBoard, n: number): CellCoordinates[][]{
+function classicFindLinksRow(game: CommonBoard, n: number): CellCoordinates[][] {
     let links: CellCoordinates[][] = []
-    for (let r = 0; r < game.nSquares; r++){
+    for (let r = 0; r < game.nSquares; r++) {
         let newLink = []
-        for (let i = 0; i < game.nSquares; i++){
-            if (game.get({x: i, y: r}).notes.includes(n)){
-                newLink.push({x: i, y: r});
+        for (let i = 0; i < game.nSquares; i++) {
+            if (game.get({ x: i, y: r }).notes.includes(n)) {
+                newLink.push({ x: i, y: r })
             }
         }
-        if (newLink.length <= 2){
+        if (newLink.length <= 2) {
             links.push(newLink)
         }
     }
     return links
 }
 
-function classicFindLinksColumn(game: CommonBoard, n: number): CellCoordinates[][]{
+function classicFindLinksColumn(game: CommonBoard, n: number): CellCoordinates[][] {
     let links: CellCoordinates[][] = []
-    for (let c = 0; c < game.nSquares; c++){
+    for (let c = 0; c < game.nSquares; c++) {
         let newLink = []
-        for (let i = 0; i < game.nSquares; i++){
-            if (game.get({x: c, y: i}).notes.includes(n)){
-                newLink.push({x: c, y: i});
+        for (let i = 0; i < game.nSquares; i++) {
+            if (game.get({ x: c, y: i }).notes.includes(n)) {
+                newLink.push({ x: c, y: i })
             }
         }
-        if (newLink.length <= 2){
+        if (newLink.length <= 2) {
             links.push(newLink)
         }
     }
     return links
 }
 
-function classicFindLinksBox(game: CommonBoard, n: number): CellCoordinates[][]{
+function classicFindLinksBox(game: CommonBoard, n: number): CellCoordinates[][] {
     let links: CellCoordinates[][] = []
-    for (let boxX = 0; boxX < 3; boxX++){
-        for (let boxY = 0; boxY < 3; boxY++){
+    for (let boxX = 0; boxX < 3; boxX++) {
+        for (let boxY = 0; boxY < 3; boxY++) {
             let newLink = []
-            for (let x = 0; x < 3; x++){
-                for (let y = 0; y < 3; y++){
-                    if (game.get({x: boxX * 3 + x, y: boxY * 3 + y}).notes.includes(n)){
-                        newLink.push({x: boxX * 3 + x, y: boxY * 3 + y});
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    if (game.get({ x: boxX * 3 + x, y: boxY * 3 + y }).notes.includes(n)) {
+                        newLink.push({ x: boxX * 3 + x, y: boxY * 3 + y })
                     }
                 }
             }
-            if (newLink.length <= 2){
+            if (newLink.length <= 2) {
                 links.push(newLink)
             }
         }
@@ -440,7 +470,7 @@ function classicFindLinksBox(game: CommonBoard, n: number): CellCoordinates[][]{
     return links
 }
 
-function classicResize({game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth}: StateProps){
+function classicResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
     const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
     const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
     const numberOfCellBorders = game.nSquares + 1 - numberOfBoxBorders
@@ -469,10 +499,10 @@ function classicResize({game, rendererState, squareSize, logicalSize, boxBorderW
 
     rendererState.current.noteDeltas = newNoteDeltas
     rendererState.current.cellPositions = newCellPositions
-	rendererState.current.valuePositions = newValuePositions
+    rendererState.current.valuePositions = newValuePositions
 }
 
-function killerResize({game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth}: StateProps){
+function killerResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
     const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
     const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
     const numberOfCellBorders = game.nSquares + 1 - numberOfBoxBorders
@@ -501,18 +531,18 @@ function killerResize({game, rendererState, squareSize, logicalSize, boxBorderWi
 
     rendererState.current.noteDeltas = newNoteDeltas
     rendererState.current.cellPositions = newCellPositions
-	rendererState.current.valuePositions = newValuePositions
+    rendererState.current.valuePositions = newValuePositions
 }
 
 type CageVector = [CellCoordinates, CellCoordinates, number, number]
 
-function killerCalculateCageVectors({game, rendererState, squareSize, cageLineWidth}: StateProps){
+function killerCalculateCageVectors({ game, rendererState, squareSize, cageLineWidth }: StateProps) {
     rendererState.current.cagePadding = Math.floor(squareSize.current * 0.08)
-    let cageLinePositions = Array(game.nSquares*2).fill(0)
+    let cageLinePositions = Array(game.nSquares * 2).fill(0)
 
-    for (let i = 0; i < game.nSquares; i++){
-        cageLinePositions[i*2] = rendererState.current.cellPositions[i] + rendererState.current.cagePadding
-        cageLinePositions[i*2+1] = rendererState.current.cellPositions[i] + squareSize.current - rendererState.current.cagePadding - cageLineWidth
+    for (let i = 0; i < game.nSquares; i++) {
+        cageLinePositions[i * 2] = rendererState.current.cellPositions[i] + rendererState.current.cagePadding
+        cageLinePositions[i * 2 + 1] = rendererState.current.cellPositions[i] + squareSize.current - rendererState.current.cagePadding - cageLineWidth
     }
 
     let newCageVectors: CageVector[] = []
@@ -522,15 +552,15 @@ function killerCalculateCageVectors({game, rendererState, squareSize, cageLineWi
 
     const targetRatio = Math.floor(squareSize.current * 0.075) + 1
 
-    function addVector(c1: CellCoordinates, c2: CellCoordinates, cageIndex: number){
+    function addVector(c1: CellCoordinates, c2: CellCoordinates, cageIndex: number) {
         let i = 1
         let ratio = 0
         const delta = Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y)) + cageLineWidth
 
-        while (true){
+        while (true) {
             ratio = delta / i
-            if (ratio <= targetRatio){
-                if ( (targetRatio - ratio) > (delta / (i - 1) - targetRatio)) ratio = delta / (i - 2)
+            if (ratio <= targetRatio) {
+                if ((targetRatio - ratio) > (delta / (i - 1) - targetRatio)) ratio = delta / (i - 2)
                 break
             }
             i += 2
@@ -540,55 +570,55 @@ function killerCalculateCageVectors({game, rendererState, squareSize, cageLineWi
     }
 
     //Horizontal
-    for (let y = 0; y < game.nSquares; y++){
-        const top = cageLinePositions[y*2]
-        const bottom = cageLinePositions[y*2+1]
+    for (let y = 0; y < game.nSquares; y++) {
+        const top = cageLinePositions[y * 2]
+        const bottom = cageLinePositions[y * 2 + 1]
 
-        for (let x = 0; x < game.nSquares; x++){
+        for (let x = 0; x < game.nSquares; x++) {
             const cell = game.board[x][y]
 
             const hShift = cell.cageValue! > 9 ? Math.ceil(squareSize.current * 0.28) : (cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.15) : 0)
 
-            const left = cageLinePositions[x*2]
-            const right = cageLinePositions[x*2+1]
+            const left = cageLinePositions[x * 2]
+            const right = cageLinePositions[x * 2 + 1]
 
             //Top line
-            if (y === 0 || game.board[x][y-1].cageIndex !== cell.cageIndex){
-                if (startA === null) startA = {x: left + hShift, y: top}
+            if (y === 0 || game.board[x][y - 1].cageIndex !== cell.cageIndex) {
+                if (startA === null) startA = { x: left + hShift, y: top }
             } else {
-                if (startA !== null){
-                    addVector(startA, {x: left + hShift, y: top}, cell.cageIndex!)
+                if (startA !== null) {
+                    addVector(startA, { x: left + hShift, y: top }, cell.cageIndex!)
                     startA = null
                 }
             }
 
             //Top bridge
-            if (!(x === (game.nSquares - 1) || game.board[x+1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y > 0 && game.board[x+1][y-1].cageIndex === cell.cageIndex && game.board[x][y-1].cageIndex === cell.cageIndex)
-            ){
-                if (startA === null) startA = {x: right, y: top}
+            if (!(x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y > 0 && game.board[x + 1][y - 1].cageIndex === cell.cageIndex && game.board[x][y - 1].cageIndex === cell.cageIndex)
+            ) {
+                if (startA === null) startA = { x: right, y: top }
             } else {
-                if (startA !== null){
-                    addVector(startA, {x: right, y: top}, cell.cageIndex!)
+                if (startA !== null) {
+                    addVector(startA, { x: right, y: top }, cell.cageIndex!)
                     startA = null
                 }
             }
 
             //Bottom line
-            if (y === (game.nSquares - 1) || game.board[x][y+1].cageIndex !== cell.cageIndex){
-                if (startB === null) startB = {x: left, y: bottom}
+            if (y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) {
+                if (startB === null) startB = { x: left, y: bottom }
             } else {
-                if (startB !== null){
-                    addVector(startB, {x: left + hShift, y: bottom}, cell.cageIndex!)
+                if (startB !== null) {
+                    addVector(startB, { x: left + hShift, y: bottom }, cell.cageIndex!)
                     startB = null
                 }
             }
 
             //Bottom bridge
-            if (!(x === (game.nSquares - 1) || game.board[x+1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.board[x+1][y+1].cageIndex === cell.cageIndex && game.board[x][y+1].cageIndex === cell.cageIndex)){
-                if (startB === null) startB = {x: right, y: bottom}
+            if (!(x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.board[x + 1][y + 1].cageIndex === cell.cageIndex && game.board[x][y + 1].cageIndex === cell.cageIndex)) {
+                if (startB === null) startB = { x: right, y: bottom }
             } else {
-                if (startB !== null){
-                    addVector(startB, {x: right, y: bottom}, cell.cageIndex!)
+                if (startB !== null) {
+                    addVector(startB, { x: right, y: bottom }, cell.cageIndex!)
                     startB = null
                 }
             }
@@ -596,54 +626,54 @@ function killerCalculateCageVectors({game, rendererState, squareSize, cageLineWi
     }
 
     //Vertical
-    for (let x = 0; x < game.nSquares; x++){
-        const left = cageLinePositions[x*2]
-        const right = cageLinePositions[x*2+1]
+    for (let x = 0; x < game.nSquares; x++) {
+        const left = cageLinePositions[x * 2]
+        const right = cageLinePositions[x * 2 + 1]
 
-        for (let y = 0; y < game.nSquares; y++){
+        for (let y = 0; y < game.nSquares; y++) {
             const cell = game.board[x][y]
 
             const vShift = cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.20) : 0
 
-            const top = cageLinePositions[y*2]
-            const bottom = cageLinePositions[y*2+1]
+            const top = cageLinePositions[y * 2]
+            const bottom = cageLinePositions[y * 2 + 1]
 
             //Left line
-            if (x === 0 || game.board[x-1][y].cageIndex !== cell.cageIndex){
-                if (startA === null) startA = {x: left, y: top + vShift}
+            if (x === 0 || game.board[x - 1][y].cageIndex !== cell.cageIndex) {
+                if (startA === null) startA = { x: left, y: top + vShift }
             } else {
-                if (startA !== null){
-                    addVector(startA, {x: left, y: top + vShift}, cell.cageIndex!)
+                if (startA !== null) {
+                    addVector(startA, { x: left, y: top + vShift }, cell.cageIndex!)
                     startA = null
                 }
             }
 
             //Left bridge
-            if (!(y === (game.nSquares - 1) || game.board[x][y+1].cageIndex !== cell.cageIndex) && !(x > 0 && game.board[x-1][y].cageIndex === cell.cageIndex && game.board[x-1][y+1].cageIndex === cell.cageIndex)){
-                if (startA === null) startA = {x: left, y: bottom}
+            if (!(y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) && !(x > 0 && game.board[x - 1][y].cageIndex === cell.cageIndex && game.board[x - 1][y + 1].cageIndex === cell.cageIndex)) {
+                if (startA === null) startA = { x: left, y: bottom }
             } else {
-                if (startA !== null){
-                    addVector(startA, {x: left, y: bottom}, cell.cageIndex!)
+                if (startA !== null) {
+                    addVector(startA, { x: left, y: bottom }, cell.cageIndex!)
                     startA = null
                 }
             }
 
             //Right line
-            if (x === (game.nSquares - 1) || game.board[x+1][y].cageIndex !== cell.cageIndex){
-                if (startB === null) startB = {x: right, y: top}
+            if (x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) {
+                if (startB === null) startB = { x: right, y: top }
             } else {
-                if (startB !== null){
-                    addVector(startB, {x: right, y: top}, cell.cageIndex!)
+                if (startB !== null) {
+                    addVector(startB, { x: right, y: top }, cell.cageIndex!)
                     startB = null
                 }
             }
 
             //Right bridge
-            if (!(y === (game.nSquares - 1) || game.board[x][y+1].cageIndex !== cell.cageIndex) && !(x < (game.nSquares - 1) && game.board[x+1][y].cageIndex === cell.cageIndex && game.board[x+1][y+1].cageIndex === cell.cageIndex)){
-                if (startB === null) startB = {x: right, y: bottom}
+            if (!(y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) && !(x < (game.nSquares - 1) && game.board[x + 1][y].cageIndex === cell.cageIndex && game.board[x + 1][y + 1].cageIndex === cell.cageIndex)) {
+                if (startB === null) startB = { x: right, y: bottom }
             } else {
-                if (startB !== null){
-                    addVector(startB, {x: right, y: bottom}, cell.cageIndex!)
+                if (startB !== null) {
+                    addVector(startB, { x: right, y: bottom }, cell.cageIndex!)
                     startB = null
                 }
             }
@@ -653,18 +683,18 @@ function killerCalculateCageVectors({game, rendererState, squareSize, cageLineWi
     rendererState.current.cageVectors = newCageVectors
 }
 
-function classicScreenCoordsToBoardCoords(clickX: number, clickY: number, {game, rendererState, squareSize}: StateProps): CellCoordinates | undefined {
+function classicScreenCoordsToBoardCoords(clickX: number, clickY: number, { game, rendererState, squareSize }: StateProps): CellCoordinates | undefined {
     for (let x = 0; x < game.nSquares; x++) {
         if (clickX <= rendererState.current.cellPositions[x] + squareSize.current) {
             for (let y = 0; y < game.nSquares; y++) {
-                if (clickY <= rendererState.current.cellPositions[y] + squareSize.current) return { x, y };
+                if (clickY <= rendererState.current.cellPositions[y] + squareSize.current) return { x, y }
             }
         }
     }
-    return undefined;
+    return undefined
 }
 
-function killerCagesAndCageValues({ctx, game, cageLineWidth, rendererState, themes, theme, squareSize}: RendererProps){
+function killerCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, squareSize }: RendererProps) {
     ctx.lineWidth = cageLineWidth
 
     //Borders
@@ -673,10 +703,10 @@ function killerCagesAndCageValues({ctx, game, cageLineWidth, rendererState, them
         dashedLine(ctx, vector[0], vector[1], vector[3], cageLineWidth)
     })
 
-    for (let x = 0; x < game.nSquares; x++){
-        for (let y = 0; y < game.nSquares; y++){
-            const cell = game.get({x, y})
-            if (cell.cageValue! > 0){
+    for (let x = 0; x < game.nSquares; x++) {
+        for (let y = 0; y < game.nSquares; y++) {
+            const cell = game.get({ x, y })
+            if (cell.cageValue! > 0) {
                 ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
                 drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, true, null)
             }
@@ -684,48 +714,160 @@ function killerCagesAndCageValues({ctx, game, cageLineWidth, rendererState, them
     }
 }
 
-function classicInitGameData({game, data}: InitGameProps){
-    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier);
-    game.clues = decodeMissionString(data.m);
-    game.mission = data.m;
-    game.solution = Solver.solve(game.clues);
+function classicInitGameData({ game, data }: InitGameProps) {
+    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
+    game.clues = decodeMissionString(data.m)
+    game.mission = data.m
+    game.solution = Solver.solve(game.clues)
 }
 
-function killerInitGameData({game, data}: InitGameProps){
-    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier);
+function killerInitGameData({ game, data }: InitGameProps) {
+    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
     const [clues, solution, cages] = data.m.split(' ')
     game.clues = decodeMissionString(clues)
     game.mission = data.m
     game.solution = solution
     game.cages = []
-    for (const cage of cages.split(',')){
+    for (const cage of cages.split(',')) {
         let newCage: number[][] = []
-        for (let i = 0; i < cage.length; i += 2){
-            newCage.push([Number(cage[i]), Number(cage[i+1])])
+        for (let i = 0; i < cage.length; i += 2) {
+            newCage.push([Number(cage[i]), Number(cage[i + 1])])
         }
         game.cages.push(newCage)
     }
 }
 
+function sudokuXInitGameData({ game, data }: InitGameProps) {
+    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
+    game.clues = decodeMissionString(data.m)
+    game.mission = data.m
+    game.solution = '000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+}
+
+function classicCalculatePossibleValues(game: CommonBoard) {
+    if (!SettingsHandler.settings.showPossibleValues) return []
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            cell.possibleValues = []
+            for (let k = 1; k <= game.nSquares; k++) {
+                cell.possibleValues.push(k)
+            }
+        }
+    }
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            for (const c of game.definition.game.getVisibleCells(game, { x, y })) {
+                game.get(c).possibleValues = game.get(c).possibleValues.filter(n => n !== cell.value)
+            }
+        }
+    }
+
+    return []
+}
+
+function detectErrorsFromSolution(game: CommonBoard) {
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            /*if (cell.value > 0 && !cell.clue) {
+                for (const vc of game.definition.game.getVisibleCells(game, { x, y })) {
+                    if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
+                        cell.isError = game.get(vc).isError = true
+                    }
+                }
+            }*/
+            cell.isError = cell.solution > 0 && cell.value > 0 && cell.value !== cell.solution
+        }
+    }
+
+    return []
+}
+
+function sudokuXDetectErrors(game: CommonBoard) {
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            game.get({ x, y }).isError = false
+        }
+    }
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            if (cell.value > 0 && !cell.clue) {
+                for (const vc of game.definition.game.getVisibleCells(game, { x, y })) {
+                    if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
+                        cell.isError = game.get(vc).isError = true
+                    }
+                }
+            }
+        }
+    }
+
+    return []
+}
+
+function sudokuXDiagonals({ ctx, theme, game, rendererState, squareSize }: RendererProps) {
+    ctx.fillStyle = ctx.strokeStyle = theme === 'dark' ? '#333333' : '#dddddd'
+
+    const near = rendererState.cellPositions[0] + squareSize / 2
+    const far = rendererState.cellPositions[game.nSquares - 1] + squareSize / 2
+
+    // SW-NE diagonal
+    ctx.lineWidth = squareSize * 0.2
+    ctx.beginPath()
+    ctx.moveTo(near, far)
+    ctx.lineTo(far, near)
+    ctx.stroke()
+
+    // NW-SE diagonal
+    ctx.lineWidth = squareSize * 0.2
+    ctx.beginPath()
+    ctx.moveTo(near, near)
+    ctx.lineTo(far, far)
+    ctx.stroke()
+
+    // Circles
+    ctx.beginPath()
+    ctx.arc(near, near, squareSize * 0.1, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(near, far, squareSize * 0.1, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(far, near, squareSize * 0.1, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(far, far, squareSize * 0.1, 0, 2 * Math.PI, false)
+    ctx.fill()
+}
+
 export interface GameModeDefinition {
     render: {
         init: ((props: StateProps) => void)[]
-        onResize: ((props: StateProps) => void)[];
-        screenCoordsToBoardCoords: (clickX: number, clickY: number, state: StateProps) => CellCoordinates | undefined;
-        before: ((props: RendererProps) => void)[];
-        unpaused: ((props: RendererProps) => void)[];
-        paused: ((props: RendererProps) => void)[];
-        after: ((props: RendererProps) => void)[];
+        onResize: ((props: StateProps) => void)[]
+        screenCoordsToBoardCoords: (clickX: number, clickY: number, state: StateProps) => CellCoordinates | undefined
+        before: ((props: RendererProps) => void)[]
+        unpaused: ((props: RendererProps) => void)[]
+        paused: ((props: RendererProps) => void)[]
+        after: ((props: RendererProps) => void)[]
     }
     game: {
-        initGameData: (props: InitGameProps) => void;
-        initBoardMatrix: ((game: CommonBoard) => void)[];
-        getVisibleCells: (game: CommonBoard, c: CellCoordinates) => CellCoordinates[];
-        getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[];
-        checkAnimations: ((game: CommonBoard, c: CellCoordinates) => BoardAnimation[])[];
-        getBoxes: (game: CommonBoard) => CellCoordinates[][];
-        findLinks: ((game: CommonBoard, n: number) => CellCoordinates[][])[];
-        afterSetValue: ((game: CommonBoard) => BoardAnimation[])[];
+        initGameData: (props: InitGameProps) => void
+        initBoardMatrix: ((game: CommonBoard) => void)[]
+        getVisibleCells: (game: CommonBoard, c: CellCoordinates) => CellCoordinates[]
+        getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
+        checkAnimations: ((game: CommonBoard, c: CellCoordinates) => BoardAnimation[])[]
+        getBoxes: (game: CommonBoard) => CellCoordinates[][]
+        findLinks: ((game: CommonBoard, n: number) => CellCoordinates[][])[]
+        afterValuesChanged: ((game: CommonBoard) => BoardAnimation[])[]
     }
 }
 
@@ -736,7 +878,7 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicBackground],
-            unpaused: [classicCell, classicSelection, classicLinks, classicFadeAnimations],
+            unpaused: [classicCellBackground, classicCellValueCandidates, classicSelection, classicLinks, classicFadeAnimations],
             paused: [classicPaused],
             after: [classicBorders],
         },
@@ -748,7 +890,7 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterSetValue: []
+            afterValuesChanged: [classicCalculatePossibleValues, detectErrorsFromSolution],
         },
     },
     killer: {
@@ -757,7 +899,7 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             onResize: [killerResize, killerCalculateCageVectors],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicBackground],
-            unpaused: [classicCell, killerCagesAndCageValues, classicSelection, classicLinks, classicFadeAnimations],
+            unpaused: [classicCellBackground, classicCellValueCandidates, killerCagesAndCageValues, classicSelection, classicLinks, classicFadeAnimations],
             paused: [classicPaused],
             after: [classicBorders],
         },
@@ -769,28 +911,28 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterSetValue: [killerSolveLastInCages]
+            afterValuesChanged: [killerSolveLastInCages, classicCalculatePossibleValues, detectErrorsFromSolution],
         },
     },
     sudokuX: {
         render: {
             init: [],
-            onResize: [],
+            onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => {}],
-            unpaused: [],
-            paused: [],
-            after: [() => {}],
+            before: [classicBackground],
+            unpaused: [classicCellBackground, sudokuXDiagonals, classicCellValueCandidates, classicSelection, classicLinks, classicFadeAnimations],
+            paused: [classicPaused],
+            after: [classicBorders],
         },
         game: {
-            initGameData: () => {},
+            initGameData: sudokuXInitGameData,
             initBoardMatrix: [],
-            getVisibleCells: classicGetVisibleCells,
+            getVisibleCells: sudokuXGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterSetValue: []
+            afterValuesChanged: [classicCalculatePossibleValues, sudokuXDetectErrors],
         },
     },
     sandwich: {
@@ -798,20 +940,20 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             init: [],
             onResize: [],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => {}],
+            before: [() => { }],
             unpaused: [],
             paused: [],
-            after: [() => {}],
+            after: [() => { }],
         },
         game: {
-            initGameData: () => {},
+            initGameData: () => { },
             initBoardMatrix: [],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterSetValue: []
+            afterValuesChanged: [classicCalculatePossibleValues, detectErrorsFromSolution],
         },
     },
     thermo: {
@@ -819,20 +961,20 @@ export const gameModeDefinitions: { [key in GameModeName]: GameModeDefinition } 
             init: [],
             onResize: [],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => {}],
+            before: [() => { }],
             unpaused: [],
             paused: [],
-            after: [() => {}],
+            after: [() => { }],
         },
         game: {
-            initGameData: () => {},
+            initGameData: () => { },
             initBoardMatrix: [],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterSetValue: []
+            afterValuesChanged: [classicCalculatePossibleValues, detectErrorsFromSolution],
         },
     },
 }

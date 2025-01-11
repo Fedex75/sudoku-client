@@ -387,7 +387,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 
 	useEffect(() => {
 		for (const func of definition.render.init) func({game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth})
-	}, [game.mission])
+	}, [boxBorderWidthFactor, definition.render.init, game])
 
 	return <canvas
 		ref={canvasRef}

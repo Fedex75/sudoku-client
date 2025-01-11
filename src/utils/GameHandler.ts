@@ -39,7 +39,7 @@ class GameHandler {
 			perMode: {
 				classic: 'easy',
 				killer: 'easy',
-				sudokuX: 'unrated',
+				sudokuX: 'easy',
 				sandwich: 'unrated',
 				thermo: 'unrated'
 			}

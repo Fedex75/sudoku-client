@@ -1,4 +1,3 @@
-import Solver from "../utils/Solver"
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
@@ -57,7 +56,7 @@ export default class CommonBoard {
 			this.selectedCells = data.selectedCells
 			this.history = data.history
 			this.checkFullNotation()
-			this.recalculatePossibleValues()
+			for (const func of this.definition.game.afterValuesChanged) func(this)
 		} else {
 			this.definition.game.initGameData({game: this, data})
 			this.initBoard()
@@ -83,6 +82,7 @@ export default class CommonBoard {
 					solution: solution,
 					color: 'default',
 					possibleValues: [],
+					isError: false,
 				}
 			}
 		}
@@ -91,38 +91,7 @@ export default class CommonBoard {
 			func(this)
 		}
 
-		this.recalculatePossibleValues()
-	}
-
-	recalculatePossibleValues(c?: CellCoordinates) {
-		if (c) {
-			//Reset only that position
-			for (let k = 0; k < this.nSquares; k++) {
-				this.get(c).possibleValues[k] = k + 1
-			}
-		} else {
-			//Reset all cells
-			for (let x = 0; x < this.nSquares; x++) {
-				for (let y = 0; y < this.nSquares; y++) {
-					if (this.get({ x, y }).value === 0) {
-						for (let k = 1; k <= this.nSquares; k++) {
-							this.get({ x, y }).possibleValues[k - 1] = k
-						}
-					}
-				}
-			}
-		}
-
-		for (let x = (c?.x || 0); x <= (c?.x || this.nSquares - 1); x++) {
-			for (let y = (c?.y || 0); y <= (c?.y || this.nSquares - 1); y++) {
-				const value = this.get({ x, y }).value
-				if (value > 0) {
-					for (const cell of this.definition.game.getVisibleCells(this, { x, y })) {
-						this.get(cell).possibleValues = this.get(cell).possibleValues.filter(n => n !== value)
-					}
-				}
-			}
-		}
+		for (const func of this.definition.game.afterValuesChanged) func(this)
 	}
 
 	getCompletedNumbers(){
@@ -154,7 +123,7 @@ export default class CommonBoard {
 			this.board = this.history[this.history.length - 1].board
 			this.checkFullNotation(true)
 			this.history.pop()
-			this.recalculatePossibleValues()
+			for (const func of this.definition.game.afterValuesChanged) func(this)
 		}
 	}
 
@@ -281,7 +250,7 @@ export default class CommonBoard {
 			}
 		}
 
-		for (const func of this.definition.game.afterSetValue) animations = animations.concat(func(this))
+		for (const func of this.definition.game.afterValuesChanged) animations = animations.concat(func(this))
 
 		if (this.checkComplete()) animations = [{ type: 'board', center: coords[0] }]
 
@@ -317,7 +286,7 @@ export default class CommonBoard {
 			}
 		}
 
-		this.recalculatePossibleValues()
+		for (const func of this.definition.game.afterValuesChanged) func(this)
 	}
 
 	calculateHighlightedCells(selectedCoords: CellCoordinates[], lockedInput: number) {

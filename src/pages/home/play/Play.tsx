@@ -38,11 +38,11 @@ export default function Play({ theme, accentColor }: Props) {
     classicMiniature.setValue([{ x: 0, y: 2 }], 7)
     classicMiniature.setValue([{ x: 2, y: 2 }], 9)
 
-    /*let killerMiniature = new CommonBoard({ id: 'ku0', m: '1.3:4.8.', s: '123654789', c: '0010,2021,0102,11,1222' }, 3, true)
-    killerMiniature.setValue({ x: 1, y: 0 }, 2)
-    killerMiniature.setValue({ x: 0, y: 1 }, 6)
-    killerMiniature.setValue({ x: 0, y: 2 }, 7)
-    killerMiniature.setValue({ x: 2, y: 2 }, 9)*/
+    let killerMiniature = new CommonBoard({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
+    killerMiniature.setValue([{ x: 1, y: 0 }], 2)
+    killerMiniature.setValue([{ x: 0, y: 1 }], 6)
+    killerMiniature.setValue([{ x: 0, y: 2 }], 7)
+    killerMiniature.setValue([{ x: 2, y: 2 }], 9)
 
     const handleNewGame = useCallback((mode: GameModeName) => {
         GameHandler.newGame(mode, GameHandler.recommendations.perMode[mode])
@@ -128,7 +128,7 @@ export default function Play({ theme, accentColor }: Props) {
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sudokuX', 1) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.sudokuX} />
                             <div className='home__gameMode__name'>{t('gameModes.sudokuX')}</div>
                         </div>
                     </div>
@@ -140,7 +140,7 @@ export default function Play({ theme, accentColor }: Props) {
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('killer', 3) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.classic} />
+                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={killerMiniature} theme="light" accentColor={accentColor} definition={gameModeDefinitions.killer} />
                             <div className='home__gameMode__name'>{t('gameModes.killer')}</div>
                         </div>
                     </div>
