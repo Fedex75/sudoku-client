@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
 import CommonCanvas from "./CommonCanvas"
