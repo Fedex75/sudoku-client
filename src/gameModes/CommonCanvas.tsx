@@ -1,6 +1,6 @@
 import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import CommonBoard from "./CommonBoard"
-import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../utils/DataTypes"
+import { BoardAnimation, BoardBoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../utils/DataTypes"
 import { AccentColor } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
@@ -209,7 +209,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.boxX * 3 + x][animation.data.boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
 						break
 					case 'board':
-						for (let x = 0; x < game.nSquares; x++) for (let y = 0; y < game.nSquares; y++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(animation.data.center.x - x), Math.abs(animation.data.center.y - y)), progress, 8, 8)})`
+						game.iterateAllCells((cell, { x, y }) => { animationColors.current![x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs((animation.data as BoardBoardAnimation).center.x - x), Math.abs((animation.data as BoardBoardAnimation).center.y - y)), progress, 8, 8)})` })
 						break
 					case 'fadein':
 					case 'fadein_long':

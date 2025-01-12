@@ -1,7 +1,7 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { Board, BoardAnimation, CellCoordinates, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
+import { Board, BoardAnimation, Cell, CellCoordinates, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
 import { Ruleset, rulesets } from "./Rulesets"
@@ -97,19 +97,16 @@ export default class CommonBoard {
 	}
 
 	getCompletedNumbers() {
-		let completedNumbers = []
+		let completedNumbers: number[] = []
 		let count = Array(this.nSquares).fill(0)
-		for (let x = 0; x < this.nSquares; x++) {
-			for (let y = 0; y < this.nSquares; y++) {
-				let cell = this.get({ x, y })
-				if (cell.value === cell.solution) {
-					count[cell.value - 1]++
-					if (count[cell.value - 1] === this.nSquares) {
-						completedNumbers.push(cell.value)
-					}
+		this.iterateAllCells((cell) => {
+			if (cell.value === cell.solution) {
+				count[cell.value - 1]++
+				if (count[cell.value - 1] === this.nSquares) {
+					completedNumbers.push(cell.value)
 				}
 			}
-		}
+		})
 
 		return completedNumbers
 	}
@@ -289,16 +286,13 @@ export default class CommonBoard {
 			}
 
 			if (targetValues.length > 0) {
-				for (let x = 0; x < this.nSquares; x++) {
-					for (let y = 0; y < this.nSquares; y++) {
-						const cell = this.get({ x, y })
-						if (targetValues.includes(cell.value)) {
-							for (const vc of this.ruleset.game.getVisibleCells(this, { x, y })) {
-								highlightedCells[vc.x][vc.y] = true
-							}
+				this.iterateAllCells((cell, coords) => {
+					if (targetValues.includes(cell.value)) {
+						for (const vc of this.ruleset.game.getVisibleCells(this, coords)) {
+							highlightedCells[vc.x][vc.y] = true
 						}
 					}
-				}
+				})
 			}
 		}
 
@@ -330,11 +324,7 @@ export default class CommonBoard {
 	}
 
 	clearColors() {
-		for (let x = 0; x < this.nSquares; x++) {
-			for (let y = 0; y < this.nSquares; y++) {
-				this.board[x][y].color = 'default'
-			}
-		}
+		this.iterateAllCells(cell => { cell.color = 'default' })
 	}
 
 	checkComplete() {
@@ -376,11 +366,7 @@ export default class CommonBoard {
 
 	getTextRepresentation(cluesOnly: boolean) {
 		let text = ''
-		for (let y = 0; y < this.nSquares; y++) {
-			for (let x = 0; x < this.nSquares; x++) {
-				text += cluesOnly && !this.board[x][y].clue ? 0 : this.board[x][y].value
-			}
-		}
+		this.iterateAllCells(cell => { text += cluesOnly && !cell.clue ? 0 : cell.value })
 		return text
 	}
 
@@ -391,5 +377,9 @@ export default class CommonBoard {
 
 	setTimer(timestamp: number) {
 		this.timer = timestamp
+	}
+
+	iterateAllCells(func: (cell: Cell, coords: CellCoordinates) => void) {
+		this.ruleset.game.iterateAllCells(this, func)
 	}
 }

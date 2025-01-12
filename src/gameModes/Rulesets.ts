@@ -1,5 +1,5 @@
 import { AccentColor } from "../utils/Colors"
-import { BoardAnimation, CellCoordinates, DigitChar, RawGameData, ThemeName } from "../utils/DataTypes"
+import { BoardAnimation, Cell, CellCoordinates, DigitChar, RawGameData, ThemeName } from "../utils/DataTypes"
 import SettingsHandler from "../utils/SettingsHandler"
 import CommonBoard from "./CommonBoard"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
@@ -118,52 +118,45 @@ function classicRenderBackground({ ctx, themes, theme, logicalSize }: RendererPr
 }
 
 function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellsValues, squareSize, animationColors, currentAnimations, rendererState }: RendererProps) {
-    for (let x = 0; x < game.nSquares; x++) {
-        for (let y = 0; y < game.nSquares; y++) {
-            const cell = game.get({ x, y })
-            const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellsValues.length > 0 && selectedCellsValues.includes(cell.value)))
+    game.iterateAllCells((cell, { x, y }) => {
+        const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellsValues.length > 0 && selectedCellsValues.includes(cell.value)))
 
-            //Background
-            ctx.fillStyle =
-                notPlayable ? colors.default :
-                    (hasSameValueAsSelected || highlightedCells[x][y]) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
-                        (colors[cell.color]) //Cell color
+        //Background
+        ctx.fillStyle =
+            notPlayable ? colors.default :
+                (hasSameValueAsSelected || highlightedCells[x][y]) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
+                    (colors[cell.color]) //Cell color
 
+        ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
+
+        if (animationColors && animationColors[x][y] && currentAnimations.length > 0 && currentAnimations[0].data.type !== 'fadein' && currentAnimations[0].data.type !== 'fadeout' && currentAnimations[0].data.type !== 'fadein_long') {
+            ctx.fillStyle = animationColors[x][y]
             ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
-
-            if (animationColors && animationColors[x][y] && currentAnimations.length > 0 && currentAnimations[0].data.type !== 'fadein' && currentAnimations[0].data.type !== 'fadeout' && currentAnimations[0].data.type !== 'fadein_long') {
-                ctx.fillStyle = animationColors[x][y]
-                ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
-            }
         }
-    }
+    })
 }
 
 function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
-    for (let x = 0; x < game.nSquares; x++) {
-        for (let y = 0; y < game.nSquares; y++) {
-            const cell = game.get({ x, y })
+    game.iterateAllCells((cell, { x, y }) => {
+        if (cell.value > 0) {
+            //Value
+            ctx.strokeStyle = ctx.fillStyle =
+                cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
+                    cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
+                        solutionColors[accentColor]
+            if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+            drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, true, null)
+        } else {
+            //Candidates
+            for (const n of cell.notes) {
+                const highlightCandidate = (lockedInput === 0 && selectedCellsValues.includes(n)) || lockedInput === n
 
-            if (cell.value > 0) {
-                //Value
-                ctx.strokeStyle = ctx.fillStyle =
-                    cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-                        cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
-                            solutionColors[accentColor]
-                if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
-                drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, true, null)
-            } else {
-                //Candidates
-                for (const n of cell.notes) {
-                    const highlightCandidate = (lockedInput === 0 && selectedCellsValues.includes(n)) || lockedInput === n
+                ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) : (cell.color === 'default' ? '#75747c' : 'black')
 
-                    ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) : (cell.color === 'default' ? '#75747c' : 'black')
-
-                    drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), true, highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors[accentColor] : null)
-                }
+                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), true, highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors[accentColor] : null)
             }
         }
-    }
+    })
 }
 
 function classicRenderSelection({ ctx, accentColor, colors, game, squareSize, colorBorderLineWidth, boxBorderWidth, rendererState }: RendererProps) {
@@ -230,31 +223,27 @@ function classicRenderLinks({ ctx, game, showLinks, lockedInput, selectedCellsVa
 function classicRenderFadeAnimations({ ctx, game, animationColors, animationGammas, currentAnimations, squareSize, themes, theme, boxBorderWidth, cellBorderWidth, rendererState }: RendererProps) {
     //Fade animations
     if (animationColors && animationGammas && ['fadein', 'fadein_long', 'fadeout'].includes(currentAnimations[0]?.data.type)) {
-        for (let y = 0; y < game.nSquares; y++) {
-            for (let x = 0; x < game.nSquares; x++) {
-                ctx.fillStyle = animationColors[x][y]
-                ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
+        game.iterateAllCells((cell, { x, y }) => {
+            ctx.fillStyle = animationColors[x][y]
+            ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
 
-                //Right border
-                ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas[y]})`
-                ctx.fillRect(rendererState.cellPositions[x] + squareSize, rendererState.cellPositions[y], x % 3 === 2 ? boxBorderWidth : cellBorderWidth, squareSize)
+            //Right border
+            ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas[y]})`
+            ctx.fillRect(rendererState.cellPositions[x] + squareSize, rendererState.cellPositions[y], x % 3 === 2 ? boxBorderWidth : cellBorderWidth, squareSize)
 
-                //Bottom border
-                ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas[y]})`
-                ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y] + squareSize, squareSize, y % 3 === 2 ? boxBorderWidth : cellBorderWidth)
-            }
-        }
+            //Bottom border
+            ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[theme].canvasBoxBorderColorRGBA : themes[theme].canvasCellBorderColorRGBA}, ${animationGammas[y]})`
+            ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y] + squareSize, squareSize, y % 3 === 2 ? boxBorderWidth : cellBorderWidth)
+        })
     }
 }
 
 function classicRenderPaused({ ctx, game, darkColors, squareSize, rendererState }: RendererProps) {
     //Paused
-    for (let x = 0; x < game.nSquares; x++) {
-        for (let y = 0; y < game.nSquares; y++) {
-            ctx.strokeStyle = ctx.fillStyle = darkColors.default
-            ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
-        }
-    }
+    game.iterateAllCells((cell, { x, y }) => {
+        ctx.strokeStyle = ctx.fillStyle = darkColors.default
+        ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
+    })
 }
 
 function classicRenderBorders({ ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState }: RendererProps) {
@@ -494,6 +483,14 @@ function classicCheckComplete(game: CommonBoard) {
     return true
 }
 
+function classicIterateAllCells(game: CommonBoard, func: (cell: Cell, coords: CellCoordinates) => void) {
+    for (let x = 0; x < game.nSquares; x++) {
+        for (let y = 0; y < game.nSquares; y++) {
+            func(game.get({ x, y }), { x, y })
+        }
+    }
+}
+
 // Killer
 
 function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, squareSize }: RendererProps) {
@@ -505,15 +502,12 @@ function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererStat
         dashedLine(ctx, vector[0], vector[1], vector[3], cageLineWidth)
     })
 
-    for (let x = 0; x < game.nSquares; x++) {
-        for (let y = 0; y < game.nSquares; y++) {
-            const cell = game.get({ x, y })
-            if (cell.cageValue! > 0) {
-                ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-                drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, true, null)
-            }
+    game.iterateAllCells((cell, { x, y }) => {
+        if (cell.cageValue! > 0) {
+            ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
+            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, true, null)
         }
-    }
+    })
 }
 
 function killerInitGameData({ game, data }: InitGameProps) {
@@ -920,6 +914,7 @@ export interface Ruleset {
         afterValuesChanged: ((game: CommonBoard) => BoardAnimation[])[]
         checkComplete: (game: CommonBoard) => boolean
         checkErrors: (game: CommonBoard) => void
+        iterateAllCells: (game: CommonBoard, func: (cell: Cell, coords: CellCoordinates) => void) => void
     }
 }
 
@@ -945,6 +940,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             afterValuesChanged: [classicCalculatePossibleValues,],
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
+            iterateAllCells: classicIterateAllCells,
         },
     },
     killer: {
@@ -968,6 +964,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             afterValuesChanged: [killerSolveLastInCages, classicCalculatePossibleValues],
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
+            iterateAllCells: classicIterateAllCells,
         },
     },
     sudokuX: {
@@ -991,6 +988,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             afterValuesChanged: [classicCalculatePossibleValues],
             checkComplete: classicCheckComplete,
             checkErrors: sudokuXDetectErrors,
+            iterateAllCells: classicIterateAllCells,
         },
     },
     sandwich: {
@@ -1014,6 +1012,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             afterValuesChanged: [classicCalculatePossibleValues, classicDetectErrorsFromSolution],
             checkComplete: () => false,
             checkErrors: () => { },
+            iterateAllCells: classicIterateAllCells,
         },
     },
     thermo: {
@@ -1036,7 +1035,8 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues, classicDetectErrorsFromSolution],
             checkComplete: () => false,
-            checkErrors: () => { }
+            checkErrors: () => { },
+            iterateAllCells: classicIterateAllCells,
         },
     },
 }
