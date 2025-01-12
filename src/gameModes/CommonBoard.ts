@@ -275,9 +275,43 @@ export default class CommonBoard {
 		this.ruleset.game.checkErrors(this)
 	}
 
-	calculateHighlightedCells(selectedCoords: CellCoordinates[], lockedInput: number) {
+	calculateHighlightedCells(lockedInput: number) {
 		let highlightedCells: boolean[][] = Array<number>(this.nSquares).fill(0).map(x => Array(this.nSquares).fill(false))
-		for (const coords of selectedCoords) {
+		let targetValues: number[] = []
+
+		if (SettingsHandler.settings.advancedHighlight) {
+			if (lockedInput > 0) {
+				targetValues = [lockedInput]
+			}
+
+			for (const c of this.selectedCells) {
+				if (this.get(c).value > 0) targetValues.push(this.get(c).value)
+			}
+
+			if (targetValues.length > 0) {
+				for (let x = 0; x < this.nSquares; x++) {
+					for (let y = 0; y < this.nSquares; y++) {
+						const cell = this.get({ x, y })
+						if (targetValues.includes(cell.value)) {
+							for (const vc of this.ruleset.game.getVisibleCells(this, { x, y })) {
+								highlightedCells[vc.x][vc.y] = true
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
+			for (const sc of this.selectedCells) {
+				for (const c of this.ruleset.game.getVisibleCells(this, sc)) {
+					highlightedCells[c.x][c.y] = true
+				}
+			}
+		}
+
+
+		/*for (const coords of this.selectedCells) {
 			let targetValue = lockedInput > 0 ? lockedInput : this.get(coords).value
 
 			if (lockedInput === 0) for (const cell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[cell.x][cell.y] = true
@@ -318,7 +352,7 @@ export default class CommonBoard {
 			} else {
 				for (const visibleCell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[visibleCell.x][visibleCell.y] = true
 			}
-		}
+		}*/
 
 		return highlightedCells
 	}

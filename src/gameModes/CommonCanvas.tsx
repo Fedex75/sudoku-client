@@ -165,12 +165,15 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 
 		const ctx = canvasRef.current.getContext('2d')
 		if (!ctx) return
-		const highlightedCells = game.calculateHighlightedCells(game.selectedCells, lockedInput)
+		const highlightedCells = game.calculateHighlightedCells(lockedInput)
 		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
 
-		let selectedCellValue = game.selectedCells.length === 1 ? game.get(game.selectedCells[0]).value : 0
+		let selectedCellsValues = []
+		for (const c of game.selectedCells) {
+			if (game.get(c).value > 0) selectedCellsValues.push(game.get(c).value)
+		}
 
-		const props = { ctx, themes, theme, logicalSize: logicalSize.current, game, lockedInput, notPlayable, colors: colors.current!, darkColors: darkColors.current!, highlightedCells, selectedCellValue, squareSize: squareSize.current, animationColors: animationColors.current, currentAnimations: currentAnimations.current, accentColor, solutionColors, colorBorderLineWidth, boxBorderWidth, showLinks, linksLineWidth, animationGammas: animationGammas.current, cellBorderWidth, rendererState: rendererState.current, cageLineWidth }
+		const props = { ctx, themes, theme, logicalSize: logicalSize.current, game, lockedInput, notPlayable, colors: colors.current!, darkColors: darkColors.current!, highlightedCells, selectedCellsValues, squareSize: squareSize.current, animationColors: animationColors.current, currentAnimations: currentAnimations.current, accentColor, solutionColors, colorBorderLineWidth, boxBorderWidth, showLinks, linksLineWidth, animationGammas: animationGammas.current, cellBorderWidth, rendererState: rendererState.current, cageLineWidth }
 
 		for (const func of ruleset.render.before) func(props)
 

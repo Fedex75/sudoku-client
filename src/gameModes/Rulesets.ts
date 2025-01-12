@@ -19,7 +19,7 @@ export interface RendererProps {
     colors: Record<string, string>
     darkColors: Record<string, string>
     highlightedCells: boolean[][]
-    selectedCellValue: number
+    selectedCellsValues: number[]
     squareSize: number
     animationColors: string[][] | null
     currentAnimations: { data: BoardAnimation, startTime: number | null }[]
@@ -117,11 +117,11 @@ function classicRenderBackground({ ctx, themes, theme, logicalSize }: RendererPr
     ctx.fillRect(0, 0, logicalSize, logicalSize)
 }
 
-function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellValue, squareSize, animationColors, currentAnimations, rendererState }: RendererProps) {
+function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellsValues, squareSize, animationColors, currentAnimations, rendererState }: RendererProps) {
     for (let x = 0; x < game.nSquares; x++) {
         for (let y = 0; y < game.nSquares; y++) {
             const cell = game.get({ x, y })
-            const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellValue > 0 && selectedCellValue === cell.value))
+            const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellsValues.length > 0 && selectedCellsValues.includes(cell.value)))
 
             //Background
             ctx.fillStyle =
@@ -139,7 +139,7 @@ function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colo
     }
 }
 
-function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellValue, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
+function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
     for (let x = 0; x < game.nSquares; x++) {
         for (let y = 0; y < game.nSquares; y++) {
             const cell = game.get({ x, y })
@@ -155,7 +155,7 @@ function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInpu
             } else {
                 //Candidates
                 for (const n of cell.notes) {
-                    const highlightCandidate = (lockedInput === 0 && selectedCellValue === n) || lockedInput === n
+                    const highlightCandidate = (lockedInput === 0 && selectedCellsValues.includes(n)) || lockedInput === n
 
                     ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : themes[theme].canvasNoteHighlightColor) : (cell.color === 'default' ? '#75747c' : 'black')
 
@@ -203,10 +203,10 @@ function classicRenderSelection({ ctx, accentColor, colors, game, squareSize, co
     }
 }
 
-function classicRenderLinks({ ctx, game, showLinks, lockedInput, selectedCellValue, accentColor, linksLineWidth, squareSize, rendererState }: RendererProps) {
+function classicRenderLinks({ ctx, game, showLinks, lockedInput, selectedCellsValues, accentColor, linksLineWidth, squareSize, rendererState }: RendererProps) {
     //Links
-    if (showLinks && (lockedInput > 0 || selectedCellValue > 0)) {
-        const target = lockedInput > 0 ? lockedInput : selectedCellValue
+    if (showLinks && (lockedInput > 0 || selectedCellsValues.length === 1)) {
+        const target = lockedInput > 0 ? lockedInput : selectedCellsValues[0]
         let links = game.calculateLinks(target)
         ctx.fillStyle = ctx.strokeStyle = accentColor === 'red' ? '#c298eb' : '#ff5252'
         ctx.lineWidth = linksLineWidth
