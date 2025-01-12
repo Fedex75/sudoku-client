@@ -165,9 +165,7 @@ export default class CommonBoard {
 		return found === 1
 	}
 
-	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, push: boolean = true, checkAutoSolution: boolean = true): [boolean | null, BoardAnimation[]] {
-		let hasPushed = false
-
+	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): [boolean | null, BoardAnimation[]] {
 		let finalNoteState: boolean | null = null
 		let animations: BoardAnimation[] = []
 
@@ -182,10 +180,6 @@ export default class CommonBoard {
 				} else if (cell.notes.includes(n)) {
 					if (state !== true) {
 						//Remove note
-						if (push && !hasPushed) {
-							this.pushBoard()
-							hasPushed = true
-						}
 						this.get(c).notes = cell.notes.filter(note => note !== n)
 						if (
 							(
@@ -195,16 +189,12 @@ export default class CommonBoard {
 							this.get(c).notes.length === 1
 						) {
 							finalNoteState = true
-							animations = animations.concat(this.setValue([c], this.get(c).notes[0], false))
+							animations = animations.concat(this.setValue([c], this.get(c).notes[0]))
 						}
 					}
 				} else if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
 					//Add note
 					if (!SettingsHandler.settings.showPossibleValues || this.get(c).possibleValues.includes(n)) {
-						if (push && !hasPushed) {
-							this.pushBoard()
-							hasPushed = true
-						}
 						this.get(c).notes.push(n)
 						this.checkFullNotation(false)
 						finalNoteState = true
@@ -219,22 +209,17 @@ export default class CommonBoard {
 		return [null, []]
 	}
 
-	setValue(coords: CellCoordinates[], s: number, push = true): BoardAnimation[] {
+	setValue(coords: CellCoordinates[], s: number): BoardAnimation[] {
 		let animations: BoardAnimation[] = []
-		let hasPushed = false
 
 		for (const c of coords) {
 			if (!this.get(c).clue) {
 				const visibleCells = this.ruleset.game.getVisibleCells(this, c)
 
-				if (push && !hasPushed) {
-					this.pushBoard()
-					hasPushed = true
-				}
 				this.get(c).value = s
 				this.get(c).notes = []
 				for (const cell of visibleCells) {
-					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([cell], s, false, false, false)
+					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([cell], s, false, false)
 					this.get(c).possibleValues = this.get(c).possibleValues.filter(n => n !== s)
 				}
 
@@ -255,7 +240,7 @@ export default class CommonBoard {
 		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
 		this.ruleset.game.checkErrors(this)
 
-		if (this.ruleset.game.checkComplete(this)) {
+		if (this.checkComplete()) {
 			animations = [{ type: 'board', center: coords[0] }]
 			GameHandler.setComplete()
 		}
@@ -266,22 +251,16 @@ export default class CommonBoard {
 	hint(coords: CellCoordinates[]) {
 		let animations: BoardAnimation[] = []
 		for (const c of coords) {
-			animations.push(...(this.setValue([c], this.get(c).solution, true)))
+			animations.push(...(this.setValue([c], this.get(c).solution)))
 			this.get(c).clue = true
 		}
 		return animations
 	}
 
 	erase(coords: CellCoordinates[]) {
-		let hasPushed = false
-
 		for (const c of coords) {
 			const cell = this.get(c)
 			if (!cell.clue && (cell.value > 0 || cell.notes.length > 0)) {
-				if (!hasPushed) {
-					this.pushBoard()
-					hasPushed = true
-				}
 				for (const visibleCell of this.ruleset.game.getVisibleCells(this, c)) {
 					this.get(visibleCell).possibleValues = this.get(visibleCell).possibleValues.filter(n => n !== cell.value)
 				}
@@ -354,21 +333,22 @@ export default class CommonBoard {
 
 	setColor(coords: CellCoordinates, newColor: ColorName) {
 		if (GameHandler.complete) return
-
-		this.pushBoard()
 		this.board[coords.x][coords.y].color = newColor
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		this.ruleset.game.checkErrors(this)
 		this.saveToLocalStorage()
 	}
 
-	clearColors(push: boolean) {
-		if (push) this.pushBoard()
+	clearColors() {
 		for (let x = 0; x < this.nSquares; x++) {
 			for (let y = 0; y < this.nSquares; y++) {
 				this.board[x][y].color = 'default'
 			}
 		}
+	}
+
+	checkComplete() {
+		return this.ruleset.game.checkComplete(this)
 	}
 
 	saveToLocalStorage() {
@@ -401,7 +381,7 @@ export default class CommonBoard {
 
 		this.fullNotation = true
 
-		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors(false)
+		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors()
 	}
 
 	getTextRepresentation(cluesOnly: boolean) {

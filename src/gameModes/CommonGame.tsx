@@ -42,12 +42,16 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 	const canvasRef = useRef<CanvasRef>(null)
 
-	const handleSetColor = useCallback((coords: CellCoordinates, color: ColorName = accentColor) => {
+	const handleSetColor = useCallback((coords: CellCoordinates[], color: ColorName = accentColor) => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
 
-		const cell = GameHandler.game.get(coords)
-		GameHandler.game.setColor(coords, cell.color !== color ? color : 'default')
-		canvasRef.current.renderFrame()
+		GameHandler.game.pushBoard()
+		for (const c of coords) {
+			const cell = GameHandler.game.get(c)
+			GameHandler.game.setColor(c, cell.color !== color ? color : 'default')
+		}
+
+		setRender(r => r === 100 ? 0 : r + 1)
 	}, [accentColor])
 
 	const updatePossibleValues = useCallback(() => {
@@ -102,17 +106,17 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				GameHandler.game.selectCell(coords[0])
 			} else if (type === 'tertiary') {
 				// Middle mouse button, set color
-				handleSetColor(coords[0])
+				handleSetColor(coords)
 			} else {
 				if (colorMode) {
 					if (lockedColor) {
 						if (hold) {
 							if ((cell.color === lockedColor) !== colorDragMode) {
-								handleSetColor(coords[0], lockedColor)
+								handleSetColor(coords, lockedColor)
 							}
 						} else {
 							setColorDragMode(cell.color !== lockedColor)
-							handleSetColor(coords[0], lockedColor)
+							handleSetColor(coords, lockedColor)
 							GameHandler.game.selectedCells = coords
 						}
 					} else {
@@ -129,10 +133,16 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 							if (cellPossibleValues.includes(lockedInput)) {
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
-									if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInBox(coords[0], lockedInput)) [, animations] = GameHandler.game.setNote(coords, lockedInput)
+									if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInBox(coords[0], lockedInput)) {
+										GameHandler.game.pushBoard();
+										[, animations] = GameHandler.game.setNote(coords, lockedInput)
+									}
 								} else {
 									// If we're not in note mode or the cell has only one possible value, set the value if the cell doesn't already have a value (this helps with dragging)
-									if (cell.value === 0) animations = GameHandler.game.setValue([coords[0]], lockedInput)
+									if (cell.value === 0) {
+										GameHandler.game.pushBoard()
+										animations = GameHandler.game.setValue([coords[0]], lockedInput)
+									}
 								}
 							}
 						} else {
@@ -143,16 +153,23 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 							} else {
 								if ((noteMode || type === 'secondary')) {
 									if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1) {
-										if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
+										if (cellPossibleValues.includes(lockedInput)) {
+											GameHandler.game.pushBoard()
+											animations = GameHandler.game.setValue(coords, lockedInput)
+										}
 									} else {
 										if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
-											let newNoteMode;
+											let newNoteMode
+											GameHandler.game.pushBoard();
 											[newNoteMode, animations] = GameHandler.game.setNote(coords, lockedInput)
 											setNoteDragMode(newNoteMode)
 										}
 									}
 								} else {
-									if (cellPossibleValues.includes(lockedInput)) animations = GameHandler.game.setValue(coords, lockedInput)
+									if (cellPossibleValues.includes(lockedInput)) {
+										GameHandler.game.pushBoard()
+										animations = GameHandler.game.setValue(coords, lockedInput)
+									}
 								}
 							}
 						}
@@ -178,6 +195,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 	const onHint = useCallback(() => {
 		if (GameHandler.complete || !GameHandler.game) return
+		GameHandler.game.pushBoard()
 		GameHandler.game.hint(GameHandler.game.selectedCells)
 		setRender(r => r === 100 ? 0 : r + 1)
 	}, [])
@@ -189,7 +207,8 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				setShowLinks(l => !l)
 				break
 			case 'clearColors':
-				GameHandler.game.clearColors(true)
+				GameHandler.game.pushBoard()
+				GameHandler.game.clearColors()
 				setRender(r => r === 100 ? 0 : r + 1)
 				break
 		}
@@ -222,9 +241,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
 
 		if (type === 'primary') {
-			for (const c of GameHandler.game.selectedCells) {
-				handleSetColor(c, color)
-			}
+			handleSetColor(GameHandler.game.selectedCells, color)
 		} else {
 			setLockedColor(lc => lc === color ? null : color)
 		}
@@ -241,6 +258,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 	const onErase = useCallback(() => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+		GameHandler.game.pushBoard()
 		GameHandler.game.erase(GameHandler.game.selectedCells)
 		updatePossibleValues()
 		canvasRef.current.stopAnimations()
@@ -255,6 +273,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		if (type === 'primary') {
 			if (possibleValues.includes(number)) {
 				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
+					GameHandler.game.pushBoard();
 					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCells, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)

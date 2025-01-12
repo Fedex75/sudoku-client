@@ -552,7 +552,7 @@ function killerSolveLastInCages(game: CommonBoard) {
                     let x = coords[0]
                     let y = coords[1]
                     if (game.get({ x, y }).value === 0) {
-                        animations.concat(game.setValue([{ x, y }], realSum - sum, false))
+                        animations.concat(game.setValue([{ x, y }], realSum - sum))
                     }
                 })
             }
