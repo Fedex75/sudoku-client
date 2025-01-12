@@ -310,50 +310,6 @@ export default class CommonBoard {
 			}
 		}
 
-
-		/*for (const coords of this.selectedCells) {
-			let targetValue = lockedInput > 0 ? lockedInput : this.get(coords).value
-
-			if (lockedInput === 0) for (const cell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[cell.x][cell.y] = true
-
-			if (SettingsHandler.settings.advancedHighlight) {
-				let highlightCages = []
-				if (this.mode === 'killer') {
-					for (let x = 0; x < this.nSquares; x++) {
-						for (let y = 0; y < this.nSquares; y++) {
-							const cell = this.get({ x, y })
-							if (cell.value > 0 && cell.value === targetValue) highlightCages.push(cell.cageIndex)
-						}
-					}
-				}
-				for (let x = 0; x < this.nSquares; x++) {
-					for (let y = 0; y < this.nSquares; y++) {
-						const cell = this.get({ x, y })
-						if (
-							(targetValue > 0 && cell.value > 0) ||
-							(this.mode === 'killer' && highlightCages.includes(cell.cageIndex)) ||
-							(SettingsHandler.settings.lockCellsWithColor && cell.color !== 'default' && !cell.notes.includes(targetValue))
-						) highlightedCells[x][y] = true
-						if (cell.value > 0 && cell.value === targetValue) for (const visibleCell of this.ruleset.game.getVisibleCells(this, { x, y })) highlightedCells[visibleCell.x][visibleCell.y] = true
-					}
-				}
-
-				for (let x = 0; x < this.nSquares; x++) {
-					for (let y = 0; y < this.nSquares; y++) {
-						const cell = this.get({ x, y })
-						if (cell.color !== 'default' && cell.notes.includes(targetValue)) {
-							for (const boxCell of this.ruleset.game.getBoxCellsCoordinates({ x, y })) {
-								highlightedCells[boxCell.x][boxCell.y] = true
-							}
-						}
-					}
-				}
-
-			} else {
-				for (const visibleCell of this.ruleset.game.getVisibleCells(this, coords)) highlightedCells[visibleCell.x][visibleCell.y] = true
-			}
-		}*/
-
 		return highlightedCells
 	}
 
