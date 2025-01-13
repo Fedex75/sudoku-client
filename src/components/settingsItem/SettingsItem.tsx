@@ -12,7 +12,7 @@ type Props = {
   title: string
   name?: string
   handleSettingChange?: (name: string, c: any) => void
-  type?: 'boolean' | 'theme' | 'info'
+  type?: 'boolean' | 'theme' | 'info' | 'language'
   theme?: string
   accentColor?: AccentColor
   accentColorHex?: string
@@ -66,6 +66,16 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
   if (type === 'info') {
     return (
       <div className="settings__item">
+        <p className="settings__item__title">{title}</p>
+        <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>
+      </div>
+    )
+  }
+
+  if (type === 'language') {
+    return (
+      <div className="settings__item">
+
         <p className="settings__item__title">{title}</p>
         <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>
       </div>

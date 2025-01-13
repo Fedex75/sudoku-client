@@ -47,6 +47,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           sectionAppearance: 'Appearance',
           sectionGame: 'Game',
           sectionAdvanced: 'Advanced',
+          sectionLanguage: 'Language',
           sectionAbout: 'About',
           automatic: 'Automatic',
           accentColor: 'ACCENT COLOR',
@@ -78,10 +79,11 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           statistics: 'STATISTICS',
           resetStatistics: 'Reset statistics',
           nakedSingle: 'Naked single',
-          onlyInBox: 'Single in box',
+          onlyInBox: 'Single in unit',
           version: 'Version',
           madeWith: 'Made with',
-          inArgentina: 'in Argentina'
+          inArgentina: 'in Argentina',
+          language: 'LANGUAGE'
         },
         sudoku: {
           saved: 'Bookmarked',
@@ -157,6 +159,7 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           sectionAppearance: 'Apariencia',
           sectionGame: 'Juego',
           sectionAdvanced: 'Avanzado',
+          sectionLanguage: 'Idioma',
           sectionAbout: 'Acerca de',
           automatic: 'Automático',
           accentColor: 'COLOR DE ACENTO',
@@ -188,10 +191,11 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           statistics: 'ESTADÍSTICAS',
           resetStatistics: 'Reiniciar estadísticas',
           nakedSingle: 'Candidato único',
-          onlyInBox: 'Único candidato en la caja',
+          onlyInBox: 'Único candidato en la unidad',
           version: 'Versión',
           madeWith: 'Hecho con',
-          inArgentina: 'en Argentina'
+          inArgentina: 'en Argentina',
+          language: 'IDIOMA'
         },
         sudoku: {
           saved: 'Guardado',

@@ -5,10 +5,10 @@ type SettingsTemplateItem = {
 }
 
 class SettingsHandler {
-	template: SettingsTemplateItem[];
-	settings: any;
+	template: SettingsTemplateItem[]
+	settings: any
 
-	constructor(){
+	constructor() {
 		this.template = [
 			{
 				name: 'autoTheme',
@@ -89,6 +89,11 @@ class SettingsHandler {
 				name: 'highContrastGrid',
 				type: 'boolean',
 				default: true
+			},
+			{
+				name: 'language',
+				type: 'string',
+				default: 'en'
 			}
 		]
 
@@ -96,10 +101,10 @@ class SettingsHandler {
 		let data = localStorage.getItem('settings')
 		data = data ? JSON.parse(data) : null
 
-		if (data){
+		if (data) {
 			//Add valid entries to settings
 			Object.entries(data).forEach(v => {
-				if (this.template.map(x => x.name).includes(v[0]) && typeof v[1] === this.template.find(x => x.name === v[0])?.type){
+				if (this.template.map(x => x.name).includes(v[0]) && typeof v[1] === this.template.find(x => x.name === v[0])?.type) {
 					this.settings[v[0]] = v[1]
 				}
 			})
@@ -113,12 +118,12 @@ class SettingsHandler {
 		this.saveSettings()
 	}
 
-	setSetting(name: string, value: any){
+	setSetting(name: string, value: any) {
 		this.settings[name] = value
 		this.saveSettings()
 	}
 
-	saveSettings(){
+	saveSettings() {
 		localStorage.setItem('settings', JSON.stringify(this.settings))
 	}
 }
