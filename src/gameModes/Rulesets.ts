@@ -164,7 +164,7 @@ function classicRenderSelection({ ctx, accentColor, colors, game, squareSize, co
     for (const c of game.selectedCells) {
         ctx.fillStyle = ctx.strokeStyle = colors[accentColor]
 
-        const padding = 1
+        const padding = 0
         const left = rendererState.cellPositions[c.x] + padding
         const right = rendererState.cellPositions[c.x] + squareSize - padding - colorBorderLineWidth
         const top = rendererState.cellPositions[c.y] + padding
@@ -453,6 +453,25 @@ function classicCalculatePossibleValues(game: CommonBoard) {
                 }
             }
         }
+
+        for (const cg of game.colorGroups) {
+            // Find cells that are visible by every cell in the group
+            let visibleCells: CellCoordinates[] = classicGetVisibleCells(game, cg[0])
+            let notes: number[] = game.get(cg[0]).notes
+            for (let i = 1; i < cg.length; i++) {
+                const visibleCells2 = classicGetVisibleCells(game, cg[i])
+                visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
+                notes = notes.concat(game.get(cg[i]).notes)
+            }
+
+            // Remove possible values and notes from all the visible cells not in the group
+            for (const vc of visibleCells) {
+                if (indexOfCoordsInArray(cg, vc) === -1) {
+                    game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
+                    game.get(vc).notes = game.get(vc).notes.filter(n => !notes.includes(n))
+                }
+            }
+        }
     }
 
     return []
@@ -489,6 +508,33 @@ function classicIterateAllCells(game: CommonBoard, func: (cell: Cell, coords: Ce
             func(game.get({ x, y }), { x, y })
         }
     }
+}
+
+function classicGetCellUnits(game: CommonBoard, coords: CellCoordinates) {
+    let units: CellCoordinates[][] = []
+
+    // Row
+    let row: CellCoordinates[] = []
+    for (let x = 0; x < game.nSquares; x++) row.push({ x, y: coords.y })
+    units.push(row)
+
+    // Col
+    let col: CellCoordinates[] = []
+    for (let y = 0; y < game.nSquares; y++) col.push({ x: coords.x, y })
+    units.push(col)
+
+    // Box
+    let box: CellCoordinates[] = []
+    const x0 = Math.floor(coords.x / 3) * 3
+    const y0 = Math.floor(coords.y / 3) * 3
+    for (let x = 0; x < 3; x++) {
+        for (let y = 0; y < 3; y++) {
+            box.push({ x: x0 + x, y: y0 + y })
+        }
+    }
+    units.push(box)
+
+    return units
 }
 
 // Killer
@@ -794,10 +840,10 @@ function sudokuXGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoor
     }
 
     // If the cell is in the SW-NE diagonal
-    if (c.y === 8 - c.x) {
+    if (c.y === game.nSquares - 1 - c.x) {
         for (let i = 0; i < game.nSquares; i++) {
-            if (i !== c.x && indexOfCoordsInArray(visibleCells, { x: i, y: 8 - i }) === -1) {
-                visibleCells.push({ x: i, y: 8 - i })
+            if (i !== c.x && indexOfCoordsInArray(visibleCells, { x: i, y: game.nSquares - 1 - i }) === -1) {
+                visibleCells.push({ x: i, y: game.nSquares - 1 - i })
             }
         }
     }
@@ -881,8 +927,8 @@ function sudokuXFindLinksDiagonals(game: CommonBoard, n: number): CellCoordinate
 
     newLink = []
     for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: i, y: 8 - i }).notes.includes(n)) {
-            newLink.push({ x: i, y: 8 - i })
+        if (game.get({ x: i, y: game.nSquares - 1 - i }).notes.includes(n)) {
+            newLink.push({ x: i, y: game.nSquares - 1 - i })
         }
     }
 
@@ -891,6 +937,30 @@ function sudokuXFindLinksDiagonals(game: CommonBoard, n: number): CellCoordinate
     }
 
     return links
+}
+
+function sudokuXGetCellUnits(game: CommonBoard, coords: CellCoordinates) {
+    let units: CellCoordinates[][] = classicGetCellUnits(game, coords)
+
+    // NW-SE diagonal
+    if (coords.x === coords.y) {
+        let nwseDiagonal: CellCoordinates[] = []
+        for (let i = 0; i < game.nSquares; i++) {
+            nwseDiagonal.push({ x: i, y: i })
+        }
+        units.push(nwseDiagonal)
+    }
+
+    // SW-NE diagonal
+    if (coords.y === game.nSquares - 1 - coords.x) {
+        let swneDiagonal: CellCoordinates[] = []
+        for (let i = 0; i < game.nSquares; i++) {
+            swneDiagonal.push({ x: i, y: game.nSquares - 1 - i })
+        }
+        units.push(swneDiagonal)
+    }
+
+    return units
 }
 
 export interface Ruleset {
@@ -915,6 +985,7 @@ export interface Ruleset {
         checkComplete: (game: CommonBoard) => boolean
         checkErrors: (game: CommonBoard) => void
         iterateAllCells: (game: CommonBoard, func: (cell: Cell, coords: CellCoordinates) => void) => void
+        getCellUnits: (game: CommonBoard, c: CellCoordinates) => CellCoordinates[][]
     }
 }
 
@@ -941,6 +1012,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
+            getCellUnits: classicGetCellUnits
         },
     },
     killer: {
@@ -965,6 +1037,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
+            getCellUnits: classicGetCellUnits
         },
     },
     sudokuX: {
@@ -989,6 +1062,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkComplete: classicCheckComplete,
             checkErrors: sudokuXDetectErrors,
             iterateAllCells: classicIterateAllCells,
+            getCellUnits: sudokuXGetCellUnits
         },
     },
     sandwich: {
@@ -1013,6 +1087,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkComplete: () => false,
             checkErrors: () => { },
             iterateAllCells: classicIterateAllCells,
+            getCellUnits: classicGetCellUnits
         },
     },
     thermo: {
@@ -1037,6 +1112,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkComplete: () => false,
             checkErrors: () => { },
             iterateAllCells: classicIterateAllCells,
+            getCellUnits: classicGetCellUnits
         },
     },
 }

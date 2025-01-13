@@ -7,6 +7,7 @@ import { indexOfCoordsInArray } from "../utils/CoordsUtils"
 import { Ruleset, rulesets } from "./Rulesets"
 
 export default class CommonBoard {
+	// Constants
 	id: string
 	mode: GameModeName
 	difficulty: DifficultyName
@@ -15,13 +16,16 @@ export default class CommonBoard {
 	cages: number[][][]
 	solution: string
 	nSquares: number
-	fullNotation: boolean
-	timer: number
-	selectedCells: CellCoordinates[]
-	history: History
-	board: Board
 	version: number = 0;
 	ruleset: Ruleset
+
+	board: Board
+	selectedCells: CellCoordinates[]
+	timer: number
+
+	history: History
+	fullNotation: boolean
+	colorGroups: CellCoordinates[][]
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -36,6 +40,7 @@ export default class CommonBoard {
 		this.mission = ''
 		this.clues = ''
 		this.solution = ''
+		this.colorGroups = []
 
 		if (isGameData(data)) {
 			this.mode = data.mode
@@ -55,6 +60,7 @@ export default class CommonBoard {
 			this.board = data.board
 			this.selectedCells = data.selectedCells
 			this.history = data.history
+			this.colorGroups = data.colorGroups
 			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 			this.ruleset.game.checkErrors(this)
@@ -70,6 +76,7 @@ export default class CommonBoard {
 		this.history = []
 		this.board = []
 		this.timer = 0
+		this.colorGroups = []
 
 		for (let x = 0; x < this.nSquares; x++) {
 			this.board.push(Array(this.nSquares).fill(null))
@@ -115,6 +122,7 @@ export default class CommonBoard {
 		this.history.push({
 			board: JSON.parse(JSON.stringify(this.board)),
 			fullNotation: this.fullNotation,
+			colorGroups: this.colorGroups
 		})
 	}
 
@@ -122,6 +130,7 @@ export default class CommonBoard {
 		if (this.history.length > 0) {
 			this.board = this.history[this.history.length - 1].board
 			this.fullNotation = this.history[this.history.length - 1].fullNotation
+			this.colorGroups = this.history[this.history.length - 1].colorGroups
 			this.history.pop()
 		}
 	}
@@ -149,17 +158,22 @@ export default class CommonBoard {
 		}
 	}
 
-	onlyAvailableInBox(c: CellCoordinates, n: number) {
+	onlyAvailableInAnyUnit(c: CellCoordinates, n: number) {
 		if (!this.get(c).possibleValues.includes(n)) return false
-		let found = 0
-		for (const coords of this.ruleset.game.getBoxCellsCoordinates(c)) {
-			const cell = this.get(coords)
-			if (cell.value === 0 && cell.possibleValues.includes(n)) {
-				found++
+		for (const unit of this.ruleset.game.getCellUnits(this, c)) {
+			let found = 0
+			for (const coords of unit) {
+				const cell = this.get(coords)
+				if (cell.value === 0 && cell.possibleValues.includes(n)) {
+					found++
+				}
+			}
+			if (found === 1) {
+				return true
 			}
 		}
 
-		return found === 1
+		return false
 	}
 
 	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): [boolean | null, BoardAnimation[]] {
@@ -170,8 +184,8 @@ export default class CommonBoard {
 			const cell = this.get(c)
 
 			if (cell.value === 0) {
-				//Check if only available place in box
-				if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInBox(c, n)) {
+				//Check if only available place in any unit
+				if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInAnyUnit(c, n)) {
 					finalNoteState = true
 					animations = animations.concat(this.setValue([c], n))
 				} else if (cell.notes.includes(n)) {
@@ -279,27 +293,25 @@ export default class CommonBoard {
 		if (SettingsHandler.settings.advancedHighlight) {
 			if (lockedInput > 0) {
 				targetValues = [lockedInput]
-			}
-
-			for (const c of this.selectedCells) {
-				if (this.get(c).value > 0) targetValues.push(this.get(c).value)
+			} else {
+				for (const c of this.selectedCells) {
+					if (this.get(c).value > 0) targetValues.push(this.get(c).value)
+				}
 			}
 
 			if (targetValues.length > 0) {
-				this.iterateAllCells((cell, coords) => {
-					if (targetValues.includes(cell.value)) {
-						for (const vc of this.ruleset.game.getVisibleCells(this, coords)) {
-							highlightedCells[vc.x][vc.y] = true
-						}
-					}
+				this.iterateAllCells((cell, { x, y }) => {
+					if (!targetValues.every(v => cell.possibleValues.includes(v))) highlightedCells[x][y] = true
 				})
 			}
+
+			this.iterateAllCells((cell, { x, y }) => { if (cell.value > 0 || (SettingsHandler.settings.lockCellsWithColor && cell.color !== 'default')) highlightedCells[x][y] = true })
 		}
 
 		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
 			for (const sc of this.selectedCells) {
-				for (const c of this.ruleset.game.getVisibleCells(this, sc)) {
-					highlightedCells[c.x][c.y] = true
+				for (const { x, y } of this.ruleset.game.getVisibleCells(this, sc)) {
+					highlightedCells[x][y] = true
 				}
 			}
 		}
@@ -325,6 +337,7 @@ export default class CommonBoard {
 
 	clearColors() {
 		this.iterateAllCells(cell => { cell.color = 'default' })
+		this.colorGroups = []
 	}
 
 	checkComplete() {

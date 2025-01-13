@@ -40,6 +40,7 @@ export type Board = Cell[][]
 export type HistoryItem = {
     board: Board
     fullNotation: boolean
+    colorGroups: CellCoordinates[][]
 }
 
 export type History = HistoryItem[]
@@ -57,6 +58,7 @@ export type GameData = {
     selectedCells: CellCoordinates[]
     history: History
     version: number
+    colorGroups: CellCoordinates[][]
 }
 
 export type RawGameData = {
