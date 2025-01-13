@@ -1,19 +1,19 @@
 import axios from "axios"
 
 class API {
-	host: string;
-	clientVersion: string;
-	clientVersionIsBeta: boolean;
+	host: string
+	clientVersion: string
+	clientVersionIsBeta: boolean
 
-	constructor(){
+	constructor() {
 		this.host = 'https://sudoku.zaifo.com.ar'
 		this.clientVersion = '2.8.3'
 		this.clientVersionIsBeta = false
 	}
 
-	logError(error: string){
+	logError(error: any) {
 		return new Promise<void>((resolve, reject) => {
-			axios.post(`${this.host}/api/admin/logerror`, error, {withCredentials: true}).then(() => {
+			axios.post(`${this.host}/api/admin/logerror`, JSON.stringify(error), { withCredentials: true }).then(() => {
 				resolve()
 			}).catch(e => {
 				reject()
