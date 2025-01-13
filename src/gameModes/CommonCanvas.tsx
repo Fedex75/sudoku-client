@@ -148,6 +148,8 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	const selectedCellColors = useRef<Record<string, string>>()
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 
+	const savedRenderFrame = useRef(() => { })
+
 	useImperativeHandle(ref, () => ({
 		renderFrame() {
 			renderFrame()
@@ -237,16 +239,16 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 			}
 		}
 
-		renderFrame()
+		savedRenderFrame.current()
 
 		if (currentAnimations.current.length > 0) {
 			requestAnimationFrame((ts) => { doAnimation(ts) })
 		} else {
 			animationColors.current = null
 			animationGammas.current = null
-			renderFrame()
+			savedRenderFrame.current()
 		}
-	}, [game.nSquares, renderFrame, theme])
+	}, [game, theme])
 
 	const addAnimations = useCallback((data: BoardAnimation[]) => {
 		data.forEach(animation => {
@@ -391,6 +393,10 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	useEffect(() => {
 		for (const func of ruleset.render.init) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
 	}, [boxBorderWidthFactor, ruleset.render.init, game])
+
+	useEffect(() => {
+		savedRenderFrame.current = renderFrame
+	}, [renderFrame])
 
 	return <canvas
 		ref={canvasRef}
