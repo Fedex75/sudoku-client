@@ -305,7 +305,7 @@ export default class CommonBoard {
 				})
 			}
 
-			this.iterateAllCells((cell, { x, y }) => { if (cell.value > 0 || (SettingsHandler.settings.lockCellsWithColor && cell.color !== 'default')) highlightedCells[x][y] = true })
+			this.iterateAllCells((cell, { x, y }) => { if (cell.value > 0) highlightedCells[x][y] = true })
 		}
 
 		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
