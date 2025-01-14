@@ -48,6 +48,11 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	const updateCalculatorValue = useCallback(() => {
 		if (!GameHandler.game) return
 
+		if (GameHandler.game.mode !== 'killer' || GameHandler.game.selectedCells.length < 2) {
+			setCalculatorValue(0)
+			return
+		}
+
 		let selectedCages: number[] = []
 
 		function selectedCellsMatchCagesExactly(): boolean {
