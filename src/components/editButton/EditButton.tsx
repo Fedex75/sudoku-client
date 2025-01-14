@@ -1,17 +1,18 @@
-import React from 'react';
+import React from 'react'
 import './editButton.css'
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
 type Props = {
-	onClick: () => void;
-	highlight?: Boolean;
-	yellow?: Boolean;
-	icon: React.ReactNode;
-	disabled?: Boolean;
+	onClick: () => void
+	highlight?: Boolean
+	yellow?: Boolean
+	icon: React.ReactNode
+	disabled?: Boolean
+	number?: number
 }
 
-function EditButton({onClick, highlight = false, yellow = false, icon, disabled = false}: Props) {
+function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number }: Props) {
 	return (
 		<div
 			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''}`}
@@ -33,6 +34,7 @@ function EditButton({onClick, highlight = false, yellow = false, icon, disabled 
 			}}
 		>
 			{icon}
+			{number || null}
 		</div>
 	)
 }

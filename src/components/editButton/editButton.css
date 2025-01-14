@@ -3,6 +3,7 @@
   justify-content: center;
   align-items: center;
   border-radius: 10px;
+  font-size: 30px;
   cursor: pointer;
   color: var(--editButtonColor);
   background-color: var(--editButtonBackground);

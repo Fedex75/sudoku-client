@@ -31,7 +31,9 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	const [colorDragMode, setColorDragMode] = useState<boolean | null>(null)
 	const [lockedColor, setLockedColor] = useState<ColorName | null>(null)
 
-	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'clearColors'>()
+	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'clearColors' | 'calculator'>()
+
+	const [calculatorValue, setCalculatorValue] = useState(0)
 
 	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false)
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<CellCoordinates | null>(null)
@@ -42,6 +44,43 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	const [render, setRender] = useState(0)
 
 	const canvasRef = useRef<CanvasRef>(null)
+
+	const updateCalculatorValue = useCallback(() => {
+		if (!GameHandler.game) return
+
+		let selectedCages: number[] = []
+
+		function selectedCellsMatchCagesExactly(): boolean {
+			if (!GameHandler.game) return false
+
+			for (const c of GameHandler.game.selectedCells) {
+				const cell = GameHandler.game.get(c)
+				if (!selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
+			}
+
+			for (const cageIndex of selectedCages) {
+				const cage = GameHandler.game.cages[cageIndex]
+				for (const cell of cage) {
+					if (indexOfCoordsInArray(GameHandler.game.selectedCells, { x: cell[0], y: cell[1] }) === -1) {
+						return false
+					}
+				}
+			}
+
+			return true
+		}
+
+		if (selectedCellsMatchCagesExactly()) {
+			let sum = 0
+			for (const cageIndex of selectedCages) {
+				const firstCell = GameHandler.game.cages[cageIndex][0]
+				sum += GameHandler.game.get({ x: firstCell[0], y: firstCell[1] }).cageValue!
+			}
+			setCalculatorValue(sum)
+		} else {
+			setCalculatorValue(0)
+		}
+	}, [])
 
 	const handleSetColor = useCallback((coords: CellCoordinates[], color: ColorName = accentColor) => {
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || coords.length === 0) return
@@ -123,10 +162,13 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			setMagicWandMode('clearColors')
 		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
 			setMagicWandMode('links')
+		} else if (GameHandler.game.mode === 'killer' && GameHandler.game.selectedCells.length > 1) {
+			setMagicWandMode('calculator')
 		} else {
 			setMagicWandMode('disabled')
 			setShowLinks(false)
 		}
+		updateCalculatorValue()
 	}, [colorMode, lockedInput])
 
 	const onCanvasClick = useCallback((coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => {
@@ -404,6 +446,8 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				lockedInput={lockedInput}
 				possibleValues={possibleValues}
 				completedNumbers={completedNumbers}
+
+				magicWandCalculatorValue={calculatorValue}
 			/>
 		</div>
 	)
