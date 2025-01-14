@@ -1,6 +1,6 @@
 import './settings.css'
 import { useCallback, useState } from 'react'
-import { Section, SectionContent, Topbar, ColorChooser, Button, ActionSheet, ActionSheetButton } from '../../components'
+import { Section, SectionContent, Topbar, ColorChooser } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -8,7 +8,6 @@ import { faPalette, faChevronRight, faBorderAll, faGear, faInfo, faHeart, faGlob
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
-import GameHandler from '../../utils/GameHandler'
 import { colorNames } from '../../utils/Colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { ThemeName } from '../../utils/DataTypes'
@@ -193,7 +192,7 @@ function Language({ handleSettingChange, accentColorHex }: AdvancedProps) {
 		} else {
 			i18n.changeLanguage(newLang)
 		}
-	}, [])
+	}, [handleSettingChange, i18n])
 
 	return (
 		<Section>
