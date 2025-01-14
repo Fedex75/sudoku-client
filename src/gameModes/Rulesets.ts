@@ -963,6 +963,12 @@ function sudokuXGetCellUnits(game: CommonBoard, coords: CellCoordinates) {
     return units
 }
 
+// Sandwich Sudoku
+
+function sandwichInitGameData({ game, data }: InitGameProps) {
+
+}
+
 export interface Ruleset {
     render: {
         init: ((props: StateProps) => void)[]
@@ -1068,24 +1074,24 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
     sandwich: {
         render: {
             init: [],
-            onResize: [],
+            onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => { }],
-            unpaused: [],
-            paused: [],
-            after: [() => { }],
+            before: [classicRenderBackground],
+            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            paused: [classicRenderPaused],
+            after: [classicRenderBorders],
         },
         game: {
-            initGameData: () => { },
+            initGameData: sandwichInitGameData,
             initBoardMatrix: [],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues, classicDetectErrorsFromSolution],
-            checkComplete: () => false,
-            checkErrors: () => { },
+            afterValuesChanged: [classicCalculatePossibleValues,],
+            checkComplete: classicCheckComplete,
+            checkErrors: classicDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
         },
