@@ -139,8 +139,6 @@ type AdvancedProps = {
 }
 
 function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
-	const [resetStatisticsActionSheetIsOpen, setResetStatisticsActionSheetIsOpen] = useState(false)
-
 	const { t } = useTranslation()
 
 	return (
@@ -180,24 +178,7 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				</div>
 
 				<p className='settings__explanation'>{t('settings.fullNotationExplanation')}</p>
-
-				<div className='settings__label'>{t('settings.statistics')}</div>
-
-				<Button title={t('settings.resetStatistics')} color='white' backgroundColor='var(--red)' fontSize={18} onClick={() => {
-					setResetStatisticsActionSheetIsOpen(true)
-				}} />
 			</SectionContent>
-
-			<ActionSheet
-				isOpen={resetStatisticsActionSheetIsOpen}
-				cancelTitle={t('common.cancel')}
-				onClose={() => { setResetStatisticsActionSheetIsOpen(false) }}
-			>
-				<ActionSheetButton title={t('settings.resetStatistics')} color='var(--red)' onClick={() => {
-					GameHandler.resetStatistics()
-					setResetStatisticsActionSheetIsOpen(false)
-				}} />
-			</ActionSheet>
 		</Section>
 	)
 }
