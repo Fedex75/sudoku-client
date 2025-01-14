@@ -5,10 +5,10 @@ type SettingsTemplateItem = {
 }
 
 class SettingsHandler {
-	template: SettingsTemplateItem[]
+	template: SettingsTemplateItem[] = []
 	settings: any
 
-	constructor() {
+	init() {
 		this.template = [
 			{
 				name: 'autoTheme',
@@ -93,7 +93,7 @@ class SettingsHandler {
 			{
 				name: 'language',
 				type: 'string',
-				default: 'en'
+				default: 'auto'
 			}
 		]
 

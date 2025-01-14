@@ -7,6 +7,8 @@ import CommonBoard from '../../gameModes/CommonBoard'
 import CommonCanvas from '../../gameModes/CommonCanvas'
 import { AccentColor } from '../../utils/Colors'
 import { rulesets } from '../../gameModes/Rulesets'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 
 type Props = {
   title: string
@@ -18,9 +20,11 @@ type Props = {
   accentColorHex?: string
   info?: string
   setTheme?: (t: string) => void
+  icon?: React.ReactNode
+  language?: string
 }
 
-export default function SettingsItem({ title, name = '', handleSettingChange = () => { }, type = 'boolean', theme, setTheme = () => { }, accentColor = 'darkBlue', accentColorHex = '', info = '' }: Props) {
+export default function SettingsItem({ title, name = '', handleSettingChange = () => { }, type = 'boolean', theme, setTheme = () => { }, accentColor = 'darkBlue', accentColorHex = '', info = '', icon, language }: Props) {
   const { t } = useTranslation()
 
   if (type === 'boolean') return (
@@ -74,10 +78,11 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
 
   if (type === 'language') {
     return (
-      <div className="settings__item">
-
+      <div className="settings__item" onClick={() => { handleSettingChange('language', language) }}>
+        {icon}
         <p className="settings__item__title">{title}</p>
         <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>
+        {SettingsHandler.settings.language === language ? <FontAwesomeIcon icon={faCheck} fontSize={20} color='var(--theme-color)' /> : null}
       </div>
     )
   }

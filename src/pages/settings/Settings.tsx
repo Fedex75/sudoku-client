@@ -13,6 +13,9 @@ import { colorNames } from '../../utils/Colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
+import FlagArg from '../../svg/flag_arg'
+import FlagUKSVG from '../../svg/flag_uk'
+import FlagSpainSVG from '../../svg/flag_spain'
 
 type SectionLinkProps = {
 	color: string
@@ -200,7 +203,16 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 }
 
 function Language({ handleSettingChange, accentColorHex }: AdvancedProps) {
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
+
+	const handleChangeLanguage = useCallback((settingName: string, newLang: string) => {
+		handleSettingChange('language', newLang)
+		if (newLang === 'auto') {
+			i18n.changeLanguage(navigator.language.split('-')[0])
+		} else {
+			i18n.changeLanguage(newLang)
+		}
+	}, [])
 
 	return (
 		<Section>
@@ -209,7 +221,9 @@ function Language({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				<div className='settings__label'>{t('settings.language')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem type='language' title={t('settings.languageEnglish')} name='language' handleSettingChange={() => { handleSettingChange('language', 'en') }} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='auto' title={t('settings.languageAuto')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='en' icon={<FlagUKSVG className='settings__item__icon' />} title={t('settings.languageEnglish')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='es' icon={<FlagSpainSVG className='settings__item__icon' />} title={t('settings.languageSpanish')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
 				</div>
 			</SectionContent>
 		</Section>
@@ -227,7 +241,7 @@ function About() {
 					<SettingsItem type='info' title={t('settings.version')} info={API.clientVersion} />
 				</div>
 
-				<p style={{ color: 'var(--primaryTextColor)', textAlign: 'center' }}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} 🇦🇷 </p>
+				<p style={{ display: 'flex', flexFlow: 'row', justifyContent: 'center', gap: 7, alignItems: 'center', color: 'var(--primaryTextColor)', textAlign: 'center' }}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} <FlagArg className='about__flag-argentina' /> </p>
 			</SectionContent>
 		</Section>
 	)

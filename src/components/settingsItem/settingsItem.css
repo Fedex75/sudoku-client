@@ -1,6 +1,7 @@
 .settings__item {
-  display: grid;
-  grid-template-columns: auto fit-content(0);
+  display: flex;
+  flex-flow: row;
+  gap: 10px;
   padding: 10px 10px;
   border-width: 1px 1px 0px 1px;
   border-style: solid;
@@ -21,6 +22,7 @@
 }
 
 .settings__item__title {
+  flex-grow: 1;
   font-size: 18px;
   margin-right: 40px;
   color: var(--settingsItemTitleColor);
@@ -43,4 +45,8 @@
 
 .settings__item__theme-wrapper canvas {
   width: 100px;
+}
+
+.settings__item__icon {
+  height: 20px;
 }
