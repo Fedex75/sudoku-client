@@ -120,7 +120,7 @@ export default class CommonBoard {
 
 	pushBoard() {
 		this.history.push({
-			board: JSON.parse(JSON.stringify(this.board)),
+			board: JSON.stringify(this.board),
 			fullNotation: this.fullNotation,
 			colorGroups: JSON.stringify(this.colorGroups)
 		})
@@ -234,7 +234,28 @@ export default class CommonBoard {
 					this.get(c).possibleValues = this.get(c).possibleValues.filter(n => n !== s)
 				}
 
-				if (SettingsHandler.settings.clearColorOnInput) this.get(c).color = 'default'
+				if (SettingsHandler.settings.clearColorOnInput) {
+					let colorGroupIndex = -1
+					for (let cgi = 0; cgi < this.colorGroups.length; cgi++) {
+						if (indexOfCoordsInArray(this.colorGroups[cgi], c) !== -1) {
+							colorGroupIndex = cgi
+							break
+						}
+					}
+
+					// If the cell is in a color group
+					if (colorGroupIndex !== -1) {
+						// If every cell in the color group has a value, clear their color and remove the color group
+						if (this.colorGroups[colorGroupIndex].every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0)) {
+							for (const colorGroupCellCoords of this.colorGroups[colorGroupIndex]) {
+								this.get(colorGroupCellCoords).color = 'default'
+							}
+							this.colorGroups.splice(colorGroupIndex, 1)
+						}
+					} else {
+						this.get(c).color = 'default'
+					}
+				}
 
 				//Check animations
 				for (const func of this.ruleset.game.checkAnimations) {
