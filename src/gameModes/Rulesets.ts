@@ -468,7 +468,7 @@ function classicCalculatePossibleValues(game: CommonBoard) {
             for (const vc of visibleCells) {
                 if (indexOfCoordsInArray(cg, vc) === -1) {
                     game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
-                    game.get(vc).notes = game.get(vc).notes.filter(n => !notes.includes(n))
+                    for (const note of notes) game.setNote([vc], note, false)
                 }
             }
         }
