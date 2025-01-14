@@ -38,9 +38,9 @@ export type CellCoordinates = {
 export type Board = Cell[][]
 
 export type HistoryItem = {
-    board: Board
+    board: string
     fullNotation: boolean
-    colorGroups: CellCoordinates[][]
+    colorGroups: string
 }
 
 export type History = HistoryItem[]

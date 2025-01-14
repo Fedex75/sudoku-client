@@ -122,15 +122,15 @@ export default class CommonBoard {
 		this.history.push({
 			board: JSON.parse(JSON.stringify(this.board)),
 			fullNotation: this.fullNotation,
-			colorGroups: this.colorGroups
+			colorGroups: JSON.stringify(this.colorGroups)
 		})
 	}
 
 	popBoard() {
 		if (this.history.length > 0) {
-			this.board = this.history[this.history.length - 1].board
+			this.board = JSON.parse(this.history[this.history.length - 1].board)
 			this.fullNotation = this.history[this.history.length - 1].fullNotation
-			this.colorGroups = this.history[this.history.length - 1].colorGroups
+			this.colorGroups = JSON.parse(this.history[this.history.length - 1].colorGroups)
 			this.history.pop()
 		}
 	}
