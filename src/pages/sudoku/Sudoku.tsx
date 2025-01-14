@@ -55,8 +55,8 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, o
 
 	return (
 		<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
-			<p className='sudoku__timer__time'>{millisecondsToHMS(time)}</p>
 			{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
+			<p className='sudoku__timer__time'>{millisecondsToHMS(time)}</p>
 		</div>
 	)
 })

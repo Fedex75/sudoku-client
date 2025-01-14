@@ -187,7 +187,7 @@ export default function Play({ theme, accentColor }: Props) {
                                 <FontAwesomeIcon className='home__continue__icon' icon={faChevronRight} />
                             </div>
                         </Link>
-                    </> : null
+                    </> : <div></div>
             }
 
             <div className='home__tabSwitcher-wrapper'>

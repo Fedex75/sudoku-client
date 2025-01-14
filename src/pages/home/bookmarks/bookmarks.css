@@ -46,11 +46,11 @@
 	flex-flow: column;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+
 	color: var(--bookmarksEmptyColor);
 }
 
-@media (min-aspect-ratio: 1 / 1){
+@media (min-aspect-ratio: 1 / 1) {
 	.bookmarks__item {
 		max-width: 400px;
 		max-height: 400px;
