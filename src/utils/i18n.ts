@@ -4,7 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 
 export function initI18n() {
   i18n.use(LanguageDetector).use(initReactI18next).init({
-    debug: true,
+    debug: false,
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
     supportedLngs: ['en', 'es'],
