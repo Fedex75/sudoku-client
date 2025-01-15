@@ -182,6 +182,7 @@ export default class CommonBoard {
 	}
 
 	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): [boolean | null, BoardAnimation[]] {
+		let hasChanged = false
 		let finalNoteState: boolean | null = null
 		let animations: BoardAnimation[] = []
 
@@ -193,10 +194,12 @@ export default class CommonBoard {
 				if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInAnyUnit(c, n)) {
 					finalNoteState = true
 					animations = animations.concat(this.setValue([c], n))
+					hasChanged = true
 				} else if (cell.notes.includes(n)) {
 					if (state !== true) {
 						//Remove note
 						this.get(c).notes = cell.notes.filter(note => note !== n)
+						hasChanged = true
 						if (
 							(
 								(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
@@ -214,12 +217,13 @@ export default class CommonBoard {
 						this.get(c).notes.push(n)
 						this.checkFullNotation(false)
 						finalNoteState = true
+						hasChanged = true
 					}
 				}
 			}
 		}
 
-		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
+		if (hasChanged) for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
 
 		if (coords.length === 1) {
 			return [finalNoteState, animations]
@@ -228,17 +232,19 @@ export default class CommonBoard {
 	}
 
 	setValue(coords: CellCoordinates[], s: number): BoardAnimation[] {
+		let hasChanged = false
 		let animations: BoardAnimation[] = []
 
 		for (const c of coords) {
-			if (!this.get(c).clue) {
+			const cell = this.get(c)
+			if (!cell.clue && cell.value !== s) {
 				const visibleCells = this.ruleset.game.getVisibleCells(this, c)
 
-				this.get(c).value = s
-				this.get(c).notes = []
-				for (const cell of visibleCells) {
-					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([cell], s, false, false)
-					this.get(c).possibleValues = this.get(c).possibleValues.filter(n => n !== s)
+				cell.value = s
+				cell.notes = []
+				hasChanged = true
+				for (const visibleCell of visibleCells) {
+					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([visibleCell], s, false, false)
 				}
 
 				if (SettingsHandler.settings.clearColorOnInput) {
@@ -260,7 +266,7 @@ export default class CommonBoard {
 							this.colorGroups.splice(colorGroupIndex, 1)
 						}
 					} else {
-						this.get(c).color = 'default'
+						cell.color = 'default'
 					}
 				}
 
@@ -270,18 +276,20 @@ export default class CommonBoard {
 				}
 
 				//Eliminate possibleValues
-				for (const cell of visibleCells) {
-					this.get(cell).possibleValues = this.get(cell).possibleValues.filter(n => n !== s)
+				for (const visibleCell of visibleCells) {
+					this.get(visibleCell).possibleValues = this.get(visibleCell).possibleValues.filter(n => n !== s)
 				}
 			}
 		}
 
-		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
-		this.ruleset.game.checkErrors(this)
+		if (hasChanged) {
+			for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
+			this.ruleset.game.checkErrors(this)
 
-		if (this.checkComplete()) {
-			animations = [{ type: 'board', center: coords[0] }]
-			GameHandler.setComplete()
+			if (this.checkComplete()) {
+				animations = [{ type: 'board', center: coords[0] }]
+				GameHandler.setComplete()
+			}
 		}
 
 		return animations
@@ -359,10 +367,13 @@ export default class CommonBoard {
 
 	setColor(coords: CellCoordinates, newColor: ColorName) {
 		if (GameHandler.complete) return
-		this.board[coords.x][coords.y].color = newColor
-		for (const func of this.ruleset.game.afterValuesChanged) func(this)
-		this.ruleset.game.checkErrors(this)
-		this.saveToLocalStorage()
+		const cell = this.get(coords)
+		if (cell.color !== newColor) {
+			this.board[coords.x][coords.y].color = newColor
+			for (const func of this.ruleset.game.afterValuesChanged) func(this)
+			this.ruleset.game.checkErrors(this)
+			this.saveToLocalStorage()
+		}
 	}
 
 	clearColors() {

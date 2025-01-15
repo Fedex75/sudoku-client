@@ -464,6 +464,8 @@ function classicCalculatePossibleValues(game: CommonBoard) {
             }
         }
 
+        console.log(game.colorGroups)
+
         for (const cg of game.colorGroups) {
             // Find cells that are visible by every cell in the group
             let visibleCells: CellCoordinates[] = classicGetVisibleCells(game, cg[0])
