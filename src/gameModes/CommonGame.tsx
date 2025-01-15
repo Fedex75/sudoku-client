@@ -64,7 +64,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			}
 
 			for (const cageIndex of selectedCages) {
-				const cage = GameHandler.game.cages[cageIndex]
+				const cage = GameHandler.game.killer__cages[cageIndex]
 				for (const cell of cage) {
 					if (indexOfCoordsInArray(GameHandler.game.selectedCells, { x: cell[0], y: cell[1] }) === -1) {
 						return false
@@ -78,7 +78,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		if (selectedCellsMatchCagesExactly()) {
 			let sum = 0
 			for (const cageIndex of selectedCages) {
-				const firstCell = GameHandler.game.cages[cageIndex][0]
+				const firstCell = GameHandler.game.killer__cages[cageIndex][0]
 				sum += GameHandler.game.get({ x: firstCell[0], y: firstCell[1] }).cageValue!
 			}
 			setCalculatorValue(sum)
@@ -145,8 +145,8 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		let newPossibleValues: number[] = []
 		if (SettingsHandler.settings.showPossibleValues) {
 			for (const c of GameHandler.game.selectedCells) {
-					for (const v of GameHandler.game.get(c).possibleValues) {
-						if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
+				for (const v of GameHandler.game.get(c).possibleValues) {
+					if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
 				}
 			}
 		} else {

@@ -52,7 +52,9 @@ export type GameData = {
     mission: string
     clues: string
     solution: string
-    cages: number[][][]
+    killer__cages: number[][][]
+    sandwich__horizontalClues: number[]
+    sandwich__verticalClues: number[]
     timer: number
     board: Board
     selectedCells: CellCoordinates[]

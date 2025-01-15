@@ -13,7 +13,9 @@ export default class CommonBoard {
 	difficulty: DifficultyName
 	mission: string
 	clues: string
-	cages: number[][][]
+	killer__cages: number[][][]
+	sandwich__horizontalClues: number[]
+	sandwich__verticalClues: number[]
 	solution: string
 	nSquares: number
 	version: number = 0;
@@ -34,7 +36,9 @@ export default class CommonBoard {
 		this.selectedCells = []
 		this.history = []
 		this.board = []
-		this.cages = []
+		this.killer__cages = []
+		this.sandwich__horizontalClues = []
+		this.sandwich__verticalClues = []
 		this.timer = 0
 		this.difficulty = 'unrated'
 		this.mission = ''
@@ -55,7 +59,9 @@ export default class CommonBoard {
 			this.mission = data.mission
 			this.clues = data.clues
 			this.solution = data.solution
-			this.cages = data.cages
+			this.killer__cages = data.killer__cages
+			this.sandwich__horizontalClues = data.sandwich__horizontalClues
+			this.sandwich__verticalClues = data.sandwich__verticalClues
 			this.timer = data.timer
 			this.board = data.board
 			this.selectedCells = data.selectedCells
@@ -81,13 +87,12 @@ export default class CommonBoard {
 		for (let x = 0; x < this.nSquares; x++) {
 			this.board.push(Array(this.nSquares).fill(null))
 			for (let y = 0; y < this.nSquares; y++) {
-				let number = Number.parseInt(this.clues[y * this.nSquares + x])
-				let solution = Number.parseInt(this.solution[y * this.nSquares + x])
+				const number = Number.parseInt(this.clues[y * this.nSquares + x])
 				this.board[x][y] = {
 					clue: number > 0,
 					value: number,
 					notes: [],
-					solution: solution,
+					solution: this.solution === '' ? 0 : Number.parseInt(this.solution[y * this.nSquares + x]),
 					color: 'default',
 					possibleValues: [],
 					isError: false,
@@ -286,8 +291,8 @@ export default class CommonBoard {
 		let animations: BoardAnimation[] = []
 		for (const c of coords) {
 			if (this.get(c).solution > 0) {
-			animations.push(...(this.setValue([c], this.get(c).solution)))
-			this.get(c).clue = true
+				animations.push(...(this.setValue([c], this.get(c).solution)))
+				this.get(c).clue = true
 			}
 		}
 		return animations

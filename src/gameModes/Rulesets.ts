@@ -476,11 +476,11 @@ function classicCalculatePossibleValues(game: CommonBoard) {
 
             const uniqueNotes = new Set(notes)
             if (uniqueNotes.size === cg.length) {
-            // Remove possible values and notes from all the visible cells not in the group
-            for (const vc of visibleCells) {
-                if (indexOfCoordsInArray(cg, vc) === -1) {
-                    game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
-                    for (const note of notes) game.setNote([vc], note, false)
+                // Remove possible values and notes from all the visible cells not in the group
+                for (const vc of visibleCells) {
+                    if (indexOfCoordsInArray(cg, vc) === -1) {
+                        game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
+                        for (const note of notes) game.setNote([vc], note, false)
                     }
                 }
             }
@@ -575,24 +575,24 @@ function killerInitGameData({ game, data }: InitGameProps) {
     game.clues = decodeMissionString(clues)
     game.mission = data.m
     game.solution = solution
-    game.cages = []
+    game.killer__cages = []
     for (const cage of cages.split(',')) {
         let newCage: number[][] = []
         for (let i = 0; i < cage.length; i += 2) {
             newCage.push([Number(cage[i]), Number(cage[i + 1])])
         }
-        game.cages.push(newCage)
+        game.killer__cages.push(newCage)
     }
 }
 
 function killerSolveLastInCages(game: CommonBoard) {
     let animations: BoardAnimation[] = []
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
-            let remaining = game.cages[cageIndex].length
+        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
+            let remaining = game.killer__cages[cageIndex].length
             let sum = 0
             let realSum = 0
-            game.cages[cageIndex].forEach(coords => {
+            game.killer__cages[cageIndex].forEach(coords => {
                 let x = coords[0]
                 let y = coords[1]
                 const cell = game.get({ x, y })
@@ -601,7 +601,7 @@ function killerSolveLastInCages(game: CommonBoard) {
                 if (cell.cageValue! > 0) realSum = cell.cageValue!
             })
             if (remaining === 1 && realSum - sum <= 9) {
-                game.cages[cageIndex].forEach(coords => {
+                game.killer__cages[cageIndex].forEach(coords => {
                     let x = coords[0]
                     let y = coords[1]
                     if (game.get({ x, y }).value === 0) {
@@ -616,15 +616,15 @@ function killerSolveLastInCages(game: CommonBoard) {
 }
 
 function killerInitCageIndex(game: CommonBoard) {
-    for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
-        game.cages[cageIndex].forEach((cell, cellIndex) => {
+    for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
+        game.killer__cages[cageIndex].forEach((cell, cellIndex) => {
             let x = cell[0]
             let y = cell[1]
             game.board[x][y].cageIndex = cageIndex
-            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
+            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.killer__cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
             if (cellIndex === 0) {
                 let sum = 0
-                for (const cell2 of game.cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
+                for (const cell2 of game.killer__cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
                 game.board[x][y].cageValue = sum
             } else {
                 game.board[x][y].cageValue = 0
@@ -633,7 +633,7 @@ function killerInitCageIndex(game: CommonBoard) {
     }
 
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
+        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
             killerSolveLastInCages(game)
         }
     }
@@ -642,7 +642,7 @@ function killerInitCageIndex(game: CommonBoard) {
 function killerGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[] {
     let visibleCells = classicGetVisibleCells(game, c)
 
-    for (const cell of game.cages[game.get(c).cageIndex!]) {
+    for (const cell of game.killer__cages[game.get(c).cageIndex!]) {
         const coords = { x: cell[0], y: cell[1] }
         if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords)
     }
@@ -865,7 +865,7 @@ function sudokuXGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoor
 }
 
 function sudokuXDetectErrors(game: CommonBoard) {
-    if (!SettingsHandler.settings.checkMistakes) return []
+    if (!SettingsHandler.settings.checkMistakes) return
 
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
@@ -885,8 +885,6 @@ function sudokuXDetectErrors(game: CommonBoard) {
             }
         }
     }
-
-    return []
 }
 
 function sudokuXDiagonals({ ctx, theme, game, rendererState, squareSize }: RendererProps) {
@@ -976,10 +974,159 @@ function sudokuXGetCellUnits(game: CommonBoard, coords: CellCoordinates) {
     return units
 }
 
-// Sandwich Sudoku
+// SANDWICH
 
 function sandwichInitGameData({ game, data }: InitGameProps) {
+    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
+    const [clues, horizontalClues, verticalClues] = data.m.split(' ')
+    game.clues = decodeMissionString(clues)
+    game.mission = data.m
+    game.sandwich__horizontalClues = horizontalClues.split(',').map(c => Number.parseInt(c))
+    game.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
+}
 
+function sandwichResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
+    const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
+    const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
+    const numberOfCellBorders = game.nSquares + 1 - numberOfBoxBorders
+    const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
+    const sandwichMargin = Math.floor(logicalSize.current * 0.1)
+    squareSize.current = Math.floor((logicalSize.current - totalBorderThickness - sandwichMargin) / game.nSquares)
+    logicalSize.current = squareSize.current * game.nSquares + totalBorderThickness + sandwichMargin
+
+    let newCellPositions = []
+    let newValuePositions = []
+
+    let pos = boxBorderWidth + sandwichMargin
+    for (let i = 0; i < game.nSquares; i++) {
+        newCellPositions.push(pos)
+        newValuePositions.push(pos + squareSize.current / 2)
+        pos += squareSize.current + cellBorderWidth
+        if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
+    }
+
+    let newNoteDeltas = []
+
+    const notePaddingH = squareSize.current * 0.2
+    const notePaddingTop = squareSize.current * 0.17
+    const notePaddingBottom = squareSize.current * 0.17
+
+    for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
+
+    rendererState.current.sandwichMargin = sandwichMargin
+    rendererState.current.noteDeltas = newNoteDeltas
+    rendererState.current.cellPositions = newCellPositions
+    rendererState.current.valuePositions = newValuePositions
+}
+
+function sandwichRenderBackground({ ctx, themes, theme, logicalSize, rendererState }: RendererProps) {
+    //Board background
+    ctx.fillStyle = themes[theme].background
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.fillStyle = themes[theme].canvasCellBorderColor
+    ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin)
+}
+
+function sandwichRenderBorders({ ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState }: RendererProps) {
+    //Borders
+    if (theme === 'light') {
+        ctx.fillStyle = themes[theme].canvasBoxBorderColor
+        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
+        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+        for (let i = 2; i < game.nSquares; i += 3) {
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
+            ctx.fillRect(rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+        }
+    } else if (SettingsHandler.settings.highContrastGrid) {
+        ctx.fillStyle = 'white'
+        for (let i = 2; i < game.nSquares - 1; i += 3) {
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, boxBorderWidth + rendererState.sandwichMargin, boxBorderWidth, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin)
+            ctx.fillRect(boxBorderWidth + rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin, boxBorderWidth)
+        }
+    }
+}
+
+function sandwichRenderLateralClues({ ctx, game, squareSize, themes, theme, rendererState }: RendererProps) {
+    ctx.fillStyle = ctx.strokeStyle = themes[theme].canvasClueColor
+    const x = rendererState.sandwichMargin * 0.8
+    const y = rendererState.sandwichMargin * 0.8
+    const size = squareSize * 0.35
+    const halfSquareSize = squareSize / 2
+    for (let i = 0; i < game.nSquares; i++) {
+        drawSVGNumber(ctx, game.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
+        drawSVGNumber(ctx, game.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
+    }
+}
+
+function sandwichDetectErrors(game: CommonBoard) {
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            for (const vc of classicGetVisibleCells(game, { x, y })) {
+                cell.isError = ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value)
+            }
+        }
+    }
+
+    for (let x = 0; x < game.nSquares; x++) {
+        let y1 = -1
+        let y9 = -1
+        for (let y = 0; y < game.nSquares; y++) {
+            const val = game.get({ x, y }).value
+            if (val === 1) y1 = y
+            if (val === 9) y9 = y
+        }
+        if (y1 > -1 && y9 > -1) {
+            const minY = Math.min(y1, y9) + 1
+            const maxY = Math.max(y1, y9) - 1
+            let sum = 0
+            for (let y = minY; y <= maxY; y++) {
+                const val = game.get({ x, y }).value
+                if (val === 0) {
+                    sum = -1
+                    break
+                }
+                sum += val
+            }
+            if (sum !== -1 && sum !== game.sandwich__verticalClues[x]) {
+                for (let y = minY; y <= maxY; y++) {
+                    game.get({ x, y }).isError = true
+                }
+            }
+        }
+    }
+
+    for (let y = 0; y < game.nSquares; y++) {
+        let x1 = -1
+        let x9 = -1
+        for (let x = 0; x < game.nSquares; x++) {
+            const val = game.get({ x, y }).value
+            if (val === 1) x1 = x
+            if (val === 9) x9 = x
+        }
+        if (x1 > -1 && x9 > -1) {
+            const minX = Math.min(x1, x9) + 1
+            const maxX = Math.max(x1, x9) - 1
+            let sum = 0
+            for (let x = minX; x <= maxX; x++) {
+                const val = game.get({ x, y }).value
+                if (val === 0) {
+                    sum = -1
+                    break
+                }
+                sum += val
+            }
+            if (sum !== -1 && sum !== game.sandwich__horizontalClues[y]) {
+                for (let x = minX; x <= maxX; x++) {
+                    game.get({ x, y }).isError = true
+                }
+            }
+        }
+    }
+
+    return []
 }
 
 export interface Ruleset {
@@ -1027,7 +1174,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues,],
+            afterValuesChanged: [classicCalculatePossibleValues],
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
@@ -1087,12 +1234,12 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
     sandwich: {
         render: {
             init: [],
-            onResize: [classicResize],
+            onResize: [sandwichResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            before: [sandwichRenderBackground],
+            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
             paused: [classicRenderPaused],
-            after: [classicRenderBorders],
+            after: [sandwichRenderBorders],
         },
         game: {
             initGameData: sandwichInitGameData,
@@ -1104,7 +1251,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues,],
             checkComplete: classicCheckComplete,
-            checkErrors: classicDetectErrorsFromSolution,
+            checkErrors: sandwichDetectErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
         },
