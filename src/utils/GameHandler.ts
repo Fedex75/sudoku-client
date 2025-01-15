@@ -40,8 +40,8 @@ class GameHandler {
 				classic: 'easy',
 				killer: 'easy',
 				sudokuX: 'easy',
-				sandwich: 'unrated',
-				thermo: 'unrated'
+				sandwich: 'easy',
+				thermo: 'easy'
 			}
 		}
 
