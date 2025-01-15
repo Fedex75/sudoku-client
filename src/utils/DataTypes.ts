@@ -114,3 +114,5 @@ export type Bookmark = IDBookmark | MissionBookmark
 export function isIDBookmark(bm: Bookmark): bm is IDBookmark {
     return (bm.id !== undefined)
 }
+
+export type MissionsData = Record<GameModeName, Record<DifficultyName, RawGameData[]>>

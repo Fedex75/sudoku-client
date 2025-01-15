@@ -1,12 +1,14 @@
-import missions from '../data/missions.json'
+import missionsData from '../data/missions.json'
 import { decodeMissionString } from './Decoder'
 import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, decodeDifficulty, decodeMode } from './Difficulties'
 import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
 import CommonBoard from '../gameModes/CommonBoard'
-import { Bookmark, RawGameData, isIDBookmark } from './DataTypes'
+import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
 
 const BOARD_API_VERSION = 6
 const STORAGE_SCHEMA_VERSION = 4
+
+const missions: MissionsData = missionsData as MissionsData
 
 type Recommendations = {
 	newGame: {
