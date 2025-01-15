@@ -10,8 +10,8 @@ import SettingsHandler from './utils/SettingsHandler'
 import { initI18n } from './utils/i18n'
 
 initI18n()
-GameHandler.init()
 SettingsHandler.init()
+GameHandler.init()
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
