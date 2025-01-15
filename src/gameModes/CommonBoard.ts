@@ -1,7 +1,7 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { Board, BoardAnimation, Cell, CellCoordinates, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
+import { Board, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
 import { Ruleset, rulesets } from "./Rulesets"
@@ -16,6 +16,8 @@ export default class CommonBoard {
 	killer__cages: number[][][]
 	sandwich__horizontalClues: number[]
 	sandwich__verticalClues: number[]
+	sandwich__visibleHorizontalClues: boolean[]
+	sandwich__visibleVerticalClues: boolean[]
 	solution: string
 	nSquares: number
 	version: number = 0;
@@ -27,7 +29,7 @@ export default class CommonBoard {
 
 	history: History
 	fullNotation: boolean
-	colorGroups: CellCoordinates[][]
+	colorGroups: ColorGroup[]
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -39,6 +41,8 @@ export default class CommonBoard {
 		this.killer__cages = []
 		this.sandwich__horizontalClues = []
 		this.sandwich__verticalClues = []
+		this.sandwich__visibleHorizontalClues = []
+		this.sandwich__visibleVerticalClues = []
 		this.timer = 0
 		this.difficulty = 'unrated'
 		this.mission = ''
@@ -62,6 +66,8 @@ export default class CommonBoard {
 			this.killer__cages = data.killer__cages
 			this.sandwich__horizontalClues = data.sandwich__horizontalClues
 			this.sandwich__verticalClues = data.sandwich__verticalClues
+			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
+			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
 			this.timer = data.timer
 			this.board = data.board
 			this.selectedCells = data.selectedCells
@@ -96,6 +102,7 @@ export default class CommonBoard {
 					color: 'default',
 					possibleValues: [],
 					isError: false,
+					colorGroupIndex: -1
 				}
 			}
 		}
@@ -248,22 +255,14 @@ export default class CommonBoard {
 				}
 
 				if (SettingsHandler.settings.clearColorOnInput) {
-					let colorGroupIndex = -1
-					for (let cgi = 0; cgi < this.colorGroups.length; cgi++) {
-						if (indexOfCoordsInArray(this.colorGroups[cgi], c) !== -1) {
-							colorGroupIndex = cgi
-							break
-						}
-					}
-
 					// If the cell is in a color group
-					if (colorGroupIndex !== -1) {
+					if (cell.colorGroupIndex !== -1) {
 						// If every cell in the color group has a value, clear their color and remove the color group
-						if (this.colorGroups[colorGroupIndex].every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0)) {
-							for (const colorGroupCellCoords of this.colorGroups[colorGroupIndex]) {
+						if (this.colorGroups[cell.colorGroupIndex].cells.every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0)) {
+							for (const colorGroupCellCoords of this.colorGroups[cell.colorGroupIndex].cells) {
 								this.get(colorGroupCellCoords).color = 'default'
 							}
-							this.colorGroups.splice(colorGroupIndex, 1)
+							this.removeColorGroups(new Set([cell.colorGroupIndex]))
 						}
 					} else {
 						cell.color = 'default'
@@ -310,13 +309,13 @@ export default class CommonBoard {
 		for (const c of coords) {
 			const cell = this.get(c)
 			if (!cell.clue && (cell.value > 0 || cell.notes.length > 0)) {
-				for (const visibleCell of this.ruleset.game.getVisibleCells(this, c)) {
-					this.get(visibleCell).possibleValues = this.get(visibleCell).possibleValues.filter(n => n !== cell.value)
-				}
-
 				cell.value = 0
 				cell.notes = []
 				cell.color = 'default'
+
+				if (cell.colorGroupIndex !== -1) {
+					this.removeColorGroups(new Set([cell.colorGroupIndex]))
+				}
 			}
 		}
 
@@ -379,10 +378,19 @@ export default class CommonBoard {
 	clearColors() {
 		this.iterateAllCells(cell => { cell.color = 'default' })
 		this.colorGroups = []
+		this.iterateAllCells(cell => { cell.colorGroupIndex = -1 })
 	}
 
-	checkComplete() {
-		return this.ruleset.game.checkComplete(this)
+	checkComplete(): boolean {
+		this.ruleset.game.checkErrors(this)
+		let complete = true
+		this.iterateAllCells((cell, coords, exit) => {
+			if (cell.value === 0 || cell.isError) {
+				complete = false
+				exit()
+			}
+		})
+		return complete
 	}
 
 	saveToLocalStorage() {
@@ -433,7 +441,21 @@ export default class CommonBoard {
 		this.timer = timestamp
 	}
 
-	iterateAllCells(func: (cell: Cell, coords: CellCoordinates) => void) {
+	iterateAllCells(func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) {
 		this.ruleset.game.iterateAllCells(this, func)
+	}
+
+	removeColorGroups(indices: Set<number>) {
+		for (const index of indices) {
+			for (const cell of this.colorGroups[index].cells) {
+				this.get(cell).colorGroupIndex = -1
+			}
+			for (let i = index + 1; i < this.colorGroups.length; i++) {
+				for (const cell of this.colorGroups[i].cells) {
+					this.get(cell).colorGroupIndex--
+				}
+			}
+		}
+		this.colorGroups = this.colorGroups.filter((_, index) => !indices.has(index))
 	}
 }

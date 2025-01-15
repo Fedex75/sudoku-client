@@ -146,14 +146,16 @@ function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colo
     })
 }
 
-function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
+function commonRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.value > 0) {
             //Value
+            const highlightValue = (lockedInput === 0 && selectedCellsValues.includes(cell.value)) || lockedInput === cell.value
             ctx.strokeStyle = ctx.fillStyle =
                 cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-                    cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
-                        solutionColors[accentColor]
+                    highlightValue ? (cell.color === 'default' ? themes[theme].canvasNoteHighlightColor : 'white') :
+                        cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
+                            solutionColors[accentColor]
             if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
             drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
         } else {
@@ -450,37 +452,33 @@ function classicCalculatePossibleValues(game: CommonBoard) {
             const cell = game.get({ x, y })
             for (const c of game.ruleset.game.getVisibleCells(game, { x, y })) {
                 game.get(c).possibleValues = game.get(c).possibleValues.filter(n => n !== cell.value)
+                game.setNote([c], cell.value, false)
             }
         }
     }
 
     if (SettingsHandler.settings.lockCellsWithColor) {
-        for (let x = 0; x <= game.nSquares - 1; x++) {
-            for (let y = 0; y <= game.nSquares - 1; y++) {
-                const cell = game.get({ x, y })
-                if (cell.color !== 'default') {
-                    cell.possibleValues = [...cell.notes]
-                }
+        game.iterateAllCells(cell => {
+            if (cell.color !== 'default') {
+                cell.possibleValues = [...cell.notes]
             }
-        }
+        })
 
-        console.log(game.colorGroups)
-
-        for (const cg of game.colorGroups) {
-            // Find cells that are visible by every cell in the group
-            let visibleCells: CellCoordinates[] = classicGetVisibleCells(game, cg[0])
-            let notes: number[] = game.get(cg[0]).notes
-            for (let i = 1; i < cg.length; i++) {
-                const visibleCells2 = classicGetVisibleCells(game, cg[i])
-                visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
-                notes = notes.concat(game.get(cg[i]).notes)
+        for (let cgi = 0; cgi < game.colorGroups.length; cgi++) {
+            const cg = game.colorGroups[cgi]
+            let notes: number[] = game.get(cg.cells[0]).notes
+            let unsolvedCount = (game.get(cg.cells[0]).value === 0 ? 1 : 0)
+            for (let i = 1; i < cg.cells.length; i++) {
+                notes = notes.concat(game.get(cg.cells[i]).notes)
+                if (game.get(cg.cells[i]).value === 0) unsolvedCount++
             }
 
             const uniqueNotes = new Set(notes)
-            if (uniqueNotes.size === cg.length) {
+
+            if (uniqueNotes.size === unsolvedCount) {
                 // Remove possible values and notes from all the visible cells not in the group
-                for (const vc of visibleCells) {
-                    if (indexOfCoordsInArray(cg, vc) === -1) {
+                for (const vc of cg.visibleCells) {
+                    if (game.get(vc).colorGroupIndex !== cgi) {
                         game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
                         for (const note of notes) game.setNote([vc], note, false)
                     }
@@ -492,35 +490,21 @@ function classicCalculatePossibleValues(game: CommonBoard) {
     return []
 }
 
-function classicDetectErrorsFromSolution(game: CommonBoard) {
+function commonDetectErrorsFromSolution(game: CommonBoard) {
     if (!SettingsHandler.settings.checkMistakes) return []
 
-    for (let x = 0; x <= game.nSquares - 1; x++) {
-        for (let y = 0; y <= game.nSquares - 1; y++) {
-            const cell = game.get({ x, y })
-            cell.isError = cell.solution > 0 && cell.value > 0 && cell.value !== cell.solution
-        }
-    }
+    game.iterateAllCells(cell => { cell.isError = cell.solution > 0 && cell.value > 0 && cell.value !== cell.solution })
 
     return []
 }
 
-function classicCheckComplete(game: CommonBoard) {
-    game.ruleset.game.checkErrors(game)
-
-    for (let x = 0; x <= game.nSquares - 1; x++) {
-        for (let y = 0; y <= game.nSquares - 1; y++) {
-            const cell = game.get({ x, y })
-            if (cell.value === 0 || cell.isError) return false
-        }
-    }
-    return true
-}
-
-function classicIterateAllCells(game: CommonBoard, func: (cell: Cell, coords: CellCoordinates) => void) {
+function classicIterateAllCells(game: CommonBoard, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) {
+    let shouldBreak = false
+    const setShouldBreakTrue = () => { shouldBreak = true }
     for (let x = 0; x < game.nSquares; x++) {
         for (let y = 0; y < game.nSquares; y++) {
-            func(game.get({ x, y }), { x, y })
+            func(game.get({ x, y }), { x, y }, setShouldBreakTrue)
+            if (shouldBreak) return
         }
     }
 }
@@ -1055,56 +1039,17 @@ function sandwichRenderLateralClues({ ctx, game, squareSize, themes, theme, rend
     const size = squareSize * 0.35
     const halfSquareSize = squareSize / 2
     for (let i = 0; i < game.nSquares; i++) {
-        drawSVGNumber(ctx, game.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
-        drawSVGNumber(ctx, game.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
+        if (game.sandwich__visibleHorizontalClues[i]) drawSVGNumber(ctx, game.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
+        if (game.sandwich__visibleVerticalClues[i]) drawSVGNumber(ctx, game.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
     }
 }
 
-function sandwichDetectErrors(game: CommonBoard) {
-    if (!SettingsHandler.settings.checkMistakes) return []
-
-    for (let x = 0; x <= game.nSquares - 1; x++) {
-        for (let y = 0; y <= game.nSquares - 1; y++) {
-            const cell = game.get({ x, y })
-            for (const vc of classicGetVisibleCells(game, { x, y })) {
-                cell.isError = ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value)
-            }
-        }
-    }
-
-    for (let x = 0; x < game.nSquares; x++) {
-        let y1 = -1
-        let y9 = -1
-        for (let y = 0; y < game.nSquares; y++) {
-            const val = game.get({ x, y }).value
-            if (val === 1) y1 = y
-            if (val === 9) y9 = y
-        }
-        if (y1 > -1 && y9 > -1) {
-            const minY = Math.min(y1, y9) + 1
-            const maxY = Math.max(y1, y9) - 1
-            let sum = 0
-            for (let y = minY; y <= maxY; y++) {
-                const val = game.get({ x, y }).value
-                if (val === 0) {
-                    sum = -1
-                    break
-                }
-                sum += val
-            }
-            if (sum !== -1 && sum !== game.sandwich__verticalClues[x]) {
-                for (let y = minY; y <= maxY; y++) {
-                    game.get({ x, y }).isError = true
-                }
-            }
-        }
-    }
-
-    for (let y = 0; y < game.nSquares; y++) {
+function sandwichGetSumBetween1and9(game: CommonBoard, row: number, column: number): [number, number, number] {
+    if (row >= 0) {
         let x1 = -1
         let x9 = -1
         for (let x = 0; x < game.nSquares; x++) {
-            const val = game.get({ x, y }).value
+            const val = game.get({ x, y: row }).value
             if (val === 1) x1 = x
             if (val === 9) x9 = x
         }
@@ -1113,22 +1058,87 @@ function sandwichDetectErrors(game: CommonBoard) {
             const maxX = Math.max(x1, x9) - 1
             let sum = 0
             for (let x = minX; x <= maxX; x++) {
-                const val = game.get({ x, y }).value
+                const val = game.get({ x, y: row }).value
                 if (val === 0) {
                     sum = -1
                     break
                 }
                 sum += val
             }
-            if (sum !== -1 && sum !== game.sandwich__horizontalClues[y]) {
-                for (let x = minX; x <= maxX; x++) {
-                    game.get({ x, y }).isError = true
+            return [sum, minX, maxX]
+        }
+    }
+
+    if (column >= 0) {
+        let y1 = -1
+        let y9 = -1
+        for (let y = 0; y < game.nSquares; y++) {
+            const val = game.get({ x: column, y }).value
+            if (val === 1) y1 = y
+            if (val === 9) y9 = y
+        }
+        if (y1 > -1 && y9 > -1) {
+            const minY = Math.min(y1, y9) + 1
+            const maxY = Math.max(y1, y9) - 1
+            let sum = 0
+            for (let y = minY; y <= maxY; y++) {
+                const val = game.get({ x: column, y }).value
+                if (val === 0) {
+                    sum = -1
+                    break
                 }
+                sum += val
             }
+            return [sum, minY, maxY]
+        }
+    }
+
+    return [-1, -1, -1]
+}
+
+function sandwichDetectErrors(game: CommonBoard) {
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    game.iterateAllCells((cell, { x, y }) => {
+        for (const vc of classicGetVisibleCells(game, { x, y })) {
+            cell.isError = ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value)
+        }
+    })
+
+    for (let x = 0; x < game.nSquares; x++) {
+        const [sum, minY, maxY] = sandwichGetSumBetween1and9(game, -1, x)
+        if (sum !== -1 && sum !== game.sandwich__verticalClues[x]) {
+            for (let y = minY; y <= maxY; y++) {
+                game.get({ x, y }).isError = true
+            }
+            game.sandwich__visibleVerticalClues[x] = true
+        } else if (sum === game.sandwich__verticalClues[x]) {
+            game.sandwich__visibleVerticalClues[x] = false
+        }
+    }
+
+    for (let y = 0; y < game.nSquares; y++) {
+        const [sum, minX, maxX] = sandwichGetSumBetween1and9(game, y, -1)
+        if (sum !== -1 && sum !== game.sandwich__horizontalClues[y]) {
+            for (let x = minX; x <= maxX; x++) {
+                game.get({ x, y }).isError = true
+            }
+            game.sandwich__visibleHorizontalClues[y] = true
+        } else if (sum === game.sandwich__horizontalClues[y]) {
+            game.sandwich__visibleHorizontalClues[y] = false
         }
     }
 
     return []
+}
+
+function sandwichInitClueVisibility(game: CommonBoard) {
+    game.sandwich__visibleHorizontalClues = []
+    game.sandwich__visibleVerticalClues = []
+    for (let i = 0; i < game.nSquares; i++) {
+        game.sandwich__visibleHorizontalClues.push(true)
+        game.sandwich__visibleVerticalClues.push(true)
+    }
 }
 
 export interface Ruleset {
@@ -1150,9 +1160,8 @@ export interface Ruleset {
         getBoxes: (game: CommonBoard) => CellCoordinates[][]
         findLinks: ((game: CommonBoard, n: number) => CellCoordinates[][])[]
         afterValuesChanged: ((game: CommonBoard) => BoardAnimation[])[]
-        checkComplete: (game: CommonBoard) => boolean
         checkErrors: (game: CommonBoard) => void
-        iterateAllCells: (game: CommonBoard, func: (cell: Cell, coords: CellCoordinates) => void) => void
+        iterateAllCells: (game: CommonBoard, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
         getCellUnits: (game: CommonBoard, c: CellCoordinates) => CellCoordinates[][]
     }
 }
@@ -1164,7 +1173,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -1177,8 +1186,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues],
-            checkComplete: classicCheckComplete,
-            checkErrors: classicDetectErrorsFromSolution,
+            checkErrors: commonDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
         },
@@ -1189,7 +1197,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [killerResize, killerCalculateCageVectors],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, killerRenderCagesAndCageValues, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, killerRenderCagesAndCageValues, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -1202,8 +1210,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [killerSolveLastInCages, classicCalculatePossibleValues],
-            checkComplete: classicCheckComplete,
-            checkErrors: classicDetectErrorsFromSolution,
+            checkErrors: commonDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
         },
@@ -1214,7 +1221,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, sudokuXDiagonals, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, sudokuXDiagonals, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -1227,7 +1234,6 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox, sudokuXFindLinksDiagonals],
             afterValuesChanged: [classicCalculatePossibleValues],
-            checkComplete: classicCheckComplete,
             checkErrors: sudokuXDetectErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: sudokuXGetCellUnits
@@ -1239,20 +1245,19 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [sandwichResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [sandwichRenderBackground],
-            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
             paused: [classicRenderPaused],
             after: [sandwichRenderBorders],
         },
         game: {
             initGameData: sandwichInitGameData,
-            initBoardMatrix: [],
+            initBoardMatrix: [sandwichInitClueVisibility],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues,],
-            checkComplete: classicCheckComplete,
+            afterValuesChanged: [classicCalculatePossibleValues],
             checkErrors: sandwichDetectErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
@@ -1276,8 +1281,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues, classicDetectErrorsFromSolution],
-            checkComplete: () => false,
+            afterValuesChanged: [classicCalculatePossibleValues, commonDetectErrorsFromSolution],
             checkErrors: () => { },
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits

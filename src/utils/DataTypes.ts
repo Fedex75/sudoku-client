@@ -28,6 +28,7 @@ export type Cell = {
     cageValue?: number
     possibleValues: number[]
     isError: boolean
+    colorGroupIndex: number
 }
 
 export type CellCoordinates = {
@@ -45,6 +46,11 @@ export type HistoryItem = {
 
 export type History = HistoryItem[]
 
+export type ColorGroup = {
+    cells: CellCoordinates[]
+    visibleCells: CellCoordinates[]
+}
+
 export type GameData = {
     id: string
     mode: GameModeName
@@ -55,12 +61,14 @@ export type GameData = {
     killer__cages: number[][][]
     sandwich__horizontalClues: number[]
     sandwich__verticalClues: number[]
+    sandwich__visibleHorizontalClues: boolean[]
+    sandwich__visibleVerticalClues: boolean[]
     timer: number
     board: Board
     selectedCells: CellCoordinates[]
     history: History
     version: number
-    colorGroups: CellCoordinates[][]
+    colorGroups: ColorGroup[]
 }
 
 export type RawGameData = {
