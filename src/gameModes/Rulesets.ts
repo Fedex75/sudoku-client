@@ -66,29 +66,40 @@ const numberPaths: Record<DigitChar, string> = {
     '7': 'M 2.8319502,30 17.022822,2.7881041 V 2.5549172 H 0 V 0 H 20 V 2.6563028 L 5.9232365,30 Z',
     '8': 'm 9.9953305,29.990269 c -5.9033649,0 -9.99471143457,-3.415504 -9.99471143457,-8.358741 A 7.2003886,7.3467402 0 0 1 6.1614813,14.265326 V 14.031787 A 6.3229902,6.4515083 0 0 1 1.1069039,7.6289329 C 1.097367,3.1722348 4.7881622,0 9.9857935,0 c 5.2071685,0 8.8979635,3.1527733 8.8979635,7.6289329 0,3.1333121 -1.974146,5.6438531 -5.04504,6.4028541 v 0.233539 a 7.2194624,7.3662018 0 0 1 6.160862,7.366202 C 19.999579,26.584496 15.917769,30 9.9857935,30 Z m 0,-2.354849 c 4.3297705,0 7.3148315,-2.530003 7.3148315,-6.179046 0,-3.571197 -2.965988,-6.003893 -7.3148315,-6.003893 -4.3202331,0 -7.2957579,2.452157 -7.2957579,6.003893 0,3.649043 2.9755248,6.188777 7.2957579,6.188777 z m 0,-14.547519 c 3.7194055,0 6.2657685,-2.111579 6.2657685,-5.2448909 0,-3.2500811 -2.546363,-5.4881609 -6.2657685,-5.4881609 -3.7194059,0 -6.2562316,2.2380798 -6.2562316,5.4881609 0,3.1138499 2.5463626,5.2546219 6.2562316,5.2546219 z',
     '9': 'M 9.442344,30 C 4.7258979,30 1.294896,27.099286 0.50094518,22.650876 H 3.2136106 c 0.6805293,2.929916 3.0434782,4.905905 6.2665406,4.905905 4.9432888,0 7.7504728,-4.652823 7.9395088,-12.712524 0.02836,-0.194679 -0.09452,-0.457495 -0.113422,-0.661908 H 17.192817 C 15.992439,17.355613 12.89225,19.477612 9.2249527,19.477612 3.8752363,19.477612 0,15.418559 0,9.9383517 0,4.2050616 4.026465,0 9.6408318,0 13.42155,0 16.398866,1.9565217 18.147448,5.5288774 19.376181,7.7676833 20,10.717067 20,14.386762 20,24.159637 16.124764,29.980532 9.442344,29.980532 Z M 9.6502836,17.102531 c 4.0170134,0 7.0793954,-3.114861 7.0793954,-7.086308 0,-4.2829329 -3.043479,-7.5924722 -7.0604919,-7.5924722 -3.9886578,0 -6.9943289,3.2121999 -6.9943289,7.4269955 0,4.1758597 2.873346,7.2517847 6.9754254,7.2517847 z',
-    '0': 'M -2.6077032e-8,15.336214 Q -2.6077032e-8,10.012562 1.085206,6.7774198 2.1908876,3.5218018 4.340824,1.7609015 6.511236,1.1920929e-6 9.7873296,1.1920929e-6 q 2.4161194,0 4.2384464,0.9828280779071 1.822327,0.96235253 3.009911,2.80515513 1.187584,1.8223271 1.863278,4.4636776 0.675694,2.620875 0.675694,7.084552 0,5.282701 -1.085206,8.538319 -1.085206,3.235143 -3.255618,5.016519 -2.149936,1.7609 -5.4465054,1.7609 -4.340824,0 -6.8183698,-3.112289 Q -2.6077032e-8,23.792631 -2.6077032e-8,15.336214 Z m 3.787983226077032,0 q 0,7.391687 1.7199491,9.848757 1.7404248,2.436594 4.2793973,2.436594 2.5389724,0 4.2589214,-2.45707 1.740425,-2.45707 1.740425,-9.828281 0,-7.4121614 -1.740425,-9.848756 -1.719949,-2.4365946 -4.2998726,-2.4365946 -2.5389725,0 -4.0541658,2.1499364 Q 3.7879832,7.9445282 3.7879832,15.336214 Z'
+    '0': 'M -2.6077032e-8,15.336214 Q -2.6077032e-8,10.012562 1.085206,6.7774198 2.1908876,3.5218018 4.340824,1.7609015 6.511236,1.1920929e-6 9.7873296,1.1920929e-6 q 2.4161194,0 4.2384464,0.9828280779071 1.822327,0.96235253 3.009911,2.80515513 1.187584,1.8223271 1.863278,4.4636776 0.675694,2.620875 0.675694,7.084552 0,5.282701 -1.085206,8.538319 -1.085206,3.235143 -3.255618,5.016519 -2.149936,1.7609 -5.4465054,1.7609 -4.340824,0 -6.8183698,-3.112289 Q -2.6077032e-8,23.792631 -2.6077032e-8,15.336214 Z m 3.787983226077032,0 q 0,7.391687 1.7199491,9.848757 1.7404248,2.436594 4.2793973,2.436594 2.5389724,0 4.2589214,-2.45707 1.740425,-2.45707 1.740425,-9.828281 0,-7.4121614 -1.740425,-9.848756 -1.719949,-2.4365946 -4.2998726,-2.4365946 -2.5389725,0 -4.0541658,2.1499364 Q 3.7879832,7.9445282 3.7879832,15.336214 Z',
 }
 
-function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: number, y: number, size: number, center: boolean, background: string | null) {
+function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: number, y: number, size: number, hJustify: 'left' | 'center' | 'right', vJustify: 'top' | 'center' | 'bottom', background: string | null) {
     const scale = size / SVGHeight
+    const digits = String(n).split('')
+
+    let totalWidth = 0
+    for (let i = 0; i < digits.length; i++) {
+        totalWidth += SVGWidth
+        if (i > 0) totalWidth += spaceBetweenDigits
+    }
 
     if (background !== null) {
         const prevFillStyle = ctx.fillStyle
         const backgroundScaleFactor = 1.4
+        const backgroundWidth = totalWidth + SVGWidth * (backgroundScaleFactor - 1)
+        const horizontalCorrection = (hJustify === 'center' ? 0 : (hJustify === 'left' ? 0 - totalWidth / 2 : totalWidth / 2))
 
-        ctx.translate(x, y)
+        ctx.translate(x + horizontalCorrection, y + ((vJustify === 'center') ? 0 : SVGHeight / 2))
         ctx.scale(scale, scale)
 
         ctx.fillStyle = background
-        ctx.fillRect(0 - (SVGWidth / 2) * backgroundScaleFactor, 0 - (SVGHeight / 2) * backgroundScaleFactor, SVGWidth * backgroundScaleFactor, SVGHeight * backgroundScaleFactor)
+        ctx.fillRect(0 - backgroundWidth / 2, 0 - SVGHeight * backgroundScaleFactor / 2, backgroundWidth, SVGHeight * backgroundScaleFactor)
 
         ctx.fillStyle = prevFillStyle
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    String(n).split('').map((digit, i) => {
-        ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - (center ? SVGWidth / 2 : 0)) - (digit === '1' ? size * 0.05 : 0), y - (center ? SVGHeight * scale / 2 : 0))
+    const horizontalCorrection = (hJustify === 'left' ? totalWidth : (hJustify === 'center' ? totalWidth / 2 : 0))
+    const verticalCorrection = (vJustify === 'top' ? SVGHeight * scale : (vJustify === 'center' ? SVGHeight * scale / 2 : 0))
+    digits.forEach((digit, i) => {
+        ctx.translate(x + scale * (i * (SVGWidth + spaceBetweenDigits) - horizontalCorrection) - (digit === '1' ? size * 0.05 : 0), y - verticalCorrection)
         ctx.scale(scale, scale)
 
         ctx.lineWidth = 1
@@ -99,7 +110,6 @@ function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: number, y: n
         ctx.fill(p)
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)
-        return null
     })
 }
 
@@ -145,7 +155,7 @@ function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInpu
                     cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
                         solutionColors[accentColor]
             if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
-            drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, true, null)
+            drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
         } else {
             //Candidates
             for (const n of cell.notes) {
@@ -153,7 +163,7 @@ function classicRenderCellValueCandidates({ ctx, themes, theme, game, lockedInpu
 
                 ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
 
-                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), true, highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors[accentColor] : null)
+                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors[accentColor] : null)
             }
         }
     })
@@ -464,11 +474,14 @@ function classicCalculatePossibleValues(game: CommonBoard) {
                 notes = notes.concat(game.get(cg[i]).notes)
             }
 
-            // Remove possible values and notes from all the visible cells not in the group
-            for (const vc of visibleCells) {
-                if (indexOfCoordsInArray(cg, vc) === -1) {
-                    game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
-                    for (const note of notes) game.setNote([vc], note, false)
+            const uniqueNotes = new Set(notes)
+            if (uniqueNotes.size === cg.length) {
+                // Remove possible values and notes from all the visible cells not in the group
+                for (const vc of visibleCells) {
+                    if (indexOfCoordsInArray(cg, vc) === -1) {
+                        game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
+                        for (const note of notes) game.setNote([vc], note, false)
+                    }
                 }
             }
         }
@@ -551,7 +564,7 @@ function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererStat
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.cageValue! > 0) {
             ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, true, null)
+            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, 'center', 'center', null)
         }
     })
 }
@@ -562,24 +575,24 @@ function killerInitGameData({ game, data }: InitGameProps) {
     game.clues = decodeMissionString(clues)
     game.mission = data.m
     game.solution = solution
-    game.cages = []
+    game.killer__cages = []
     for (const cage of cages.split(',')) {
         let newCage: number[][] = []
         for (let i = 0; i < cage.length; i += 2) {
             newCage.push([Number(cage[i]), Number(cage[i + 1])])
         }
-        game.cages.push(newCage)
+        game.killer__cages.push(newCage)
     }
 }
 
 function killerSolveLastInCages(game: CommonBoard) {
     let animations: BoardAnimation[] = []
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
-            let remaining = game.cages[cageIndex].length
+        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
+            let remaining = game.killer__cages[cageIndex].length
             let sum = 0
             let realSum = 0
-            game.cages[cageIndex].forEach(coords => {
+            game.killer__cages[cageIndex].forEach(coords => {
                 let x = coords[0]
                 let y = coords[1]
                 const cell = game.get({ x, y })
@@ -588,7 +601,7 @@ function killerSolveLastInCages(game: CommonBoard) {
                 if (cell.cageValue! > 0) realSum = cell.cageValue!
             })
             if (remaining === 1 && realSum - sum <= 9) {
-                game.cages[cageIndex].forEach(coords => {
+                game.killer__cages[cageIndex].forEach(coords => {
                     let x = coords[0]
                     let y = coords[1]
                     if (game.get({ x, y }).value === 0) {
@@ -603,15 +616,15 @@ function killerSolveLastInCages(game: CommonBoard) {
 }
 
 function killerInitCageIndex(game: CommonBoard) {
-    for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
-        game.cages[cageIndex].forEach((cell, cellIndex) => {
+    for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
+        game.killer__cages[cageIndex].forEach((cell, cellIndex) => {
             let x = cell[0]
             let y = cell[1]
             game.board[x][y].cageIndex = cageIndex
-            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
+            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.killer__cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
             if (cellIndex === 0) {
                 let sum = 0
-                for (const cell2 of game.cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
+                for (const cell2 of game.killer__cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
                 game.board[x][y].cageValue = sum
             } else {
                 game.board[x][y].cageValue = 0
@@ -620,7 +633,7 @@ function killerInitCageIndex(game: CommonBoard) {
     }
 
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.cages.length; cageIndex++) {
+        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
             killerSolveLastInCages(game)
         }
     }
@@ -629,7 +642,7 @@ function killerInitCageIndex(game: CommonBoard) {
 function killerGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoordinates[] {
     let visibleCells = classicGetVisibleCells(game, c)
 
-    for (const cell of game.cages[game.get(c).cageIndex!]) {
+    for (const cell of game.killer__cages[game.get(c).cageIndex!]) {
         const coords = { x: cell[0], y: cell[1] }
         if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords)
     }
@@ -852,7 +865,7 @@ function sudokuXGetVisibleCells(game: CommonBoard, c: CellCoordinates): CellCoor
 }
 
 function sudokuXDetectErrors(game: CommonBoard) {
-    if (!SettingsHandler.settings.checkMistakes) return []
+    if (!SettingsHandler.settings.checkMistakes) return
 
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
@@ -872,8 +885,6 @@ function sudokuXDetectErrors(game: CommonBoard) {
             }
         }
     }
-
-    return []
 }
 
 function sudokuXDiagonals({ ctx, theme, game, rendererState, squareSize }: RendererProps) {
@@ -963,6 +974,161 @@ function sudokuXGetCellUnits(game: CommonBoard, coords: CellCoordinates) {
     return units
 }
 
+// SANDWICH
+
+function sandwichInitGameData({ game, data }: InitGameProps) {
+    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
+    const [clues, horizontalClues, verticalClues] = data.m.split(' ')
+    game.clues = decodeMissionString(clues)
+    game.mission = data.m
+    game.sandwich__horizontalClues = horizontalClues.split(',').map(c => Number.parseInt(c))
+    game.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
+}
+
+function sandwichResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
+    const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
+    const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
+    const numberOfCellBorders = game.nSquares + 1 - numberOfBoxBorders
+    const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
+    const sandwichMargin = Math.floor(logicalSize.current * 0.1)
+    squareSize.current = Math.floor((logicalSize.current - totalBorderThickness - sandwichMargin) / game.nSquares)
+    logicalSize.current = squareSize.current * game.nSquares + totalBorderThickness + sandwichMargin
+
+    let newCellPositions = []
+    let newValuePositions = []
+
+    let pos = boxBorderWidth + sandwichMargin
+    for (let i = 0; i < game.nSquares; i++) {
+        newCellPositions.push(pos)
+        newValuePositions.push(pos + squareSize.current / 2)
+        pos += squareSize.current + cellBorderWidth
+        if ((i + 1) % 3 === 0) pos += boxBorderWidth - cellBorderWidth
+    }
+
+    let newNoteDeltas = []
+
+    const notePaddingH = squareSize.current * 0.2
+    const notePaddingTop = squareSize.current * 0.17
+    const notePaddingBottom = squareSize.current * 0.17
+
+    for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
+
+    rendererState.current.sandwichMargin = sandwichMargin
+    rendererState.current.noteDeltas = newNoteDeltas
+    rendererState.current.cellPositions = newCellPositions
+    rendererState.current.valuePositions = newValuePositions
+}
+
+function sandwichRenderBackground({ ctx, themes, theme, logicalSize, rendererState }: RendererProps) {
+    //Board background
+    ctx.fillStyle = themes[theme].background
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.fillStyle = themes[theme].canvasCellBorderColor
+    ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin)
+}
+
+function sandwichRenderBorders({ ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState }: RendererProps) {
+    //Borders
+    if (theme === 'light') {
+        ctx.fillStyle = themes[theme].canvasBoxBorderColor
+        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
+        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+        for (let i = 2; i < game.nSquares; i += 3) {
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
+            ctx.fillRect(rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+        }
+    } else if (SettingsHandler.settings.highContrastGrid) {
+        ctx.fillStyle = 'white'
+        for (let i = 2; i < game.nSquares - 1; i += 3) {
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, boxBorderWidth + rendererState.sandwichMargin, boxBorderWidth, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin)
+            ctx.fillRect(boxBorderWidth + rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin, boxBorderWidth)
+        }
+    }
+}
+
+function sandwichRenderLateralClues({ ctx, game, squareSize, themes, theme, rendererState }: RendererProps) {
+    ctx.fillStyle = ctx.strokeStyle = themes[theme].canvasClueColor
+    const x = rendererState.sandwichMargin * 0.8
+    const y = rendererState.sandwichMargin * 0.8
+    const size = squareSize * 0.35
+    const halfSquareSize = squareSize / 2
+    for (let i = 0; i < game.nSquares; i++) {
+        drawSVGNumber(ctx, game.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
+        drawSVGNumber(ctx, game.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
+    }
+}
+
+function sandwichDetectErrors(game: CommonBoard) {
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    for (let x = 0; x <= game.nSquares - 1; x++) {
+        for (let y = 0; y <= game.nSquares - 1; y++) {
+            const cell = game.get({ x, y })
+            for (const vc of classicGetVisibleCells(game, { x, y })) {
+                cell.isError = ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value)
+            }
+        }
+    }
+
+    for (let x = 0; x < game.nSquares; x++) {
+        let y1 = -1
+        let y9 = -1
+        for (let y = 0; y < game.nSquares; y++) {
+            const val = game.get({ x, y }).value
+            if (val === 1) y1 = y
+            if (val === 9) y9 = y
+        }
+        if (y1 > -1 && y9 > -1) {
+            const minY = Math.min(y1, y9) + 1
+            const maxY = Math.max(y1, y9) - 1
+            let sum = 0
+            for (let y = minY; y <= maxY; y++) {
+                const val = game.get({ x, y }).value
+                if (val === 0) {
+                    sum = -1
+                    break
+                }
+                sum += val
+            }
+            if (sum !== -1 && sum !== game.sandwich__verticalClues[x]) {
+                for (let y = minY; y <= maxY; y++) {
+                    game.get({ x, y }).isError = true
+                }
+            }
+        }
+    }
+
+    for (let y = 0; y < game.nSquares; y++) {
+        let x1 = -1
+        let x9 = -1
+        for (let x = 0; x < game.nSquares; x++) {
+            const val = game.get({ x, y }).value
+            if (val === 1) x1 = x
+            if (val === 9) x9 = x
+        }
+        if (x1 > -1 && x9 > -1) {
+            const minX = Math.min(x1, x9) + 1
+            const maxX = Math.max(x1, x9) - 1
+            let sum = 0
+            for (let x = minX; x <= maxX; x++) {
+                const val = game.get({ x, y }).value
+                if (val === 0) {
+                    sum = -1
+                    break
+                }
+                sum += val
+            }
+            if (sum !== -1 && sum !== game.sandwich__horizontalClues[y]) {
+                for (let x = minX; x <= maxX; x++) {
+                    game.get({ x, y }).isError = true
+                }
+            }
+        }
+    }
+
+    return []
+}
+
 export interface Ruleset {
     render: {
         init: ((props: StateProps) => void)[]
@@ -1008,7 +1174,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues,],
+            afterValuesChanged: [classicCalculatePossibleValues],
             checkComplete: classicCheckComplete,
             checkErrors: classicDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
@@ -1068,24 +1234,24 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
     sandwich: {
         render: {
             init: [],
-            onResize: [],
+            onResize: [sandwichResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => { }],
-            unpaused: [],
-            paused: [],
-            after: [() => { }],
+            before: [sandwichRenderBackground],
+            unpaused: [classicRenderCellBackground, classicRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
+            paused: [classicRenderPaused],
+            after: [sandwichRenderBorders],
         },
         game: {
-            initGameData: () => { },
+            initGameData: sandwichInitGameData,
             initBoardMatrix: [],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
-            afterValuesChanged: [classicCalculatePossibleValues, classicDetectErrorsFromSolution],
-            checkComplete: () => false,
-            checkErrors: () => { },
+            afterValuesChanged: [classicCalculatePossibleValues,],
+            checkComplete: classicCheckComplete,
+            checkErrors: sandwichDetectErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits
         },

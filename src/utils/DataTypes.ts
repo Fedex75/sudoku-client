@@ -52,7 +52,9 @@ export type GameData = {
     mission: string
     clues: string
     solution: string
-    cages: number[][][]
+    killer__cages: number[][][]
+    sandwich__horizontalClues: number[]
+    sandwich__verticalClues: number[]
     timer: number
     board: Board
     selectedCells: CellCoordinates[]
@@ -114,3 +116,5 @@ export type Bookmark = IDBookmark | MissionBookmark
 export function isIDBookmark(bm: Bookmark): bm is IDBookmark {
     return (bm.id !== undefined)
 }
+
+export type MissionsData = Record<GameModeName, Record<DifficultyName, RawGameData[]>>

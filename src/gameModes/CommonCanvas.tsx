@@ -26,6 +26,7 @@ const cageLineWidth = roundedRatio === 1 ? 2 : 2
 
 const themes = {
 	light: {
+		background: '#e9e9e9',
 		canvasLightDefaultCellColor: 'white',
 		canvasDarkDefaultCellColor: '#e2ebf3',
 		canvasCellBorderColor: '#bec6d4',
@@ -44,6 +45,7 @@ const themes = {
 		canvasKillerHighlightedCageColor: 'black',
 	},
 	dark: {
+		background: 'black',
 		canvasLightDefaultCellColor: '#25242c',
 		canvasDarkDefaultCellColor: '#161620',
 		canvasCellBorderColor: 'black',
