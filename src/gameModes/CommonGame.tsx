@@ -380,6 +380,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCells, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
+					GameHandler.game.pushBoard()
 					animations = GameHandler.game.setValue(GameHandler.game.selectedCells, number)
 				}
 			}
