@@ -107,7 +107,7 @@ export default class CommonBoard {
 		let completedNumbers: number[] = []
 		let count = Array(this.nSquares).fill(0)
 		this.iterateAllCells((cell) => {
-			if (cell.value === cell.solution) {
+			if (cell.value > 0 && !cell.isError) {
 				count[cell.value - 1]++
 				if (count[cell.value - 1] === this.nSquares) {
 					completedNumbers.push(cell.value)
