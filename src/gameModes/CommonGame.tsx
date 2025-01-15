@@ -145,10 +145,8 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		let newPossibleValues: number[] = []
 		if (SettingsHandler.settings.showPossibleValues) {
 			for (const c of GameHandler.game.selectedCells) {
-				if (GameHandler.game.get(c).value === 0) {
 					for (const v of GameHandler.game.get(c).possibleValues) {
 						if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
-					}
 				}
 			}
 		} else {
