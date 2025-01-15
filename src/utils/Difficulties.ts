@@ -5,8 +5,8 @@ export const difficulties: Record<GameModeName, DifficultyName[]> = {
 	'classic': ['easy', 'medium', 'hard', 'expert', 'evil'],
 	'killer': ['easy', 'medium', 'hard', 'expert'],
 	'sudokuX': ['easy', 'medium', 'hard', 'expert'],
-	'sandwich': ['unrated'],
-	'thermo': ['unrated']
+	'sandwich': ['easy', 'medium', 'hard', 'expert'],
+	'thermo': ['easy', 'medium', 'hard', 'expert']
 }
 
 export type GameModeIdentifier = 'c' | 'k' | 'x' | 'w' | 't'
