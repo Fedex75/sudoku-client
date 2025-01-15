@@ -469,6 +469,7 @@ function classicCalculatePossibleValues(game: CommonBoard) {
                 if (indexOfCoordsInArray(cg, vc) === -1) {
                     game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
                     for (const note of notes) game.setNote([vc], note, false)
+                    }
                 }
             }
         }

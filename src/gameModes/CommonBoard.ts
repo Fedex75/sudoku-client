@@ -214,6 +214,8 @@ export default class CommonBoard {
 			}
 		}
 
+		for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
+
 		if (coords.length === 1) {
 			return [finalNoteState, animations]
 		}
