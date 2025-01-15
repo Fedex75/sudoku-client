@@ -474,6 +474,8 @@ function classicCalculatePossibleValues(game: CommonBoard) {
                 notes = notes.concat(game.get(cg[i]).notes)
             }
 
+            const uniqueNotes = new Set(notes)
+            if (uniqueNotes.size === cg.length) {
             // Remove possible values and notes from all the visible cells not in the group
             for (const vc of visibleCells) {
                 if (indexOfCoordsInArray(cg, vc) === -1) {
