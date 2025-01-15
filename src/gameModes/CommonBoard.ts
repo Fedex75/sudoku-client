@@ -285,8 +285,10 @@ export default class CommonBoard {
 	hint(coords: CellCoordinates[]) {
 		let animations: BoardAnimation[] = []
 		for (const c of coords) {
+			if (this.get(c).solution > 0) {
 			animations.push(...(this.setValue([c], this.get(c).solution)))
 			this.get(c).clue = true
+			}
 		}
 		return animations
 	}

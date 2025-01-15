@@ -443,7 +443,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 				undoDisabled={GameHandler.complete || GameHandler.game.history.length === 0}
 				eraseDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => (GameHandler.game!.get(c).clue || (GameHandler.game!.get(c).value === 0 && GameHandler.game!.get(c).notes.length === 0)))}
-				hintDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => GameHandler.game!.get(c).clue)}
+				hintDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => GameHandler.game!.get(c).clue || GameHandler.game!.get(c).solution === 0)}
 				colorDisabled={false}
 
 				colorMode={colorMode}
