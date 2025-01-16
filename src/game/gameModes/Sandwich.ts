@@ -15,19 +15,20 @@ export function sandwichInitGameData({ game, data }: InitGameProps) {
     game.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
 }
 
+const lateralClueMarginFactor = 0.8
+
 export function sandwichResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
     const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
     const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
     const numberOfCellBorders = game.nSquares + 1 - numberOfBoxBorders
     const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * cellBorderWidth
-    const sandwichMargin = Math.floor(logicalSize.current * 0.1)
-    squareSize.current = Math.floor((logicalSize.current - totalBorderThickness - sandwichMargin) / game.nSquares)
-    logicalSize.current = squareSize.current * game.nSquares + totalBorderThickness + sandwichMargin
+    squareSize.current = Math.floor((logicalSize.current - totalBorderThickness) / (game.nSquares + lateralClueMarginFactor))
+    logicalSize.current = squareSize.current * (game.nSquares + lateralClueMarginFactor) + totalBorderThickness
 
     let newCellPositions = []
     let newValuePositions = []
 
-    let pos = boxBorderWidth + sandwichMargin
+    let pos = boxBorderWidth + Math.floor(squareSize.current * lateralClueMarginFactor)
     for (let i = 0; i < game.nSquares; i++) {
         newCellPositions.push(pos)
         newValuePositions.push(pos + squareSize.current / 2)
@@ -43,42 +44,43 @@ export function sandwichResize({ game, rendererState, squareSize, logicalSize, b
 
     for (let y = 0; y < 3; y++) for (let x = 0; x < 3; x++) newNoteDeltas.push({ x: notePaddingH + x * (squareSize.current - 2 * notePaddingH) / 2, y: notePaddingTop + y * (squareSize.current - notePaddingTop - notePaddingBottom) / 2 })
 
-    rendererState.current.sandwichMargin = sandwichMargin
     rendererState.current.noteDeltas = newNoteDeltas
     rendererState.current.cellPositions = newCellPositions
     rendererState.current.valuePositions = newValuePositions
 }
 
-export function sandwichRenderBackground({ ctx, themes, theme, logicalSize, rendererState }: RendererProps) {
+export function sandwichRenderBackground({ ctx, themes, theme, logicalSize, rendererState, squareSize }: RendererProps) {
     //Board background
     ctx.fillStyle = themes[theme].background
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.fillStyle = themes[theme].canvasCellBorderColor
-    ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin)
+    const lateralMargin = Math.floor(squareSize * lateralClueMarginFactor)
+    ctx.fillRect(lateralMargin, lateralMargin, logicalSize - lateralMargin, logicalSize - lateralMargin)
 }
 
 export function sandwichRenderBorders({ ctx, game, themes, theme, boxBorderWidth, logicalSize, squareSize, rendererState }: RendererProps) {
     //Borders
+    const lateralMargin = Math.floor(squareSize * lateralClueMarginFactor)
     if (theme === 'light') {
         ctx.fillStyle = themes[theme].canvasBoxBorderColor
-        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
-        ctx.fillRect(rendererState.sandwichMargin, rendererState.sandwichMargin, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+        ctx.fillRect(lateralMargin, lateralMargin, boxBorderWidth, logicalSize - lateralMargin)
+        ctx.fillRect(lateralMargin, lateralMargin, logicalSize - lateralMargin, boxBorderWidth)
         for (let i = 2; i < game.nSquares; i += 3) {
-            ctx.fillRect(rendererState.cellPositions[i] + squareSize, rendererState.sandwichMargin, boxBorderWidth, logicalSize - rendererState.sandwichMargin)
-            ctx.fillRect(rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - rendererState.sandwichMargin, boxBorderWidth)
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, lateralMargin, boxBorderWidth, logicalSize - lateralMargin)
+            ctx.fillRect(lateralMargin, rendererState.cellPositions[i] + squareSize, logicalSize - lateralMargin, boxBorderWidth)
         }
     } else if (SettingsHandler.settings.highContrastGrid) {
         ctx.fillStyle = 'white'
         for (let i = 2; i < game.nSquares - 1; i += 3) {
-            ctx.fillRect(rendererState.cellPositions[i] + squareSize, boxBorderWidth + rendererState.sandwichMargin, boxBorderWidth, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin)
-            ctx.fillRect(boxBorderWidth + rendererState.sandwichMargin, rendererState.cellPositions[i] + squareSize, logicalSize - boxBorderWidth * 2 - rendererState.sandwichMargin, boxBorderWidth)
+            ctx.fillRect(rendererState.cellPositions[i] + squareSize, boxBorderWidth + lateralMargin, boxBorderWidth, logicalSize - boxBorderWidth * 2 - lateralMargin)
+            ctx.fillRect(boxBorderWidth + lateralMargin, rendererState.cellPositions[i] + squareSize, logicalSize - boxBorderWidth * 2 - lateralMargin, boxBorderWidth)
         }
     }
 }
 
 export function sandwichRenderLateralClues({ ctx, game, squareSize, themes, theme, rendererState }: RendererProps) {
-    const x = rendererState.sandwichMargin * 0.8
-    const y = rendererState.sandwichMargin * 0.8
+    const x = Math.floor(squareSize * lateralClueMarginFactor * 0.8)
+    const y = x
     const size = squareSize * 0.35
     const halfSquareSize = squareSize / 2
     for (let i = 0; i < game.nSquares; i++) {
