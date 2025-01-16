@@ -46,7 +46,8 @@ export default function NunmpadButton({ onClick, number, disabled, hidden, locke
 				onClick(number, 'secondary')
 			}}
 		>
-			<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--theme-color)'} />
+			{/*<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--theme-color)'} />*/}
+			{number}
 			{locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
 		</div>
 	)
