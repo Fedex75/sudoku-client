@@ -58,15 +58,11 @@ export function sudokuXDetectErrors(game: Board) {
             }
         }
     }
-
-    console.log(game.sudokuX__diagonalErrors)
 }
 
 export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, squareSize, accentColor }: RendererProps) {
     const near = rendererState.cellPositions[0] + squareSize / 2
     const far = rendererState.cellPositions[game.nSquares - 1] + squareSize / 2
-
-    console.log('renderDiagonals', game.sudokuX__diagonalErrors)
 
     // Main diagonal
     ctx.fillStyle = ctx.strokeStyle = game.sudokuX__diagonalErrors[0] ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
