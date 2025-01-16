@@ -363,7 +363,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	}, [resizeCanvas, theme])
 
 	useEffect(() => {
-		if (!hasAddedFadeInAnimation.current) {
+		if (!hasAddedFadeInAnimation.current && !notPlayable) {
 			addAnimations([{ type: 'fadein_long' }])
 			hasAddedFadeInAnimation.current = true
 		}
@@ -380,6 +380,8 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	}, [resizeCanvas])
 
 	useEffect(() => {
+		if (notPlayable) return
+
 		if (paused) {
 			addAnimations([{ type: 'fadeout' }])
 		} else {
