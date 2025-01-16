@@ -168,6 +168,8 @@ export interface RendererProps {
 }
 
 export interface StateProps {
+    themes: any
+    theme: ThemeName
     game: Board
     rendererState: MutableRefObject<any>
     squareSize: MutableRefObject<number>

@@ -1,5 +1,5 @@
 import { indexOfCoordsInArray } from "../../utils/CoordsUtils"
-import { RendererProps, InitGameProps, BoardAnimation, CellCoordinates, StateProps } from "../../utils/DataTypes"
+import { RendererProps, InitGameProps, CellCoordinates, StateProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
@@ -7,21 +7,67 @@ import Board from "../Board"
 import { classicGetVisibleCells } from "./Classic"
 import { commonDetectErrorsFromSolution, dashedLine, drawSVGNumber } from "./Common"
 
-export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, squareSize }: RendererProps) {
-    ctx.lineWidth = cageLineWidth
+const cagesOffscreenCanvas = document.createElement('canvas')
+const cagesOffScreenCanvasCtx = cagesOffscreenCanvas.getContext('2d')
+const cagesTempCanvas = document.createElement('canvas')
+const cagesTempCanvasCtx = cagesTempCanvas.getContext('2d')
 
-    //Border
-    rendererState.cageVectors.forEach((vector: CageVector) => {
-        ctx.fillStyle = ctx.strokeStyle = game.killer__cageErrors.includes(vector[2]) ? '#ff5252' : (game.selectedCells.some(selectedCell => vector[2] === game.get(selectedCell).cageIndex)) ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-        dashedLine(ctx, vector[0], vector[1], vector[3], cageLineWidth)
-    })
+export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, accentColor, squareSize, cellBorderWidth, logicalSize }: RendererProps) {
+    if (!cagesOffScreenCanvasCtx || !cagesTempCanvasCtx) return
 
-    game.iterateAllCells((cell, { x, y }) => {
-        if (cell.cageValue! > 0) {
-            ctx.strokeStyle = ctx.fillStyle = game.killer__cageErrors.includes(cell.cageIndex!) ? '#ff5252' : game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, 'right', 'center', null)
+    cagesTempCanvasCtx.clearRect(0, 0, logicalSize, logicalSize)
+    cagesTempCanvasCtx.drawImage(cagesOffscreenCanvas, 0, 0)
+
+    let selectedCages: number[] = []
+    for (const c of game.selectedCells) {
+        const cell = game.get(c)
+        if (!selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
+    }
+
+    cagesTempCanvasCtx.globalCompositeOperation = 'source-in'
+
+    function applyColorWithMask(createMask: () => void, color: string) {
+        if (!cagesTempCanvasCtx) return
+
+        cagesTempCanvasCtx.save()
+        cagesTempCanvasCtx.beginPath()
+        createMask()
+        cagesTempCanvasCtx.clip()
+        cagesTempCanvasCtx.fillStyle = color
+        cagesTempCanvasCtx.fillRect(0, 0, logicalSize, logicalSize)
+        cagesTempCanvasCtx.restore()
+    }
+
+    // Paint cages that are on colored cells black to improve contrast
+    applyColorWithMask(() => {
+        game.iterateAllCells((cell, c) => {
+            if (cell.color !== 'default') {
+                cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+            }
+        })
+    }, 'black')
+
+    // Paint selected cages white
+    applyColorWithMask(() => {
+        for (const ci of selectedCages) {
+            for (const c of game.killer__cages[ci]) {
+                cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+            }
         }
-    })
+    }, 'white')
+
+    // Paint cages with error red or yellow
+    applyColorWithMask(() => {
+        for (const ci of game.killer__cageErrors) {
+            for (const c of game.killer__cages[ci]) {
+                cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+            }
+        }
+    }, accentColor === 'red' ? '#ffe173' : '#ff5252')
+
+    cagesTempCanvasCtx.globalCompositeOperation = 'source-over'
+
+    ctx.drawImage(cagesTempCanvas, 0, 0)
 }
 
 export function killerInitGameData({ game, data }: InitGameProps) {
@@ -41,7 +87,6 @@ export function killerInitGameData({ game, data }: InitGameProps) {
 }
 
 export function killerSolveLastInCages(game: Board) {
-    let animations: BoardAnimation[] = []
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
         for (const cage of game.killer__cages) {
             let remaining = cage.length
@@ -56,14 +101,12 @@ export function killerSolveLastInCages(game: Board) {
             if (remaining === 1 && realSum - sum <= 9) {
                 cage.forEach(coords => {
                     if (game.get(coords).value === 0) {
-                        animations.concat(game.setValue([coords], realSum - sum))
+                        game.setValue([coords], realSum - sum)
                     }
                 })
             }
         }
     }
-
-    return animations
 }
 
 export function killerInitCages(game: Board) {
@@ -135,7 +178,9 @@ export function killerResize({ game, rendererState, squareSize, logicalSize, box
 
 export type CageVector = [CellCoordinates, CellCoordinates, number, number]
 
-export function killerCalculateCageVectors({ game, rendererState, squareSize, cageLineWidth }: StateProps) {
+export function killerCalculateCageVectors({ game, rendererState, squareSize, cageLineWidth, logicalSize, themes, theme }: StateProps) {
+    if (!cagesOffScreenCanvasCtx || !cagesTempCanvasCtx) return
+
     rendererState.current.cagePadding = Math.floor(squareSize.current * 0.08)
     let cageLinePositions = Array(game.nSquares * 2).fill(0)
 
@@ -174,7 +219,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
         const bottom = cageLinePositions[y * 2 + 1]
 
         for (let x = 0; x < game.nSquares; x++) {
-            const cell = game.board[x][y]
+            const cell = game.get({ x, y })
 
             const hShift = cell.cageValue! > 9 ? Math.ceil(squareSize.current * 0.28) : (cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.15) : 0)
 
@@ -182,7 +227,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             const right = cageLinePositions[x * 2 + 1]
 
             //Top line
-            if (y === 0 || game.board[x][y - 1].cageIndex !== cell.cageIndex) {
+            if (y === 0 || game.get({ x, y: y - 1 }).cageIndex !== cell.cageIndex) {
                 if (startA === null) startA = { x: left + hShift, y: top }
             } else {
                 if (startA !== null) {
@@ -192,7 +237,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Top bridge
-            if (!(x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y > 0 && game.board[x + 1][y - 1].cageIndex === cell.cageIndex && game.board[x][y - 1].cageIndex === cell.cageIndex)
+            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y > 0 && game.get({ x: x + 1, y: y - 1 }).cageIndex === cell.cageIndex && game.get({ x, y: y - 1 }).cageIndex === cell.cageIndex)
             ) {
                 if (startA === null) startA = { x: right, y: top }
             } else {
@@ -203,7 +248,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Bottom line
-            if (y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) {
+            if (y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) {
                 if (startB === null) startB = { x: left, y: bottom }
             } else {
                 if (startB !== null) {
@@ -213,7 +258,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Bottom bridge
-            if (!(x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.board[x + 1][y + 1].cageIndex === cell.cageIndex && game.board[x][y + 1].cageIndex === cell.cageIndex)) {
+            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.get({ x: x + 1, y: y + 1 }).cageIndex === cell.cageIndex && game.get({ x, y: y + 1 }).cageIndex === cell.cageIndex)) {
                 if (startB === null) startB = { x: right, y: bottom }
             } else {
                 if (startB !== null) {
@@ -230,7 +275,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
         const right = cageLinePositions[x * 2 + 1]
 
         for (let y = 0; y < game.nSquares; y++) {
-            const cell = game.board[x][y]
+            const cell = game.get({ x, y })
 
             const vShift = cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.20) : 0
 
@@ -238,7 +283,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             const bottom = cageLinePositions[y * 2 + 1]
 
             //Left line
-            if (x === 0 || game.board[x - 1][y].cageIndex !== cell.cageIndex) {
+            if (x === 0 || game.get({ x: x - 1, y }).cageIndex !== cell.cageIndex) {
                 if (startA === null) startA = { x: left, y: top + vShift }
             } else {
                 if (startA !== null) {
@@ -248,7 +293,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Left bridge
-            if (!(y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) && !(x > 0 && game.board[x - 1][y].cageIndex === cell.cageIndex && game.board[x - 1][y + 1].cageIndex === cell.cageIndex)) {
+            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) && !(x > 0 && game.get({ x: x - 1, y }).cageIndex === cell.cageIndex && game.get({ x: x - 1, y: y + 1 }).cageIndex === cell.cageIndex)) {
                 if (startA === null) startA = { x: left, y: bottom }
             } else {
                 if (startA !== null) {
@@ -258,7 +303,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Right line
-            if (x === (game.nSquares - 1) || game.board[x + 1][y].cageIndex !== cell.cageIndex) {
+            if (x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) {
                 if (startB === null) startB = { x: right, y: top }
             } else {
                 if (startB !== null) {
@@ -268,7 +313,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             }
 
             //Right bridge
-            if (!(y === (game.nSquares - 1) || game.board[x][y + 1].cageIndex !== cell.cageIndex) && !(x < (game.nSquares - 1) && game.board[x + 1][y].cageIndex === cell.cageIndex && game.board[x + 1][y + 1].cageIndex === cell.cageIndex)) {
+            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) && !(x < (game.nSquares - 1) && game.get({ x: x + 1, y }).cageIndex === cell.cageIndex && game.get({ x: x + 1, y: y + 1 }).cageIndex === cell.cageIndex)) {
                 if (startB === null) startB = { x: right, y: bottom }
             } else {
                 if (startB !== null) {
@@ -279,7 +324,23 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
         }
     }
 
-    rendererState.current.cageVectors = newCageVectors
+    cagesOffscreenCanvas.width = logicalSize.current
+    cagesOffscreenCanvas.height = logicalSize.current
+    cagesTempCanvas.width = logicalSize.current
+    cagesTempCanvas.height = logicalSize.current
+
+    cagesOffScreenCanvasCtx.clearRect(0, 0, logicalSize.current, logicalSize.current)
+    cagesOffScreenCanvasCtx.fillStyle = cagesOffScreenCanvasCtx.strokeStyle = themes[theme].canvasKillerCageColor
+
+    //Border
+    newCageVectors.forEach((vector: CageVector) => {
+        dashedLine(cagesOffScreenCanvasCtx, vector[0], vector[1], vector[3], cageLineWidth)
+    })
+
+    game.killer__cages.forEach(cage => {
+        const firstCell = game.get(cage[0])
+        drawSVGNumber(cagesOffScreenCanvasCtx, firstCell.cageValue!, rendererState.current.cellPositions[cage[0].x] + rendererState.current.cagePadding, rendererState.current.cellPositions[cage[0].y] + rendererState.current.cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, 'right', 'center', null)
+    })
 }
 
 export function killerCheckErrors(game: Board) {

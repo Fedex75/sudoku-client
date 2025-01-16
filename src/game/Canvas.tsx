@@ -135,7 +135,7 @@ type Props = {
 	ruleset: Ruleset
 }
 
-const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, notPlayable = false, style, boxBorderWidthFactor = 0.01, ruleset }: Props, ref: Ref<CanvasRef>) => {
+const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, lockedInput = 0, theme, accentColor, paused = false, notPlayable = false, style, boxBorderWidthFactor = 0.01, ruleset }: Props, ref: Ref<CanvasRef>) => {
 	const logicalSize = useRef(0)
 	const squareSize = useRef(0)
 	const rendererState = useRef<any>({})
@@ -269,18 +269,18 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 		canvasRef.current.width = logicalSize.current
 		canvasRef.current.height = logicalSize.current
 
-		for (const func of ruleset.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
+		for (const func of ruleset.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
 
 		renderFrame()
-	}, [boxBorderWidthFactor, ruleset.render.onResize, game, renderFrame])
+	}, [boxBorderWidthFactor, ruleset.render.onResize, game, renderFrame, theme])
 
 	const screenCoordsToBoardCoords = useCallback((clientX: number, clientY: number) => {
 		if (!canvasRef.current) return undefined
 		const rect = canvasRef.current.getBoundingClientRect()
 		const clickX = (clientX - rect.left) / canvasRef.current.offsetWidth * logicalSize.current
 		const clickY = (clientY - rect.top) / canvasRef.current.offsetHeight * logicalSize.current
-		return ruleset.render.screenCoordsToBoardCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
-	}, [boxBorderWidthFactor, ruleset.render, game])
+		return ruleset.render.screenCoordsToBoardCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
+	}, [boxBorderWidthFactor, ruleset.render, game, theme])
 
 	const handleInputStart = useCallback((coords: CellCoordinates[], type: MouseButtonType) => {
 		if (coords.length === 1) lastMouseCell.current = coords[0]
@@ -395,8 +395,8 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	}, [theme, accentColor, renderFrame])
 
 	useEffect(() => {
-		for (const func of ruleset.render.init) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })
-	}, [boxBorderWidthFactor, ruleset.render.init, game])
+		for (const func of ruleset.render.init) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
+	}, [boxBorderWidthFactor, ruleset.render.init, game, theme])
 
 	useEffect(() => {
 		savedRenderFrame.current = renderFrame
@@ -415,4 +415,4 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	/>
 })
 
-export default CommonCanvas
+export default Canvas
