@@ -142,8 +142,6 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				for (const func of GameHandler.game.ruleset.game.afterValuesChanged) func(GameHandler.game)
 			} while (GameHandler.game.hasChanged)
 
-			updatePossibleValues()
-
 			if (GameHandler.game.checkComplete()) {
 				GameHandler.game.animations = [{ type: 'board', center: lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) } }]
 				GameHandler.setComplete()
@@ -156,6 +154,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			}
 		}
 
+		updatePossibleValues()
 		updateMagicWandMode()
 
 		setRender(r => r === 100 ? 0 : r + 1)
