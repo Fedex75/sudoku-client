@@ -10,15 +10,15 @@ import { commonDetectErrorsFromSolution, dashedLine, drawSVGNumber } from "./Com
 export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, squareSize }: RendererProps) {
     ctx.lineWidth = cageLineWidth
 
-    //Borders
+    //Border
     rendererState.cageVectors.forEach((vector: CageVector) => {
-        ctx.fillStyle = ctx.strokeStyle = (game.selectedCells.some(selectedCell => vector[2] === game.get(selectedCell).cageIndex)) ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
+        ctx.fillStyle = ctx.strokeStyle = game.killer__cageErrors.includes(vector[2]) ? '#ff5252' : (game.selectedCells.some(selectedCell => vector[2] === game.get(selectedCell).cageIndex)) ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
         dashedLine(ctx, vector[0], vector[1], vector[3], cageLineWidth)
     })
 
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.cageValue! > 0) {
-            ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
+            ctx.strokeStyle = ctx.fillStyle = game.killer__cageErrors.includes(cell.cageIndex!) ? '#ff5252' : game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
             drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, 'right', 'center', null)
         }
     })
@@ -288,6 +288,17 @@ export function killerCheckErrors(game: Board) {
     game.killer__cageErrors = []
 
     for (const cage of game.killer__cages) {
-
+        let sum = 0
+        for (const coords of cage) {
+            const cell = game.get(coords)
+            if (cell.value > 0) sum += cell.value
+            else {
+                sum = -1
+                break
+            }
+        }
+        if (sum !== -1 && sum !== game.get(cage[0]).cageValue!) {
+            game.killer__cageErrors.push(game.get(cage[0]).cageIndex!)
+        }
     }
 }
