@@ -1,35 +1,38 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { Board, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
-import { Ruleset, rulesets } from "./Rulesets"
+import { rulesets } from "./gameModes/Rulesets"
 
-export default class CommonBoard {
+export default class Board {
 	// Constants
 	id: string
 	mode: GameModeName
 	difficulty: DifficultyName
 	mission: string
 	clues: string
-	killer__cages: number[][][]
-	sandwich__horizontalClues: number[]
-	sandwich__verticalClues: number[]
-	sandwich__visibleHorizontalClues: boolean[]
-	sandwich__visibleVerticalClues: boolean[]
 	solution: string
 	nSquares: number
 	version: number = 0;
 	ruleset: Ruleset
 
-	board: Board
+	board: BoardMatrix
 	selectedCells: CellCoordinates[]
 	timer: number
 
 	history: History
 	fullNotation: boolean
 	colorGroups: ColorGroup[]
+
+	killer__cages: number[][][]
+	killer__cageErrors: number[]
+
+	sandwich__horizontalClues: number[]
+	sandwich__verticalClues: number[]
+	sandwich__visibleHorizontalClues: boolean[]
+	sandwich__visibleVerticalClues: boolean[]
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -38,17 +41,20 @@ export default class CommonBoard {
 		this.selectedCells = []
 		this.history = []
 		this.board = []
-		this.killer__cages = []
-		this.sandwich__horizontalClues = []
-		this.sandwich__verticalClues = []
-		this.sandwich__visibleHorizontalClues = []
-		this.sandwich__visibleVerticalClues = []
 		this.timer = 0
 		this.difficulty = 'unrated'
 		this.mission = ''
 		this.clues = ''
 		this.solution = ''
 		this.colorGroups = []
+
+		this.killer__cages = []
+		this.killer__cageErrors = []
+
+		this.sandwich__horizontalClues = []
+		this.sandwich__verticalClues = []
+		this.sandwich__visibleHorizontalClues = []
+		this.sandwich__visibleVerticalClues = []
 
 		if (isGameData(data)) {
 			this.mode = data.mode
@@ -68,6 +74,7 @@ export default class CommonBoard {
 			this.sandwich__verticalClues = data.sandwich__verticalClues
 			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
 			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
+			this.killer__cageErrors = data.killer__cageErrors
 			this.timer = data.timer
 			this.board = data.board
 			this.selectedCells = data.selectedCells

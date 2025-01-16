@@ -3,10 +3,10 @@ import ReactSwitch from 'react-switch'
 import SettingsHandler from '../../utils/SettingsHandler'
 import Check from '../check/Check'
 import './settingsItem.css'
-import CommonBoard from '../../gameModes/CommonBoard'
-import CommonCanvas from '../../gameModes/CommonCanvas'
+import Board from '../../game/Board'
+import CommonCanvas from '../../game/Canvas'
 import { AccentColor } from '../../utils/Colors'
-import { rulesets } from '../../gameModes/Rulesets'
+import { rulesets } from '../../game/gameModes/Rulesets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 
@@ -45,7 +45,7 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
   )
 
   if (type === 'theme') {
-    let classicMiniature = new CommonBoard({ id: 'ce0', m: '1.3:4.8.' }, 3)
+    let classicMiniature = new Board({ id: 'ce0', m: '1.3:4.8.' }, 3)
     classicMiniature.setValue([{ x: 1, y: 0 }], 2)
     classicMiniature.setValue([{ x: 0, y: 1 }], 6)
     classicMiniature.setValue([{ x: 0, y: 2 }], 7)

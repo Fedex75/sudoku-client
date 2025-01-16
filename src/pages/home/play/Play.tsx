@@ -7,13 +7,13 @@ import { faChevronRight, faBookmark, faChartSimple, faPlay } from "@fortawesome/
 import GameHandler from "../../../utils/GameHandler"
 import { ActionSheet, ActionSheetButton } from "../../../components"
 import './play.css'
-import CommonBoard from "../../../gameModes/CommonBoard"
+import Board from "../../../game/Board"
 import { GameModeName } from "../../../utils/Difficulties"
 import { ThemeName } from "../../../utils/DataTypes"
 import { AccentColor } from "../../../utils/Colors"
-import CommonCanvas from "../../../gameModes/CommonCanvas"
+import CommonCanvas from "../../../game/Canvas"
 import SVGSettings from "../../../svg/settings"
-import { rulesets } from "../../../gameModes/Rulesets"
+import { rulesets } from "../../../game/gameModes/Rulesets"
 
 type Props = {
     theme: ThemeName
@@ -32,13 +32,13 @@ export default function Play({ theme, accentColor }: Props) {
 
     const { t } = useTranslation()
 
-    let classicMiniature = new CommonBoard({ id: 'cu0', m: '1.3:4.8.' }, 3)
+    let classicMiniature = new Board({ id: 'cu0', m: '1.3:4.8.' }, 3)
     classicMiniature.setValue([{ x: 1, y: 0 }], 2)
     classicMiniature.setValue([{ x: 0, y: 1 }], 6)
     classicMiniature.setValue([{ x: 0, y: 2 }], 7)
     classicMiniature.setValue([{ x: 2, y: 2 }], 9)
 
-    let killerMiniature = new CommonBoard({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
+    let killerMiniature = new Board({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
     killerMiniature.setValue([{ x: 1, y: 0 }], 2)
     killerMiniature.setValue([{ x: 0, y: 1 }], 6)
     killerMiniature.setValue([{ x: 0, y: 2 }], 7)

@@ -1,11 +1,10 @@
 import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
-import CommonBoard from "./CommonBoard"
-import { BoardAnimation, BoardBoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../utils/DataTypes"
+import Board from "./Board"
+import { BoardAnimation, BoardBoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { AccentColor } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
 import { isTouchDevice } from "../utils/isTouchDevice"
-import { Ruleset } from "./Rulesets"
 
 const animationLengths = {
 	row: 750,
@@ -125,7 +124,7 @@ function brightness(x: number, p: number, q: number, l: number) {
 type Props = {
 	onClick?: (coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => void
 	showLinks?: boolean
-	game: CommonBoard
+	game: Board
 	lockedInput?: number
 	theme: ThemeName
 	accentColor: AccentColor

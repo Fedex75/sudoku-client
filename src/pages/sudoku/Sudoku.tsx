@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { millisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
-import CommonGame from '../../gameModes/CommonGame'
+import CommonGame from '../../game/Game'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 

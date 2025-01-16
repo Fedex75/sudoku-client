@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
-import CommonCanvas from "./CommonCanvas"
-import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, ThemeName } from "../utils/DataTypes"
+import CommonCanvas from "./Canvas"
+import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { Navigate } from "react-router"
 import { AccentColor, ColorName } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
@@ -11,7 +11,6 @@ import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
-import { Ruleset } from "./Rulesets"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
 
 type Props = {

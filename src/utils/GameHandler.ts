@@ -2,7 +2,7 @@ import missionsData from '../data/missions.json'
 import { decodeMissionString } from './Decoder'
 import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, decodeDifficulty, decodeMode } from './Difficulties'
 import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
-import CommonBoard from '../gameModes/CommonBoard'
+import Board from '../game/Board'
 import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
 
 const BOARD_API_VERSION = 6
@@ -25,7 +25,7 @@ type Recommendations = {
 }
 
 class GameHandler {
-	game: CommonBoard | null = null;
+	game: Board | null = null;
 	complete: boolean = false;
 	bookmarks: Bookmark[] = [];
 	solved: string[] = [];
@@ -66,7 +66,7 @@ class GameHandler {
 		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION) {
-			this.setCurrentGame(new CommonBoard(data, 9))
+			this.setCurrentGame(new Board(data, 9))
 		} else {
 			this.game = null
 		}
@@ -82,7 +82,7 @@ class GameHandler {
 		localStorage.setItem('statistics', JSON.stringify(this.statistics))
 	}
 
-	setCurrentGame(board: CommonBoard) {
+	setCurrentGame(board: Board) {
 		this.game = board
 		this.complete = false
 		this.game.version = BOARD_API_VERSION
@@ -104,12 +104,12 @@ class GameHandler {
 		} else {
 			let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
 			if (candidates.length === 0) candidates = missions[mode][difficulty]
-			this.setCurrentGame(new CommonBoard(candidates[Math.floor(Math.random() * candidates.length)], 9))
+			this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], 9))
 		}
 	}
 
 	boardFromCustomMission(mission: string) {
-		return new CommonBoard({
+		return new Board({
 			id: '',
 			m: mission
 		}, 9)
@@ -120,7 +120,7 @@ class GameHandler {
 			//Data is mission JSON
 			try {
 				const gameData = JSON.parse(data) as RawGameData
-				this.setCurrentGame(new CommonBoard(gameData, 9))
+				this.setCurrentGame(new Board(gameData, 9))
 				return (true)
 			} catch (e) {
 				return (false)
@@ -201,7 +201,7 @@ class GameHandler {
 
 	loadGameFromBookmark(bm: Bookmark) {
 		if (isIDBookmark(bm)) {
-			this.setCurrentGame(new CommonBoard(this.findMissionFromID(bm.id), 9))
+			this.setCurrentGame(new Board(this.findMissionFromID(bm.id), 9))
 		} else {
 			this.setCurrentGame(this.boardFromCustomMission(bm.m))
 		}

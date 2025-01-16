@@ -7,18 +7,20 @@ import { Link } from "react-router-dom"
 import { ActionSheet, ActionSheetButton } from '../../../components'
 import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
-import missions from '../../../data/missions.json'
+import missionsData from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import { Bookmark, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
-import CommonBoard from '../../../gameModes/CommonBoard'
-import CommonCanvas from '../../../gameModes/CommonCanvas'
+import { Bookmark, MissionsData, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
+import Board from '../../../game/Board'
+import CommonCanvas from '../../../game/Canvas'
 import { AccentColor } from '../../../utils/Colors'
-import { rulesets } from '../../../gameModes/Rulesets'
+import { rulesets } from '../../../game/gameModes/Rulesets'
 
 type Props = {
 	theme: ThemeName
 	accentColor: AccentColor
 }
+
+const missions: MissionsData = missionsData as MissionsData
 
 function Bookmarks({ theme, accentColor }: Props) {
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
@@ -86,7 +88,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 
 								if (isIDBookmark(bm)) {
 									const mode = decodeMode(bm.id[0] as GameModeIdentifier)
-									board = new CommonBoard(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
+									board = new Board(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
 									solved = GameHandler.solved.includes(bm.id)
 								} else {
 									board = GameHandler.boardFromCustomMission(bm.m)

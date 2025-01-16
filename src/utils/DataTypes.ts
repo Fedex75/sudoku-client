@@ -1,4 +1,6 @@
-import { ColorName } from "./Colors"
+import { MutableRefObject } from "react"
+import Board from "../game/Board"
+import { AccentColor, ColorName } from "./Colors"
 import { DifficultyName, GameModeName } from "./Difficulties"
 
 export type ThemeName = 'light' | 'dark'
@@ -36,7 +38,7 @@ export type CellCoordinates = {
     y: number
 }
 
-export type Board = Cell[][]
+export type BoardMatrix = Cell[][]
 
 export type HistoryItem = {
     board: string
@@ -58,17 +60,20 @@ export type GameData = {
     mission: string
     clues: string
     solution: string
-    killer__cages: number[][][]
-    sandwich__horizontalClues: number[]
-    sandwich__verticalClues: number[]
-    sandwich__visibleHorizontalClues: boolean[]
-    sandwich__visibleVerticalClues: boolean[]
     timer: number
-    board: Board
+    board: BoardMatrix
     selectedCells: CellCoordinates[]
     history: History
     version: number
     colorGroups: ColorGroup[]
+
+    killer__cages: number[][][]
+    killer__cageErrors: number[]
+
+    sandwich__horizontalClues: number[]
+    sandwich__verticalClues: number[]
+    sandwich__visibleHorizontalClues: boolean[]
+    sandwich__visibleVerticalClues: boolean[]
 }
 
 export type RawGameData = {
@@ -126,3 +131,70 @@ export function isIDBookmark(bm: Bookmark): bm is IDBookmark {
 }
 
 export type MissionsData = Record<GameModeName, Record<DifficultyName, RawGameData[]>>
+
+export interface RendererProps {
+    ctx: CanvasRenderingContext2D
+    themes: any
+    theme: ThemeName
+    logicalSize: number
+    game: Board
+    lockedInput: number
+    notPlayable: boolean
+    colors: Record<string, string>
+    darkColors: Record<string, string>
+    highlightedCells: boolean[][]
+    selectedCellsValues: number[]
+    squareSize: number
+    animationColors: string[][] | null
+    currentAnimations: { data: BoardAnimation, startTime: number | null }[]
+    accentColor: AccentColor
+    solutionColors: any
+    colorBorderLineWidth: number
+    boxBorderWidth: number
+    showLinks: boolean
+    linksLineWidth: number
+    animationGammas: number[] | null
+    cellBorderWidth: number
+    rendererState: any
+    cageLineWidth: number
+}
+
+export interface StateProps {
+    game: Board
+    rendererState: MutableRefObject<any>
+    squareSize: MutableRefObject<number>
+    logicalSize: MutableRefObject<number>
+    boxBorderWidthFactor: number
+    cellBorderWidth: number
+    cageLineWidth: number
+}
+
+export interface InitGameProps {
+    game: Board
+    data: RawGameData
+}
+
+export interface Ruleset {
+    render: {
+        init: ((props: StateProps) => void)[]
+        onResize: ((props: StateProps) => void)[]
+        screenCoordsToBoardCoords: (clickX: number, clickY: number, state: StateProps) => CellCoordinates | undefined
+        before: ((props: RendererProps) => void)[]
+        unpaused: ((props: RendererProps) => void)[]
+        paused: ((props: RendererProps) => void)[]
+        after: ((props: RendererProps) => void)[]
+    }
+    game: {
+        initGameData: (props: InitGameProps) => void
+        initBoardMatrix: ((game: Board) => void)[]
+        getVisibleCells: (game: Board, c: CellCoordinates) => CellCoordinates[]
+        getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
+        checkAnimations: ((game: Board, c: CellCoordinates) => BoardAnimation[])[]
+        getBoxes: (game: Board) => CellCoordinates[][]
+        findLinks: ((game: Board, n: number) => CellCoordinates[][])[]
+        afterValuesChanged: ((game: Board) => BoardAnimation[])[]
+        checkErrors: (game: Board) => void
+        iterateAllCells: (game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
+        getCellUnits: (game: Board, c: CellCoordinates) => CellCoordinates[][]
+    }
+}
