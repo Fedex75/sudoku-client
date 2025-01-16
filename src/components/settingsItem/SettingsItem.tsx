@@ -4,7 +4,7 @@ import SettingsHandler from '../../utils/SettingsHandler'
 import Check from '../check/Check'
 import './settingsItem.css'
 import Board from '../../game/Board'
-import CommonCanvas from '../../game/Canvas'
+import Canvas from '../../game/Canvas'
 import { AccentColor } from '../../utils/Colors'
 import { rulesets } from '../../game/gameModes/Rulesets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -54,12 +54,12 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
     return (
       <div className='settings__item theme'>
         <div className='settings__item__theme-wrapper' onClick={() => { setTheme('light') }}>
-          <CommonCanvas notPlayable game={classicMiniature} theme='light' accentColor={accentColor} ruleset={rulesets.classic} />
+          <Canvas notPlayable game={classicMiniature} theme='light' accentColor={accentColor} ruleset={rulesets.classic} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
         <div className='settings__item__theme-wrapper' onClick={() => { setTheme('dark') }}>
-          <CommonCanvas notPlayable game={classicMiniature} theme='dark' accentColor={accentColor} ruleset={rulesets.classic} />
+          <Canvas notPlayable game={classicMiniature} theme='dark' accentColor={accentColor} ruleset={rulesets.classic} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>

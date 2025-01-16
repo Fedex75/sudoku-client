@@ -11,7 +11,7 @@ import Board from "../../../game/Board"
 import { GameModeName } from "../../../utils/Difficulties"
 import { ThemeName } from "../../../utils/DataTypes"
 import { AccentColor } from "../../../utils/Colors"
-import CommonCanvas from "../../../game/Canvas"
+import Canvas from "../../../game/Canvas"
 import SVGSettings from "../../../svg/settings"
 import { rulesets } from "../../../game/gameModes/Rulesets"
 
@@ -128,31 +128,31 @@ export default function Play({ theme, accentColor }: Props) {
                 <div ref={carouselRef} className='home__carousel'>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 0 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sandwich', 0) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={sandwichMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sandwich} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={sandwichMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sandwich} />
                             <div className='home__gameMode__name'>{t('gameModes.sandwich')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sudokuX', 1) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sudokuX} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sudokuX} />
                             <div className='home__gameMode__name'>{t('gameModes.sudokuX')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 2 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('classic', 2) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.classic')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('killer', 3) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={killerMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.killer} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={killerMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.killer} />
                             <div className='home__gameMode__name'>{t('gameModes.killer')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('thermo', 4) }}>
-                            <CommonCanvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
                             <div className='home__gameMode__name'>{t('gameModes.thermo')}</div>
                         </div>
                     </div>
