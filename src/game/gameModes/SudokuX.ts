@@ -4,7 +4,7 @@ import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
-import { classicGetVisibleCells, classicGetCellUnits } from "./Classic"
+import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./Classic"
 
 export function sudokuXInitGameData({ game, data }: InitGameProps) {
     game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
@@ -95,34 +95,6 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
     ctx.fill()
 }
 
-export function sudokuXFindLinksDiagonals(game: Board, n: number): CellCoordinates[][] {
-    let links: CellCoordinates[][] = []
-
-    let newLink = []
-    for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: i, y: i }).notes.includes(n)) {
-            newLink.push({ x: i, y: i })
-        }
-    }
-
-    if (newLink.length <= 2) {
-        links.push(newLink)
-    }
-
-    newLink = []
-    for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: i, y: game.nSquares - 1 - i }).notes.includes(n)) {
-            newLink.push({ x: i, y: game.nSquares - 1 - i })
-        }
-    }
-
-    if (newLink.length <= 2) {
-        links.push(newLink)
-    }
-
-    return links
-}
-
 export function sudokuXGetCellUnits(game: Board, coords: CellCoordinates) {
     let units: CellCoordinates[][] = classicGetCellUnits(game, coords)
 
@@ -143,6 +115,26 @@ export function sudokuXGetCellUnits(game: Board, coords: CellCoordinates) {
         }
         units.push(swneDiagonal)
     }
+
+    return units
+}
+
+export function sudokuXGetAllUnits(game: Board): CellCoordinates[][] {
+    let units = classicGetAllUnits(game)
+    let currentUnit: CellCoordinates[] = []
+
+    //NW-SE diagonal
+    for (let i = 0; i < game.nSquares; i++) {
+        currentUnit.push({ x: i, y: i })
+    }
+    units.push([...currentUnit])
+
+    //NW-SE diagonal
+    currentUnit = []
+    for (let i = 0; i < game.nSquares; i++) {
+        currentUnit.push({ x: i, y: game.nSquares - 1 - i })
+    }
+    units.push([...currentUnit])
 
     return units
 }

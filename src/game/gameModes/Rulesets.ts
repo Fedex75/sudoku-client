@@ -1,7 +1,7 @@
 import { commonDetectErrorsFromSolution, commonRenderCellValueCandidates } from "./Common"
-import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox, classicCalculatePossibleValues, classicIterateAllCells } from "./Classic"
+import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages } from "./Killer"
-import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXFindLinksDiagonals, sudokuXDetectErrors, sudokuXGetCellUnits } from "./SudokuX"
+import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits } from "./SudokuX"
 import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
@@ -24,11 +24,11 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues],
             checkErrors: commonDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
-            getCellUnits: classicGetCellUnits
+            getCellUnits: classicGetCellUnits,
+            getAllUnits: classicGetAllUnits,
         },
     },
     killer: {
@@ -48,11 +48,11 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [killerSolveLastInCages, classicCalculatePossibleValues],
             checkErrors: commonDetectErrorsFromSolution,
             iterateAllCells: classicIterateAllCells,
-            getCellUnits: classicGetCellUnits
+            getCellUnits: classicGetCellUnits,
+            getAllUnits: classicGetAllUnits
         },
     },
     sudokuX: {
@@ -72,11 +72,11 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox, sudokuXFindLinksDiagonals],
             afterValuesChanged: [classicCalculatePossibleValues],
             checkErrors: sudokuXDetectErrors,
             iterateAllCells: classicIterateAllCells,
-            getCellUnits: sudokuXGetCellUnits
+            getCellUnits: sudokuXGetCellUnits,
+            getAllUnits: sudokuXGetAllUnits
         },
     },
     sandwich: {
@@ -96,11 +96,11 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues],
             checkErrors: sandwichDetectErrors,
             iterateAllCells: classicIterateAllCells,
-            getCellUnits: classicGetCellUnits
+            getCellUnits: classicGetCellUnits,
+            getAllUnits: classicGetAllUnits
         },
     },
     thermo: {
@@ -120,11 +120,11 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            findLinks: [classicFindLinksRow, classicFindLinksColumn, classicFindLinksBox],
             afterValuesChanged: [classicCalculatePossibleValues, commonDetectErrorsFromSolution],
             checkErrors: () => { },
             iterateAllCells: classicIterateAllCells,
-            getCellUnits: classicGetCellUnits
+            getCellUnits: classicGetCellUnits,
+            getAllUnits: () => []
         },
     },
 }

@@ -365,9 +365,20 @@ export default class Board {
 
 	calculateLinks(n: number) {
 		let links: CellCoordinates[][] = []
-		for (const func of this.ruleset.game.findLinks) {
-			links = links.concat(func(this, n))
+		const units = this.ruleset.game.getAllUnits(this)
+
+		for (const unit of units) {
+			let newLink = []
+			for (const c of unit) {
+				if (this.get(c).notes.includes(n)) {
+					newLink.push(c)
+				}
+			}
+			if (newLink.length <= 2) {
+				links.push(newLink)
+			}
 		}
+
 		return links
 	}
 

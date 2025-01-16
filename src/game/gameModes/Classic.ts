@@ -201,58 +201,6 @@ export function classicGetBoxes(game: Board): CellCoordinates[][] {
     return boxes
 }
 
-export function classicFindLinksRow(game: Board, n: number): CellCoordinates[][] {
-    let links: CellCoordinates[][] = []
-    for (let r = 0; r < game.nSquares; r++) {
-        let newLink = []
-        for (let i = 0; i < game.nSquares; i++) {
-            if (game.get({ x: i, y: r }).notes.includes(n)) {
-                newLink.push({ x: i, y: r })
-            }
-        }
-        if (newLink.length <= 2) {
-            links.push(newLink)
-        }
-    }
-    return links
-}
-
-export function classicFindLinksColumn(game: Board, n: number): CellCoordinates[][] {
-    let links: CellCoordinates[][] = []
-    for (let c = 0; c < game.nSquares; c++) {
-        let newLink = []
-        for (let i = 0; i < game.nSquares; i++) {
-            if (game.get({ x: c, y: i }).notes.includes(n)) {
-                newLink.push({ x: c, y: i })
-            }
-        }
-        if (newLink.length <= 2) {
-            links.push(newLink)
-        }
-    }
-    return links
-}
-
-export function classicFindLinksBox(game: Board, n: number): CellCoordinates[][] {
-    let links: CellCoordinates[][] = []
-    for (let boxX = 0; boxX < 3; boxX++) {
-        for (let boxY = 0; boxY < 3; boxY++) {
-            let newLink = []
-            for (let x = 0; x < 3; x++) {
-                for (let y = 0; y < 3; y++) {
-                    if (game.get({ x: boxX * 3 + x, y: boxY * 3 + y }).notes.includes(n)) {
-                        newLink.push({ x: boxX * 3 + x, y: boxY * 3 + y })
-                    }
-                }
-            }
-            if (newLink.length <= 2) {
-                links.push(newLink)
-            }
-        }
-    }
-    return links
-}
-
 export function classicResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
     const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
     const numberOfBoxBorders = (Math.floor(game.nSquares / 3) + 1)
@@ -384,6 +332,31 @@ export function classicGetCellUnits(game: Board, coords: CellCoordinates) {
         }
     }
     units.push(box)
+
+    return units
+}
+
+export function classicGetAllUnits(game: Board): CellCoordinates[][] {
+    let units: CellCoordinates[][] = []
+    let currentUnit: CellCoordinates[] = []
+    for (let row = 0; row < game.nSquares; row++) {
+        currentUnit = []
+        for (let y = 0; y < game.nSquares; y++) {
+            currentUnit.push({ x: row, y })
+        }
+        units.push([...currentUnit])
+    }
+
+    currentUnit = []
+    for (let col = 0; col < game.nSquares; col++) {
+        currentUnit = []
+        for (let x = 0; x < game.nSquares; x++) {
+            currentUnit.push({ x, y: col })
+        }
+        units.push([...currentUnit])
+    }
+
+    units = units.concat(classicGetBoxes(game))
 
     return units
 }

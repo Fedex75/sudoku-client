@@ -191,10 +191,10 @@ export interface Ruleset {
         getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
         checkAnimations: ((game: Board, c: CellCoordinates) => BoardAnimation[])[]
         getBoxes: (game: Board) => CellCoordinates[][]
-        findLinks: ((game: Board, n: number) => CellCoordinates[][])[]
         afterValuesChanged: ((game: Board) => BoardAnimation[])[]
         checkErrors: (game: Board) => void
         iterateAllCells: (game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
         getCellUnits: (game: Board, c: CellCoordinates) => CellCoordinates[][]
+        getAllUnits: (game: Board) => CellCoordinates[][]
     }
 }
