@@ -550,7 +550,7 @@ function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererStat
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.cageValue! > 0) {
             ctx.strokeStyle = ctx.fillStyle = game.selectedCells.some(selectedCell => cell.cageIndex === game.get(selectedCell).cageIndex) && game.nSquares > 3 ? themes[theme].canvasKillerHighlightedCageColor : themes[theme].canvasKillerCageColor
-            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding + squareSize * 0.05, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, 'center', 'center', null)
+            drawSVGNumber(ctx, cell.cageValue!, rendererState.cellPositions[x] + rendererState.cagePadding, rendererState.cellPositions[y] + rendererState.cagePadding + squareSize * 0.08, squareSize * 0.15, 'right', 'center', null)
         }
     })
 }
