@@ -142,6 +142,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	const animationColors = useRef<string[][] | null>(null)
 	const animationGammas = useRef<number[] | null>(null)
 	const currentAnimations = useRef<{ data: BoardAnimation, startTime: number | null }[]>([])
+	const hasAddedFadeInAnimation = useRef(false)
 	const lastMouseCell = useRef<CellCoordinates>()
 	const lastMouseButton = useRef<MouseButtonType | null>(null)
 	const colors = useRef<Record<string, string>>()
@@ -258,7 +259,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 				startTime: null
 			})
 		})
-		requestAnimationFrame((timestamp) => { doAnimation(timestamp) })
+		requestAnimationFrame((ts) => { doAnimation(ts) })
 	}, [doAnimation])
 
 	const resizeCanvas = useCallback(() => {
@@ -362,9 +363,13 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 	}, [resizeCanvas, theme])
 
 	useEffect(() => {
-		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
-		if (!notPlayable) addAnimations([{ type: 'fadein_long' }])
+		if (!hasAddedFadeInAnimation.current) {
+			addAnimations([{ type: 'fadein_long' }])
+			hasAddedFadeInAnimation.current = true
+		}
+	}, [addAnimations])
 
+	useEffect(() => {
 		window.addEventListener('resize', resizeCanvas, false)
 		o9n.orientation.addEventListener('change', resizeCanvas)
 
@@ -372,7 +377,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 			window.removeEventListener('resize', resizeCanvas)
 			o9n.orientation.removeEventListener('change', resizeCanvas)
 		}
-	}, [addAnimations, notPlayable, resizeCanvas, theme])
+	}, [resizeCanvas])
 
 	useEffect(() => {
 		if (paused) {
