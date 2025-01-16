@@ -1,4 +1,4 @@
-import { commonDetectErrorsFromSolution, commonRenderCellValueCandidates } from "./Common"
+import { commonDetectErrorsFromSolution, commonRenderCellValueAndCandidates } from "./Common"
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits } from "./SudokuX"
@@ -13,7 +13,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -37,7 +37,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [killerResize, killerCalculateCageVectors],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, killerRenderCagesAndCageValues, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, killerRenderCagesAndCageValues, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -61,7 +61,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
-            unpaused: [classicRenderCellBackground, sudokuXRenderDiagonals, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
+            unpaused: [classicRenderCellBackground, sudokuXRenderDiagonals, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
             after: [classicRenderBorders],
         },
@@ -85,7 +85,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             onResize: [sandwichResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [sandwichRenderBackground],
-            unpaused: [classicRenderCellBackground, commonRenderCellValueCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
+            unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
             paused: [classicRenderPaused],
             after: [sandwichRenderBorders],
         },

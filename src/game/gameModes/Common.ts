@@ -69,7 +69,7 @@ export function dashedLine(ctx: CanvasRenderingContext2D, c1: CellCoordinates, c
     else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
 }
 
-export function commonRenderCellValueCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
+export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.value > 0) {
             //Value

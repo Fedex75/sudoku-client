@@ -44,6 +44,10 @@ export type HistoryItem = {
     board: string
     fullNotation: boolean
     colorGroups: string
+    killer__cageErrors: string
+    sandwich__visibleHorizontalClues: string
+    sandwich__visibleVerticalClues: string
+    sandwich__lateralCluesErrors: string
 }
 
 export type History = HistoryItem[]
@@ -74,6 +78,7 @@ export type GameData = {
     sandwich__verticalClues: number[]
     sandwich__visibleHorizontalClues: boolean[]
     sandwich__visibleVerticalClues: boolean[]
+    sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
 }
 
 export type RawGameData = {

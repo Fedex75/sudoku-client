@@ -367,7 +367,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 			addAnimations([{ type: 'fadein_long' }])
 			hasAddedFadeInAnimation.current = true
 		}
-	}, [addAnimations])
+	}, [addAnimations, notPlayable])
 
 	useEffect(() => {
 		window.addEventListener('resize', resizeCanvas, false)
@@ -387,7 +387,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 		} else {
 			if (currentAnimations.current.length === 0) addAnimations([{ type: 'fadein' }])
 		}
-	}, [paused, addAnimations])
+	}, [paused, addAnimations, notPlayable])
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)

@@ -33,6 +33,7 @@ export default class Board {
 	sandwich__verticalClues: number[]
 	sandwich__visibleHorizontalClues: boolean[]
 	sandwich__visibleVerticalClues: boolean[]
+	sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -55,6 +56,7 @@ export default class Board {
 		this.sandwich__verticalClues = []
 		this.sandwich__visibleHorizontalClues = []
 		this.sandwich__visibleVerticalClues = []
+		this.sandwich__lateralCluesErrors = { horizontal: [], vertical: [] }
 
 		if (isGameData(data)) {
 			this.mode = data.mode
@@ -69,17 +71,21 @@ export default class Board {
 			this.mission = data.mission
 			this.clues = data.clues
 			this.solution = data.solution
-			this.killer__cages = data.killer__cages
-			this.sandwich__horizontalClues = data.sandwich__horizontalClues
-			this.sandwich__verticalClues = data.sandwich__verticalClues
-			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
-			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
-			this.killer__cageErrors = data.killer__cageErrors
 			this.timer = data.timer
 			this.board = data.board
 			this.selectedCells = data.selectedCells
 			this.history = data.history
 			this.colorGroups = data.colorGroups
+
+			this.killer__cages = data.killer__cages
+			this.killer__cageErrors = data.killer__cageErrors
+
+			this.sandwich__horizontalClues = data.sandwich__horizontalClues
+			this.sandwich__verticalClues = data.sandwich__verticalClues
+			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
+			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
+			this.sandwich__lateralCluesErrors = data.sandwich__lateralCluesErrors
+
 			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 			this.ruleset.game.checkErrors(this)
@@ -141,15 +147,24 @@ export default class Board {
 		this.history.push({
 			board: JSON.stringify(this.board),
 			fullNotation: this.fullNotation,
-			colorGroups: JSON.stringify(this.colorGroups)
+			colorGroups: JSON.stringify(this.colorGroups),
+			killer__cageErrors: JSON.stringify(this.killer__cageErrors),
+			sandwich__lateralCluesErrors: JSON.stringify(this.sandwich__lateralCluesErrors),
+			sandwich__visibleHorizontalClues: JSON.stringify(this.sandwich__visibleHorizontalClues),
+			sandwich__visibleVerticalClues: JSON.stringify(this.sandwich__visibleVerticalClues),
 		})
 	}
 
 	popBoard() {
 		if (this.history.length > 0) {
-			this.board = JSON.parse(this.history[this.history.length - 1].board)
-			this.fullNotation = this.history[this.history.length - 1].fullNotation
-			this.colorGroups = JSON.parse(this.history[this.history.length - 1].colorGroups)
+			const item = this.history[this.history.length - 1]
+			this.board = JSON.parse(item.board)
+			this.fullNotation = item.fullNotation
+			this.colorGroups = JSON.parse(item.colorGroups)
+			this.killer__cageErrors = JSON.parse(item.killer__cageErrors)
+			this.sandwich__lateralCluesErrors = JSON.parse(item.sandwich__lateralCluesErrors)
+			this.sandwich__visibleHorizontalClues = JSON.parse(item.sandwich__visibleHorizontalClues)
+			this.sandwich__visibleVerticalClues = JSON.parse(item.sandwich__visibleVerticalClues)
 			this.history.pop()
 		}
 	}
