@@ -3,7 +3,6 @@ import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
-import { classicGetVisibleCells } from "./Classic"
 import { commonDetectErrorsByVisibility, drawSVGNumber } from "./Common"
 
 export function sandwichInitGameData({ game, data }: InitGameProps) {
