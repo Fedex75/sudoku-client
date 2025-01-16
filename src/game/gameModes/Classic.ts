@@ -1,5 +1,5 @@
 import { indexOfCoordsInArray } from "../../utils/CoordsUtils"
-import { BoardAnimation, Cell, CellCoordinates, InitGameProps, RendererProps, StateProps } from "../../utils/DataTypes"
+import { Cell, CellCoordinates, InitGameProps, RendererProps, StateProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
@@ -164,25 +164,25 @@ export function classicGetVisibleCells(game: Board, c: CellCoordinates): CellCoo
     return visibleCells
 }
 
-export function classicCheckRowAnimation(game: Board, c: CellCoordinates): BoardAnimation[] {
+export function classicCheckRowAnimation(game: Board, c: CellCoordinates) {
     for (let i = 0; i < game.nSquares; i++) {
         if (game.get({ x: i, y: c.y }).value === 0) return []
     }
-    return [{ type: 'row', center: c }]
+    game.animations.push({ type: 'row', center: c })
 }
 
-export function classicCheckColumnAnimation(game: Board, c: CellCoordinates): BoardAnimation[] {
+export function classicCheckColumnAnimation(game: Board, c: CellCoordinates) {
     for (let i = 0; i < game.nSquares; i++) {
         if (game.get({ x: c.x, y: i }).value === 0) return []
     }
-    return [{ type: 'col', center: c }]
+    game.animations.push({ type: 'col', center: c })
 }
 
-export function classicCheckBoxAnimation(game: Board, c: CellCoordinates): BoardAnimation[] {
+export function classicCheckBoxAnimation(game: Board, c: CellCoordinates) {
     for (const cell of game.ruleset.game.getBoxCellsCoordinates(c)) {
         if (game.get(cell).value === 0) return []
     }
-    return [{ type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3) }]
+    game.animations.push({ type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3) })
 }
 
 export function classicGetBoxes(game: Board): CellCoordinates[][] {
@@ -288,7 +288,7 @@ export function classicCalculatePossibleValues(game: Board) {
                 for (const vc of cg.visibleCells) {
                     if (game.get(vc).colorGroupIndex !== cgi) {
                         game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
-                        for (const note of notes) game.setNote([vc], note, false)
+                        if (SettingsHandler.settings.showPossibleValues) for (const note of notes) game.setNote([vc], note, false)
                     }
                 }
             }

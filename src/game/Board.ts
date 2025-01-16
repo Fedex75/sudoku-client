@@ -1,7 +1,7 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOfCoordsInArray } from "../utils/CoordsUtils"
 import { rulesets } from "./gameModes/Rulesets"
@@ -18,13 +18,17 @@ export default class Board {
 	version: number = 0;
 	ruleset: Ruleset
 
-	board: BoardMatrix
+	private board: BoardMatrix
 	selectedCells: CellCoordinates[]
 	timer: number
 
+	private stash: HistoryItem | null
+	hasChanged: boolean
 	history: History
 	fullNotation: boolean
 	colorGroups: ColorGroup[]
+
+	animations: BoardAnimation[]
 
 	killer__cages: CellCoordinates[][]
 	killer__cageErrors: number[]
@@ -50,6 +54,9 @@ export default class Board {
 		this.clues = ''
 		this.solution = ''
 		this.colorGroups = []
+		this.stash = null
+		this.hasChanged = false
+		this.animations = []
 
 		this.killer__cages = []
 		this.killer__cageErrors = []
@@ -94,7 +101,7 @@ export default class Board {
 
 			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
-			this.ruleset.game.checkErrors(this)
+			this.checkComplete()
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
@@ -108,6 +115,9 @@ export default class Board {
 		this.board = []
 		this.timer = 0
 		this.colorGroups = []
+		this.stash = null
+		this.hasChanged = false
+		this.animations = []
 
 		for (let x = 0; x < this.nSquares; x++) {
 			this.board.push(Array(this.nSquares).fill(null))
@@ -131,7 +141,7 @@ export default class Board {
 		}
 
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
-		this.ruleset.game.checkErrors(this)
+		this.checkComplete()
 	}
 
 	getCompletedNumbers() {
@@ -149,8 +159,8 @@ export default class Board {
 		return completedNumbers
 	}
 
-	pushBoard() {
-		this.history.push({
+	stashBoard() {
+		this.stash = {
 			board: JSON.stringify(this.board),
 			fullNotation: this.fullNotation,
 			colorGroups: JSON.stringify(this.colorGroups),
@@ -159,7 +169,16 @@ export default class Board {
 			sandwich__visibleHorizontalClues: JSON.stringify(this.sandwich__visibleHorizontalClues),
 			sandwich__visibleVerticalClues: JSON.stringify(this.sandwich__visibleVerticalClues),
 			sudokuX__diagonalErrors: JSON.stringify(this.sudokuX__diagonalErrors)
-		})
+		}
+		this.hasChanged = false
+	}
+
+	pushBoard() {
+		if (this.stash && this.hasChanged) {
+			this.history.push({ ...this.stash })
+			this.hasChanged = false
+			if (process.env.NODE_ENV === 'development') this.saveToLocalStorage()
+		}
 	}
 
 	popBoard() {
@@ -218,10 +237,8 @@ export default class Board {
 		return false
 	}
 
-	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): [boolean | null, BoardAnimation[]] {
-		let hasChanged = false
+	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): boolean | null {
 		let finalNoteState: boolean | null = null
-		let animations: BoardAnimation[] = []
 
 		for (const c of coords) {
 			const cell = this.get(c)
@@ -230,13 +247,13 @@ export default class Board {
 				//Check if only available place in any unit
 				if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInAnyUnit(c, n)) {
 					finalNoteState = true
-					animations = animations.concat(this.setValue([c], n))
-					hasChanged = true
+					this.setValue([c], n)
+					this.hasChanged = true
 				} else if (cell.notes.includes(n)) {
 					if (state !== true) {
 						//Remove note
 						this.get(c).notes = cell.notes.filter(note => note !== n)
-						hasChanged = true
+						this.hasChanged = true
 						if (
 							(
 								(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
@@ -245,7 +262,7 @@ export default class Board {
 							this.get(c).notes.length === 1
 						) {
 							finalNoteState = true
-							animations = animations.concat(this.setValue([c], this.get(c).notes[0]))
+							this.setValue([c], this.get(c).notes[0])
 						}
 					}
 				} else if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
@@ -254,24 +271,19 @@ export default class Board {
 						this.get(c).notes.push(n)
 						this.checkFullNotation(false)
 						finalNoteState = true
-						hasChanged = true
+						this.hasChanged = true
 					}
 				}
 			}
 		}
 
-		if (hasChanged) for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
-
 		if (coords.length === 1) {
-			return [finalNoteState, animations]
+			return finalNoteState
 		}
-		return [null, []]
+		return null
 	}
 
-	setValue(coords: CellCoordinates[], s: number): BoardAnimation[] {
-		let hasChanged = false
-		let animations: BoardAnimation[] = []
-
+	setValue(coords: CellCoordinates[], s: number) {
 		for (const c of coords) {
 			const cell = this.get(c)
 			if (!cell.clue && cell.value !== s) {
@@ -279,7 +291,7 @@ export default class Board {
 
 				cell.value = s
 				cell.notes = []
-				hasChanged = true
+				this.hasChanged = true
 				for (const visibleCell of visibleCells) {
 					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([visibleCell], s, false, false)
 				}
@@ -300,40 +312,26 @@ export default class Board {
 				}
 
 				//Check animations
-				for (const func of this.ruleset.game.checkAnimations) {
-					animations = animations.concat(func(this, c))
-				}
+				for (const func of this.ruleset.game.checkAnimations) func(this, c)
 			}
 		}
-
-		if (hasChanged) {
-			for (const func of this.ruleset.game.afterValuesChanged) animations = animations.concat(func(this))
-			this.ruleset.game.checkErrors(this)
-
-			if (this.checkComplete()) {
-				animations = [{ type: 'board', center: coords[0] }]
-				GameHandler.setComplete()
-			}
-		}
-
-		return animations
 	}
 
 	hint(coords: CellCoordinates[]) {
-		let animations: BoardAnimation[] = []
 		for (const c of coords) {
-			if (this.get(c).solution > 0) {
-				animations.push(...(this.setValue([c], this.get(c).solution)))
+			const cell = this.get(c)
+			if (!cell.clue && cell.solution > 0) {
+				this.setValue([c], this.get(c).solution)
 				this.get(c).clue = true
+				this.hasChanged = true
 			}
 		}
-		return animations
 	}
 
 	erase(coords: CellCoordinates[]) {
 		for (const c of coords) {
 			const cell = this.get(c)
-			if (!cell.clue && (cell.value > 0 || cell.notes.length > 0)) {
+			if (!cell.clue && (cell.value > 0 || cell.notes.length > 0 || cell.color !== 'default')) {
 				cell.value = 0
 				cell.notes = []
 				cell.color = 'default'
@@ -341,11 +339,10 @@ export default class Board {
 				if (cell.colorGroupIndex !== -1) {
 					this.removeColorGroups(new Set([cell.colorGroupIndex]))
 				}
+
+				this.hasChanged = true
 			}
 		}
-
-		for (const func of this.ruleset.game.afterValuesChanged) func(this)
-		this.ruleset.game.checkErrors(this)
 	}
 
 	calculateHighlightedCells(lockedInput: number) {
@@ -404,21 +401,24 @@ export default class Board {
 		if (GameHandler.complete) return
 		const cell = this.get(coords)
 		if (cell.color !== newColor) {
-			this.board[coords.x][coords.y].color = newColor
-			for (const func of this.ruleset.game.afterValuesChanged) func(this)
-			this.ruleset.game.checkErrors(this)
-			this.saveToLocalStorage()
+			this.get(coords).color = newColor
+			this.hasChanged = true
 		}
 	}
 
 	clearColors() {
-		this.iterateAllCells(cell => { cell.color = 'default' })
+		this.iterateAllCells(cell => {
+			if (cell.color !== 'default') {
+				cell.color = 'default'
+				cell.colorGroupIndex = -1
+				this.hasChanged = true
+			}
+		})
 		this.colorGroups = []
-		this.iterateAllCells(cell => { cell.colorGroupIndex = -1 })
 	}
 
 	checkComplete(): boolean {
-		this.ruleset.game.checkErrors(this)
+		this.checkErrors()
 		let complete = true
 		this.iterateAllCells((cell, coords, exit) => {
 			if (cell.value === 0 || cell.isError) {
@@ -493,5 +493,9 @@ export default class Board {
 			}
 		}
 		this.colorGroups = this.colorGroups.filter((_, index) => !indices.has(index))
+	}
+
+	checkErrors() {
+		this.ruleset.game.checkErrors(this)
 	}
 }

@@ -197,9 +197,9 @@ export interface Ruleset {
         initBoardMatrix: ((game: Board) => void)[]
         getVisibleCells: (game: Board, c: CellCoordinates) => CellCoordinates[]
         getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
-        checkAnimations: ((game: Board, c: CellCoordinates) => BoardAnimation[])[]
+        checkAnimations: ((game: Board, c: CellCoordinates) => void)[]
         getBoxes: (game: Board) => CellCoordinates[][]
-        afterValuesChanged: ((game: Board) => BoardAnimation[])[]
+        afterValuesChanged: ((game: Board) => void)[]
         checkErrors: (game: Board) => void
         iterateAllCells: (game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
         getCellUnits: (game: Board, c: CellCoordinates) => CellCoordinates[][]

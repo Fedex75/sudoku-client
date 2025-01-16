@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
-import CommonCanvas from "./Canvas"
-import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
+import Canvas from "./Canvas"
+import { CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { Navigate } from "react-router"
 import { AccentColor, ColorName } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
@@ -47,7 +47,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	const updateCalculatorValue = useCallback(() => {
 		if (!GameHandler.game) return
 
-		if (GameHandler.game.mode !== 'killer' || GameHandler.game.selectedCells.length < 2) {
+		if (GameHandler.game.selectedCells.length < 2) {
 			setCalculatorValue(0)
 			return
 		}
@@ -59,7 +59,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 			for (const c of GameHandler.game.selectedCells) {
 				const cell = GameHandler.game.get(c)
-				if (!selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
+				if (cell.value === 0 && !selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
 			}
 
 			for (const cageIndex of selectedCages) {
@@ -74,11 +74,17 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			return true
 		}
 
-		if (selectedCellsMatchCagesExactly()) {
+		if (GameHandler.game.mode !== 'killer' || selectedCellsMatchCagesExactly()) {
 			let sum = 0
 			for (const cageIndex of selectedCages) {
 				const firstCell = GameHandler.game.killer__cages[cageIndex][0]
-				sum += GameHandler.game.get(firstCell).cageValue!
+				sum += GameHandler.game.get(firstCell).cageValue || 0
+			}
+			for (const c of GameHandler.game.selectedCells) {
+				const cell = GameHandler.game.get(c)
+				if (cell.value > 0 && !selectedCages.includes(cell.cageIndex!)) {
+					sum += cell.value
+				}
 			}
 			setCalculatorValue(sum)
 		} else {
@@ -105,9 +111,58 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		setCompletedNumbers(GameHandler.game.getCompletedNumbers())
 	}, [])
 
+	const updateMagicWandMode = useCallback(() => {
+		if (!GameHandler.game) return
+
+		if (colorMode) {
+			setMagicWandMode('clearColors')
+		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
+			setMagicWandMode('links')
+		} else if (GameHandler.game.mode === 'killer' && GameHandler.game.selectedCells.length > 1) {
+			setMagicWandMode('calculator')
+		} else {
+			setMagicWandMode('disabled')
+			setShowLinks(false)
+		}
+		updateCalculatorValue()
+	}, [colorMode, lockedInput, updateCalculatorValue])
+
+	const handleUserInteraction = useCallback((func: () => void, lastInteractionCoords: CellCoordinates | null) => {
+		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+
+		GameHandler.game.stashBoard()
+
+		func()
+
+		if (GameHandler.game.hasChanged) {
+			GameHandler.game.pushBoard()
+
+			do {
+				GameHandler.game.hasChanged = false
+				for (const func of GameHandler.game.ruleset.game.afterValuesChanged) func(GameHandler.game)
+			} while (GameHandler.game.hasChanged)
+
+			updatePossibleValues()
+
+			if (GameHandler.game.checkComplete()) {
+				GameHandler.game.animations = [{ type: 'board', center: lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) } }]
+				GameHandler.setComplete()
+				handleComplete()
+			}
+
+			if (GameHandler.game.animations.length > 0) {
+				canvasRef.current?.doAnimations(GameHandler.game.animations)
+				GameHandler.game.animations = []
+			}
+		}
+
+		updateMagicWandMode()
+
+		setRender(r => r === 100 ? 0 : r + 1)
+	}, [handleComplete, updateMagicWandMode, updatePossibleValues])
+
 	const handleSetColor = useCallback((coords: CellCoordinates[], color: ColorName = accentColor) => {
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || coords.length === 0) return
-		GameHandler.game.pushBoard()
 
 		let coincidence: 'none' | 'partial' | 'full' = 'none'
 		let selectedGroups: number[] = []
@@ -169,31 +224,10 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				for (const c of coords) GameHandler.game.setColor(c, newColor)
 				break
 		}
-
-		updatePossibleValues()
-
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [accentColor, updatePossibleValues])
-
-	const updateMagicWandMode = useCallback(() => {
-		if (!GameHandler.game) return
-		if (colorMode) {
-			setMagicWandMode('clearColors')
-		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
-			setMagicWandMode('links')
-		} else if (GameHandler.game.mode === 'killer' && GameHandler.game.selectedCells.length > 1) {
-			setMagicWandMode('calculator')
-		} else {
-			setMagicWandMode('disabled')
-			setShowLinks(false)
-		}
-		updateCalculatorValue()
-	}, [colorMode, lockedInput, updateCalculatorValue])
+	}, [accentColor])
 
 	const onCanvasClick = useCallback((coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => {
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current) return
-
-		let animations: BoardAnimation[] = []
 
 		if (coords.length === 2) {
 			//Select rectangular area
@@ -208,17 +242,17 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				GameHandler.game.selectCell(coords[0])
 			} else if (type === 'tertiary') {
 				// Middle mouse button, set color
-				handleSetColor(coords)
+				handleUserInteraction(() => { handleSetColor(coords) }, coords[0])
 			} else {
 				if (colorMode) {
 					if (lockedColor) {
 						if (hold) {
 							if ((cell.color === lockedColor) !== colorDragMode) {
-								handleSetColor(coords, lockedColor)
+								handleUserInteraction(() => { handleSetColor(coords, lockedColor) }, coords[0])
 							}
 						} else {
 							setColorDragMode(cell.color !== lockedColor)
-							handleSetColor(coords, lockedColor)
+							handleUserInteraction(() => { handleSetColor(coords, lockedColor) }, coords[0])
 							GameHandler.game.selectedCells = coords
 						}
 					} else {
@@ -245,14 +279,12 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
 									if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
-										GameHandler.game.pushBoard();
-										[, animations] = GameHandler.game.setNote(coords, lockedInput)
+										GameHandler.game.setNote(coords, lockedInput)
 									}
 								} else {
 									// If we're not in note mode or the cell has only one possible value, set the value if the cell doesn't already have a value (this helps with dragging)
 									if (cell.value === 0) {
-										GameHandler.game.pushBoard()
-										animations = GameHandler.game.setValue([coords[0]], lockedInput)
+										GameHandler.game.setValue([coords[0]], lockedInput)
 									}
 								}
 							}
@@ -265,21 +297,18 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 								if ((noteMode || type === 'secondary')) {
 									if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1) {
 										if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
-											GameHandler.game.pushBoard()
-											animations = GameHandler.game.setValue(coords, lockedInput)
+											GameHandler.game.setValue(coords, lockedInput)
 										}
 									} else {
 										if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
 											let newNoteMode
-											GameHandler.game.pushBoard();
-											[newNoteMode, animations] = GameHandler.game.setNote(coords, lockedInput)
+											newNoteMode = GameHandler.game.setNote(coords, lockedInput)
 											setNoteDragMode(newNoteMode)
 										}
 									}
 								} else {
 									if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
-										GameHandler.game.pushBoard()
-										animations = GameHandler.game.setValue(coords, lockedInput)
+										GameHandler.game.setValue(coords, lockedInput)
 									}
 								}
 							}
@@ -288,17 +317,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				}
 			}
 		}
-
-		updatePossibleValues()
-		updateMagicWandMode()
-
-		if (animations.length > 0) {
-			canvasRef.current?.doAnimations(animations)
-			if (animations[0].type === 'board') handleComplete()
-		}
-
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [colorDragMode, colorMode, handleComplete, handleSetColor, lockedColor, lockedInput, noteDragMode, noteMode, selectMode, updatePossibleValues, updateMagicWandMode])
+	}, [colorDragMode, colorMode, handleSetColor, lockedColor, lockedInput, noteDragMode, noteMode, selectMode, handleUserInteraction])
 
 	const onNote = useCallback(() => {
 		setNoteMode(n => !n)
@@ -306,9 +325,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 	const onHint = useCallback(() => {
 		if (GameHandler.complete || !GameHandler.game) return
-		GameHandler.game.pushBoard()
 		GameHandler.game.hint(GameHandler.game.selectedCells)
-		setRender(r => r === 100 ? 0 : r + 1)
 	}, [])
 
 	const onMagicWand = useCallback(() => {
@@ -318,12 +335,12 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				setShowLinks(l => !l)
 				break
 			case 'clearColors':
-				GameHandler.game.pushBoard()
-				GameHandler.game.clearColors()
-				setRender(r => r === 100 ? 0 : r + 1)
+				handleUserInteraction(() => {
+					if (GameHandler.game && !GameHandler.complete) GameHandler.game.clearColors()
+				}, null)
 				break
 		}
-	}, [magicWandMode])
+	}, [magicWandMode, handleUserInteraction])
 
 	const onSelect = useCallback(() => {
 		if (!GameHandler.game) return
@@ -349,59 +366,41 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	}, [colorMode])
 
 	const onColorButtonClick = useCallback((color: ColorName, type: "primary" | "secondary") => {
-		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
-
 		if (type === 'primary') {
-			handleSetColor(GameHandler.game.selectedCells, color)
+			handleUserInteraction(() => { if (GameHandler.game) handleSetColor(GameHandler.game.selectedCells, color) }, (GameHandler.game ? (GameHandler.game.selectedCells.length > 0 ? GameHandler.game.selectedCells[0] : null) : null))
 		} else {
 			setLockedColor(lc => lc === color ? null : color)
 		}
-	}, [handleSetColor])
+	}, [handleSetColor, handleUserInteraction])
 
 	const onUndo = useCallback(() => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
 
 		GameHandler.game.popBoard()
 		canvasRef.current.stopAnimations()
-		updatePossibleValues()
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [updatePossibleValues])
+	}, [])
 
 	const onErase = useCallback(() => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
-		GameHandler.game.pushBoard()
+
 		GameHandler.game.erase(GameHandler.game.selectedCells)
-		updatePossibleValues()
 		canvasRef.current.stopAnimations()
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [updatePossibleValues])
+	}, [])
 
 	const onNumpadButtonClick = useCallback((number: number, type: MouseButtonType) => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
 
-		let animations: BoardAnimation[] = []
-
 		if (type === 'primary') {
 			if (possibleValues.includes(number)) {
 				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
-					GameHandler.game.pushBoard();
-					[, animations] = GameHandler.game.setNote(GameHandler.game.selectedCells, number)
+					GameHandler.game.setNote(GameHandler.game.selectedCells, number)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
-					GameHandler.game.pushBoard()
-					animations = GameHandler.game.setValue(GameHandler.game.selectedCells, number)
+					GameHandler.game.setValue(GameHandler.game.selectedCells, number)
 				}
 			}
 		} else setLockedInput(li => li === number ? 0 : number)
-		updatePossibleValues()
-
-		if (animations.length > 0) {
-			canvasRef.current.doAnimations(animations)
-			if (animations[0].type === 'board') handleComplete()
-		}
-
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [handleComplete, noteMode, possibleValues, updatePossibleValues, lockedInput])
+	}, [noteMode, possibleValues, lockedInput])
 
 	useEffect(() => {
 		updatePossibleValues()
@@ -430,18 +429,28 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	return (
 		<div className="game">
 			<div className="sudoku">
-				<CommonCanvas ref={canvasRef} onClick={onCanvasClick} showLinks={showLinks} game={GameHandler.game} lockedInput={lockedInput} theme={theme} accentColor={accentColor} paused={paused} ruleset={ruleset} />
+				<Canvas
+					ref={canvasRef}
+					onClick={(coords, type, hold) => { handleUserInteraction(() => { onCanvasClick(coords, type, hold) }, coords[0]) }}
+					showLinks={showLinks}
+					game={GameHandler.game}
+					lockedInput={lockedInput}
+					theme={theme}
+					accentColor={accentColor}
+					paused={paused}
+					ruleset={ruleset}
+				/>
 			</div>
 			<Numpad
-				onUndo={onUndo}
-				onErase={onErase}
+				onUndo={() => { handleUserInteraction(onUndo, null) }}
+				onErase={() => { handleUserInteraction(onErase, null) }}
 				onNote={onNote}
-				onHint={onHint}
+				onHint={() => { handleUserInteraction(onHint, null) }}
 				onMagicWand={onMagicWand}
 				onSelect={onSelect}
 				onColor={onColor}
 				onColorButtonClick={onColorButtonClick}
-				onNumpadButtonClick={onNumpadButtonClick}
+				onNumpadButtonClick={(number, type) => { handleUserInteraction(() => { onNumpadButtonClick(number, type) }, null) }}
 
 				noteHighlighted={noteMode}
 				magicWandHighlighted={showLinks}
@@ -450,7 +459,14 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				selectHighlighted={selectMode}
 
 				undoDisabled={GameHandler.complete || GameHandler.game.history.length === 0}
-				eraseDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => (GameHandler.game!.get(c).clue || (GameHandler.game!.get(c).value === 0 && GameHandler.game!.get(c).notes.length === 0)))}
+				eraseDisabled={
+					GameHandler.complete ||
+					GameHandler.game.selectedCells.length === 0 ||
+					GameHandler.game.selectedCells.every(c => {
+						const cell = GameHandler.game!.get(c)
+						return cell.clue || (cell.value === 0 && cell.notes.length === 0 && cell.color === 'default')
+					})
+				}
 				hintDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => GameHandler.game!.get(c).clue || GameHandler.game!.get(c).solution === 0)}
 				colorDisabled={false}
 
