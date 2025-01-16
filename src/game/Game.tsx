@@ -90,6 +90,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		if (!GameHandler.game) return
 
 		let newPossibleValues: number[] = []
+
 		if (SettingsHandler.settings.showPossibleValues) {
 			for (const c of GameHandler.game.selectedCells) {
 				for (const v of GameHandler.game.get(c).possibleValues) {
@@ -97,9 +98,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				}
 			}
 		} else {
-			for (let i = 1; i <= GameHandler.game.nSquares; i++) {
-				newPossibleValues.push(i)
-			}
+			for (let i = 0; i < GameHandler.game.nSquares; i++) newPossibleValues.push(i + 1)
 		}
 
 		setPossibleValues(newPossibleValues)
@@ -265,7 +264,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 							} else {
 								if ((noteMode || type === 'secondary')) {
 									if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1) {
-										if (cellPossibleValues.includes(lockedInput)) {
+										if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
 											GameHandler.game.pushBoard()
 											animations = GameHandler.game.setValue(coords, lockedInput)
 										}
@@ -278,7 +277,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 										}
 									}
 								} else {
-									if (cellPossibleValues.includes(lockedInput)) {
+									if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
 										GameHandler.game.pushBoard()
 										animations = GameHandler.game.setValue(coords, lockedInput)
 									}

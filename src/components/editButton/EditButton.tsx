@@ -35,17 +35,20 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
 			}}
 		>
 			{icon}
-			{
+			{/*
 				number !== undefined ?
 					<div style={{ display: 'flex', flexFlow: 'row', gap: '5px', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
 						{
-							/*number.toString().split('').map(digit => (
+							number.toString().split('').map(digit => (
 								<DigitSVG key={digit} digit={digit} className='edit-buttons__button__digit' />
-							))*/
-							number
+							))
 						}
 					</div>
 					: null
+			*/
+			}
+			{
+				number !== undefined ? number : null
 			}
 		</div>
 	)

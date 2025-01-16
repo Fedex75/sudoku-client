@@ -35,6 +35,8 @@ export default class Board {
 	sandwich__visibleVerticalClues: boolean[]
 	sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
 
+	sudokuX__diagonalErrors: [boolean, boolean]
+
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
 		this.nSquares = nSquares
@@ -57,6 +59,8 @@ export default class Board {
 		this.sandwich__visibleHorizontalClues = []
 		this.sandwich__visibleVerticalClues = []
 		this.sandwich__lateralCluesErrors = { horizontal: [], vertical: [] }
+
+		this.sudokuX__diagonalErrors = [false, false]
 
 		if (isGameData(data)) {
 			this.mode = data.mode
@@ -85,6 +89,8 @@ export default class Board {
 			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
 			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
 			this.sandwich__lateralCluesErrors = data.sandwich__lateralCluesErrors
+
+			this.sudokuX__diagonalErrors = data.sudokuX__diagonalErrors
 
 			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
@@ -152,6 +158,7 @@ export default class Board {
 			sandwich__lateralCluesErrors: JSON.stringify(this.sandwich__lateralCluesErrors),
 			sandwich__visibleHorizontalClues: JSON.stringify(this.sandwich__visibleHorizontalClues),
 			sandwich__visibleVerticalClues: JSON.stringify(this.sandwich__visibleVerticalClues),
+			sudokuX__diagonalErrors: JSON.stringify(this.sudokuX__diagonalErrors)
 		})
 	}
 
@@ -165,6 +172,7 @@ export default class Board {
 			this.sandwich__lateralCluesErrors = JSON.parse(item.sandwich__lateralCluesErrors)
 			this.sandwich__visibleHorizontalClues = JSON.parse(item.sandwich__visibleHorizontalClues)
 			this.sandwich__visibleVerticalClues = JSON.parse(item.sandwich__visibleVerticalClues)
+			this.sudokuX__diagonalErrors = JSON.parse(item.sudokuX__diagonalErrors)
 			this.history.pop()
 		}
 	}
@@ -294,11 +302,6 @@ export default class Board {
 				//Check animations
 				for (const func of this.ruleset.game.checkAnimations) {
 					animations = animations.concat(func(this, c))
-				}
-
-				//Eliminate possibleValues
-				for (const visibleCell of visibleCells) {
-					this.get(visibleCell).possibleValues = this.get(visibleCell).possibleValues.filter(n => n !== s)
 				}
 			}
 		}

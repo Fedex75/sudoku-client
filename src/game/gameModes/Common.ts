@@ -103,3 +103,17 @@ export function commonDetectErrorsFromSolution(game: Board) {
 
     return []
 }
+
+export function commonDetectErrorsByVisibility(game: Board) {
+    game.iterateAllCells(cell => { cell.isError = false })
+
+    game.iterateAllCells((cell, { x, y }) => {
+        for (const vc of game.ruleset.game.getVisibleCells(game, { x, y })) {
+            if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
+                cell.isError = true
+            }
+        }
+    })
+
+    return []
+}

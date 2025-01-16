@@ -48,6 +48,7 @@ export type HistoryItem = {
     sandwich__visibleHorizontalClues: string
     sandwich__visibleVerticalClues: string
     sandwich__lateralCluesErrors: string
+    sudokuX__diagonalErrors: string
 }
 
 export type History = HistoryItem[]
@@ -79,6 +80,8 @@ export type GameData = {
     sandwich__visibleHorizontalClues: boolean[]
     sandwich__visibleVerticalClues: boolean[]
     sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
+
+    sudokuX__diagonalErrors: [boolean, boolean]
 }
 
 export type RawGameData = {

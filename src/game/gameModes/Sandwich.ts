@@ -4,7 +4,7 @@ import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
 import { classicGetVisibleCells } from "./Classic"
-import { drawSVGNumber } from "./Common"
+import { commonDetectErrorsByVisibility, drawSVGNumber } from "./Common"
 
 export function sandwichInitGameData({ game, data }: InitGameProps) {
     game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
@@ -144,14 +144,6 @@ export function sandwichGetSumBetween1and9(game: Board, row: number, column: num
 }
 
 export function sandwichDetectErrors(game: Board) {
-    if (!SettingsHandler.settings.checkMistakes) return []
-
-    game.iterateAllCells((cell, { x, y }) => {
-        for (const vc of classicGetVisibleCells(game, { x, y })) {
-            cell.isError = ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value)
-        }
-    })
-
     for (let x = 0; x < game.nSquares; x++) {
         const [sum, minY, maxY] = sandwichGetSumBetween1and9(game, -1, x)
         game.sandwich__visibleVerticalClues[x] = true
@@ -179,6 +171,10 @@ export function sandwichDetectErrors(game: Board) {
             game.sandwich__visibleHorizontalClues[y] = false
         }
     }
+
+    if (!SettingsHandler.settings.checkMistakes) return []
+
+    commonDetectErrorsByVisibility(game)
 
     return []
 }
