@@ -27,7 +27,7 @@ type Props = {
   noteHighlighted: boolean
   magicWandHighlighted: boolean
   magicWandIcon: React.ReactNode
-  magicWandCalculatorValue: number
+  magicWandCalculatorValue: number | undefined
   selectHighlighted: boolean
   colorMode: boolean
 

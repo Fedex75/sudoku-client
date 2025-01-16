@@ -463,7 +463,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				possibleValues={possibleValues}
 				completedNumbers={completedNumbers}
 
-				magicWandCalculatorValue={calculatorValue}
+				magicWandCalculatorValue={magicWandMode === 'calculator' ? calculatorValue : undefined}
 			/>
 		</div>
 	)

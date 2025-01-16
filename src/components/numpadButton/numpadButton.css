@@ -44,3 +44,7 @@
 .numpad__button.color {
   color: white;
 }
+
+.numpad__button__digit {
+  height: 50%;
+}

@@ -4,18 +4,19 @@ import useLongPress from '../../utils/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { MouseButtonType } from '../../utils/DataTypes'
+import DigitSVG from '../../svg/digit'
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
 type Props = {
-	onClick: (number: number, type: MouseButtonType) => void;
-	number: number;
-	disabled: boolean;
-	hidden: boolean;
-	locked: boolean;
+	onClick: (number: number, type: MouseButtonType) => void
+	number: number
+	disabled: boolean
+	hidden: boolean
+	locked: boolean
 }
 
-export default function NunmpadButton({onClick, number, disabled, hidden, locked}: Props): React.JSX.Element{
+export default function NunmpadButton({ onClick, number, disabled, hidden, locked }: Props): React.JSX.Element {
 	const [onTouchStart, onTouchEnd] = useLongPress((type: MouseButtonType) => {
 		if (type === 'secondary' || !disabled) onClick(number, type)
 	}, 300)
@@ -45,8 +46,8 @@ export default function NunmpadButton({onClick, number, disabled, hidden, locked
 				onClick(number, 'secondary')
 			}}
 		>
-			{number}
-			{locked ? <FontAwesomeIcon icon={faLock} style={{position: 'absolute', right: 3, bottom: 3, fontSize: 16}}/> : null}
+			<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--theme-color)'} />
+			{locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
 		</div>
 	)
 }

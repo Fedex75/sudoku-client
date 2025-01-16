@@ -1,5 +1,6 @@
 import React from 'react'
 import './editButton.css'
+import DigitSVG from '../../svg/digit'
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
@@ -34,7 +35,17 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
 			}}
 		>
 			{icon}
-			{number || null}
+			{
+				number !== undefined ?
+					<div style={{ display: 'flex', flexFlow: 'row', gap: '5px', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+						{
+							number.toString().split('').map(digit => (
+								<DigitSVG key={digit} digit={digit} className='edit-buttons__button__digit' />
+							))
+						}
+					</div>
+					: null
+			}
 		</div>
 	)
 }
