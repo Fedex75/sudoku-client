@@ -1,6 +1,6 @@
 import { commonDetectErrorsFromSolution, commonRenderCellValueCandidates } from "./Common"
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
-import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages } from "./Killer"
+import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits } from "./SudokuX"
 import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
@@ -49,7 +49,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
             afterValuesChanged: [killerSolveLastInCages, classicCalculatePossibleValues],
-            checkErrors: commonDetectErrorsFromSolution,
+            checkErrors: killerCheckErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits,
             getAllUnits: classicGetAllUnits

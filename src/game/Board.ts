@@ -26,7 +26,7 @@ export default class Board {
 	fullNotation: boolean
 	colorGroups: ColorGroup[]
 
-	killer__cages: number[][][]
+	killer__cages: CellCoordinates[][]
 	killer__cageErrors: number[]
 
 	sandwich__horizontalClues: number[]

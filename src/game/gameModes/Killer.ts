@@ -5,7 +5,7 @@ import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
 import { classicGetVisibleCells } from "./Classic"
-import { dashedLine, drawSVGNumber } from "./Common"
+import { commonDetectErrorsFromSolution, dashedLine, drawSVGNumber } from "./Common"
 
 export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, squareSize }: RendererProps) {
     ctx.lineWidth = cageLineWidth
@@ -32,9 +32,9 @@ export function killerInitGameData({ game, data }: InitGameProps) {
     game.solution = solution
     game.killer__cages = []
     for (const cage of cages.split(',')) {
-        let newCage: number[][] = []
+        let newCage: CellCoordinates[] = []
         for (let i = 0; i < cage.length; i += 2) {
-            newCage.push([Number(cage[i]), Number(cage[i + 1])])
+            newCage.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
         }
         game.killer__cages.push(newCage)
     }
@@ -43,24 +43,20 @@ export function killerInitGameData({ game, data }: InitGameProps) {
 export function killerSolveLastInCages(game: Board) {
     let animations: BoardAnimation[] = []
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
-            let remaining = game.killer__cages[cageIndex].length
+        for (const cage of game.killer__cages) {
+            let remaining = cage.length
             let sum = 0
             let realSum = 0
-            game.killer__cages[cageIndex].forEach(coords => {
-                let x = coords[0]
-                let y = coords[1]
-                const cell = game.get({ x, y })
+            cage.forEach(coords => {
+                const cell = game.get(coords)
                 if (cell.value > 0) remaining--
                 sum += cell.value
                 if (cell.cageValue! > 0) realSum = cell.cageValue!
             })
             if (remaining === 1 && realSum - sum <= 9) {
-                game.killer__cages[cageIndex].forEach(coords => {
-                    let x = coords[0]
-                    let y = coords[1]
-                    if (game.get({ x, y }).value === 0) {
-                        animations.concat(game.setValue([{ x, y }], realSum - sum))
+                cage.forEach(coords => {
+                    if (game.get(coords).value === 0) {
+                        animations.concat(game.setValue([coords], realSum - sum))
                     }
                 })
             }
@@ -74,17 +70,16 @@ export function killerInitCages(game: Board) {
     game.killer__cageErrors = []
 
     for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
-        game.killer__cages[cageIndex].forEach((cell, cellIndex) => {
-            let x = cell[0]
-            let y = cell[1]
-            game.board[x][y].cageIndex = cageIndex
-            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.killer__cages[cageIndex].length === 1 && game.nSquares > 3) game.board[x][y].value = game.board[x][y].solution
+        game.killer__cages[cageIndex].forEach((coords, cellIndex) => {
+            const cell = game.get(coords)
+            cell.cageIndex = cageIndex
+            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.killer__cages[cageIndex].length === 1 && game.nSquares > 3) cell.value = cell.solution
             if (cellIndex === 0) {
                 let sum = 0
-                for (const cell2 of game.killer__cages[cageIndex]) sum += game.board[cell2[0]][cell2[1]].solution
-                game.board[x][y].cageValue = sum
+                for (const coords2 of game.killer__cages[cageIndex]) sum += game.get(coords2).solution
+                cell.cageValue = sum
             } else {
-                game.board[x][y].cageValue = 0
+                cell.cageValue = 0
             }
         })
     }
@@ -99,8 +94,7 @@ export function killerInitCages(game: Board) {
 export function killerGetVisibleCells(game: Board, c: CellCoordinates): CellCoordinates[] {
     let visibleCells = classicGetVisibleCells(game, c)
 
-    for (const cell of game.killer__cages[game.get(c).cageIndex!]) {
-        const coords = { x: cell[0], y: cell[1] }
+    for (const coords of game.killer__cages[game.get(c).cageIndex!]) {
         if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords)
     }
 
@@ -286,4 +280,14 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
     }
 
     rendererState.current.cageVectors = newCageVectors
+}
+
+export function killerCheckErrors(game: Board) {
+    commonDetectErrorsFromSolution(game)
+
+    game.killer__cageErrors = []
+
+    for (const cage of game.killer__cages) {
+
+    }
 }

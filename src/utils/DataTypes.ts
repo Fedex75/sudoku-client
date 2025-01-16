@@ -67,7 +67,7 @@ export type GameData = {
     version: number
     colorGroups: ColorGroup[]
 
-    killer__cages: number[][][]
+    killer__cages: CellCoordinates[][]
     killer__cageErrors: number[]
 
     sandwich__horizontalClues: number[]
