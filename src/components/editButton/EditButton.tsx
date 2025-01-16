@@ -1,6 +1,5 @@
 import React from 'react'
 import './editButton.css'
-import DigitSVG from '../../svg/digit'
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
