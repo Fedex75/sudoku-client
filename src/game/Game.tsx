@@ -65,7 +65,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			for (const cageIndex of selectedCages) {
 				const cage = GameHandler.game.killer__cages[cageIndex]
 				for (const cell of cage) {
-					if (indexOfCoordsInArray(GameHandler.game.selectedCells, { x: cell[0], y: cell[1] }) === -1) {
+					if (indexOfCoordsInArray(GameHandler.game.selectedCells, cell) === -1) {
 						return false
 					}
 				}
@@ -78,7 +78,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			let sum = 0
 			for (const cageIndex of selectedCages) {
 				const firstCell = GameHandler.game.killer__cages[cageIndex][0]
-				sum += GameHandler.game.get({ x: firstCell[0], y: firstCell[1] }).cageValue!
+				sum += GameHandler.game.get(firstCell).cageValue!
 			}
 			setCalculatorValue(sum)
 		} else {
@@ -137,9 +137,9 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 		switch (coincidence) {
 			case 'partial':
-				/* eslint-disable no-fallthrough */
 				// Eliminate all selected groups and then apply color
 				GameHandler.game.removeColorGroups(indicesToRemove)
+			/* eslint-disable no-fallthrough */
 			case 'none':
 				// Apply color
 				newColor = coords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color

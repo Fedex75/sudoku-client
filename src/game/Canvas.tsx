@@ -359,8 +359,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 				resizeObserver.disconnect()
 			}
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+	}, [resizeCanvas, theme])
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
@@ -373,8 +372,7 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 			window.removeEventListener('resize', resizeCanvas)
 			o9n.orientation.removeEventListener('change', resizeCanvas)
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+	}, [addAnimations, notPlayable, resizeCanvas, theme])
 
 	useEffect(() => {
 		if (paused) {
@@ -382,14 +380,12 @@ const CommonCanvas = forwardRef(({ onClick = () => { }, showLinks = false, game,
 		} else {
 			if (currentAnimations.current.length === 0) addAnimations([{ type: 'fadein' }])
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [paused])
+	}, [paused, addAnimations])
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
 		renderFrame()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [theme, accentColor])
+	}, [theme, accentColor, renderFrame])
 
 	useEffect(() => {
 		for (const func of ruleset.render.init) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth })

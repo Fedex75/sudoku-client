@@ -41,8 +41,7 @@ function App() {
 			document.body.removeEventListener('scroll', handleScroll)
 			if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => { }
 		}
-		// eslint-disable-next-line
-	}, [])
+	}, [setTheme])
 
 	return (
 		<div id='app' className='app' data-theme={theme} data-accent-color={accentColor} onClick={() => { }}>
