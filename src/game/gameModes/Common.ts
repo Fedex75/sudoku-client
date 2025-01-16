@@ -78,7 +78,7 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
             const highlightValue = (lockedInput === 0 && selectedCellsValues.includes(cell.value)) || lockedInput === cell.value
             ctx.strokeStyle = ctx.fillStyle =
                 cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
-                    highlightValue ? (cell.color === 'default' ? themes[theme].canvasNoteHighlightColor : 'white') :
+                    highlightValue ? (cell.color === 'default' ? themes[theme].canvasValueHighlightColor : 'white') :
                         cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
                             solutionColors[accentColor]
             if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
