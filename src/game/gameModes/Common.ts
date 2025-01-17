@@ -119,3 +119,11 @@ export function commonDetectErrorsByVisibility(game: Board) {
 
     return []
 }
+
+export function commonInitCellsCache(game: Board) {
+    for (const cg of game.colorGroups) {
+        for (const c of cg.members) {
+            game.get(c).colorGroups.push(cg)
+        }
+    }
+}

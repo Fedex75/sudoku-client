@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
 import Canvas from "./Canvas"
-import { CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
+import { CanvasRef, CellCoordinates, ColorGroup, KillerCage, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { Navigate } from "react-router"
 import { AccentColor, ColorName } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
@@ -11,7 +11,7 @@ import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
-import { indexOfCoordsInArray } from "../utils/CoordsUtils"
+import { indexOfCoordsInArray } from "../utils/Utils"
 
 type Props = {
 	theme: ThemeName
@@ -52,19 +52,18 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 			return
 		}
 
-		let selectedCages: number[] = []
+		let selectedCages: KillerCage[] = []
 
 		function selectedCellsMatchCagesExactly(): boolean {
 			if (!GameHandler.game) return false
 
 			for (const c of GameHandler.game.selectedCells) {
 				const cell = GameHandler.game.get(c)
-				if (cell.value === 0 && !selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
+				if (cell.value === 0 && cell.cage && !selectedCages.includes(cell.cage)) selectedCages.push(cell.cage)
 			}
 
-			for (const cageIndex of selectedCages) {
-				const cage = GameHandler.game.killer__cages[cageIndex]
-				for (const cell of cage) {
+			for (const cage of selectedCages) {
+				for (const cell of cage.members) {
 					if (indexOfCoordsInArray(GameHandler.game.selectedCells, cell) === -1) {
 						return false
 					}
@@ -76,13 +75,12 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 
 		if (GameHandler.game.mode !== 'killer' || selectedCellsMatchCagesExactly()) {
 			let sum = 0
-			for (const cageIndex of selectedCages) {
-				const firstCell = GameHandler.game.killer__cages[cageIndex][0]
-				sum += GameHandler.game.get(firstCell).cageValue || 0
+			for (const cage of selectedCages) {
+				sum += cage.sum
 			}
 			for (const c of GameHandler.game.selectedCells) {
 				const cell = GameHandler.game.get(c)
-				if (cell.value > 0 && !selectedCages.includes(cell.cageIndex!)) {
+				if (cell.value > 0 && cell.cage && !selectedCages.includes(cell.cage)) {
 					sum += cell.value
 				}
 			}
@@ -164,35 +162,32 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || coords.length === 0) return
 
 		let coincidence: 'none' | 'partial' | 'full' = 'none'
-		let selectedGroups: number[] = []
-		for (let i = 0; i < GameHandler.game.colorGroups.length; i++) {
-			const cg = GameHandler.game.colorGroups[i]
-
-			if (coincidence === 'none' && cg.cells.length === coords.length) {
+		let selectedGroups: ColorGroup[] = []
+		for (const cg of GameHandler.game.colorGroups) {
+			if (coincidence === 'none' && cg.members.length === coords.length) {
 				// Check if every cell in the colorGroup is in the selected coords
-				if (coords.every(c => GameHandler.game?.get(c).colorGroupIndex === i)) {
+				if (coords.every(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
 					coincidence = 'full'
-					selectedGroups = [i]
+					selectedGroups = [cg]
 					break
 				}
 			} else {
 				// Full coincidence is impossible, check if any cells in the group are selected
-				if (coords.some(c => GameHandler.game?.get(c).colorGroupIndex === i)) {
+				if (coords.some(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
 					coincidence = 'partial'
-					selectedGroups.push(i)
+					selectedGroups.push(cg)
 				}
 			}
 		}
-
-		const indicesToRemove = new Set(selectedGroups)
 
 		let newColor
 
 		switch (coincidence) {
 			case 'partial':
+
 				// Eliminate all selected groups and then apply color
-				GameHandler.game.removeColorGroups(indicesToRemove)
-			/* eslint-disable no-fallthrough */
+				GameHandler.game.removeColorGroups(selectedGroups)
+				break
 			case 'none':
 				// Apply color
 				newColor = coords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color
@@ -203,13 +198,15 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 						visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
 					}
 
-					GameHandler.game.colorGroups.push({
-						cells: [...coords],
+					const newColorGroup: ColorGroup = {
+						members: [...coords],
 						visibleCells
-					})
+					}
+
+					GameHandler.game.colorGroups.push(newColorGroup)
 
 					for (const cell of coords) {
-						GameHandler.game.get(cell).colorGroupIndex = GameHandler.game.colorGroups.length - 1
+						GameHandler.game.get(cell).colorGroups.push(newColorGroup)
 					}
 				}
 				for (const c of coords) GameHandler.game.setColor(c, newColor)
@@ -218,7 +215,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				// Change color and remove group if necessary
 				newColor = GameHandler.game.get(coords[0]).color === color ? 'default' : color
 				if (color === 'default') {
-					GameHandler.game.removeColorGroups(indicesToRemove)
+					GameHandler.game.removeColorGroups(selectedGroups)
 				}
 				for (const c of coords) GameHandler.game.setColor(c, newColor)
 				break
@@ -261,12 +258,11 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 					if (lockedInput === 0) {
 						// No locked input, so select this cell (or its color group) and set the locked input if applicable
 
-						const colorGroupIndex = GameHandler.game.get(coords[0]).colorGroupIndex
-						if (colorGroupIndex === -1) {
+						if (GameHandler.game.get(coords[0]).colorGroups.length === 0) {
 							GameHandler.game.selectedCells = coords
 						} else {
 							setSelectedCellBeforeSelectMode(coords[0])
-							GameHandler.game.selectedCells = [...GameHandler.game.colorGroups[colorGroupIndex].cells]
+							GameHandler.game.selectedCells = [...GameHandler.game.get(coords[0]).colorGroups[0].members]
 							setSelectMode(true)
 						}
 

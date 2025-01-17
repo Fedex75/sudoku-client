@@ -5,7 +5,7 @@ import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
 import Board from '../game/Board'
 import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
 
-const BOARD_API_VERSION = 6
+const BOARD_API_VERSION = 7
 const STORAGE_SCHEMA_VERSION = 4
 
 const missions: MissionsData = missionsData as MissionsData

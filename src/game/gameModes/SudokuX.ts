@@ -1,4 +1,4 @@
-import { indexOfCoordsInArray } from "../../utils/CoordsUtils"
+import { indexOfCoordsInArray } from "../../utils/Utils"
 import { InitGameProps, CellCoordinates, RendererProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"

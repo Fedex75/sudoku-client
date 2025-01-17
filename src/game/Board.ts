@@ -1,9 +1,9 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem, KillerCage } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
-import { indexOfCoordsInArray } from "../utils/CoordsUtils"
+import { indexOfCoordsInArray, removeByReference } from "../utils/Utils"
 import { rulesets } from "./gameModes/Rulesets"
 
 export default class Board {
@@ -30,8 +30,8 @@ export default class Board {
 
 	animations: BoardAnimation[]
 
-	killer__cages: CellCoordinates[][]
-	killer__cageErrors: number[]
+	killer__cages: KillerCage[]
+	killer__cageErrors: KillerCage[]
 
 	sandwich__horizontalClues: number[]
 	sandwich__verticalClues: number[]
@@ -99,6 +99,8 @@ export default class Board {
 
 			this.sudokuX__diagonalErrors = data.sudokuX__diagonalErrors
 
+			for (const func of this.ruleset.game.initBoardMatrix) func(this)
+
 			this.checkFullNotation(false)
 			for (const func of this.ruleset.game.afterValuesChanged) func(this)
 			this.checkComplete()
@@ -131,14 +133,12 @@ export default class Board {
 					color: 'default',
 					possibleValues: [],
 					isError: false,
-					colorGroupIndex: -1
+					colorGroups: []
 				}
 			}
 		}
 
-		for (const func of this.ruleset.game.initBoardMatrix) {
-			func(this)
-		}
+		for (const func of this.ruleset.game.initBoardMatrix) func(this)
 
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		this.checkComplete()
@@ -298,14 +298,17 @@ export default class Board {
 
 				if (SettingsHandler.settings.clearColorOnInput) {
 					// If the cell is in a color group
-					if (cell.colorGroupIndex !== -1) {
-						// If every cell in the color group has a value, clear their color and remove the color group
-						if (this.colorGroups[cell.colorGroupIndex].cells.every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0)) {
-							for (const colorGroupCellCoords of this.colorGroups[cell.colorGroupIndex].cells) {
-								this.get(colorGroupCellCoords).color = 'default'
+					if (cell.colorGroups.length > 0) {
+						// If every cell in every color group has a value, clear their color and remove the color group
+						if (cell.colorGroups.every(cg => cg.members.every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0))) {
+							for (const cg of cell.colorGroups) {
+								for (const colorGroupCellCoords of cg.members) {
+									this.get(colorGroupCellCoords).color = 'default'
+								}
 							}
-							this.removeColorGroups(new Set([cell.colorGroupIndex]))
+							this.removeColorGroups(cell.colorGroups)
 						}
+
 					} else {
 						cell.color = 'default'
 					}
@@ -336,8 +339,8 @@ export default class Board {
 				cell.notes = []
 				cell.color = 'default'
 
-				if (cell.colorGroupIndex !== -1) {
-					this.removeColorGroups(new Set([cell.colorGroupIndex]))
+				if (cell.colorGroups.length > 0) {
+					this.removeColorGroups(cell.colorGroups)
 				}
 
 				this.hasChanged = true
@@ -410,7 +413,7 @@ export default class Board {
 		this.iterateAllCells(cell => {
 			if (cell.color !== 'default') {
 				cell.color = 'default'
-				cell.colorGroupIndex = -1
+				cell.colorGroups = []
 				this.hasChanged = true
 			}
 		})
@@ -481,18 +484,16 @@ export default class Board {
 		this.ruleset.game.iterateAllCells(this, func)
 	}
 
-	removeColorGroups(indices: Set<number>) {
-		for (const index of indices) {
-			for (const cell of this.colorGroups[index].cells) {
-				this.get(cell).colorGroupIndex = -1
+	removeColorGroups(groupsToRemove: ColorGroup[]) {
+		for (const group of groupsToRemove) {
+			// Remove the reference to the group from its members
+			for (const cell of group.members) {
+				removeByReference(this.get(cell).colorGroups, group)
 			}
-			for (let i = index + 1; i < this.colorGroups.length; i++) {
-				for (const cell of this.colorGroups[i].cells) {
-					this.get(cell).colorGroupIndex--
-				}
-			}
+
+			// Remove the color group
+			removeByReference(this.colorGroups, group)
 		}
-		this.colorGroups = this.colorGroups.filter((_, index) => !indices.has(index))
 	}
 
 	checkErrors() {

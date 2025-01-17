@@ -12,6 +12,13 @@ export type Coordinates = {
     y: number
 }
 
+// These two types look the same but they are technically different concepts
+
+export type CellCoordinates = {
+    x: number
+    y: number
+}
+
 export type CanvasRef = {
     renderFrame: () => void
     doAnimations: (data: BoardAnimation[]) => void
@@ -20,22 +27,28 @@ export type CanvasRef = {
 
 export type MouseButtonType = 'primary' | 'secondary' | 'tertiary'
 
+export type KillerCage = {
+    members: CellCoordinates[]
+    sum: number
+}
+
+export type CageVector = {
+    firstCell: CellCoordinates
+    secondCell: CellCoordinates
+    cage: KillerCage
+    ratio: number
+}
+
 export type Cell = {
     value: number
     notes: number[]
     color: ColorName
     solution: number
     clue: boolean
-    cageIndex?: number
-    cageValue?: number
+    cage?: KillerCage
     possibleValues: number[]
     isError: boolean
-    colorGroupIndex: number
-}
-
-export type CellCoordinates = {
-    x: number
-    y: number
+    colorGroups: ColorGroup[]
 }
 
 export type BoardMatrix = Cell[][]
@@ -54,7 +67,7 @@ export type HistoryItem = {
 export type History = HistoryItem[]
 
 export type ColorGroup = {
-    cells: CellCoordinates[]
+    members: CellCoordinates[]
     visibleCells: CellCoordinates[]
 }
 
@@ -72,8 +85,8 @@ export type GameData = {
     version: number
     colorGroups: ColorGroup[]
 
-    killer__cages: CellCoordinates[][]
-    killer__cageErrors: number[]
+    killer__cages: KillerCage[]
+    killer__cageErrors: KillerCage[]
 
     sandwich__horizontalClues: number[]
     sandwich__verticalClues: number[]

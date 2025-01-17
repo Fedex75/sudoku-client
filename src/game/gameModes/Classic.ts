@@ -1,4 +1,4 @@
-import { indexOfCoordsInArray } from "../../utils/CoordsUtils"
+import { indexOfCoordsInArray } from "../../utils/Utils"
 import { Cell, CellCoordinates, InitGameProps, RendererProps, StateProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
@@ -272,13 +272,12 @@ export function classicCalculatePossibleValues(game: Board) {
             }
         })
 
-        for (let cgi = 0; cgi < game.colorGroups.length; cgi++) {
-            const cg = game.colorGroups[cgi]
-            let notes: number[] = game.get(cg.cells[0]).notes
-            let unsolvedCount = (game.get(cg.cells[0]).value === 0 ? 1 : 0)
-            for (let i = 1; i < cg.cells.length; i++) {
-                notes = notes.concat(game.get(cg.cells[i]).notes)
-                if (game.get(cg.cells[i]).value === 0) unsolvedCount++
+        for (const cg of game.colorGroups) {
+            let notes: number[] = game.get(cg.members[0]).notes
+            let unsolvedCount = (game.get(cg.members[0]).value === 0 ? 1 : 0)
+            for (let i = 1; i < cg.members.length; i++) {
+                notes = notes.concat(game.get(cg.members[i]).notes)
+                if (game.get(cg.members[i]).value === 0) unsolvedCount++
             }
 
             const uniqueNotes = new Set(notes)
@@ -286,7 +285,7 @@ export function classicCalculatePossibleValues(game: Board) {
             if (uniqueNotes.size === unsolvedCount) {
                 // Remove possible values and notes from all the visible cells not in the group
                 for (const vc of cg.visibleCells) {
-                    if (game.get(vc).colorGroupIndex !== cgi) {
+                    if (!game.get(vc).colorGroups.includes(cg)) {
                         game.get(vc).possibleValues = game.get(vc).possibleValues.filter(pv => !notes.includes(pv))
                         if (SettingsHandler.settings.showPossibleValues) for (const note of notes) game.setNote([vc], note, false)
                     }

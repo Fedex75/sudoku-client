@@ -1,5 +1,5 @@
-import { indexOfCoordsInArray } from "../../utils/CoordsUtils"
-import { RendererProps, InitGameProps, CellCoordinates, StateProps } from "../../utils/DataTypes"
+import { indexOfCoordsInArray } from "../../utils/Utils"
+import { RendererProps, InitGameProps, CellCoordinates, StateProps, KillerCage, CageVector } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
@@ -12,16 +12,16 @@ const cagesOffScreenCanvasCtx = cagesOffscreenCanvas.getContext('2d')
 const cagesTempCanvas = document.createElement('canvas')
 const cagesTempCanvasCtx = cagesTempCanvas.getContext('2d')
 
-export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rendererState, themes, theme, accentColor, squareSize, cellBorderWidth, logicalSize }: RendererProps) {
+export function killerRenderCagesAndCageValues({ ctx, game, rendererState, accentColor, squareSize, cellBorderWidth, logicalSize }: RendererProps) {
     if (!cagesOffScreenCanvasCtx || !cagesTempCanvasCtx) return
 
     cagesTempCanvasCtx.clearRect(0, 0, logicalSize, logicalSize)
     cagesTempCanvasCtx.drawImage(cagesOffscreenCanvas, 0, 0)
 
-    let selectedCages: number[] = []
+    let selectedCages: KillerCage[] = []
     for (const c of game.selectedCells) {
         const cell = game.get(c)
-        if (!selectedCages.includes(cell.cageIndex!)) selectedCages.push(cell.cageIndex!)
+        if (cell.cage && !selectedCages.includes(cell.cage)) selectedCages.push(cell.cage)
     }
 
     cagesTempCanvasCtx.globalCompositeOperation = 'source-in'
@@ -49,8 +49,8 @@ export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rende
 
     // Paint selected cages white
     applyColorWithMask(() => {
-        for (const ci of selectedCages) {
-            for (const c of game.killer__cages[ci]) {
+        for (const cage of selectedCages) {
+            for (const c of cage.members) {
                 cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
             }
         }
@@ -58,8 +58,8 @@ export function killerRenderCagesAndCageValues({ ctx, game, cageLineWidth, rende
 
     // Paint cages with error red or yellow
     applyColorWithMask(() => {
-        for (const ci of game.killer__cageErrors) {
-            for (const c of game.killer__cages[ci]) {
+        for (const cage of game.killer__cageErrors) {
+            for (const c of cage.members) {
                 cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
             }
         }
@@ -78,9 +78,12 @@ export function killerInitGameData({ game, data }: InitGameProps) {
     game.solution = solution
     game.killer__cages = []
     for (const cage of cages.split(',')) {
-        let newCage: CellCoordinates[] = []
+        let newCage: KillerCage = {
+            members: [],
+            sum: 0
+        }
         for (let i = 0; i < cage.length; i += 2) {
-            newCage.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
+            newCage.members.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
         }
         game.killer__cages.push(newCage)
     }
@@ -89,19 +92,17 @@ export function killerInitGameData({ game, data }: InitGameProps) {
 export function killerSolveLastInCages(game: Board) {
     if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
         for (const cage of game.killer__cages) {
-            let remaining = cage.length
+            let remaining = cage.members.length
             let sum = 0
-            let realSum = 0
-            cage.forEach(coords => {
+            cage.members.forEach(coords => {
                 const cell = game.get(coords)
                 if (cell.value > 0) remaining--
                 sum += cell.value
-                if (cell.cageValue! > 0) realSum = cell.cageValue!
             })
-            if (remaining === 1 && realSum - sum <= 9) {
-                cage.forEach(coords => {
+            if (remaining === 1 && cage.sum - sum <= 9) {
+                cage.members.forEach(coords => {
                     if (game.get(coords).value === 0) {
-                        game.setValue([coords], realSum - sum)
+                        game.setValue([coords], cage.sum - sum)
                     }
                 })
             }
@@ -112,32 +113,20 @@ export function killerSolveLastInCages(game: Board) {
 export function killerInitCages(game: Board) {
     game.killer__cageErrors = []
 
-    for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
-        game.killer__cages[cageIndex].forEach((coords, cellIndex) => {
-            const cell = game.get(coords)
-            cell.cageIndex = cageIndex
-            if (SettingsHandler.settings.killerAutoSolveLastInCage && game.killer__cages[cageIndex].length === 1 && game.nSquares > 3) cell.value = cell.solution
-            if (cellIndex === 0) {
-                let sum = 0
-                for (const coords2 of game.killer__cages[cageIndex]) sum += game.get(coords2).solution
-                cell.cageValue = sum
-            } else {
-                cell.cageValue = 0
-            }
+    for (const cage of game.killer__cages) {
+        cage.sum = 0
+        cage.members.forEach(c => {
+            const cell = game.get(c)
+            cell.cage = cage
+            cage.sum += cell.solution
         })
-    }
-
-    if (SettingsHandler.settings.killerAutoSolveLastInCage && game.nSquares > 3) {
-        for (let cageIndex = 0; cageIndex < game.killer__cages.length; cageIndex++) {
-            killerSolveLastInCages(game)
-        }
     }
 }
 
 export function killerGetVisibleCells(game: Board, c: CellCoordinates): CellCoordinates[] {
     let visibleCells = classicGetVisibleCells(game, c)
 
-    for (const coords of game.killer__cages[game.get(c).cageIndex!]) {
+    for (const coords of game.get(c).cage!.members) {
         if (indexOfCoordsInArray(visibleCells, coords) === -1) visibleCells.push(coords)
     }
 
@@ -176,8 +165,6 @@ export function killerResize({ game, rendererState, squareSize, logicalSize, box
     rendererState.current.valuePositions = newValuePositions
 }
 
-export type CageVector = [CellCoordinates, CellCoordinates, number, number]
-
 export function killerCalculateCageVectors({ game, rendererState, squareSize, cageLineWidth, logicalSize, themes, theme }: StateProps) {
     if (!cagesOffScreenCanvasCtx || !cagesTempCanvasCtx) return
 
@@ -196,7 +183,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
 
     const targetRatio = Math.floor(squareSize.current * 0.075) + 1
 
-    function addVector(c1: CellCoordinates, c2: CellCoordinates, cageIndex: number) {
+    function addVector(c1: CellCoordinates, c2: CellCoordinates, cage: KillerCage) {
         let i = 1
         let ratio = 0
         const delta = Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y)) + cageLineWidth
@@ -210,7 +197,7 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
             i += 2
         }
 
-        newCageVectors.push([c1, c2, cageIndex, ratio])
+        newCageVectors.push({ firstCell: c1, secondCell: c2, cage, ratio })
     }
 
     //Horizontal
@@ -221,48 +208,49 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
         for (let x = 0; x < game.nSquares; x++) {
             const cell = game.get({ x, y })
 
-            const hShift = cell.cageValue! > 9 ? Math.ceil(squareSize.current * 0.28) : (cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.15) : 0)
+            const cageValue = (indexOfCoordsInArray(cell.cage!.members, { x, y }) === 0) ? cell.cage!.sum : 0
+            const hShift = cageValue > 9 ? Math.ceil(squareSize.current * 0.28) : (cageValue > 0 ? Math.ceil(squareSize.current * 0.15) : 0)
 
             const left = cageLinePositions[x * 2]
             const right = cageLinePositions[x * 2 + 1]
 
             //Top line
-            if (y === 0 || game.get({ x, y: y - 1 }).cageIndex !== cell.cageIndex) {
+            if (y === 0 || game.get({ x, y: y - 1 }).cage !== cell.cage) {
                 if (startA === null) startA = { x: left + hShift, y: top }
             } else {
                 if (startA !== null) {
-                    addVector(startA, { x: left + hShift, y: top }, cell.cageIndex!)
+                    addVector(startA, { x: left + hShift, y: top }, cell.cage!)
                     startA = null
                 }
             }
 
             //Top bridge
-            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y > 0 && game.get({ x: x + 1, y: y - 1 }).cageIndex === cell.cageIndex && game.get({ x, y: y - 1 }).cageIndex === cell.cageIndex)
+            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cage !== cell.cage) && x < game.nSquares - 1 && !(y > 0 && game.get({ x: x + 1, y: y - 1 }).cage === cell.cage && game.get({ x, y: y - 1 }).cage === cell.cage)
             ) {
                 if (startA === null) startA = { x: right, y: top }
             } else {
                 if (startA !== null) {
-                    addVector(startA, { x: right, y: top }, cell.cageIndex!)
+                    addVector(startA, { x: right, y: top }, cell.cage!)
                     startA = null
                 }
             }
 
             //Bottom line
-            if (y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) {
+            if (y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cage !== cell.cage) {
                 if (startB === null) startB = { x: left, y: bottom }
             } else {
                 if (startB !== null) {
-                    addVector(startB, { x: left + hShift, y: bottom }, cell.cageIndex!)
+                    addVector(startB, { x: left + hShift, y: bottom }, cell.cage!)
                     startB = null
                 }
             }
 
             //Bottom bridge
-            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.get({ x: x + 1, y: y + 1 }).cageIndex === cell.cageIndex && game.get({ x, y: y + 1 }).cageIndex === cell.cageIndex)) {
+            if (!(x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cage !== cell.cage) && x < game.nSquares - 1 && !(y < (game.nSquares - 1) && game.get({ x: x + 1, y: y + 1 }).cage === cell.cage && game.get({ x, y: y + 1 }).cage === cell.cage)) {
                 if (startB === null) startB = { x: right, y: bottom }
             } else {
                 if (startB !== null) {
-                    addVector(startB, { x: right, y: bottom }, cell.cageIndex!)
+                    addVector(startB, { x: right, y: bottom }, cell.cage!)
                     startB = null
                 }
             }
@@ -277,47 +265,48 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
         for (let y = 0; y < game.nSquares; y++) {
             const cell = game.get({ x, y })
 
-            const vShift = cell.cageValue! > 0 ? Math.ceil(squareSize.current * 0.20) : 0
+            const cageValue = (indexOfCoordsInArray(cell.cage!.members, { x, y }) === 0) ? cell.cage!.sum : 0
+            const vShift = cageValue! > 0 ? Math.ceil(squareSize.current * 0.20) : 0
 
             const top = cageLinePositions[y * 2]
             const bottom = cageLinePositions[y * 2 + 1]
 
             //Left line
-            if (x === 0 || game.get({ x: x - 1, y }).cageIndex !== cell.cageIndex) {
+            if (x === 0 || game.get({ x: x - 1, y }).cage !== cell.cage) {
                 if (startA === null) startA = { x: left, y: top + vShift }
             } else {
                 if (startA !== null) {
-                    addVector(startA, { x: left, y: top + vShift }, cell.cageIndex!)
+                    addVector(startA, { x: left, y: top + vShift }, cell.cage!)
                     startA = null
                 }
             }
 
             //Left bridge
-            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) && !(x > 0 && game.get({ x: x - 1, y }).cageIndex === cell.cageIndex && game.get({ x: x - 1, y: y + 1 }).cageIndex === cell.cageIndex)) {
+            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cage !== cell.cage) && !(x > 0 && game.get({ x: x - 1, y }).cage === cell.cage && game.get({ x: x - 1, y: y + 1 }).cage === cell.cage)) {
                 if (startA === null) startA = { x: left, y: bottom }
             } else {
                 if (startA !== null) {
-                    addVector(startA, { x: left, y: bottom }, cell.cageIndex!)
+                    addVector(startA, { x: left, y: bottom }, cell.cage!)
                     startA = null
                 }
             }
 
             //Right line
-            if (x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cageIndex !== cell.cageIndex) {
+            if (x === (game.nSquares - 1) || game.get({ x: x + 1, y }).cage !== cell.cage) {
                 if (startB === null) startB = { x: right, y: top }
             } else {
                 if (startB !== null) {
-                    addVector(startB, { x: right, y: top }, cell.cageIndex!)
+                    addVector(startB, { x: right, y: top }, cell.cage!)
                     startB = null
                 }
             }
 
             //Right bridge
-            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cageIndex !== cell.cageIndex) && !(x < (game.nSquares - 1) && game.get({ x: x + 1, y }).cageIndex === cell.cageIndex && game.get({ x: x + 1, y: y + 1 }).cageIndex === cell.cageIndex)) {
+            if (!(y === (game.nSquares - 1) || game.get({ x, y: y + 1 }).cage !== cell.cage) && !(x < (game.nSquares - 1) && game.get({ x: x + 1, y }).cage === cell.cage && game.get({ x: x + 1, y: y + 1 }).cage === cell.cage)) {
                 if (startB === null) startB = { x: right, y: bottom }
             } else {
                 if (startB !== null) {
-                    addVector(startB, { x: right, y: bottom }, cell.cageIndex!)
+                    addVector(startB, { x: right, y: bottom }, cell.cage!)
                     startB = null
                 }
             }
@@ -334,12 +323,11 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
 
     //Border
     newCageVectors.forEach((vector: CageVector) => {
-        dashedLine(cagesOffScreenCanvasCtx, vector[0], vector[1], vector[3], cageLineWidth)
+        dashedLine(cagesOffScreenCanvasCtx, vector.firstCell, vector.secondCell, vector.ratio, cageLineWidth)
     })
 
     game.killer__cages.forEach(cage => {
-        const firstCell = game.get(cage[0])
-        drawSVGNumber(cagesOffScreenCanvasCtx, firstCell.cageValue!, rendererState.current.cellPositions[cage[0].x] + rendererState.current.cagePadding, rendererState.current.cellPositions[cage[0].y] + rendererState.current.cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, 'right', 'center', null)
+        drawSVGNumber(cagesOffScreenCanvasCtx, cage.sum, rendererState.current.cellPositions[cage.members[0].x] + rendererState.current.cagePadding, rendererState.current.cellPositions[cage.members[0].y] + rendererState.current.cagePadding + squareSize.current * 0.08, squareSize.current * 0.15, 'right', 'center', null)
     })
 }
 
@@ -350,7 +338,7 @@ export function killerCheckErrors(game: Board) {
 
     for (const cage of game.killer__cages) {
         let sum = 0
-        for (const coords of cage) {
+        for (const coords of cage.members) {
             const cell = game.get(coords)
             if (cell.value > 0) sum += cell.value
             else {
@@ -358,8 +346,8 @@ export function killerCheckErrors(game: Board) {
                 break
             }
         }
-        if (sum !== -1 && sum !== game.get(cage[0]).cageValue!) {
-            game.killer__cageErrors.push(game.get(cage[0]).cageIndex!)
+        if (sum !== -1 && sum !== cage.sum) {
+            game.killer__cageErrors.push(cage)
         }
     }
 }
