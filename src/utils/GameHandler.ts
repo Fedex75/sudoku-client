@@ -150,6 +150,7 @@ class GameHandler {
 
 	saveGame(data: string) {
 		try {
+			console.log(data.length)
 			localStorage.setItem('game', data)
 		} catch (e) {
 			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {

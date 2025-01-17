@@ -75,11 +75,12 @@ export type GameData = {
     mission: string
     clues: string
     solution: string
+    board: BoardMatrix
+    colorGroups: ColorGroup[]
     timer: number
     selectedCells: CellCoordinates[]
     history: History
     version: number
-    colorGroups: ColorGroup[]
 }
 
 export type RawGameData = {

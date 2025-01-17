@@ -90,7 +90,7 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
 
                 ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
 
-                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor ? colors[accentColor] : null)
+                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor && cell.color === 'default' ? colors[accentColor] : null)
             }
         }
     })

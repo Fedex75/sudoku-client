@@ -87,12 +87,11 @@ export default class Board {
 			this.clues = data.clues
 			this.solution = data.solution
 			this.timer = data.timer
-			this.board = JSON.parse(data.history[data.history.length - 1])
 			this.selectedCells = data.selectedCells
 			this.history = data.history
+			this.board = data.board
 			this.colorGroups = data.colorGroups
 
-			this.afterValuesChanged()
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
@@ -129,7 +128,8 @@ export default class Board {
 			}
 		}
 
-		this.afterValuesChanged()
+		for (const func of this.ruleset.game.initBoardMatrix) func(this)
+		this.recreateCache()
 	}
 
 	getCompletedNumbers() {
@@ -147,7 +147,7 @@ export default class Board {
 		return completedNumbers
 	}
 
-	stashBoard() {
+	getBoardToSave() {
 		const boardToSave: BoardMatrix = []
 		for (let x = 0; x < this.nSquares; x++) {
 			const col: Cell[] = []
@@ -169,10 +169,21 @@ export default class Board {
 			boardToSave.push(col)
 		}
 
+		return boardToSave
+	}
+
+	getColorGroupsToSave(): ColorGroup[] {
+		return this.colorGroups.map(cg => ({
+			members: cg.members,
+			visibleCells: []
+		}))
+	}
+
+	stashBoard() {
 		const item: HistoryItem = {
-			board: boardToSave,
+			board: this.getBoardToSave(),
 			fullNotation: this.fullNotation,
-			colorGroups: this.colorGroups
+			colorGroups: this.getColorGroupsToSave()
 		}
 
 		this.stash = JSON.stringify(item)
@@ -194,12 +205,17 @@ export default class Board {
 			this.colorGroups = item.colorGroups
 			this.history.pop()
 
-			this.afterValuesChanged()
+			for (const func of this.ruleset.game.initBoardMatrix) func(this)
+			this.recreateCache()
 		}
 	}
 
 	get(c: CellCoordinates) {
-		return this.board[c.x][c.y]
+		if (c.x >= 0 && c.x < this.board.length && c.y >= 0 && c.y < this.board[c.x].length) {
+			return this.board[c.x][c.y]
+		} else {
+			return this.board[0][0]
+		}
 	}
 
 	selectCell(c: CellCoordinates) {
@@ -438,11 +454,12 @@ export default class Board {
 			mission: this.mission,
 			clues: this.clues,
 			solution: this.solution,
+			board: this.getBoardToSave(),
+			colorGroups: this.getColorGroupsToSave(),
 			timer: this.timer,
 			selectedCells: this.selectedCells,
 			history: this.history,
 			version: this.version,
-			colorGroups: this.colorGroups.map(cg => ({ members: cg.members, visibleCells: [] })),
 		}
 
 		GameHandler.saveGame(JSON.stringify(dataToSave))
@@ -508,8 +525,7 @@ export default class Board {
 		this.ruleset.game.checkErrors(this)
 	}
 
-	afterValuesChanged() {
-		for (const func of this.ruleset.game.initBoardMatrix) func(this)
+	recreateCache() {
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		this.checkFullNotation(false)
 		this.checkComplete()
