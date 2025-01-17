@@ -158,22 +158,22 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		setRender(r => r === 100 ? 0 : r + 1)
 	}, [handleComplete, updateMagicWandMode, updatePossibleValues])
 
-	const handleSetColor = useCallback((coords: CellCoordinates[], color: ColorName = accentColor) => {
-		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || coords.length === 0) return
+	const handleSetColor = useCallback((selectedCoords: CellCoordinates[], color: ColorName = accentColor) => {
+		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || selectedCoords.length === 0) return
 
 		let coincidence: 'none' | 'partial' | 'full' = 'none'
 		let selectedGroups: ColorGroup[] = []
 		for (const cg of GameHandler.game.colorGroups) {
-			if (coincidence === 'none' && cg.members.length === coords.length) {
+			if (coincidence === 'none' && cg.members.length === selectedCoords.length) {
 				// Check if every cell in the colorGroup is in the selected coords
-				if (coords.every(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
+				if (selectedCoords.every(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
 					coincidence = 'full'
 					selectedGroups = [cg]
 					break
 				}
 			} else {
 				// Full coincidence is impossible, check if any cells in the group are selected
-				if (coords.some(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
+				if (selectedCoords.some(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
 					coincidence = 'partial'
 					selectedGroups.push(cg)
 				}
@@ -190,34 +190,36 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				break
 			case 'none':
 				// Apply color
-				newColor = coords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color
-				if (newColor !== 'default' && coords.length > 1) {
-					let visibleCells: CellCoordinates[] = GameHandler.game.get(coords[0]).visibleCells
-					for (let i = 1; i < coords.length; i++) {
-						const visibleCells2 = GameHandler.game.get(coords[i]).visibleCells
+				newColor = selectedCoords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color
+				if (newColor !== 'default' && selectedCoords.length > 1) {
+					let visibleCells: CellCoordinates[] = GameHandler.game.get(selectedCoords[0]).visibleCells
+					for (let i = 1; i < selectedCoords.length; i++) {
+						const visibleCells2 = GameHandler.game.get(selectedCoords[i]).visibleCells
 						visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
 					}
 
 					const newColorGroup: ColorGroup = {
-						members: [...coords],
+						members: [...selectedCoords],
 						visibleCells
 					}
 
 					GameHandler.game.colorGroups.push(newColorGroup)
+					onSelect(false)
+					setColorMode(false)
 
-					for (const cell of coords) {
+					for (const cell of selectedCoords) {
 						GameHandler.game.get(cell).colorGroups.push(newColorGroup)
 					}
 				}
-				for (const c of coords) GameHandler.game.setColor(c, newColor)
+				for (const c of selectedCoords) GameHandler.game.setColor(c, newColor)
 				break
 			case 'full':
 				// Change color and remove group if necessary
-				newColor = GameHandler.game.get(coords[0]).color === color ? 'default' : color
+				newColor = GameHandler.game.get(selectedCoords[0]).color === color ? 'default' : color
 				if (color === 'default') {
 					GameHandler.game.removeColorGroups(selectedGroups)
 				}
-				for (const c of coords) GameHandler.game.setColor(c, newColor)
+				for (const c of selectedCoords) GameHandler.game.setColor(c, newColor)
 				break
 		}
 	}, [accentColor])
@@ -337,18 +339,19 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		}
 	}, [magicWandMode, handleUserInteraction])
 
-	const onSelect = useCallback(() => {
+	const onSelect = useCallback((state: boolean | null) => {
 		if (!GameHandler.game) return
-		if (selectMode) {
-			setSelectMode(false)
-			if (selectedCellBeforeSelectMode) GameHandler.game.selectedCells = [selectedCellBeforeSelectMode]
-			else GameHandler.game.selectedCells = []
-		} else {
-			setSelectMode(true)
+		const newState = (state === null) ? !selectMode : state
+		if (newState) {
 			if (GameHandler.game.selectedCells.length > 0) setSelectedCellBeforeSelectMode(GameHandler.game.selectedCells[0])
 			else setSelectedCellBeforeSelectMode(null)
 			GameHandler.game.selectedCells = []
+		} else {
+			if (selectedCellBeforeSelectMode) GameHandler.game.selectedCells = [selectedCellBeforeSelectMode]
+			else GameHandler.game.selectedCells = []
 		}
+
+		setSelectMode(newState)
 		updateMagicWandMode()
 	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode])
 
@@ -442,7 +445,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				onNote={onNote}
 				onHint={() => { handleUserInteraction(onHint, null) }}
 				onMagicWand={onMagicWand}
-				onSelect={onSelect}
+				onSelect={() => { onSelect(null) }}
 				onColor={onColor}
 				onColorButtonClick={onColorButtonClick}
 				onNumpadButtonClick={(number, type) => { handleUserInteraction(() => { onNumpadButtonClick(number, type) }, null) }}
