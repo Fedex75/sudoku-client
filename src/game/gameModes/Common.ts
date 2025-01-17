@@ -111,7 +111,6 @@ export function commonDetectErrorsByVisibility(game: Board) {
         if (cell.value > 0) {
             for (const vc of game.ruleset.game.getVisibleCells(game, { x, y })) {
                 if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
-                    if (game.mode === 'sandwich') console.log(`${vc}, ${x}, ${y}, ${game.get(vc).value}, ${cell.value}`)
                     cell.isError = true
                 }
             }
