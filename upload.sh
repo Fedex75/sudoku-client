@@ -1,6 +1,11 @@
 #!/bin/bash
+HOST=104.131.184.251
 FOLDER="~/server/control/proxy/www/sudoku.zaifo.com.ar"
-ssh root@zaifo.com.ar rm -rf $FOLDER/*
-ssh root@zaifo.com.ar mkdir $FOLDER/static
-ssh root@zaifo.com.ar mkdir $FOLDER/splash-screens
-scp -r build/* root@zaifo.com.ar:$FOLDER
+echo "Clearing remote folder..."
+ssh root@$HOST rm -rf $FOLDER/*
+echo "Creating static remote folder..."
+ssh root@$HOST mkdir $FOLDER/static
+echo "Creating splash-screens remote folder..."
+ssh root@$HOST mkdir $FOLDER/splash-screens
+echo "Transfering files to remote..."
+scp -r build/* root@$HOST:$FOLDER
