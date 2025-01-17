@@ -47,6 +47,8 @@ export type Cell = {
     clue: boolean
     cage?: KillerCage
     possibleValues: number[]
+    visibleCells: CellCoordinates[]
+    units: CellCoordinates[][]
     isError: boolean
     colorGroups: ColorGroup[]
 }
@@ -54,17 +56,12 @@ export type Cell = {
 export type BoardMatrix = Cell[][]
 
 export type HistoryItem = {
-    board: string
+    board: BoardMatrix
     fullNotation: boolean
-    colorGroups: string
-    killer__cageErrors: string
-    sandwich__visibleHorizontalClues: string
-    sandwich__visibleVerticalClues: string
-    sandwich__lateralCluesErrors: string
-    sudokuX__diagonalErrors: string
+    colorGroups: ColorGroup[]
 }
 
-export type History = HistoryItem[]
+export type History = string[]
 
 export type ColorGroup = {
     members: CellCoordinates[]
@@ -79,22 +76,10 @@ export type GameData = {
     clues: string
     solution: string
     timer: number
-    board: BoardMatrix
     selectedCells: CellCoordinates[]
     history: History
     version: number
     colorGroups: ColorGroup[]
-
-    killer__cages: KillerCage[]
-    killer__cageErrors: KillerCage[]
-
-    sandwich__horizontalClues: number[]
-    sandwich__verticalClues: number[]
-    sandwich__visibleHorizontalClues: boolean[]
-    sandwich__visibleVerticalClues: boolean[]
-    sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
-
-    sudokuX__diagonalErrors: [boolean, boolean]
 }
 
 export type RawGameData = {

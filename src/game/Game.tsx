@@ -192,9 +192,9 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				// Apply color
 				newColor = coords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color
 				if (newColor !== 'default' && coords.length > 1) {
-					let visibleCells: CellCoordinates[] = GameHandler.game.ruleset.game.getVisibleCells(GameHandler.game, coords[0])
+					let visibleCells: CellCoordinates[] = GameHandler.game.get(coords[0]).visibleCells
 					for (let i = 1; i < coords.length; i++) {
-						const visibleCells2 = GameHandler.game.ruleset.game.getVisibleCells(GameHandler.game, coords[i])
+						const visibleCells2 = GameHandler.game.get(coords[i]).visibleCells
 						visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
 					}
 

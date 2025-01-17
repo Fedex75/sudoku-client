@@ -258,7 +258,7 @@ export function classicCalculatePossibleValues(game: Board) {
     for (let x = 0; x <= game.nSquares - 1; x++) {
         for (let y = 0; y <= game.nSquares - 1; y++) {
             const cell = game.get({ x, y })
-            for (const c of game.ruleset.game.getVisibleCells(game, { x, y })) {
+            for (const c of cell.visibleCells) {
                 game.get(c).possibleValues = game.get(c).possibleValues.filter(n => n !== cell.value)
                 if (SettingsHandler.settings.showPossibleValues) game.setNote([c], cell.value, false)
             }

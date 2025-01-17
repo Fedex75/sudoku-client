@@ -4,9 +4,10 @@ import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName,
 import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
 import Board from '../game/Board'
 import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
+import API from './API'
 
-const BOARD_API_VERSION = 7
-const STORAGE_SCHEMA_VERSION = 4
+const BOARD_API_VERSION = 8
+const STORAGE_SCHEMA_VERSION = 5
 
 const missions: MissionsData = missionsData as MissionsData
 
@@ -148,7 +149,13 @@ class GameHandler {
 	}
 
 	saveGame(data: string) {
-		localStorage.setItem('game', data)
+		try {
+			localStorage.setItem('game', data)
+		} catch (e) {
+			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {
+				API.logError({ message: 'Quota exceeded', date: Date.now() })
+			}
+		}
 	}
 
 	setComplete() {

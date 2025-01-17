@@ -43,7 +43,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: killerInitGameData,
-            initBoardMatrix: [commonInitCellsCache, killerInitCages],
+            initBoardMatrix: [killerInitCages, commonInitCellsCache],
             getVisibleCells: killerGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],

@@ -109,7 +109,7 @@ export function commonDetectErrorsByVisibility(game: Board) {
 
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.value > 0) {
-            for (const vc of game.ruleset.game.getVisibleCells(game, { x, y })) {
+            for (const vc of cell.visibleCells) {
                 if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
                     cell.isError = true
                 }
@@ -126,4 +126,11 @@ export function commonInitCellsCache(game: Board) {
             game.get(c).colorGroups.push(cg)
         }
     }
+
+    game.iterateAllCells((cell, coords) => {
+        cell.visibleCells = game.ruleset.game.getVisibleCells(game, coords)
+        cell.units = game.ruleset.game.getCellUnits(game, coords)
+    })
+
+    game.units = game.ruleset.game.getAllUnits(game)
 }

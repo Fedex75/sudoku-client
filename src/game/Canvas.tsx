@@ -267,13 +267,16 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 	const resizeCanvas = useCallback(() => {
 		if (!canvasRef.current) return
 
-		logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
-		canvasRef.current.width = logicalSize.current
-		canvasRef.current.height = logicalSize.current
+		const newSize = canvasRef.current.offsetWidth * roundedRatio
+		if (canvasRef.current.width !== newSize || canvasRef.current.height !== newSize) {
+			logicalSize.current = canvasRef.current.offsetWidth * roundedRatio
+			canvasRef.current.width = logicalSize.current
+			canvasRef.current.height = logicalSize.current
 
-		for (const func of ruleset.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
+			for (const func of ruleset.render.onResize) func({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
 
-		renderFrame()
+			renderFrame()
+		}
 	}, [boxBorderWidthFactor, ruleset.render.onResize, game, renderFrame, theme])
 
 	const screenCoordsToBoardCoords = useCallback((clientX: number, clientY: number) => {
@@ -351,9 +354,11 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
 		if (canvasRef.current) {
 			resizeCanvas()
+			renderFrame()
 
 			const resizeObserver = new ResizeObserver(() => {
 				resizeCanvas()
+				renderFrame()
 			})
 
 			resizeObserver.observe(canvasRef.current)
@@ -362,7 +367,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 				resizeObserver.disconnect()
 			}
 		}
-	}, [resizeCanvas, theme])
+	}, [resizeCanvas, renderFrame, theme])
 
 	useEffect(() => {
 		if (!hasAddedFadeInAnimation.current && !notPlayable) {

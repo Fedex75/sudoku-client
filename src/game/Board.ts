@@ -22,11 +22,13 @@ export default class Board {
 	selectedCells: CellCoordinates[]
 	timer: number
 
-	private stash: HistoryItem | null
+	private stash: string
 	hasChanged: boolean
 	history: History
 	fullNotation: boolean
 	colorGroups: ColorGroup[]
+
+	units: CellCoordinates[][]
 
 	animations: BoardAnimation[]
 
@@ -54,9 +56,11 @@ export default class Board {
 		this.clues = ''
 		this.solution = ''
 		this.colorGroups = []
-		this.stash = null
+		this.stash = ''
 		this.hasChanged = false
 		this.animations = []
+
+		this.units = []
 
 		this.killer__cages = []
 		this.killer__cageErrors = []
@@ -83,27 +87,12 @@ export default class Board {
 			this.clues = data.clues
 			this.solution = data.solution
 			this.timer = data.timer
-			this.board = data.board
+			this.board = JSON.parse(data.history[data.history.length - 1])
 			this.selectedCells = data.selectedCells
 			this.history = data.history
 			this.colorGroups = data.colorGroups
 
-			this.killer__cages = data.killer__cages
-			this.killer__cageErrors = data.killer__cageErrors
-
-			this.sandwich__horizontalClues = data.sandwich__horizontalClues
-			this.sandwich__verticalClues = data.sandwich__verticalClues
-			this.sandwich__visibleHorizontalClues = data.sandwich__visibleHorizontalClues
-			this.sandwich__visibleVerticalClues = data.sandwich__visibleVerticalClues
-			this.sandwich__lateralCluesErrors = data.sandwich__lateralCluesErrors
-
-			this.sudokuX__diagonalErrors = data.sudokuX__diagonalErrors
-
-			for (const func of this.ruleset.game.initBoardMatrix) func(this)
-
-			this.checkFullNotation(false)
-			for (const func of this.ruleset.game.afterValuesChanged) func(this)
-			this.checkComplete()
+			this.afterValuesChanged()
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
@@ -117,7 +106,7 @@ export default class Board {
 		this.board = []
 		this.timer = 0
 		this.colorGroups = []
-		this.stash = null
+		this.stash = ''
 		this.hasChanged = false
 		this.animations = []
 
@@ -132,16 +121,15 @@ export default class Board {
 					solution: this.solution === '' ? 0 : Number.parseInt(this.solution[y * this.nSquares + x]),
 					color: 'default',
 					possibleValues: [],
+					visibleCells: [],
+					units: [],
 					isError: false,
 					colorGroups: []
 				}
 			}
 		}
 
-		for (const func of this.ruleset.game.initBoardMatrix) func(this)
-
-		for (const func of this.ruleset.game.afterValuesChanged) func(this)
-		this.checkComplete()
+		this.afterValuesChanged()
 	}
 
 	getCompletedNumbers() {
@@ -160,22 +148,40 @@ export default class Board {
 	}
 
 	stashBoard() {
-		this.stash = {
-			board: JSON.stringify(this.board),
-			fullNotation: this.fullNotation,
-			colorGroups: JSON.stringify(this.colorGroups),
-			killer__cageErrors: JSON.stringify(this.killer__cageErrors),
-			sandwich__lateralCluesErrors: JSON.stringify(this.sandwich__lateralCluesErrors),
-			sandwich__visibleHorizontalClues: JSON.stringify(this.sandwich__visibleHorizontalClues),
-			sandwich__visibleVerticalClues: JSON.stringify(this.sandwich__visibleVerticalClues),
-			sudokuX__diagonalErrors: JSON.stringify(this.sudokuX__diagonalErrors)
+		const boardToSave: BoardMatrix = []
+		for (let x = 0; x < this.nSquares; x++) {
+			const col: Cell[] = []
+			for (let y = 0; y < this.nSquares; y++) {
+				const cell = this.get({ x, y })
+				col.push({
+					value: cell.value,
+					notes: cell.notes,
+					color: cell.color,
+					solution: cell.solution,
+					clue: cell.clue,
+					possibleValues: [],
+					visibleCells: [],
+					units: [],
+					isError: cell.isError,
+					colorGroups: []
+				})
+			}
+			boardToSave.push(col)
 		}
+
+		const item: HistoryItem = {
+			board: boardToSave,
+			fullNotation: this.fullNotation,
+			colorGroups: this.colorGroups
+		}
+
+		this.stash = JSON.stringify(item)
 		this.hasChanged = false
 	}
 
 	pushBoard() {
 		if (this.stash && this.hasChanged) {
-			this.history.push({ ...this.stash })
+			this.history.push(this.stash)
 			this.hasChanged = false
 			if (process.env.NODE_ENV === 'development') this.saveToLocalStorage()
 		}
@@ -183,16 +189,12 @@ export default class Board {
 
 	popBoard() {
 		if (this.history.length > 0) {
-			const item = this.history[this.history.length - 1]
-			this.board = JSON.parse(item.board)
-			this.fullNotation = item.fullNotation
-			this.colorGroups = JSON.parse(item.colorGroups)
-			this.killer__cageErrors = JSON.parse(item.killer__cageErrors)
-			this.sandwich__lateralCluesErrors = JSON.parse(item.sandwich__lateralCluesErrors)
-			this.sandwich__visibleHorizontalClues = JSON.parse(item.sandwich__visibleHorizontalClues)
-			this.sandwich__visibleVerticalClues = JSON.parse(item.sandwich__visibleVerticalClues)
-			this.sudokuX__diagonalErrors = JSON.parse(item.sudokuX__diagonalErrors)
+			const item: HistoryItem = JSON.parse(this.history[this.history.length - 1])
+			this.board = item.board
+			this.colorGroups = item.colorGroups
 			this.history.pop()
+
+			this.afterValuesChanged()
 		}
 	}
 
@@ -221,7 +223,7 @@ export default class Board {
 
 	onlyAvailableInAnyUnit(c: CellCoordinates, n: number) {
 		if (!this.get(c).possibleValues.includes(n)) return false
-		for (const unit of this.ruleset.game.getCellUnits(this, c)) {
+		for (const unit of this.get(c).units) {
 			let found = 0
 			for (const coords of unit) {
 				const cell = this.get(coords)
@@ -269,7 +271,6 @@ export default class Board {
 					//Add note
 					if (!SettingsHandler.settings.showPossibleValues || this.get(c).possibleValues.includes(n)) {
 						this.get(c).notes.push(n)
-						this.checkFullNotation(false)
 						finalNoteState = true
 						this.hasChanged = true
 					}
@@ -287,12 +288,10 @@ export default class Board {
 		for (const c of coords) {
 			const cell = this.get(c)
 			if (!cell.clue && cell.value !== s) {
-				const visibleCells = this.ruleset.game.getVisibleCells(this, c)
-
 				cell.value = s
 				cell.notes = []
 				this.hasChanged = true
-				for (const visibleCell of visibleCells) {
+				for (const visibleCell of cell.visibleCells) {
 					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([visibleCell], s, false, false)
 				}
 
@@ -372,7 +371,7 @@ export default class Board {
 
 		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
 			for (const sc of this.selectedCells) {
-				for (const { x, y } of this.ruleset.game.getVisibleCells(this, sc)) {
+				for (const { x, y } of this.get(sc).visibleCells) {
 					highlightedCells[x][y] = true
 				}
 			}
@@ -383,9 +382,8 @@ export default class Board {
 
 	calculateLinks(n: number) {
 		let links: CellCoordinates[][] = []
-		const units = this.ruleset.game.getAllUnits(this)
 
-		for (const unit of units) {
+		for (const unit of this.units) {
 			let newLink = []
 			for (const c of unit) {
 				if (this.get(c).notes.includes(n)) {
@@ -433,29 +431,39 @@ export default class Board {
 	}
 
 	saveToLocalStorage() {
-		GameHandler.saveGame(JSON.stringify(this))
+		const dataToSave: GameData = {
+			id: this.id,
+			mode: this.mode,
+			difficulty: this.difficulty,
+			mission: this.mission,
+			clues: this.clues,
+			solution: this.solution,
+			timer: this.timer,
+			selectedCells: this.selectedCells,
+			history: this.history,
+			version: this.version,
+			colorGroups: this.colorGroups.map(cg => ({ members: cg.members, visibleCells: [] })),
+		}
+
+		GameHandler.saveGame(JSON.stringify(dataToSave))
 	}
 
 	checkFullNotation(force: boolean) {
 		if (this.fullNotation && !force) return
 
-		for (let n = 1; n <= 9; n++) {
-			for (let boxX = 0; boxX < 3; boxX++) {
-				for (let boxY = 0; boxY < 3; boxY++) {
-					let found = false
-					for (let x = 0; x < 3; x++) {
-						for (let y = 0; y < 3; y++) {
-							const cell = this.get({ x: boxX * 3 + x, y: boxY * 3 + y })
-							if (cell.value === n || cell.notes.includes(n)) {
-								found = true
-								break
-							}
-						}
+		for (const unit of this.units) {
+			for (let n = 1; n <= 9; n++) {
+				let found = false
+				for (const c of unit) {
+					const cell = this.get(c)
+					if (cell.value === n || cell.notes.includes(n)) {
+						found = true
+						break
 					}
-					if (!found) {
-						this.fullNotation = false
-						return
-					}
+				}
+				if (!found) {
+					this.fullNotation = false
+					return
 				}
 			}
 		}
@@ -498,5 +506,12 @@ export default class Board {
 
 	checkErrors() {
 		this.ruleset.game.checkErrors(this)
+	}
+
+	afterValuesChanged() {
+		for (const func of this.ruleset.game.initBoardMatrix) func(this)
+		for (const func of this.ruleset.game.afterValuesChanged) func(this)
+		this.checkFullNotation(false)
+		this.checkComplete()
 	}
 }
