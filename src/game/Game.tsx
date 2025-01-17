@@ -274,7 +274,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 					} else {
 						if (hold) {
 							// If the user is dragging the cursor...
-							if (cellPossibleValues.includes(lockedInput)) {
+							if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
 									if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
@@ -299,7 +299,7 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 											GameHandler.game.setValue(coords, lockedInput)
 										}
 									} else {
-										if (cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
+										if (!SettingsHandler.settings.showPossibleValues || cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
 											let newNoteMode
 											newNoteMode = GameHandler.game.setNote(coords, lockedInput)
 											setNoteDragMode(newNoteMode)
