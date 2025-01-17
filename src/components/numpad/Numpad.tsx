@@ -87,7 +87,8 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
             number={buttonIndex + 1}
             disabled={possibleValues !== null && !possibleValues.includes(buttonIndex + 1)}
             hidden={completedNumbers.includes(buttonIndex + 1)}
-            locked={!completedNumbers.includes(buttonIndex + 1) && lockedInput === buttonIndex + 1}
+            locked={!completedNumbers.includes(buttonIndex + 1) && lockedInput === buttonIndex + 1
+            }
             onClick={onNumpadButtonClick}
           />
       )
