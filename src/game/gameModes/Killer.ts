@@ -72,21 +72,10 @@ export function killerRenderCagesAndCageValues({ ctx, game, rendererState, accen
 
 export function killerInitGameData({ game, data }: InitGameProps) {
     game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
-    const [clues, solution, cages] = data.m.split(' ')
+    const [clues, solution] = data.m.split(' ')
     game.clues = decodeMissionString(clues)
     game.mission = data.m
     game.solution = solution
-    game.killer__cages = []
-    for (const cage of cages.split(',')) {
-        let newCage: KillerCage = {
-            members: [],
-            sum: 0
-        }
-        for (let i = 0; i < cage.length; i += 2) {
-            newCage.members.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
-        }
-        game.killer__cages.push(newCage)
-    }
 }
 
 export function killerSolveLastInCages(game: Board) {
@@ -111,7 +100,19 @@ export function killerSolveLastInCages(game: Board) {
 }
 
 export function killerInitCages(game: Board) {
-    game.killer__cageErrors = []
+    const [, , cages] = game.mission.split(' ')
+
+    game.killer__cages = []
+    for (const cage of cages.split(',')) {
+        let newCage: KillerCage = {
+            members: [],
+            sum: 0
+        }
+        for (let i = 0; i < cage.length; i += 2) {
+            newCage.members.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
+        }
+        game.killer__cages.push(newCage)
+    }
 
     for (const cage of game.killer__cages) {
         cage.sum = 0

@@ -26,10 +26,10 @@ type Recommendations = {
 }
 
 class GameHandler {
-	game: Board | null = null;
-	complete: boolean = false;
-	bookmarks: Bookmark[] = [];
-	solved: string[] = [];
+	game: Board | null = null
+	complete: boolean = false
+	bookmarks: Bookmark[] = []
+	solved: string[] = []
 	recommendations: Recommendations
 	statistics: Statistics<GameModeName, DifficultyName>
 
@@ -150,7 +150,6 @@ class GameHandler {
 
 	saveGame(data: string) {
 		try {
-			console.log(data.length)
 			localStorage.setItem('game', data)
 		} catch (e) {
 			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {

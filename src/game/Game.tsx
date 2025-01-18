@@ -21,7 +21,7 @@ type Props = {
 	ruleset: Ruleset
 }
 
-function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
+function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
 	const [noteDragMode, setNoteDragMode] = useState<boolean | null>(null)
 	const [showLinks, setShowLinks] = useState(false)
@@ -158,71 +158,46 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 		setRender(r => r === 100 ? 0 : r + 1)
 	}, [handleComplete, updateMagicWandMode, updatePossibleValues])
 
+	const onSelect = useCallback((state: boolean | null) => {
+		if (!GameHandler.game) return
+		const newState = (state === null) ? !selectMode : state
+		if (newState) {
+			if (GameHandler.game.selectedCells.length > 0) setSelectedCellBeforeSelectMode(GameHandler.game.selectedCells[0])
+			else setSelectedCellBeforeSelectMode(null)
+			GameHandler.game.selectedCells = []
+		} else {
+			if (selectedCellBeforeSelectMode) GameHandler.game.selectedCells = [selectedCellBeforeSelectMode]
+			else GameHandler.game.selectedCells = []
+		}
+
+		setSelectMode(newState)
+		updateMagicWandMode()
+	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode])
+
 	const handleSetColor = useCallback((selectedCoords: CellCoordinates[], color: ColorName = accentColor) => {
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || selectedCoords.length === 0) return
 
-		let coincidence: 'none' | 'partial' | 'full' = 'none'
 		let selectedGroups: ColorGroup[] = []
-		for (const cg of GameHandler.game.colorGroups) {
-			if (coincidence === 'none' && cg.members.length === selectedCoords.length) {
-				// Check if every cell in the colorGroup is in the selected coords
-				if (selectedCoords.every(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
-					coincidence = 'full'
-					selectedGroups = [cg]
-					break
-				}
-			} else {
-				// Full coincidence is impossible, check if any cells in the group are selected
-				if (selectedCoords.some(c => GameHandler.game?.get(c).colorGroups.includes(cg))) {
-					coincidence = 'partial'
-					selectedGroups.push(cg)
-				}
+		for (const c of selectedCoords) {
+			const cell = GameHandler.game.get(c)
+			for (const cg of cell.colorGroups) {
+				if (!selectedGroups.includes(cg)) selectedGroups.push(cg)
 			}
 		}
 
-		let newColor
-
-		switch (coincidence) {
-			case 'partial':
-
-				// Eliminate all selected groups and then apply color
-				GameHandler.game.removeColorGroups(selectedGroups)
-				break
-			case 'none':
-				// Apply color
-				newColor = selectedCoords.every(c => GameHandler.game!.get(c).color === color) ? 'default' : color
-				if (newColor !== 'default' && selectedCoords.length > 1) {
-					let visibleCells: CellCoordinates[] = GameHandler.game.get(selectedCoords[0]).visibleCells
-					for (let i = 1; i < selectedCoords.length; i++) {
-						const visibleCells2 = GameHandler.game.get(selectedCoords[i]).visibleCells
-						visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
-					}
-
-					const newColorGroup: ColorGroup = {
-						members: [...selectedCoords],
-						visibleCells
-					}
-
-					GameHandler.game.colorGroups.push(newColorGroup)
-					onSelect(false)
-					setColorMode(false)
-
-					for (const cell of selectedCoords) {
-						GameHandler.game.get(cell).colorGroups.push(newColorGroup)
-					}
-				}
-				for (const c of selectedCoords) GameHandler.game.setColor(c, newColor)
-				break
-			case 'full':
-				// Change color and remove group if necessary
-				newColor = GameHandler.game.get(selectedCoords[0]).color === color ? 'default' : color
-				if (color === 'default') {
-					GameHandler.game.removeColorGroups(selectedGroups)
-				}
-				for (const c of selectedCoords) GameHandler.game.setColor(c, newColor)
-				break
+		for (const cg of selectedGroups) {
+			if (cg.members.every(c => indexOfCoordsInArray(selectedCoords, c) !== -1) || (color !== GameHandler.game.get(cg.members[0]).color)) {
+				// Coincidence is full or coincidence is partial and color is different: remove the group
+				GameHandler.game.removeColorGroups([cg])
+			}
 		}
-	}, [accentColor])
+
+		if (color !== 'default') {
+			GameHandler.game.createColorGroup(selectedCoords, color)
+			onSelect(false)
+			setColorMode(false)
+		}
+	}, [accentColor, onSelect])
 
 	const onCanvasClick = useCallback((coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => {
 		if (!GameHandler.game || GameHandler.complete || !canvasRef.current) return
@@ -338,22 +313,6 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 				break
 		}
 	}, [magicWandMode, handleUserInteraction])
-
-	const onSelect = useCallback((state: boolean | null) => {
-		if (!GameHandler.game) return
-		const newState = (state === null) ? !selectMode : state
-		if (newState) {
-			if (GameHandler.game.selectedCells.length > 0) setSelectedCellBeforeSelectMode(GameHandler.game.selectedCells[0])
-			else setSelectedCellBeforeSelectMode(null)
-			GameHandler.game.selectedCells = []
-		} else {
-			if (selectedCellBeforeSelectMode) GameHandler.game.selectedCells = [selectedCellBeforeSelectMode]
-			else GameHandler.game.selectedCells = []
-		}
-
-		setSelectMode(newState)
-		updateMagicWandMode()
-	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode])
 
 	const onColor = useCallback(() => {
 		if (colorMode) {
@@ -481,4 +440,4 @@ function CommonGame({ theme, accentColor, paused, handleComplete, ruleset }: Pro
 	)
 }
 
-export default CommonGame
+export default Game

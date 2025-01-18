@@ -91,7 +91,7 @@ export default class Board {
 			this.history = data.history
 			this.board = data.board
 			this.colorGroups = data.colorGroups
-
+			this.recreateCache()
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
 			this.initBoard()
@@ -128,7 +128,6 @@ export default class Board {
 			}
 		}
 
-		for (const func of this.ruleset.game.initBoardMatrix) func(this)
 		this.recreateCache()
 	}
 
@@ -205,17 +204,12 @@ export default class Board {
 			this.colorGroups = item.colorGroups
 			this.history.pop()
 
-			for (const func of this.ruleset.game.initBoardMatrix) func(this)
 			this.recreateCache()
 		}
 	}
 
 	get(c: CellCoordinates) {
-		if (c.x >= 0 && c.x < this.board.length && c.y >= 0 && c.y < this.board[c.x].length) {
-			return this.board[c.x][c.y]
-		} else {
-			return this.board[0][0]
-		}
+		return this.board[c.x][c.y]
 	}
 
 	selectCell(c: CellCoordinates) {
@@ -509,11 +503,33 @@ export default class Board {
 		this.ruleset.game.iterateAllCells(this, func)
 	}
 
+	createColorGroup(coords: CellCoordinates[], color: ColorName) {
+		if (coords.length < 2 || color === 'default') return
+
+		let visibleCells: CellCoordinates[] = this.get(coords[0]).visibleCells
+		for (let i = 1; i < coords.length; i++) {
+			const visibleCells2 = this.get(coords[i]).visibleCells
+			visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
+		}
+
+		const newColorGroup = {
+			members: coords,
+			visibleCells
+		}
+
+		this.colorGroups.push(newColorGroup)
+
+		for (const cell of coords) {
+			this.get(cell).colorGroups.push(newColorGroup)
+			this.get(cell).color = color
+		}
+	}
+
 	removeColorGroups(groupsToRemove: ColorGroup[]) {
 		for (const group of groupsToRemove) {
 			// Remove the reference to the group from its members
-			for (const cell of group.members) {
-				removeByReference(this.get(cell).colorGroups, group)
+			for (const c of group.members) {
+				removeByReference(this.get(c).colorGroups, group)
 			}
 
 			// Remove the color group
@@ -526,6 +542,7 @@ export default class Board {
 	}
 
 	recreateCache() {
+		for (const func of this.ruleset.game.initBoardMatrix) func(this)
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		this.checkFullNotation(false)
 		this.checkComplete()

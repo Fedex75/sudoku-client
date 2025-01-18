@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { millisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
-import CommonGame from '../../game/Game'
+import Game from '../../game/Game'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 
@@ -227,7 +227,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 							</div>
 						</div> :
 
-						<CommonGame theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} />
+						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} />
 				}
 			</SectionContent>
 
