@@ -27,7 +27,7 @@ type Props = {
   noteHighlighted: boolean
   magicWandHighlighted: boolean
   magicWandIcon: React.ReactNode
-  magicWandCalculatorValue: number | undefined
+  calculatorValue: number | undefined
   selectHighlighted: boolean
   colorMode: boolean
 
@@ -43,7 +43,7 @@ type Props = {
   colorDisabled: boolean
 }
 
-export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, undoDisabled, eraseDisabled, hintDisabled, magicWandIcon, magicWandDisabled, lockedColor, magicWandCalculatorValue }: Props): React.JSX.Element {
+export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, undoDisabled, eraseDisabled, hintDisabled, magicWandIcon, magicWandDisabled, lockedColor, calculatorValue }: Props): React.JSX.Element {
   const [hintState, setHintState] = useState(false)
 
   const handleHintClick = useCallback(() => {
@@ -64,8 +64,8 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
   ]
 
   const specialButtons = [
-    <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect} />,
-    <EditButton key={4} icon={magicWandIcon} highlight={magicWandHighlighted} onClick={onMagicWand} disabled={magicWandDisabled} number={magicWandCalculatorValue} />,
+    <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect} number={calculatorValue} />,
+    <EditButton key={4} icon={magicWandIcon} highlight={magicWandHighlighted} onClick={onMagicWand} disabled={magicWandDisabled} />,
     <EditButton key={6} icon={<ColorCirclePaintedSVG />} highlight={colorMode} onClick={onColor} />
   ]
 

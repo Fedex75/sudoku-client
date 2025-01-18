@@ -15,7 +15,7 @@ type Props = {
 function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number }: Props) {
 	return (
 		<div
-			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''}`}
+			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''} ${number !== undefined ? 'number' : ''}`}
 			onTouchStart={e => {
 				e.stopPropagation()
 				if (disabled) return
@@ -34,18 +34,6 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
 			}}
 		>
 			{icon}
-			{/*
-				number !== undefined ?
-					<div style={{ display: 'flex', flexFlow: 'row', gap: '5px', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-						{
-							number.toString().split('').map(digit => (
-								<DigitSVG key={digit} digit={digit} className='edit-buttons__button__digit' />
-							))
-						}
-					</div>
-					: null
-			*/
-			}
 			{
 				number !== undefined ? number : null
 			}

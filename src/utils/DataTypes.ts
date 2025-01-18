@@ -200,6 +200,7 @@ export interface Ruleset {
     game: {
         initGameData: (props: InitGameProps) => void
         initBoardMatrix: ((game: Board) => void)[]
+        getOrthogonalCells: (game: Board, coords: CellCoordinates) => CellCoordinates[]
         getVisibleCells: (game: Board, c: CellCoordinates) => CellCoordinates[]
         getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
         checkAnimations: ((game: Board, c: CellCoordinates) => void)[]

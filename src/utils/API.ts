@@ -13,11 +13,14 @@ class API {
 
 	log(error: any) {
 		return new Promise<void>((resolve, reject) => {
-			axios.post(`${this.host}/api/admin/logerror`, JSON.stringify(error), { withCredentials: true }).then(() => {
-				resolve()
-			}).catch(e => {
-				reject()
-			})
+			try {
+				console.log(error)
+				axios.post(`${this.host}/api/admin/logerror`, JSON.stringify(error), { withCredentials: true }).then(() => {
+					resolve()
+				}).catch(e => {
+					reject()
+				})
+			} catch (e) { }
 		})
 	}
 }

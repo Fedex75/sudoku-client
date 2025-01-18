@@ -157,3 +157,12 @@ export function commonInitUnitsAndVisibilityCache(game: Board) {
 
     game.cache.units = game.ruleset.game.getAllUnits(game)
 }
+
+export function commonGetOrthogonalCells(game: Board, coords: CellCoordinates) {
+    let result: CellCoordinates[] = []
+    if (coords.x > 0) result.push({ x: coords.x - 1, y: coords.y })
+    if (coords.x < game.nSquares - 1) result.push({ x: coords.x + 1, y: coords.y })
+    if (coords.y > 0) result.push({ x: coords.x, y: coords.y - 1 })
+    if (coords.y < game.nSquares - 1) result.push({ x: coords.x, y: coords.y + 1 })
+    return result
+}

@@ -26,10 +26,11 @@
   gap: 7px;
 }
 
-.edit-buttons__button .icon, .special-buttons__button .icon {
+.edit-buttons__button .icon,
+.special-buttons__button .icon {
   width: 100%;
-  max-width: 50% !important;
-  max-height: 50% !important;
+  max-width: 50%;
+  max-height: 50%;
 }
 
 .numpad__rows-wrapper {
@@ -51,6 +52,7 @@
 }
 
 @media (min-aspect-ratio: 46/89) and (max-aspect-ratio: 21/20) {
+
   /*Tablets and small phones*/
   .numpad {
     grid-template-columns: 3fr 4fr;

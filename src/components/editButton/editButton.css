@@ -29,10 +29,15 @@
   background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
 }
 
-.edit-buttons__button__icon {
-  font-size: 35px;
-}
-
 .edit-buttons__button__digit {
   height: 35%;
+}
+
+.edit-buttons__button.number {
+  flex-flow: column;
+  gap: 5px;
+
+  .icon {
+    width: 30%;
+  }
 }

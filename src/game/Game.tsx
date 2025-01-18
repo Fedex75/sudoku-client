@@ -4,14 +4,14 @@ import Numpad from "../components/numpad/Numpad"
 import Canvas from "./Canvas"
 import { CanvasRef, CellCoordinates, ColorGroup, KillerCage, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { Navigate } from "react-router"
-import { AccentColor, ColorName } from "../utils/Colors"
+import { AccentColor, ColorName, colorNames } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
 import { isTouchDevice } from "../utils/isTouchDevice"
 import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
-import { indexOf } from "../utils/Utils"
+import { indexOf, union } from "../utils/Utils"
 
 type Props = {
 	theme: ThemeName
@@ -30,9 +30,9 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 
 	const [dragMode, setDragMode] = useState<boolean | null>(null)
 
-	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'clearColors' | 'calculator'>()
+	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'setColor' | 'clearColors'>()
 
-	const [calculatorValue, setCalculatorValue] = useState(0)
+	const [calculatorValue, setCalculatorValue] = useState<number | undefined>(0)
 
 	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false)
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<CellCoordinates | null>(null)
@@ -48,7 +48,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		if (!GameHandler.game) return
 
 		if (GameHandler.game.selectedCells.length < 2) {
-			setCalculatorValue(0)
+			setCalculatorValue(undefined)
 			return
 		}
 
@@ -73,7 +73,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			return true
 		}
 
-		if (GameHandler.game.mode !== 'killer' || selectedCellsMatchCagesExactly()) {
+		if (selectedCellsMatchCagesExactly()) {
 			let sum = 0
 			for (const cage of selectedCages) {
 				sum += cage.sum
@@ -116,11 +116,8 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			setMagicWandMode('clearColors')
 		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
 			setMagicWandMode('links')
-		} else if (GameHandler.game.mode === 'killer' && GameHandler.game.selectedCells.length > 1) {
-			setMagicWandMode('calculator')
-		} else {
-			setMagicWandMode('disabled')
-			setShowLinks(false)
+		} else if (GameHandler.game.selectedCells.length > 0) {
+			setMagicWandMode('setColor')
 		}
 		updateCalculatorValue()
 	}, [colorMode, lockedInput, updateCalculatorValue])
@@ -193,9 +190,11 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		}
 
 		if (color !== 'default') {
-			GameHandler.game.createColorGroup(selectedCoords, color)
-			handleSelect(false)
-			setColorMode(false)
+			if (selectedCoords.length > 1) {
+				GameHandler.game.createColorGroup(selectedCoords, color)
+				handleSelect(false)
+				setColorMode(false)
+			} else GameHandler.game.setColor(selectedCoords[0], color)
 		}
 	}, [accentColor, handleSelect])
 
@@ -261,7 +260,6 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 									if (GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
 										GameHandler.game.setNote(lockedInput, coords, true)
 									} else {
-										console.log(dragMode)
 										GameHandler.game.setNote(lockedInput, coords, dragMode)
 									}
 
@@ -321,8 +319,24 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 					if (GameHandler.game && !GameHandler.complete) GameHandler.game.clearColors()
 				}, null)
 				break
+			case 'setColor':
+				handleUserInteraction(() => {
+					if (!GameHandler.game) return
+					let possibleColorNames = colorNames.filter(cn => cn !== 'default')
+					const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
+					for (const c of orthogonalCells) {
+						const cell = GameHandler.game.get(c)
+						if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+					}
+					if (possibleColorNames.length > 0) {
+						handleSetColor(GameHandler.game.selectedCells, possibleColorNames[Math.floor(Math.random() * possibleColorNames.length)])
+					} else {
+						handleSetColor(GameHandler.game.selectedCells, accentColor)
+					}
+				}, GameHandler.game.selectedCells[0])
+				break
 		}
-	}, [magicWandMode, handleUserInteraction])
+	}, [magicWandMode, handleUserInteraction, accentColor, handleSetColor])
 
 	const onColor = useCallback(() => {
 		if (colorMode) {
@@ -370,6 +384,10 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	}, [noteMode, possibleValues, lockedInput])
 
 	useEffect(() => {
+		if (magicWandMode !== 'links') setShowLinks(false)
+	}, [magicWandMode])
+
+	useEffect(() => {
 		updatePossibleValues()
 	}, [updatePossibleValues])
 
@@ -378,13 +396,13 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	}, [render, lockedInput, showLinks, selectMode])
 
 	const magicWandIcon = useMemo(() => {
-		if (magicWandMode === 'disabled') {
-			return <MagicWandSVG />
-		} else if (magicWandMode === 'links') {
+		if (magicWandMode === 'links') {
 			return <FontAwesomeIcon icon={faLink} fontSize={30} color="var(--primaryIconColor)" />
 		} else if (magicWandMode === 'clearColors') {
 			return <ColorCircleSVG />
-		} else return null
+		} else {
+			return <MagicWandSVG />
+		}
 	}, [magicWandMode])
 
 	useEffect(() => {
@@ -444,7 +462,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 				possibleValues={possibleValues}
 				completedNumbers={completedNumbers}
 
-				magicWandCalculatorValue={magicWandMode === 'calculator' ? calculatorValue : undefined}
+				calculatorValue={calculatorValue}
 			/>
 		</div>
 	)
