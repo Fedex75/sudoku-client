@@ -503,8 +503,6 @@ export default class Board {
 	}
 
 	checkFullNotation() {
-		if (this.fullNotation) return
-
 		for (const unit of this.cache.units) {
 			for (let n = 1; n <= 9; n++) {
 				let found = false

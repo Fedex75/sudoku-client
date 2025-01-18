@@ -156,6 +156,8 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 				for (const func of GameHandler.game.ruleset.game.afterValuesChanged) func(GameHandler.game)
 			} while (GameHandler.game.hasChanged)
 
+			GameHandler.game.checkFullNotation()
+
 			if (GameHandler.game.isComplete()) {
 				GameHandler.game.animations = [{ type: 'board', center: lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) } }]
 				GameHandler.setComplete()
