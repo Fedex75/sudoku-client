@@ -32,7 +32,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 
 	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'setColor' | 'clearColors'>()
 	const [magicWandColor, setMagicWandColor] = useState<ColorName | null>(null)
-	const [calculatorValue, setCalculatorValue] = useState<number | undefined>(0)
+	const [calculatorValue, setCalculatorValue] = useState<number>(0)
 
 	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false)
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<CellCoordinates | null>(null)
@@ -48,45 +48,61 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		if (!GameHandler.game) return
 
 		if (GameHandler.game.selectedCells.length < 2) {
-			setCalculatorValue(undefined)
+			setCalculatorValue(0)
 			return
 		}
 
-		let selectedCages: KillerCage[] = []
+		if (GameHandler.game.mode === 'killer') {
+			let selectedCages: KillerCage[] = []
 
-		function selectedCellsMatchCagesExactly(): boolean {
-			if (!GameHandler.game) return false
+			function selectedCellsMatchCagesExactly(): boolean {
+				if (!GameHandler.game) return false
 
-			for (const c of GameHandler.game.selectedCells) {
-				const cell = GameHandler.game.get(c)
-				if (cell.value === 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) selectedCages.push(cell.cache.cage)
-			}
+				for (const c of GameHandler.game.selectedCells) {
+					const cell = GameHandler.game.get(c)
+					if (cell.value === 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) selectedCages.push(cell.cache.cage)
+				}
 
-			for (const cage of selectedCages) {
-				for (const coords of cage.members) {
-					if (indexOf(coords, GameHandler.game.selectedCells) === -1) {
-						return false
+				for (const cage of selectedCages) {
+					for (const coords of cage.members) {
+						if (indexOf(coords, GameHandler.game.selectedCells) === -1) {
+							return false
+						}
 					}
 				}
+
+				return true
 			}
 
-			return true
-		}
-
-		if (selectedCellsMatchCagesExactly()) {
-			let sum = 0
-			for (const cage of selectedCages) {
-				sum += cage.sum
-			}
-			for (const c of GameHandler.game.selectedCells) {
-				const cell = GameHandler.game.get(c)
-				if (cell.value > 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) {
-					sum += cell.value
+			if (selectedCellsMatchCagesExactly()) {
+				let sum = 0
+				for (const cage of selectedCages) {
+					sum += cage.sum
 				}
+				for (const c of GameHandler.game.selectedCells) {
+					const cell = GameHandler.game.get(c)
+					if (cell.value > 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) {
+						sum += cell.value
+					}
+				}
+				setCalculatorValue(sum)
+			} else {
+				setCalculatorValue(0)
 			}
-			setCalculatorValue(sum)
-		} else {
-			setCalculatorValue(0)
+		} else if (GameHandler.game.mode === 'sandwich') {
+			let shareSameColumn = true
+			let shareSameRow = true
+			let sum = 0
+			for (const c of GameHandler.game.selectedCells) {
+				if (c.x !== GameHandler.game.selectedCells[0].x) shareSameColumn = false
+				if (c.y !== GameHandler.game.selectedCells[0].y) shareSameRow = false
+				sum += GameHandler.game.get(c).value
+			}
+			if (shareSameRow || shareSameColumn) {
+				setCalculatorValue(sum)
+			} else {
+				setCalculatorValue(0)
+			}
 		}
 	}, [])
 

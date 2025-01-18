@@ -12,10 +12,10 @@ type Props = {
 	number?: number
 }
 
-function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number }: Props) {
+function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number = 0 }: Props) {
 	return (
 		<div
-			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''} ${number !== undefined ? 'number' : ''}`}
+			className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''} ${number > 0 ? 'number' : ''}`}
 			onTouchStart={e => {
 				e.stopPropagation()
 				if (disabled) return
@@ -35,7 +35,7 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
 		>
 			{icon}
 			{
-				number !== undefined ? number : null
+				number > 0 ? number : null
 			}
 		</div>
 	)
