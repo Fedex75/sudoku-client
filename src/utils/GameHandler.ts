@@ -1,7 +1,7 @@
 import missionsData from '../data/missions.json'
 import { decodeMissionString } from './Decoder'
-import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, decodeDifficulty, decodeMode } from './Difficulties'
-import { defaultStatistics, Statistics, updateStatistic } from './Statistics'
+import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
+import { defaultStatistics, Statistics, update } from './Statistics'
 import Board from '../game/Board'
 import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
 import API from './API'
@@ -138,7 +138,7 @@ class GameHandler {
 	}
 
 	findMissionFromID(id: string) {
-		return missions[decodeMode(id[0] as GameModeIdentifier)][decodeDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData
+		return missions[getMode(id[0] as GameModeIdentifier)][getDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData
 	}
 
 	exportMission() {
@@ -153,7 +153,7 @@ class GameHandler {
 			localStorage.setItem('game', data)
 		} catch (e) {
 			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {
-				API.logError({ message: 'Quota exceeded', date: Date.now() })
+				API.log({ message: 'Quota exceeded', date: Date.now() })
 			}
 		}
 	}
@@ -164,7 +164,7 @@ class GameHandler {
 			localStorage.removeItem('game')
 			if (this.game.difficulty !== 'unrated' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
 			localStorage.setItem('solved', JSON.stringify(this.solved))
-			updateStatistic(this.statistics[this.game.mode][this.game.difficulty], this.game.timer)
+			update(this.statistics[this.game.mode][this.game.difficulty], this.game.timer)
 			localStorage.setItem('statistics', JSON.stringify(this.statistics))
 		}
 	}

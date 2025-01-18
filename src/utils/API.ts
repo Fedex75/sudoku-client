@@ -11,7 +11,7 @@ class API {
 		this.clientVersionIsBeta = false
 	}
 
-	logError(error: any) {
+	log(error: any) {
 		return new Promise<void>((resolve, reject) => {
 			axios.post(`${this.host}/api/admin/logerror`, JSON.stringify(error), { withCredentials: true }).then(() => {
 				resolve()

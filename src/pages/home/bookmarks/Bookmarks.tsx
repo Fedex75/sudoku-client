@@ -5,7 +5,7 @@ import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
 import { Link } from "react-router-dom"
 import { ActionSheet, ActionSheetButton } from '../../../components'
-import { decodeDifficulty, decodeMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
+import { getDifficulty, getMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import missionsData from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
@@ -87,8 +87,8 @@ function Bookmarks({ theme, accentColor }: Props) {
 								let solved
 
 								if (isIDBookmark(bm)) {
-									const mode = decodeMode(bm.id[0] as GameModeIdentifier)
-									board = new Board(missions[mode][decodeDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
+									const mode = getMode(bm.id[0] as GameModeIdentifier)
+									board = new Board(missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
 									solved = GameHandler.solved.includes(bm.id)
 								} else {
 									board = GameHandler.boardFromCustomMission(bm.m)

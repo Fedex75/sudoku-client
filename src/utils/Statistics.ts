@@ -175,7 +175,7 @@ export const defaultStatistics: Statistics<GameModeName, DifficultyName> = {
   }
 }
 
-export const millisecondsToHMS = (time: number) => {
+export const convertMillisecondsToHMS = (time: number) => {
   const totalHours = Math.floor((time / 3600000) % 60)
   const totalHoursString = totalHours > 0 ? totalHours + ':' : ''
   const paddedMinutes = ('0' + Math.floor((time / 60000) % 60)).slice(-2)
@@ -183,9 +183,9 @@ export const millisecondsToHMS = (time: number) => {
   return `${totalHoursString}${paddedMinutes}:${paddedSeconds}`
 }
 
-export const updateStatistic = (stat: StatisticsItem | undefined, newValue: number) => {
+export const update = (stat: StatisticsItem | undefined, to: number) => {
   if (stat === undefined) return
-  stat.average = (stat.count * stat.average + newValue) / (stat.count + 1)
+  stat.average = (stat.count * stat.average + to) / (stat.count + 1)
   stat.count++
-  stat.best = (stat.best === 0 || newValue < stat.best) ? newValue : stat.best
+  stat.best = (stat.best === 0 || to < stat.best) ? to : stat.best
 }

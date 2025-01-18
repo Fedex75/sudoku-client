@@ -1,17 +1,17 @@
 import { InitGameProps, StateProps, RendererProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
-import { decodeDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
+import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
 import { commonDetectErrorsByVisibility, drawSVGNumber } from "./Common"
 
 export function sandwichInitGameData({ game, data }: InitGameProps) {
-    game.difficulty = decodeDifficulty(data.id[1] as DifficultyIdentifier)
+    game.difficulty = getDifficulty(data.id[1] as DifficultyIdentifier)
     const [clues, horizontalClues, verticalClues] = data.m.split(' ')
     game.clues = decodeMissionString(clues)
     game.mission = data.m
-    game.sandwich__horizontalClues = horizontalClues.split(',').map(c => Number.parseInt(c))
-    game.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
+    game.cache.sandwich__horizontalClues = horizontalClues.split(',').map(c => Number.parseInt(c))
+    game.cache.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
 }
 
 const lateralClueMarginFactor = 0.8
@@ -83,10 +83,10 @@ export function sandwichRenderLateralClues({ ctx, game, squareSize, themes, them
     const size = squareSize * 0.35
     const halfSquareSize = squareSize / 2
     for (let i = 0; i < game.nSquares; i++) {
-        ctx.fillStyle = ctx.strokeStyle = game.sandwich__lateralCluesErrors.horizontal[i] ? '#ff5252' : (game.selectedCells.some(cell => cell.y === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
-        if (game.sandwich__visibleHorizontalClues[i]) drawSVGNumber(ctx, game.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
-        ctx.fillStyle = ctx.strokeStyle = game.sandwich__lateralCluesErrors.vertical[i] ? '#ff5252' : (game.selectedCells.some(cell => cell.x === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
-        if (game.sandwich__visibleVerticalClues[i]) drawSVGNumber(ctx, game.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
+        ctx.fillStyle = ctx.strokeStyle = game.cache.sandwich__lateralCluesErrors.horizontal[i] ? '#ff5252' : (game.selectedCells.some(cell => cell.y === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
+        if (game.cache.sandwich__visibleHorizontalClues[i]) drawSVGNumber(ctx, game.cache.sandwich__horizontalClues[i], x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
+        ctx.fillStyle = ctx.strokeStyle = game.cache.sandwich__lateralCluesErrors.vertical[i] ? '#ff5252' : (game.selectedCells.some(cell => cell.x === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
+        if (game.cache.sandwich__visibleVerticalClues[i]) drawSVGNumber(ctx, game.cache.sandwich__verticalClues[i], rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
     }
 }
 
@@ -145,29 +145,29 @@ export function sandwichGetSumBetween1and9(game: Board, row: number, column: num
 export function sandwichDetectErrors(game: Board) {
     for (let x = 0; x < game.nSquares; x++) {
         const [sum, minY, maxY] = sandwichGetSumBetween1and9(game, -1, x)
-        game.sandwich__visibleVerticalClues[x] = true
-        game.sandwich__lateralCluesErrors.vertical[x] = false
-        if (sum !== -1 && sum !== game.sandwich__verticalClues[x]) {
+        game.cache.sandwich__visibleVerticalClues[x] = true
+        game.cache.sandwich__lateralCluesErrors.vertical[x] = false
+        if (sum !== -1 && sum !== game.cache.sandwich__verticalClues[x]) {
             for (let y = minY; y <= maxY; y++) {
-                game.get({ x, y }).isError = true
+                game.get({ x, y }).cache.isError = true
             }
-            game.sandwich__lateralCluesErrors.vertical[x] = true
-        } else if (sum === game.sandwich__verticalClues[x]) {
-            game.sandwich__visibleVerticalClues[x] = false
+            game.cache.sandwich__lateralCluesErrors.vertical[x] = true
+        } else if (sum === game.cache.sandwich__verticalClues[x]) {
+            game.cache.sandwich__visibleVerticalClues[x] = false
         }
     }
 
     for (let y = 0; y < game.nSquares; y++) {
         const [sum, minX, maxX] = sandwichGetSumBetween1and9(game, y, -1)
-        game.sandwich__visibleHorizontalClues[y] = true
-        game.sandwich__lateralCluesErrors.horizontal[y] = false
-        if (sum !== -1 && sum !== game.sandwich__horizontalClues[y]) {
+        game.cache.sandwich__visibleHorizontalClues[y] = true
+        game.cache.sandwich__lateralCluesErrors.horizontal[y] = false
+        if (sum !== -1 && sum !== game.cache.sandwich__horizontalClues[y]) {
             for (let x = minX; x <= maxX; x++) {
-                game.get({ x, y }).isError = true
+                game.get({ x, y }).cache.isError = true
             }
-            game.sandwich__lateralCluesErrors.horizontal[y] = true
-        } else if (sum === game.sandwich__horizontalClues[y]) {
-            game.sandwich__visibleHorizontalClues[y] = false
+            game.cache.sandwich__lateralCluesErrors.horizontal[y] = true
+        } else if (sum === game.cache.sandwich__horizontalClues[y]) {
+            game.cache.sandwich__visibleHorizontalClues[y] = false
         }
     }
 
@@ -179,13 +179,13 @@ export function sandwichDetectErrors(game: Board) {
 }
 
 export function sandwichInitClueVisibility(game: Board) {
-    game.sandwich__visibleHorizontalClues = []
-    game.sandwich__visibleVerticalClues = []
-    game.sandwich__lateralCluesErrors = { horizontal: [], vertical: [] }
+    game.cache.sandwich__visibleHorizontalClues = []
+    game.cache.sandwich__visibleVerticalClues = []
+    game.cache.sandwich__lateralCluesErrors = { horizontal: [], vertical: [] }
     for (let i = 0; i < game.nSquares; i++) {
-        game.sandwich__visibleHorizontalClues.push(true)
-        game.sandwich__visibleVerticalClues.push(true)
-        game.sandwich__lateralCluesErrors.horizontal.push(false)
-        game.sandwich__lateralCluesErrors.vertical.push(false)
+        game.cache.sandwich__visibleHorizontalClues.push(true)
+        game.cache.sandwich__visibleVerticalClues.push(true)
+        game.cache.sandwich__lateralCluesErrors.horizontal.push(false)
+        game.cache.sandwich__lateralCluesErrors.vertical.push(false)
     }
 }

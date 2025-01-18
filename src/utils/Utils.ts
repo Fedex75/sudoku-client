@@ -1,13 +1,30 @@
 import { CellCoordinates } from "./DataTypes"
 
-export function indexOfCoordsInArray(array: CellCoordinates[], cellToFind: CellCoordinates) {
-    for (let i = 0; i < array.length; i++) {
-        if (array[i].x === cellToFind.x && array[i].y === cellToFind.y) return i
+export function indexOf(coords: CellCoordinates, within: CellCoordinates[]) {
+    for (let i = 0; i < within.length; i++) {
+        if (within[i].x === coords.x && within[i].y === coords.y) return i
     }
     return -1
 }
 
-export function removeByReference<T>(array: T[], element: T) {
-    const index = array.indexOf(element)
-    if (index > -1) array.splice(array.indexOf(element), 1)
+export function remove<T>(reference: T, from: T[]) {
+    const index = from.indexOf(reference)
+    if (index > -1) from.splice(from.indexOf(reference), 1)
+}
+
+export function intersection(of: CellCoordinates[][]): CellCoordinates[] {
+    if (of.length === 0) return []
+    return [...of[0]].filter(coords => of.every(arr => indexOf(coords, arr) !== -1))
+}
+
+export function union(of: CellCoordinates[][]): CellCoordinates[] {
+    const result: CellCoordinates[] = []
+
+    for (const array of of) {
+        for (const coords of array) {
+            if (indexOf(coords, result) === -1) result.push(coords)
+        }
+    }
+
+    return result
 }

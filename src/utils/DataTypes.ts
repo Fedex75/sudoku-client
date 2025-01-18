@@ -39,10 +39,7 @@ export type CageVector = {
     ratio: number
 }
 
-export type Cell = {
-    value: number
-    notes: number[]
-    color: ColorName
+export type CacheItem = {
     solution: number
     clue: boolean
     cage?: KillerCage
@@ -51,6 +48,13 @@ export type Cell = {
     units: CellCoordinates[][]
     isError: boolean
     colorGroups: ColorGroup[]
+}
+
+export type Cell = {
+    value: number
+    notes: number[]
+    color: ColorName
+    cache: CacheItem
 }
 
 export type BoardMatrix = Cell[][]

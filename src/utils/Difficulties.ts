@@ -11,8 +11,8 @@ export const difficulties: Record<GameModeName, DifficultyName[]> = {
 
 export type GameModeIdentifier = 'c' | 'k' | 'x' | 'w' | 't'
 
-export function decodeMode(identifier: GameModeIdentifier): GameModeName {
-	switch (identifier) {
+export function getMode(from: GameModeIdentifier): GameModeName {
+	switch (from) {
 		case 'c':
 			return 'classic'
 		case 'k':
@@ -28,8 +28,8 @@ export function decodeMode(identifier: GameModeIdentifier): GameModeName {
 
 export type DifficultyIdentifier = 'e' | 'm' | 'h' | 'x' | 'v' | 'u'
 
-export function decodeDifficulty(identifier: DifficultyIdentifier): DifficultyName {
-	switch (identifier) {
+export function getDifficulty(from: DifficultyIdentifier): DifficultyName {
+	switch (from) {
 		case 'e':
 			return 'easy'
 		case 'm':

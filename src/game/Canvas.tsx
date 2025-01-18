@@ -171,7 +171,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 
 		const ctx = canvasRef.current.getContext('2d')
 		if (!ctx) return
-		const highlightedCells = game.calculateHighlightedCells(lockedInput)
+		const highlightedCells = game.getHighlightedCells(lockedInput)
 		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
 
 		let selectedCellsValues = []

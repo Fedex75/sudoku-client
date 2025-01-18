@@ -8,7 +8,7 @@ import { AccentColor } from "../../../utils/Colors"
 import GameHandler from "../../../utils/GameHandler"
 import { useCallback, useState } from "react"
 import { GameModeName } from "../../../utils/Difficulties"
-import { millisecondsToHMS } from "../../../utils/Statistics"
+import { convertMillisecondsToHMS } from "../../../utils/Statistics"
 import { ActionSheet, ActionSheetButton } from "../../../components"
 
 type Props = {
@@ -25,7 +25,7 @@ export default function Statistics({ theme, accentColor }: Props) {
     const { t } = useTranslation()
 
     const decreaseDifficulty = useCallback((gameMode: GameModeName) => {
-        if (selectedDifficulties[gameMode] > 0){
+        if (selectedDifficulties[gameMode] > 0) {
             setSelectedDifficulties({
                 ...selectedDifficulties,
                 [gameMode]: selectedDifficulties[gameMode] - 1
@@ -34,7 +34,7 @@ export default function Statistics({ theme, accentColor }: Props) {
     }, [selectedDifficulties])
 
     const increaseDifficulty = useCallback((gameMode: GameModeName) => {
-        if (selectedDifficulties[gameMode] < Object.entries(GameHandler.statistics[gameMode]).length - 1){
+        if (selectedDifficulties[gameMode] < Object.entries(GameHandler.statistics[gameMode]).length - 1) {
             setSelectedDifficulties({
                 ...selectedDifficulties,
                 [gameMode]: selectedDifficulties[gameMode] + 1
@@ -49,9 +49,9 @@ export default function Statistics({ theme, accentColor }: Props) {
 
     return (
         <div className='home__statistics'>
-            <div style={{display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: 10, alignItems: 'center'}}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: 10, alignItems: 'center' }}>
                 <p className='home__section-title'>{t('home.statistics')}</p>
-                <FontAwesomeIcon icon={faTrash} style={{color: 'var(--red)'}} fontSize={20} onClick={() => {setResetStatisticsActionSheetIsOpen(true)}} />
+                <FontAwesomeIcon icon={faTrash} style={{ color: 'var(--red)' }} fontSize={20} onClick={() => { setResetStatisticsActionSheetIsOpen(true) }} />
             </div>
 
             <div className='home__statistics-list'>
@@ -62,9 +62,9 @@ export default function Statistics({ theme, accentColor }: Props) {
                             <div key={gameMode} className='home__statistics-list__item' >
                                 <p className='home__statistics-list__item__title'>{t(`gameModes.${gameMode}`)}</p>
                                 <div className='home__statistics-list__item__difficulty-wrapper'>
-                                    <div className='home__statistics-list__item__difficulty-control' onClick={() => {decreaseDifficulty(gameMode as GameModeName)}}><FontAwesomeIcon icon={faChevronLeft} /></div>
+                                    <div className='home__statistics-list__item__difficulty-control' onClick={() => { decreaseDifficulty(gameMode as GameModeName) }}><FontAwesomeIcon icon={faChevronLeft} /></div>
                                     <div className='home__statistics-list__item__difficulty-name'>{selectedDifficulties ? t(`gameDifficulties.${selectedDifficultyName}`) : ''}</div>
-                                    <div className='home__statistics-list__item__difficulty-control' onClick={() => {increaseDifficulty(gameMode as GameModeName)}}><FontAwesomeIcon icon={faChevronRight} /></div>
+                                    <div className='home__statistics-list__item__difficulty-control' onClick={() => { increaseDifficulty(gameMode as GameModeName) }}><FontAwesomeIcon icon={faChevronRight} /></div>
                                 </div>
                                 <div className='home__statistics-list__item__data'>
                                     <div className='home__statistics-list__item__data__item'>
@@ -73,11 +73,11 @@ export default function Statistics({ theme, accentColor }: Props) {
                                     </div>
                                     <div className='home__statistics-list__item__data__item'>
                                         <p>Average time</p>
-                                        <p>{millisecondsToHMS(data.average)}</p>
+                                        <p>{convertMillisecondsToHMS(data.average)}</p>
                                     </div>
                                     <div className='home__statistics-list__item__data__item'>
                                         <p>Best time</p>
-                                        <p>{millisecondsToHMS(data.best)}</p>
+                                        <p>{convertMillisecondsToHMS(data.best)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -111,7 +111,7 @@ export default function Statistics({ theme, accentColor }: Props) {
                 title={t('statistics.promptReset')}
                 cancelTitle={t('common.cancel')}
                 buttonsMode
-                onClose={() => {setResetStatisticsActionSheetIsOpen(false)}}
+                onClose={() => { setResetStatisticsActionSheetIsOpen(false) }}
             >
                 <ActionSheetButton title={t('common.reset')} color="var(--red)" onClick={resetStatistics} />
             </ActionSheet>

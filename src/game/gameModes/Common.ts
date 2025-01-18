@@ -1,5 +1,6 @@
 import { CellCoordinates, DigitChar, RendererProps } from "../../utils/DataTypes"
 import SettingsHandler from "../../utils/SettingsHandler"
+import { intersection } from "../../utils/Utils"
 import Board from "../Board"
 
 const SVGHeight = 30
@@ -77,11 +78,11 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
             //Value
             const highlightValue = (lockedInput === 0 && selectedCellsValues.includes(cell.value)) || lockedInput === cell.value
             ctx.strokeStyle = ctx.fillStyle =
-                cell.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
+                cell.cache.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
                     highlightValue ? (cell.color === 'default' ? themes[theme].canvasValueHighlightColor : 'white') :
-                        cell.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
+                        cell.cache.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
                             solutionColors[accentColor]
-            if (cell.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+            if (cell.cache.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
             drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
         } else {
             //Candidates
@@ -99,19 +100,19 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
 export function commonDetectErrorsFromSolution(game: Board) {
     if (!SettingsHandler.settings.checkMistakes) return []
 
-    game.iterateAllCells(cell => { cell.isError = cell.solution > 0 && cell.value > 0 && cell.value !== cell.solution })
+    game.iterateAllCells(cell => { cell.cache.isError = cell.cache.solution > 0 && cell.value > 0 && cell.value !== cell.cache.solution })
 
     return []
 }
 
 export function commonDetectErrorsByVisibility(game: Board) {
-    game.iterateAllCells(cell => { cell.isError = false })
+    game.iterateAllCells(cell => { cell.cache.isError = false })
 
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.value > 0) {
-            for (const vc of cell.visibleCells) {
+            for (const vc of cell.cache.visibleCells) {
                 if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
-                    cell.isError = true
+                    cell.cache.isError = true
                 }
             }
         }
@@ -120,17 +121,39 @@ export function commonDetectErrorsByVisibility(game: Board) {
     return []
 }
 
-export function commonInitCellsCache(game: Board) {
-    for (const cg of game.colorGroups) {
-        for (const c of cg.members) {
-            game.get(c).colorGroups.push(cg)
+export function commonInitCacheBoard(game: Board) {
+    for (let x = 0; x < game.nSquares; x++) {
+        game.cache.board.push(Array(game.nSquares).fill(null))
+        for (let y = 0; y < game.nSquares; y++) {
+            const number = Number.parseInt(game.clues[y * game.nSquares + x])
+            game.cache.board[x][y] = {
+                clue: number > 0,
+                solution: game.solution === '' ? 0 : Number.parseInt(game.solution[y * game.nSquares + x]),
+                possibleValues: [],
+                visibleCells: [],
+                units: [],
+                isError: false,
+                colorGroups: []
+            }
+            game.get({ x, y }).cache = game.cache.board[x][y]
         }
     }
+}
 
+export function commonInitColorGroupsCache(game: Board) {
+    for (const cg of game.colorGroups) {
+        for (const c of cg.members) {
+            game.get(c).cache.colorGroups.push(cg)
+        }
+        cg.visibleCells = intersection(cg.members.map(m => game.get(m).cache.visibleCells))
+    }
+}
+
+export function commonInitUnitsAndVisibilityCache(game: Board) {
     game.iterateAllCells((cell, coords) => {
-        cell.visibleCells = game.ruleset.game.getVisibleCells(game, coords)
-        cell.units = game.ruleset.game.getCellUnits(game, coords)
+        cell.cache.visibleCells = game.ruleset.game.getVisibleCells(game, coords)
+        cell.cache.units = game.ruleset.game.getCellUnits(game, coords)
     })
 
-    game.units = game.ruleset.game.getAllUnits(game)
+    game.cache.units = game.ruleset.game.getAllUnits(game)
 }

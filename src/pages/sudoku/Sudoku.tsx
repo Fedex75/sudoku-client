@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
 import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
 import { useTranslation } from 'react-i18next'
-import { millisecondsToHMS } from '../../utils/Statistics'
+import { convertMillisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
 import Game from '../../game/Game'
@@ -56,7 +56,7 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, o
 	return (
 		<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
 			{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
-			<p className='sudoku__timer__time'>{millisecondsToHMS(time)}</p>
+			<p className='sudoku__timer__time'>{convertMillisecondsToHMS(time)}</p>
 		</div>
 	)
 })
@@ -213,15 +213,15 @@ export default function Sudoku({ theme, accentColor }: Props) {
 								<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
 								<div className='sudoku__win-screen__stat'>
 									<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
-									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.game.timer)}</div>
+									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.game.timer)}</div>
 								</div>
 								<div className='sudoku__win-screen__stat'>
 									<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
-									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
+									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
 								</div>
 								<div className='sudoku__win-screen__stat'>
 									<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
-									<div className='sudoku__win-screen__stat__value'>{millisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
+									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
 								</div>
 								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
 							</div>

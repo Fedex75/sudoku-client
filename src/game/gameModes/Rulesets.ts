@@ -1,4 +1,4 @@
-import { commonDetectErrorsFromSolution, commonInitCellsCache, commonRenderCellValueAndCandidates } from "./Common"
+import { commonDetectErrorsFromSolution, commonInitCacheBoard, commonInitColorGroupsCache, commonInitUnitsAndVisibilityCache, commonRenderCellValueAndCandidates } from "./Common"
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits } from "./SudokuX"
@@ -19,7 +19,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: classicInitGameData,
-            initBoardMatrix: [commonInitCellsCache],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
@@ -43,7 +43,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: killerInitGameData,
-            initBoardMatrix: [killerInitCages, commonInitCellsCache],
+            initBoardMatrix: [commonInitCacheBoard, killerInitCages, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getVisibleCells: killerGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
@@ -67,7 +67,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sudokuXInitGameData,
-            initBoardMatrix: [commonInitCellsCache],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getVisibleCells: sudokuXGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
@@ -91,7 +91,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sandwichInitGameData,
-            initBoardMatrix: [commonInitCellsCache, sandwichInitClueVisibility],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache, sandwichInitClueVisibility],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
@@ -115,7 +115,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: () => { },
-            initBoardMatrix: [commonInitCellsCache],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],

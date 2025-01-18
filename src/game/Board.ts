@@ -1,10 +1,20 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
-import { DifficultyName, GameModeIdentifier, GameModeName, decodeMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem, KillerCage } from "../utils/DataTypes"
+import { DifficultyName, GameModeIdentifier, GameModeName, getMode } from "../utils/Difficulties"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem, KillerCage, CacheItem } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
-import { indexOfCoordsInArray, removeByReference } from "../utils/Utils"
+import { indexOf, intersection, remove } from "../utils/Utils"
 import { rulesets } from "./gameModes/Rulesets"
+
+const defaultCacheItem: CacheItem = {
+	clue: false,
+	solution: 0,
+	possibleValues: [],
+	visibleCells: [],
+	units: [],
+	isError: false,
+	colorGroups: []
+}
 
 export default class Board {
 	// Constants
@@ -28,20 +38,24 @@ export default class Board {
 	fullNotation: boolean
 	colorGroups: ColorGroup[]
 
-	units: CellCoordinates[][]
-
 	animations: BoardAnimation[]
 
-	killer__cages: KillerCage[]
-	killer__cageErrors: KillerCage[]
+	cache: {
+		board: CacheItem[][]
 
-	sandwich__horizontalClues: number[]
-	sandwich__verticalClues: number[]
-	sandwich__visibleHorizontalClues: boolean[]
-	sandwich__visibleVerticalClues: boolean[]
-	sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
+		units: CellCoordinates[][]
 
-	sudokuX__diagonalErrors: [boolean, boolean]
+		killer__cages: KillerCage[]
+		killer__cageErrors: KillerCage[]
+
+		sandwich__horizontalClues: number[]
+		sandwich__verticalClues: number[]
+		sandwich__visibleHorizontalClues: boolean[]
+		sandwich__visibleVerticalClues: boolean[]
+		sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
+
+		sudokuX__diagonalErrors: [boolean, boolean]
+	}
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
 		this.id = data.id
@@ -60,23 +74,26 @@ export default class Board {
 		this.hasChanged = false
 		this.animations = []
 
-		this.units = []
-
-		this.killer__cages = []
-		this.killer__cageErrors = []
-
-		this.sandwich__horizontalClues = []
-		this.sandwich__verticalClues = []
-		this.sandwich__visibleHorizontalClues = []
-		this.sandwich__visibleVerticalClues = []
-		this.sandwich__lateralCluesErrors = { horizontal: [], vertical: [] }
-
-		this.sudokuX__diagonalErrors = [false, false]
+		this.cache = {
+			board: [],
+			units: [],
+			killer__cages: [],
+			killer__cageErrors: [],
+			sandwich__horizontalClues: [],
+			sandwich__verticalClues: [],
+			sandwich__visibleHorizontalClues: [],
+			sandwich__visibleVerticalClues: [],
+			sandwich__lateralCluesErrors: {
+				horizontal: [],
+				vertical: []
+			},
+			sudokuX__diagonalErrors: [false, false],
+		}
 
 		if (isGameData(data)) {
 			this.mode = data.mode
 		} else {
-			this.mode = decodeMode(data.id[0] as GameModeIdentifier)
+			this.mode = getMode(data.id[0] as GameModeIdentifier)
 		}
 
 		this.ruleset = rulesets[this.mode]
@@ -114,16 +131,10 @@ export default class Board {
 			for (let y = 0; y < this.nSquares; y++) {
 				const number = Number.parseInt(this.clues[y * this.nSquares + x])
 				this.board[x][y] = {
-					clue: number > 0,
 					value: number,
 					notes: [],
-					solution: this.solution === '' ? 0 : Number.parseInt(this.solution[y * this.nSquares + x]),
 					color: 'default',
-					possibleValues: [],
-					visibleCells: [],
-					units: [],
-					isError: false,
-					colorGroups: []
+					cache: defaultCacheItem
 				}
 			}
 		}
@@ -135,7 +146,7 @@ export default class Board {
 		let completedNumbers: number[] = []
 		let count = Array(this.nSquares).fill(0)
 		this.iterateAllCells((cell) => {
-			if (cell.value > 0 && !cell.isError) {
+			if (cell.value > 0 && !cell.cache.isError) {
 				count[cell.value - 1]++
 				if (count[cell.value - 1] === this.nSquares) {
 					completedNumbers.push(cell.value)
@@ -156,13 +167,7 @@ export default class Board {
 					value: cell.value,
 					notes: cell.notes,
 					color: cell.color,
-					solution: cell.solution,
-					clue: cell.clue,
-					possibleValues: [],
-					visibleCells: [],
-					units: [],
-					isError: cell.isError,
-					colorGroups: []
+					cache: defaultCacheItem
 				})
 			}
 			boardToSave.push(col)
@@ -208,21 +213,21 @@ export default class Board {
 		}
 	}
 
-	get(c: CellCoordinates) {
-		return this.board[c.x][c.y]
+	get(coords: CellCoordinates) {
+		return this.board[coords.x][coords.y]
 	}
 
-	selectCell(c: CellCoordinates) {
-		const index = indexOfCoordsInArray(this.selectedCells, c)
-		if (index === -1) this.selectedCells.push(c)
+	select(coords: CellCoordinates) {
+		const index = indexOf(coords, this.selectedCells)
+		if (index === -1) this.selectedCells.push(coords)
 		return this.selectedCells = this.selectedCells.filter((_, i) => i !== index)
 	}
 
-	selectBox(c1: CellCoordinates, c2: CellCoordinates) {
-		const minX = Math.min(c1.x, c2.x)
-		const maxX = Math.max(c1.x, c2.x)
-		const minY = Math.min(c1.y, c2.y)
-		const maxY = Math.max(c1.y, c2.y)
+	selectBox(from: CellCoordinates, to: CellCoordinates) {
+		const minX = Math.min(from.x, to.x)
+		const maxX = Math.max(from.x, to.x)
+		const minY = Math.min(from.y, to.y)
+		const maxY = Math.max(from.y, to.y)
 		this.selectedCells = []
 		for (let x = minX; x <= maxX; x++) {
 			for (let y = minY; y <= maxY; y++) {
@@ -232,12 +237,12 @@ export default class Board {
 	}
 
 	onlyAvailableInAnyUnit(c: CellCoordinates, n: number) {
-		if (!this.get(c).possibleValues.includes(n)) return false
-		for (const unit of this.get(c).units) {
+		if (!this.get(c).cache.possibleValues.includes(n)) return false
+		for (const unit of this.get(c).cache.units) {
 			let found = 0
 			for (const coords of unit) {
 				const cell = this.get(coords)
-				if (cell.value === 0 && cell.possibleValues.includes(n)) {
+				if (cell.value === 0 && cell.cache.possibleValues.includes(n)) {
 					found++
 				}
 			}
@@ -249,38 +254,32 @@ export default class Board {
 		return false
 	}
 
-	setNote(coords: CellCoordinates[], n: number, state: boolean | null = null, checkAutoSolution: boolean = true): boolean | null {
+	setNote(_: number, of: CellCoordinates[], to: boolean | null = null, checkingAutoSolution: boolean = true): boolean | null {
 		let finalNoteState: boolean | null = null
 
-		for (const c of coords) {
+		for (const c of of) {
 			const cell = this.get(c)
 
 			if (cell.value === 0) {
 				//Check if only available place in any unit
-				if (SettingsHandler.settings.autoSolveOnlyInBox && checkAutoSolution && this.onlyAvailableInAnyUnit(c, n)) {
+				if (SettingsHandler.settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(c, _)) {
 					finalNoteState = true
-					this.setValue([c], n)
+					this.setValue([c], _)
 					this.hasChanged = true
-				} else if (cell.notes.includes(n)) {
-					if (state !== true) {
+				} else if (cell.notes.includes(_)) {
+					if (to !== true) {
 						//Remove note
-						this.get(c).notes = cell.notes.filter(note => note !== n)
+						this.get(c).notes = cell.notes.filter(note => note !== _)
 						this.hasChanged = true
-						if (
-							(
-								(SettingsHandler.settings.autoSolveCellsWithColor && cell.color !== 'default') ||
-								(SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation)
-							) &&
-							this.get(c).notes.length === 1
-						) {
+						if ((SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation) && this.get(c).notes.length === 1) {
 							finalNoteState = true
 							this.setValue([c], this.get(c).notes[0])
 						}
 					}
-				} else if (state !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
+				} else if (to !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
 					//Add note
-					if (!SettingsHandler.settings.showPossibleValues || this.get(c).possibleValues.includes(n)) {
-						this.get(c).notes.push(n)
+					if (!SettingsHandler.settings.showPossibleValues || this.get(c).cache.possibleValues.includes(_)) {
+						this.get(c).notes.push(_)
 						finalNoteState = true
 						this.hasChanged = true
 					}
@@ -288,34 +287,34 @@ export default class Board {
 			}
 		}
 
-		if (coords.length === 1) {
+		if (of.length === 1) {
 			return finalNoteState
 		}
 		return null
 	}
 
-	setValue(coords: CellCoordinates[], s: number) {
-		for (const c of coords) {
+	setValue(of: CellCoordinates[], to: number) {
+		for (const c of of) {
 			const cell = this.get(c)
-			if (!cell.clue && cell.value !== s) {
-				cell.value = s
+			if (!cell.cache.clue && cell.value !== to) {
+				cell.value = to
 				cell.notes = []
 				this.hasChanged = true
-				for (const visibleCell of cell.visibleCells) {
-					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote([visibleCell], s, false, false)
+				for (const visibleCell of cell.cache.visibleCells) {
+					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote(to, [visibleCell], false, false)
 				}
 
 				if (SettingsHandler.settings.clearColorOnInput) {
 					// If the cell is in a color group
-					if (cell.colorGroups.length > 0) {
+					if (cell.cache.colorGroups.length > 0) {
 						// If every cell in every color group has a value, clear their color and remove the color group
-						if (cell.colorGroups.every(cg => cg.members.every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0))) {
-							for (const cg of cell.colorGroups) {
+						if (cell.cache.colorGroups.every(cg => cg.members.every(colorGroupCellCoords => this.get(colorGroupCellCoords).value > 0))) {
+							for (const cg of cell.cache.colorGroups) {
 								for (const colorGroupCellCoords of cg.members) {
 									this.get(colorGroupCellCoords).color = 'default'
 								}
 							}
-							this.removeColorGroups(cell.colorGroups)
+							this.remove(cell.cache.colorGroups)
 						}
 
 					} else {
@@ -329,12 +328,12 @@ export default class Board {
 		}
 	}
 
-	hint(coords: CellCoordinates[]) {
-		for (const c of coords) {
+	giveHint(forCells: CellCoordinates[]) {
+		for (const c of forCells) {
 			const cell = this.get(c)
-			if (!cell.clue && cell.solution > 0) {
-				this.setValue([c], this.get(c).solution)
-				this.get(c).clue = true
+			if (!cell.cache.clue && cell.cache.solution > 0) {
+				this.setValue([c], this.get(c).cache.solution)
+				this.get(c).cache.clue = true
 				this.hasChanged = true
 			}
 		}
@@ -343,13 +342,13 @@ export default class Board {
 	erase(coords: CellCoordinates[]) {
 		for (const c of coords) {
 			const cell = this.get(c)
-			if (!cell.clue && (cell.value > 0 || cell.notes.length > 0 || cell.color !== 'default')) {
+			if (!cell.cache.clue && (cell.value > 0 || cell.notes.length > 0 || cell.color !== 'default')) {
 				cell.value = 0
 				cell.notes = []
 				cell.color = 'default'
 
-				if (cell.colorGroups.length > 0) {
-					this.removeColorGroups(cell.colorGroups)
+				if (cell.cache.colorGroups.length > 0) {
+					this.remove(cell.cache.colorGroups)
 				}
 
 				this.hasChanged = true
@@ -357,13 +356,13 @@ export default class Board {
 		}
 	}
 
-	calculateHighlightedCells(lockedInput: number) {
+	getHighlightedCells(forValue: number) {
 		let highlightedCells: boolean[][] = Array<number>(this.nSquares).fill(0).map(x => Array(this.nSquares).fill(false))
 		let targetValues: number[] = []
 
 		if (SettingsHandler.settings.advancedHighlight) {
-			if (lockedInput > 0) {
-				targetValues = [lockedInput]
+			if (forValue > 0) {
+				targetValues = [forValue]
 			} else {
 				for (const c of this.selectedCells) {
 					if (this.get(c).value > 0) targetValues.push(this.get(c).value)
@@ -372,7 +371,7 @@ export default class Board {
 
 			if (targetValues.length > 0) {
 				this.iterateAllCells((cell, { x, y }) => {
-					if (!targetValues.every(v => cell.possibleValues.includes(v))) highlightedCells[x][y] = true
+					if (!targetValues.every(v => cell.cache.possibleValues.includes(v))) highlightedCells[x][y] = true
 				})
 			}
 
@@ -381,7 +380,7 @@ export default class Board {
 
 		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
 			for (const sc of this.selectedCells) {
-				for (const { x, y } of this.get(sc).visibleCells) {
+				for (const { x, y } of this.get(sc).cache.visibleCells) {
 					highlightedCells[x][y] = true
 				}
 			}
@@ -390,13 +389,13 @@ export default class Board {
 		return highlightedCells
 	}
 
-	calculateLinks(n: number) {
+	getLinks(forValue: number) {
 		let links: CellCoordinates[][] = []
 
-		for (const unit of this.units) {
+		for (const unit of this.cache.units) {
 			let newLink = []
 			for (const c of unit) {
-				if (this.get(c).notes.includes(n)) {
+				if (this.get(c).notes.includes(forValue)) {
 					newLink.push(c)
 				}
 			}
@@ -408,11 +407,11 @@ export default class Board {
 		return links
 	}
 
-	setColor(coords: CellCoordinates, newColor: ColorName) {
+	setColor(of: CellCoordinates, to: ColorName) {
 		if (GameHandler.complete) return
-		const cell = this.get(coords)
-		if (cell.color !== newColor) {
-			this.get(coords).color = newColor
+		const cell = this.get(of)
+		if (cell.color !== to) {
+			this.get(of).color = to
 			this.hasChanged = true
 		}
 	}
@@ -421,18 +420,18 @@ export default class Board {
 		this.iterateAllCells(cell => {
 			if (cell.color !== 'default') {
 				cell.color = 'default'
-				cell.colorGroups = []
+				cell.cache.colorGroups = []
 				this.hasChanged = true
 			}
 		})
 		this.colorGroups = []
 	}
 
-	checkComplete(): boolean {
+	isComplete(): boolean {
 		this.checkErrors()
 		let complete = true
 		this.iterateAllCells((cell, coords, exit) => {
-			if (cell.value === 0 || cell.isError) {
+			if (cell.value === 0 || cell.cache.isError) {
 				complete = false
 				exit()
 			}
@@ -459,10 +458,10 @@ export default class Board {
 		GameHandler.saveGame(JSON.stringify(dataToSave))
 	}
 
-	checkFullNotation(force: boolean) {
-		if (this.fullNotation && !force) return
+	checkFullNotation() {
+		if (this.fullNotation) return
 
-		for (const unit of this.units) {
+		for (const unit of this.cache.units) {
 			for (let n = 1; n <= 9; n++) {
 				let found = false
 				for (const c of unit) {
@@ -486,7 +485,7 @@ export default class Board {
 
 	getTextRepresentation(cluesOnly: boolean) {
 		let text = ''
-		this.iterateAllCells(cell => { text += cluesOnly && !cell.clue ? 0 : cell.value })
+		this.iterateAllCells(cell => { text += cluesOnly && !cell.cache.clue ? 0 : cell.value })
 		return text
 	}
 
@@ -503,37 +502,34 @@ export default class Board {
 		this.ruleset.game.iterateAllCells(this, func)
 	}
 
-	createColorGroup(coords: CellCoordinates[], color: ColorName) {
-		if (coords.length < 2 || color === 'default') return
-
-		let visibleCells: CellCoordinates[] = this.get(coords[0]).visibleCells
-		for (let i = 1; i < coords.length; i++) {
-			const visibleCells2 = this.get(coords[i]).visibleCells
-			visibleCells = visibleCells.filter(vc => indexOfCoordsInArray(visibleCells2, vc) !== -1)
-		}
+	createColorGroup(withCells: CellCoordinates[], painted: ColorName) {
+		if (withCells.length < 2 || painted === 'default') return
 
 		const newColorGroup = {
-			members: coords,
-			visibleCells
+			members: withCells,
+			visibleCells: intersection(withCells.map(c => this.get(c).cache.visibleCells))
 		}
 
 		this.colorGroups.push(newColorGroup)
 
-		for (const cell of coords) {
-			this.get(cell).colorGroups.push(newColorGroup)
-			this.get(cell).color = color
+		for (const cell of withCells) {
+			this.get(cell).cache.colorGroups.push(this.colorGroups[this.colorGroups.length - 1])
+			this.get(cell).color = painted
 		}
+
+		this.hasChanged = true
 	}
 
-	removeColorGroups(groupsToRemove: ColorGroup[]) {
-		for (const group of groupsToRemove) {
+	remove(colorGroups: ColorGroup[]) {
+		for (const group of colorGroups) {
 			// Remove the reference to the group from its members
 			for (const c of group.members) {
-				removeByReference(this.get(c).colorGroups, group)
+				remove(group, this.get(c).cache.colorGroups)
+				this.get(c).color = 'default'
 			}
 
 			// Remove the color group
-			removeByReference(this.colorGroups, group)
+			remove(group, this.colorGroups)
 		}
 	}
 
@@ -544,7 +540,7 @@ export default class Board {
 	recreateCache() {
 		for (const func of this.ruleset.game.initBoardMatrix) func(this)
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
-		this.checkFullNotation(false)
-		this.checkComplete()
+		this.checkFullNotation()
+		this.isComplete()
 	}
 }
