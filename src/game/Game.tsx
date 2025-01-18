@@ -241,14 +241,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 							setDragMode(true)
 							setSelectMode(true)
 						} else {
-							if (GameHandler.game.get(coords[0]).cache.colorGroups.length === 0) {
-								GameHandler.game.selectedCells = coords
-							} else {
-								setSelectedCellBeforeSelectMode(coords[0])
-								GameHandler.game.selectedCells = [...GameHandler.game.get(coords[0]).cache.colorGroups[0].members]
-								setSelectMode(true)
-								setDragMode(true)
-							}
+							GameHandler.game.selectedCells = coords
 
 							if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(cell.value)
 						}

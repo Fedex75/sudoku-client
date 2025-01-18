@@ -60,7 +60,7 @@ export type Cell = {
 export type BoardMatrix = Cell[][]
 
 export type HistoryItem = {
-    board: BoardMatrix
+    board: string
     fullNotation: boolean
     colorGroups: ColorGroup[]
 }
@@ -79,8 +79,8 @@ export type GameData = {
     mission: string
     clues: string
     solution: string
-    board: BoardMatrix
-    colorGroups: ColorGroup[]
+    board: string
+    colorGroups: string
     timer: number
     selectedCells: CellCoordinates[]
     history: History

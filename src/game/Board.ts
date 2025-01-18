@@ -105,9 +105,9 @@ export default class Board {
 			this.solution = data.solution
 			this.timer = data.timer
 			this.selectedCells = data.selectedCells
+			this.board = this.getBoardMatrixFromSavedString(data.board)
+			this.colorGroups = this.getColorGroupsFromSavedString(data.colorGroups)
 			this.history = data.history
-			this.board = data.board
-			this.colorGroups = data.colorGroups
 			this.recreateCache()
 		} else {
 			this.ruleset.game.initGameData({ game: this, data })
@@ -158,39 +158,71 @@ export default class Board {
 	}
 
 	getBoardToSave() {
-		const boardToSave: BoardMatrix = []
+		let boardToSave = ''
 		for (let x = 0; x < this.nSquares; x++) {
-			const col: Cell[] = []
 			for (let y = 0; y < this.nSquares; y++) {
 				const cell = this.get({ x, y })
-				col.push({
-					value: cell.value,
-					notes: cell.notes,
-					color: cell.color,
-					cache: defaultCacheItem
-				})
+				const notes = cell.notes.join('')
+				const color = cell.color === 'default' ? '' : cell.color
+				if (color !== '') {
+					boardToSave += `${cell.value},${notes},${color} `
+				} else if (notes !== '') {
+					boardToSave += `${cell.value},${notes} `
+				} else {
+					boardToSave += `${cell.value} `
+				}
 			}
-			boardToSave.push(col)
 		}
 
-		return boardToSave
+		return boardToSave.trimEnd()
 	}
 
-	getColorGroupsToSave(): ColorGroup[] {
-		return this.colorGroups.map(cg => ({
-			members: cg.members,
+	getBoardMatrixFromSavedString(data: string) {
+		let boardMatrix: BoardMatrix = []
+		let col: Cell[] = []
+		let y = 0
+		const cells = data.split(' ')
+		for (const cellString of cells) {
+			const [valueString, notesString, colorString] = cellString.split(',')
+			col.push({
+				value: Number.parseInt(valueString),
+				notes: notesString !== undefined ? notesString.split('').map(n => Number.parseInt(n)) : [],
+				color: (colorString === undefined || colorString === '') ? 'default' : (colorString as ColorName),
+				cache: defaultCacheItem
+			})
+			y++
+			if (y === this.nSquares) {
+				y = 0
+				boardMatrix.push(col)
+				col = []
+			}
+		}
+		return boardMatrix
+	}
+
+	/*
+	cell cell cell ; colorGroup colorGroup colorGroup
+					 xy,xy,xy,xy xy,xy,xy,xy xy,xy,xy,xy
+	*/
+
+	getColorGroupsToSave(): string {
+		return this.colorGroups.map(cg => (cg.members.map(m => `${m.x}${m.y}`).join(','))).join(' ')
+	}
+
+	getColorGroupsFromSavedString(data: string): ColorGroup[] {
+		if (data === '') return []
+
+		return data.split(' ').map(cg => ({
+			members: cg.split(',').map(coords => ({
+				x: Number.parseInt(coords[0]),
+				y: Number.parseInt(coords[1])
+			})),
 			visibleCells: []
 		}))
 	}
 
 	stashBoard() {
-		const item: HistoryItem = {
-			board: this.getBoardToSave(),
-			fullNotation: this.fullNotation,
-			colorGroups: this.getColorGroupsToSave()
-		}
-
-		this.stash = JSON.stringify(item)
+		this.stash = `${this.getBoardToSave()};${this.getColorGroupsToSave()}`
 		this.hasChanged = false
 	}
 
@@ -204,9 +236,10 @@ export default class Board {
 
 	popBoard() {
 		if (this.history.length > 0) {
-			const item: HistoryItem = JSON.parse(this.history[this.history.length - 1])
-			this.board = item.board
-			this.colorGroups = item.colorGroups
+			const [boardString, colorGroupsString] = this.history[this.history.length - 1].split(';')
+
+			this.board = this.getBoardMatrixFromSavedString(boardString)
+			this.colorGroups = this.getColorGroupsFromSavedString(colorGroupsString)
 			this.history.pop()
 
 			this.recreateCache()
@@ -462,8 +495,8 @@ export default class Board {
 			colorGroups: this.getColorGroupsToSave(),
 			timer: this.timer,
 			selectedCells: this.selectedCells,
-			history: this.history,
 			version: this.version,
+			history: this.history
 		}
 
 		GameHandler.saveGame(JSON.stringify(dataToSave))

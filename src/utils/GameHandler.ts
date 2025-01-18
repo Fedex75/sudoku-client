@@ -67,7 +67,12 @@ class GameHandler {
 		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION) {
-			this.setCurrentGame(new Board(data, 9))
+			try {
+				this.setCurrentGame(new Board(data, 9))
+			} catch (e) {
+				console.error(e)
+				this.game = null
+			}
 		} else {
 			this.game = null
 		}
@@ -87,7 +92,7 @@ class GameHandler {
 		this.game = board
 		this.complete = false
 		this.game.version = BOARD_API_VERSION
-		this.saveGame(JSON.stringify(this.game))
+		this.game.saveToLocalStorage()
 		this.recommendations.newGame = {
 			mode: this.game.mode,
 			difficulty: this.game.difficulty
@@ -150,6 +155,7 @@ class GameHandler {
 
 	saveGame(data: string) {
 		try {
+			console.log(data.length)
 			localStorage.setItem('game', data)
 		} catch (e) {
 			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {
