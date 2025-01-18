@@ -123,7 +123,13 @@ export type FadeBoardAnimation = {
     type: 'fadein' | 'fadein_long' | 'fadeout'
 }
 
-export type BoardAnimation = BoxBoardAnimation | RowBoardAnimation | ColBoardAnimation | BoardBoardAnimation | FadeBoardAnimation
+export type DiagonalBoardAnimation = {
+    type: 'diagonal',
+    diagonal: 'main' | 'secondary',
+    center: CellCoordinates
+}
+
+export type BoardAnimation = BoxBoardAnimation | RowBoardAnimation | ColBoardAnimation | BoardBoardAnimation | FadeBoardAnimation | DiagonalBoardAnimation
 
 export type IDBookmark = {
     id: string

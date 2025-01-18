@@ -13,7 +13,8 @@ const animationLengths = {
 	board: 1350, //Must be equal to the timeout delay on Sudoku.js,
 	fadein_long: 1350,
 	fadein: 500,
-	fadeout: 500
+	fadeout: 500,
+	diagonal: 750
 }
 
 const roundedRatio = Math.round(window.devicePixelRatio)
@@ -234,6 +235,15 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 							animationGammas.current.push(gamma)
 						}
 						break
+					case 'diagonal':
+						if (animation.data.diagonal === 'main') {
+							for (let i = 0; i < game.nSquares; i++) animationColors.current[i][i] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - i), progress, 8, 4)})`
+						} else {
+							for (let i = 0; i < game.nSquares; i++) {
+								const y = game.nSquares - 1 - i
+								animationColors.current[i][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - i), progress, 8, 4)})`
+							}
+						}
 					default:
 						break
 				}

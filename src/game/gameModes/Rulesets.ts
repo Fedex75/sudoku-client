@@ -1,7 +1,7 @@
 import { commonDetectErrorsFromSolution, commonGetOrthogonalCells, commonInitCacheBoard, commonInitColorGroupsCache, commonInitUnitsAndVisibilityCache, commonRenderCellValueAndCandidates } from "./Common"
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
-import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits } from "./SudokuX"
+import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits, sudokuXCheckDiagonalAnimations } from "./SudokuX"
 import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
@@ -73,7 +73,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: sudokuXGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
-            checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
+            checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, sudokuXCheckDiagonalAnimations],
             getBoxes: classicGetBoxes,
             afterValuesChanged: [classicCalculatePossibleValues],
             checkErrors: sudokuXDetectErrors,

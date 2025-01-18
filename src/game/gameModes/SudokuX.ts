@@ -150,3 +150,29 @@ export function sudokuXGetAllUnits(game: Board): CellCoordinates[][] {
 
     return units
 }
+
+export function sudokuXCheckDiagonalAnimations(game: Board, c: CellCoordinates) {
+    if (c.x === c.y) {
+        let shouldAddMainDiagonalAnimation = true
+        for (let i = 0; i < game.nSquares; i++) {
+            if (game.get({ x: i, y: i }).value === 0) {
+                shouldAddMainDiagonalAnimation = false
+                break
+            }
+        }
+
+        if (shouldAddMainDiagonalAnimation) game.animations.push({ type: 'diagonal', diagonal: 'main', center: c })
+    }
+
+    if (c.x === game.nSquares - 1 - c.x) {
+        let shouldAddSecondaryDiagonalAnimation = true
+        for (let i = 0; i < game.nSquares; i++) {
+            if (game.get({ x: i, y: game.nSquares - 1 - i }).value === 0) {
+                shouldAddSecondaryDiagonalAnimation = false
+                break
+            }
+        }
+
+        if (shouldAddSecondaryDiagonalAnimation) game.animations.push({ type: 'diagonal', diagonal: 'secondary', center: c })
+    }
+}
