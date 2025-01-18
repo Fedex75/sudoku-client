@@ -217,10 +217,20 @@ export default class Board {
 		return this.board[coords.x][coords.y]
 	}
 
-	select(coords: CellCoordinates) {
+	select(coords: CellCoordinates, withState: boolean | null = null): boolean | null {
 		const index = indexOf(coords, this.selectedCells)
-		if (index === -1) this.selectedCells.push(coords)
-		return this.selectedCells = this.selectedCells.filter((_, i) => i !== index)
+		if (index === -1) {
+			if (withState === null || withState) {
+				this.selectedCells.push(coords)
+				return true
+			}
+		} else {
+			if (!withState) {
+				this.selectedCells = this.selectedCells.filter((_, i) => i !== index)
+				return false
+			}
+		}
+		return null
 	}
 
 	selectBox(from: CellCoordinates, to: CellCoordinates) {
@@ -271,6 +281,7 @@ export default class Board {
 						//Remove note
 						this.get(c).notes = cell.notes.filter(note => note !== _)
 						this.hasChanged = true
+						finalNoteState = false
 						if ((SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation) && this.get(c).notes.length === 1) {
 							finalNoteState = true
 							this.setValue([c], this.get(c).notes[0])

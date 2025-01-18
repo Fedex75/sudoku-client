@@ -23,12 +23,12 @@ type Props = {
 
 function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
-	const [noteDragMode, setNoteDragMode] = useState<boolean | null>(null)
 	const [showLinks, setShowLinks] = useState(false)
 	const [lockedInput, setLockedInput] = useState(0)
 	const [colorMode, setColorMode] = useState(false)
-	const [colorDragMode, setColorDragMode] = useState<boolean | null>(null)
 	const [lockedColor, setLockedColor] = useState<ColorName | null>(null)
+
+	const [dragMode, setDragMode] = useState<boolean | null>(null)
 
 	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'clearColors' | 'calculator'>()
 
@@ -211,8 +211,11 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			const cellPossibleValues = GameHandler.game.get(coords[0]).cache.possibleValues
 
 			if (selectMode) {
-				// We're in select mode, so add this cell to the selection
-				GameHandler.game.select(coords[0])
+				if (hold) {
+					GameHandler.game.select(coords[0], dragMode)
+				} else {
+					setDragMode(GameHandler.game.select(coords[0]))
+				}
 			} else if (type === 'tertiary') {
 				// Middle mouse button, set color
 				handleUserInteraction(() => { handleSetColor(coords) }, coords[0])
@@ -220,11 +223,11 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 				if (colorMode) {
 					if (lockedColor) {
 						if (hold) {
-							if ((cell.color === lockedColor) !== colorDragMode) {
+							if ((cell.color === lockedColor) !== dragMode) {
 								handleUserInteraction(() => { handleSetColor(coords, lockedColor) }, coords[0])
 							}
 						} else {
-							setColorDragMode(cell.color !== lockedColor)
+							setDragMode(cell.color !== lockedColor)
 							handleUserInteraction(() => { handleSetColor(coords, lockedColor) }, coords[0])
 							GameHandler.game.selectedCells = coords
 						}
@@ -234,25 +237,34 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 				} else {
 					if (lockedInput === 0) {
 						// No locked input, so select this cell (or its color group) and set the locked input if applicable
-
-						if (GameHandler.game.get(coords[0]).cache.colorGroups.length === 0) {
-							GameHandler.game.selectedCells = coords
-						} else {
-							setSelectedCellBeforeSelectMode(coords[0])
-							GameHandler.game.selectedCells = [...GameHandler.game.get(coords[0]).cache.colorGroups[0].members]
+						if (hold) {
+							GameHandler.game.select(coords[0])
+							setDragMode(true)
 							setSelectMode(true)
-						}
+						} else {
+							if (GameHandler.game.get(coords[0]).cache.colorGroups.length === 0) {
+								GameHandler.game.selectedCells = coords
+							} else {
+								setSelectedCellBeforeSelectMode(coords[0])
+								GameHandler.game.selectedCells = [...GameHandler.game.get(coords[0]).cache.colorGroups[0].members]
+								setSelectMode(true)
+							}
 
-						if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(cell.value)
+							if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(cell.value)
+						}
 					} else {
 						if (hold) {
 							// If the user is dragging the cursor...
 							if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
-									if (cell.notes.includes(lockedInput) !== noteDragMode || GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
-										GameHandler.game.setNote(lockedInput, coords)
+									if (GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
+										GameHandler.game.setNote(lockedInput, coords, true)
+									} else {
+										console.log(dragMode)
+										GameHandler.game.setNote(lockedInput, coords, dragMode)
 									}
+
 								} else {
 									// If we're not in note mode or the cell has only one possible value, set the value if the cell doesn't already have a value (this helps with dragging)
 									if (cell.value === 0) {
@@ -273,9 +285,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 										}
 									} else {
 										if (!SettingsHandler.settings.showPossibleValues || cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
-											let newNoteMode
-											newNoteMode = GameHandler.game.setNote(lockedInput, coords)
-											setNoteDragMode(newNoteMode)
+											setDragMode(GameHandler.game.setNote(lockedInput, coords))
 										}
 									}
 								} else {
@@ -289,7 +299,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 				}
 			}
 		}
-	}, [colorDragMode, colorMode, handleSetColor, lockedColor, lockedInput, noteDragMode, noteMode, selectMode, handleUserInteraction])
+	}, [dragMode, colorMode, handleSetColor, lockedColor, lockedInput, noteMode, selectMode, handleUserInteraction])
 
 	const onNote = useCallback(() => {
 		setNoteMode(n => !n)
