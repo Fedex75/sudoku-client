@@ -201,6 +201,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 				buttons={[
 					<div key={0} style={{ display: 'grid', placeContent: 'center', marginRight: 5 }} onClick={topbarMenuClick}><SVGMenu className='sudoku__open-menu-button' strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
 				]}
+				onTitleClick={() => { setMenuActionSheetIsOpen(true) }}
 			>
 				<Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />
 			</Topbar>
