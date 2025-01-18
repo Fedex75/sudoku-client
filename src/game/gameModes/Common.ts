@@ -80,8 +80,9 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
             ctx.strokeStyle = ctx.fillStyle =
                 cell.cache.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
                     highlightValue ? (cell.color === 'default' ? themes[theme].canvasValueHighlightColor : 'white') :
-                        cell.cache.clue ? (cell.color === 'default' ? themes[theme].canvasClueColor : 'black') :
-                            solutionColors[accentColor]
+                        cell.color !== 'default' ? 'black' :
+                            cell.cache.clue ? themes[theme].canvasClueColor :
+                                solutionColors[accentColor]
             if (cell.cache.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
             drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
         } else {
