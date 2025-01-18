@@ -4,7 +4,7 @@ import Numpad from "../components/numpad/Numpad"
 import Canvas from "./Canvas"
 import { CanvasRef, CellCoordinates, ColorGroup, KillerCage, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { Navigate } from "react-router"
-import { AccentColor, ColorName, colorNames } from "../utils/Colors"
+import { AccentColor, ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
 import { isTouchDevice } from "../utils/isTouchDevice"
 import MagicWandSVG from "../svg/magic_wand"
@@ -31,7 +31,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	const [dragMode, setDragMode] = useState<boolean | null>(null)
 
 	const [magicWandMode, setMagicWandMode] = useState<'disabled' | 'links' | 'setColor' | 'clearColors'>()
-
+	const [magicWandColor, setMagicWandColor] = useState<ColorName | null>(null)
 	const [calculatorValue, setCalculatorValue] = useState<number | undefined>(0)
 
 	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false)
@@ -109,6 +109,21 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		setCompletedNumbers(GameHandler.game.getCompletedNumbers())
 	}, [])
 
+	const shuffleMagicWandColor = useCallback(() => {
+		if (!GameHandler.game) return
+
+		let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
+		const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
+		for (const c of orthogonalCells) {
+			const cell = GameHandler.game.get(c)
+			if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+		}
+		if (magicWandColor === null || !possibleColorNames.includes(magicWandColor)) {
+			if (possibleColorNames.length > 0) setMagicWandColor(possibleColorNames[Math.floor(Math.random() * possibleColorNames.length)])
+			else setMagicWandColor(accentColor)
+		}
+	}, [accentColor, magicWandColor])
+
 	const updateMagicWandMode = useCallback(() => {
 		if (!GameHandler.game) return
 
@@ -118,9 +133,13 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			setMagicWandMode('links')
 		} else if (GameHandler.game.selectedCells.length > 0) {
 			setMagicWandMode('setColor')
+			shuffleMagicWandColor()
+		} else {
+			setMagicWandMode("disabled")
+			setMagicWandColor(null)
 		}
 		updateCalculatorValue()
-	}, [colorMode, lockedInput, updateCalculatorValue])
+	}, [colorMode, lockedInput, updateCalculatorValue, shuffleMagicWandColor])
 
 	const handleUserInteraction = useCallback((func: () => void, lastInteractionCoords: CellCoordinates | null) => {
 		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
@@ -316,21 +335,13 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			case 'setColor':
 				handleUserInteraction(() => {
 					if (!GameHandler.game) return
-					let possibleColorNames = colorNames.filter(cn => cn !== 'default')
-					const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
-					for (const c of orthogonalCells) {
-						const cell = GameHandler.game.get(c)
-						if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
-					}
-					if (possibleColorNames.length > 0) {
-						handleSetColor(GameHandler.game.selectedCells, possibleColorNames[Math.floor(Math.random() * possibleColorNames.length)])
-					} else {
-						handleSetColor(GameHandler.game.selectedCells, accentColor)
-					}
+
+					handleSetColor(GameHandler.game.selectedCells, magicWandColor || accentColor)
+					shuffleMagicWandColor()
 				}, GameHandler.game.selectedCells[0])
 				break
 		}
-	}, [magicWandMode, handleUserInteraction, accentColor, handleSetColor])
+	}, [magicWandMode, handleUserInteraction, accentColor, handleSetColor, magicWandColor, shuffleMagicWandColor])
 
 	const onColor = useCallback(() => {
 		if (colorMode) {
@@ -395,9 +406,9 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		} else if (magicWandMode === 'clearColors') {
 			return <ColorCircleSVG />
 		} else {
-			return <MagicWandSVG />
+			return <MagicWandSVG fill={magicWandMode === 'setColor' ? ColorDefinitions[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
 		}
-	}, [magicWandMode])
+	}, [magicWandMode, magicWandColor, accentColor])
 
 	useEffect(() => {
 		updateMagicWandMode()

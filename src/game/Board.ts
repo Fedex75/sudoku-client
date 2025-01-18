@@ -1,7 +1,7 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, getMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, HistoryItem, KillerCage, CacheItem } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, KillerCage, CacheItem } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOf, intersection, remove } from "../utils/Utils"
 import { rulesets } from "./gameModes/Rulesets"
