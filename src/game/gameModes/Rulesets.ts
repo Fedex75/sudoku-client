@@ -115,8 +115,8 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, thermoRenderThermometers, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
-            paused: [],
-            after: [() => { }],
+            paused: [classicRenderPaused],
+            after: [classicRenderBorders],
         },
         game: {
             initGameData: thermoInitGameData,

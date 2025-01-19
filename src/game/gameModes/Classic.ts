@@ -36,13 +36,12 @@ export function classicRenderSelection({ ctx, accentColor, colors, game, squareS
     for (const c of game.selectedCells) {
         ctx.fillStyle = ctx.strokeStyle = colors[accentColor]
 
-        const padding = 0
-        const left = rendererState.cellPositions[c.x] + padding
-        const right = rendererState.cellPositions[c.x] + squareSize - padding - colorBorderLineWidth
-        const top = rendererState.cellPositions[c.y] + padding
-        const bottom = rendererState.cellPositions[c.y] + squareSize - padding - colorBorderLineWidth
+        const left = rendererState.cellPositions[c.x]
+        const right = rendererState.cellPositions[c.x] + squareSize - colorBorderLineWidth
+        const top = rendererState.cellPositions[c.y]
+        const bottom = rendererState.cellPositions[c.y] + squareSize - colorBorderLineWidth
 
-        const lineLength = squareSize - padding * 2
+        const lineLength = squareSize
 
         //Top
         if (c.y === 0 || (indexOf({ x: c.x, y: c.y - 1 }, game.selectedCells) === -1)) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
@@ -51,16 +50,16 @@ export function classicRenderSelection({ ctx, accentColor, colors, game, squareS
         if (c.x === (game.nSquares - 1) || (indexOf({ x: c.x + 1, y: c.y }, game.selectedCells) === -1)) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
         else {
             //Right bridges
-            if (!(c.y > 0 && (indexOf({ x: c.x + 1, y: c.y - 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y - 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, top, padding * 2 + boxBorderWidth, colorBorderLineWidth)
-            if (!(c.y < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, padding * 2 + boxBorderWidth, colorBorderLineWidth)
+            if (!(c.y > 0 && (indexOf({ x: c.x + 1, y: c.y - 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y - 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, top, rendererState.cellPositions[c.x + 1] - right + colorBorderLineWidth, colorBorderLineWidth)
+            if (!(c.y < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, rendererState.cellPositions[c.x + 1] - right + colorBorderLineWidth, colorBorderLineWidth)
         }
 
         //Bottom
         if (c.y === (game.nSquares - 1) || (indexOf({ x: c.x, y: c.y + 1 }, game.selectedCells) === -1)) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
         else {
             //Bottom bridges
-            if (!(c.x > 0 && (indexOf({ x: c.x - 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x - 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(left, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
-            if (!(c.x < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, colorBorderLineWidth, padding * 2 + boxBorderWidth)
+            if (!(c.x > 0 && (indexOf({ x: c.x - 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x - 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(left, bottom, colorBorderLineWidth, rendererState.cellPositions[c.y + 1] - bottom + colorBorderLineWidth)
+            if (!(c.x < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, colorBorderLineWidth, rendererState.cellPositions[c.y + 1] - bottom + colorBorderLineWidth)
         }
 
         //Left
