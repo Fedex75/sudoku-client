@@ -1,21 +1,10 @@
 import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import Board from "./Board"
-import { BoardAnimation, BoardBoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
+import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
 import { AccentColor } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
 import { isTouchDevice } from "../utils/isTouchDevice"
-
-const animationLengths = {
-	row: 750,
-	col: 750,
-	box: 750,
-	board: 1350, //Must be equal to the timeout delay on Sudoku.js,
-	fadein_long: 1350,
-	fadein: 500,
-	fadeout: 500,
-	diagonal: 750
-}
 
 const roundedRatio = Math.round(window.devicePixelRatio)
 
@@ -117,13 +106,6 @@ const solutionColors = {
 	purple: '#c298eb'
 }
 
-const k = 0.2
-
-function brightness(x: number, p: number, q: number, l: number) {
-	let t = (-q - l) * p + l
-	return Math.max(0, k * (1 - Math.abs(2 / l * (x + t) - 1)))
-}
-
 type Props = {
 	onClick?: (coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => void
 	showLinks?: boolean
@@ -144,7 +126,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 	const rendererState = useRef<any>({})
 	const animationColors = useRef<string[][] | null>(null)
 	const animationGammas = useRef<number[] | null>(null)
-	const currentAnimations = useRef<{ data: BoardAnimation, startTime: number | null }[]>([])
+	const currentAnimations = useRef<BoardAnimation[]>([])
 	const hasAddedFadeInAnimation = useRef(false)
 	const lastMouseCell = useRef<CellCoordinates>()
 	const lastMouseButton = useRef<MouseButtonType | null>(null)
@@ -159,8 +141,8 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		renderFrame() {
 			renderFrame()
 		},
-		doAnimations(data: BoardAnimation[]) {
-			addAnimations(data)
+		doAnimations(callbacks: BoardAnimation[]) {
+			addAnimations(callbacks)
 		},
 		stopAnimations() {
 			currentAnimations.current = []
@@ -184,7 +166,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 
 		for (const func of ruleset.render.before) func(props)
 
-		if (!paused || (currentAnimations.current.length > 0 && ['fadein', 'fadeout'].includes(currentAnimations.current[0].data.type))) for (const func of ruleset.render.unpaused) func(props)
+		if (!paused || (currentAnimations.current.length > 0 && ['fadein', 'fadeout'].includes(currentAnimations.current[0].type))) for (const func of ruleset.render.unpaused) func(props)
 		else for (const func of ruleset.render.paused) func(props)
 
 		for (const func of ruleset.render.after) func(props)
@@ -202,51 +184,15 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		while (i < currentAnimations.current.length) {
 			const animation = currentAnimations.current[i]
 			if (animation.startTime === null) animation.startTime = timestamp
-			const progress = (timestamp - animation.startTime) / animationLengths[animation.data.type]
+			const progress = (timestamp - animation.startTime) / animation.duration
 
 			if (progress < 1) {
-				switch (animation.data.type) {
-					case 'row':
-						for (let x = 0; x < game.nSquares; x++) animationColors.current[x][animation.data.center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - x), progress, 8, 4)})`
-						break
-					case 'col':
-						for (let y = 0; y < game.nSquares; y++) animationColors.current[animation.data.center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.y - y), progress, 8, 4)})`
-						break
-					case 'box':
-						for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors.current[animation.data.boxX * 3 + x][animation.data.boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
-						break
-					case 'board':
-						game.iterateAllCells((cell, { x, y }) => { animationColors.current![x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs((animation.data as BoardBoardAnimation).center.x - x), Math.abs((animation.data as BoardBoardAnimation).center.y - y)), progress, 8, 8)})` })
-						break
-					case 'fadein':
-					case 'fadein_long':
-						animationGammas.current = []
-						for (let y = 0; y < game.nSquares; y++) {
-							const gamma = Math.min(Math.max((y - 2 * progress * (game.nSquares - 1)) / (game.nSquares - 1) + 1, 0), 1)
-							for (let x = 0; x < game.nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
-							animationGammas.current.push(gamma)
-						}
-						break
-					case 'fadeout':
-						animationGammas.current = []
-						for (let y = 0; y < game.nSquares; y++) {
-							const gamma = Math.min(Math.max((y - 2 * progress * (game.nSquares - 1)) / (-game.nSquares + 1), 0), 1)
-							for (let x = 0; x < game.nSquares; x++) animationColors.current[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
-							animationGammas.current.push(gamma)
-						}
-						break
-					case 'diagonal':
-						if (animation.data.diagonal === 'main') {
-							for (let i = 0; i < game.nSquares; i++) animationColors.current[i][i] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - i), progress, 8, 4)})`
-						} else {
-							for (let i = 0; i < game.nSquares; i++) {
-								const y = game.nSquares - 1 - i
-								animationColors.current[i][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(animation.data.center.x - i), progress, 8, 4)})`
-							}
-						}
-					default:
-						break
-				}
+				animation.func({
+					animationColors: animationColors.current,
+					themes,
+					theme,
+					progress
+				})
 				i++
 			} else {
 				currentAnimations.current.splice(i, 1)
@@ -266,10 +212,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 
 	const addAnimations = useCallback((data: BoardAnimation[]) => {
 		data.forEach(animation => {
-			currentAnimations.current.push({
-				data: animation,
-				startTime: null
-			})
+			currentAnimations.current.push(animation)
 		})
 		requestAnimationFrame((ts) => { doAnimation(ts) })
 	}, [doAnimation])
@@ -381,10 +324,22 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 
 	useEffect(() => {
 		if (!hasAddedFadeInAnimation.current && !notPlayable) {
-			addAnimations([{ type: 'fadein_long' }])
+			addAnimations([{
+				type: 'fadein',
+				startTime: null,
+				duration: 1350,
+				func: ({ animationColors, progress }) => {
+					animationGammas.current = []
+					for (let y = 0; y < game.nSquares; y++) {
+						const gamma = Math.min(Math.max((y - 2 * progress * (game.nSquares - 1)) / (game.nSquares - 1) + 1, 0), 1)
+						for (let x = 0; x < game.nSquares; x++) animationColors[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
+						animationGammas.current.push(gamma)
+					}
+				}
+			}])
 			hasAddedFadeInAnimation.current = true
 		}
-	}, [addAnimations, notPlayable])
+	}, [addAnimations, notPlayable, game.nSquares, theme])
 
 	useEffect(() => {
 		window.addEventListener('resize', resizeCanvas, false)
@@ -400,11 +355,35 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		if (notPlayable) return
 
 		if (paused) {
-			addAnimations([{ type: 'fadeout' }])
+			addAnimations([{
+				type: 'fadeout',
+				startTime: null,
+				duration: 500,
+				func: ({ animationColors, progress }) => {
+					animationGammas.current = []
+					for (let y = 0; y < game.nSquares; y++) {
+						const gamma = Math.min(Math.max((y - 2 * progress * (game.nSquares - 1)) / (-game.nSquares + 1), 0), 1)
+						for (let x = 0; x < game.nSquares; x++) animationColors[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
+						animationGammas.current.push(gamma)
+					}
+				}
+			}])
 		} else {
-			if (currentAnimations.current.length === 0) addAnimations([{ type: 'fadein' }])
+			if (currentAnimations.current.length === 0) addAnimations([{
+				type: 'fadein',
+				startTime: null,
+				duration: 500,
+				func: ({ animationColors, progress }) => {
+					animationGammas.current = []
+					for (let y = 0; y < game.nSquares; y++) {
+						const gamma = Math.min(Math.max((y - 2 * progress * (game.nSquares - 1)) / (game.nSquares - 1) + 1, 0), 1)
+						for (let x = 0; x < game.nSquares; x++) animationColors[x][y] = `rgba(${themes[theme].canvasAnimationFadeBaseColor}, ${gamma})`
+						animationGammas.current.push(gamma)
+					}
+				}
+			}])
 		}
-	}, [paused, addAnimations, notPlayable])
+	}, [paused, addAnimations, notPlayable, game.nSquares, theme])
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)

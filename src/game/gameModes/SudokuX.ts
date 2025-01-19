@@ -1,4 +1,4 @@
-import { indexOf } from "../../utils/Utils"
+import brightness, { indexOf } from "../../utils/Utils"
 import { InitGameProps, CellCoordinates, RendererProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
@@ -151,8 +151,8 @@ export function sudokuXGetAllUnits(game: Board): CellCoordinates[][] {
     return units
 }
 
-export function sudokuXCheckDiagonalAnimations(game: Board, c: CellCoordinates) {
-    if (c.x === c.y) {
+export function sudokuXCheckDiagonalAnimations(game: Board, center: CellCoordinates) {
+    if (center.x === center.y) {
         let shouldAddMainDiagonalAnimation = true
         for (let i = 0; i < game.nSquares; i++) {
             if (game.get({ x: i, y: i }).value === 0) {
@@ -161,10 +161,19 @@ export function sudokuXCheckDiagonalAnimations(game: Board, c: CellCoordinates) 
             }
         }
 
-        if (shouldAddMainDiagonalAnimation) game.animations.push({ type: 'diagonal', diagonal: 'main', center: c })
+        if (shouldAddMainDiagonalAnimation) {
+            game.animations.push({
+                type: 'diagonal',
+                startTime: null,
+                duration: 750,
+                func: ({ animationColors, themes, theme, progress }) => {
+                    for (let i = 0; i < game.nSquares; i++) animationColors[i][i] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - i), progress, 8, 4)})`
+                }
+            })
+        }
     }
 
-    if (c.x === game.nSquares - 1 - c.x) {
+    if (center.x === game.nSquares - 1 - center.x) {
         let shouldAddSecondaryDiagonalAnimation = true
         for (let i = 0; i < game.nSquares; i++) {
             if (game.get({ x: i, y: game.nSquares - 1 - i }).value === 0) {
@@ -173,6 +182,18 @@ export function sudokuXCheckDiagonalAnimations(game: Board, c: CellCoordinates) 
             }
         }
 
-        if (shouldAddSecondaryDiagonalAnimation) game.animations.push({ type: 'diagonal', diagonal: 'secondary', center: c })
+        if (shouldAddSecondaryDiagonalAnimation) {
+            game.animations.push({
+                type: 'diagonal',
+                startTime: null,
+                duration: 750,
+                func: ({ animationColors, themes, theme, progress }) => {
+                    for (let i = 0; i < game.nSquares; i++) {
+                        const y = game.nSquares - 1 - i
+                        animationColors[i][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - i), progress, 8, 4)})`
+                    }
+                }
+            })
+        }
     }
 }

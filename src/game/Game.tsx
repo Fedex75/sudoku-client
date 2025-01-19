@@ -11,17 +11,18 @@ import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
-import { indexOf, union } from "../utils/Utils"
+import brightness, { indexOf, union } from "../utils/Utils"
 
 type Props = {
 	theme: ThemeName
 	accentColor: AccentColor
 	paused: boolean
 	handleComplete: () => void
-	ruleset: Ruleset
+	ruleset: Ruleset,
+	boardAnimationDuration: number
 }
 
-function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
+function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimationDuration }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
 	const [showLinks, setShowLinks] = useState(false)
 	const [lockedInput, setLockedInput] = useState(0)
@@ -128,15 +129,33 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 	const shuffleMagicWandColor = useCallback(() => {
 		if (!GameHandler.game) return
 
-		let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
-		const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
-		for (const c of orthogonalCells) {
+		let selectedColors: ColorName[] = []
+		for (const c of GameHandler.game.selectedCells) {
 			const cell = GameHandler.game.get(c)
-			if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+			if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
+				selectedColors.push(cell.color)
+			}
+
 		}
-		if (magicWandColor === null || !possibleColorNames.includes(magicWandColor)) {
-			if (possibleColorNames.length > 0) setMagicWandColor(possibleColorNames[Math.floor(Math.random() * possibleColorNames.length)])
-			else setMagicWandColor(accentColor)
+
+		if (selectedColors.length > 2) {
+			setMagicWandMode('disabled')
+			setMagicWandColor(accentColor)
+		} else {
+			if (selectedColors.length === 1) {
+				setMagicWandColor(selectedColors[0])
+			} else {
+				let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
+				const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
+				for (const c of orthogonalCells) {
+					const cell = GameHandler.game.get(c)
+					if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+				}
+				if (magicWandColor === null || !possibleColorNames.includes(magicWandColor)) {
+					if (possibleColorNames.length > 0) setMagicWandColor(possibleColorNames[Math.floor(Math.random() * possibleColorNames.length)])
+					else setMagicWandColor(accentColor)
+				}
+			}
 		}
 	}, [accentColor, magicWandColor])
 
@@ -147,12 +166,23 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			setMagicWandMode('clearColors')
 		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
 			setMagicWandMode('links')
-		} else if (GameHandler.game.selectedCells.length > 0) {
-			setMagicWandMode('setColor')
-			shuffleMagicWandColor()
 		} else {
-			setMagicWandMode("disabled")
-			setMagicWandColor(null)
+			let selectedColors: ColorName[] = []
+			for (const c of GameHandler.game.selectedCells) {
+				const cell = GameHandler.game.get(c)
+				if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
+					selectedColors.push(cell.color)
+				}
+
+			}
+			const length = GameHandler.game.selectedCells.length
+			if (length === 0 || (length === 1 && GameHandler.game.get(GameHandler.game.selectedCells[0]).color !== 'default') || selectedColors.length > 1) {
+				setMagicWandMode("disabled")
+				setMagicWandColor(null)
+			} else {
+				setMagicWandMode('setColor')
+				shuffleMagicWandColor()
+			}
 		}
 		updateCalculatorValue()
 	}, [colorMode, lockedInput, updateCalculatorValue, shuffleMagicWandColor])
@@ -175,7 +205,16 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 			GameHandler.game.checkFullNotation()
 
 			if (GameHandler.game.isComplete()) {
-				GameHandler.game.animations = [{ type: 'board', center: lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) } }]
+				const center = lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) }
+				GameHandler.game.animations = [{
+					type: 'board',
+					startTime: null,
+					duration: boardAnimationDuration,
+					func: ({ animationColors, themes, theme, progress }) => {
+						if (!GameHandler.game) return
+						GameHandler.game.iterateAllCells((cell, { x, y }) => { animationColors[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - x), Math.abs(center.y - y)), progress, 8, 8)})` })
+					}
+				}]
 				GameHandler.setComplete()
 				handleComplete()
 			}
@@ -190,7 +229,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset }: Props) {
 		updateMagicWandMode()
 
 		setRender(r => r === 100 ? 0 : r + 1)
-	}, [handleComplete, updateMagicWandMode, updatePossibleValues])
+	}, [handleComplete, updateMagicWandMode, updatePossibleValues, boardAnimationDuration])
 
 	const handleSelect = useCallback((withState: boolean | null) => {
 		if (!GameHandler.game) return

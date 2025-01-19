@@ -19,9 +19,16 @@ export type CellCoordinates = {
     y: number
 }
 
+export type BoardAnimation = {
+    func: (props: { animationColors: string[][], themes: any, theme: ThemeName, progress: number }) => void,
+    startTime: number | null,
+    duration: number,
+    type: string
+}
+
 export type CanvasRef = {
     renderFrame: () => void
-    doAnimations: (data: BoardAnimation[]) => void
+    doAnimations: (callbacks: BoardAnimation[]) => void
     stopAnimations: () => void
 }
 
@@ -96,41 +103,6 @@ export function isGameData(data: GameData | RawGameData): data is GameData {
     return (data as GameData).mode !== undefined
 }
 
-export type AnimationType = 'box' | 'row' | 'col' | 'board' | 'fadein' | 'fadein_long' | 'fadeout'
-
-export type BoxBoardAnimation = {
-    type: 'box'
-    boxX: number
-    boxY: number
-}
-
-export type RowBoardAnimation = {
-    type: 'row'
-    center: CellCoordinates
-}
-
-export type ColBoardAnimation = {
-    type: 'col'
-    center: CellCoordinates
-}
-
-export type BoardBoardAnimation = {
-    type: 'board'
-    center: CellCoordinates
-}
-
-export type FadeBoardAnimation = {
-    type: 'fadein' | 'fadein_long' | 'fadeout'
-}
-
-export type DiagonalBoardAnimation = {
-    type: 'diagonal',
-    diagonal: 'main' | 'secondary',
-    center: CellCoordinates
-}
-
-export type BoardAnimation = BoxBoardAnimation | RowBoardAnimation | ColBoardAnimation | BoardBoardAnimation | FadeBoardAnimation | DiagonalBoardAnimation
-
 export type IDBookmark = {
     id: string
     m?: never
@@ -163,7 +135,7 @@ export interface RendererProps {
     selectedCellsValues: number[]
     squareSize: number
     animationColors: string[][] | null
-    currentAnimations: { data: BoardAnimation, startTime: number | null }[]
+    currentAnimations: BoardAnimation[]
     accentColor: AccentColor
     solutionColors: any
     colorBorderLineWidth: number

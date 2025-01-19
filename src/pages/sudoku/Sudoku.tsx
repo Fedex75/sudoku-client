@@ -16,6 +16,8 @@ import Game from '../../game/Game'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 
+const BOARD_ANIMATION_DURATION = 1350
+
 type TimerProps = {
 	isTimerRunning: boolean
 	paused: boolean
@@ -92,7 +94,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		setIsTimerRunning(false)
 		setTimeout(() => {
 			setWin(true)
-		}, 1350) //Must be equal to animation duration in canvas
+		}, BOARD_ANIMATION_DURATION)
 	}, [])
 
 	const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
@@ -228,7 +230,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 							</div>
 						</div> :
 
-						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} />
+						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} />
 				}
 			</SectionContent>
 

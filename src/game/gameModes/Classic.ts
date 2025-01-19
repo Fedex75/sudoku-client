@@ -1,7 +1,7 @@
-import { indexOf } from "../../utils/Utils"
+import brightness, { indexOf } from "../../utils/Utils"
 import { Cell, CellCoordinates, InitGameProps, RendererProps, StateProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
-import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
+import { DifficultyIdentifier, getDifficulty } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
 import Solver from "../../utils/Solver"
 import Board from "../Board"
@@ -24,7 +24,7 @@ export function classicRenderCellBackground({ ctx, game, lockedInput, notPlayabl
 
         ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
 
-        if (animationColors && animationColors[x][y] && currentAnimations.length > 0 && currentAnimations[0].data.type !== 'fadein' && currentAnimations[0].data.type !== 'fadeout' && currentAnimations[0].data.type !== 'fadein_long') {
+        if (animationColors && animationColors[x][y] && currentAnimations.length > 0 && currentAnimations[0].type !== 'fadein' && currentAnimations[0].type !== 'fadeout' && currentAnimations[0].type !== 'fadein') {
             ctx.fillStyle = animationColors[x][y]
             ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
         }
@@ -94,7 +94,7 @@ export function classicRenderLinks({ ctx, game, showLinks, lockedInput, selected
 
 export function classicRenderFadeAnimations({ ctx, game, animationColors, animationGammas, currentAnimations, squareSize, themes, theme, boxBorderWidth, cellBorderWidth, rendererState }: RendererProps) {
     //Fade animations
-    if (animationColors && animationGammas && ['fadein', 'fadein_long', 'fadeout'].includes(currentAnimations[0]?.data.type)) {
+    if (animationColors && animationGammas && ['fadein', 'fadein', 'fadeout'].includes(currentAnimations[0]?.type)) {
         game.iterateAllCells((cell, { x, y }) => {
             ctx.fillStyle = animationColors[x][y]
             ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
@@ -164,25 +164,51 @@ export function classicGetVisibleCells(game: Board, c: CellCoordinates): CellCoo
     return visibleCells
 }
 
-export function classicCheckRowAnimation(game: Board, c: CellCoordinates) {
+export function classicCheckRowAnimation(game: Board, center: CellCoordinates) {
     for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: i, y: c.y }).value === 0) return
+        if (game.get({ x: i, y: center.y }).value === 0) return
     }
-    game.animations.push({ type: 'row', center: c })
+
+    game.animations.push({
+        type: 'col',
+        startTime: null,
+        duration: 750,
+        func: ({ animationColors, themes, theme, progress }) => {
+            for (let x = 0; x < game.nSquares; x++) animationColors[x][center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - x), progress, 8, 4)})`
+        }
+    })
 }
 
-export function classicCheckColumnAnimation(game: Board, c: CellCoordinates) {
+export function classicCheckColumnAnimation(game: Board, center: CellCoordinates) {
     for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: c.x, y: i }).value === 0) return
+        if (game.get({ x: center.x, y: i }).value === 0) return
     }
-    game.animations.push({ type: 'col', center: c })
+
+    game.animations.push({
+        type: 'col',
+        startTime: null,
+        duration: 750,
+        func: ({ animationColors, themes, theme, progress }) => {
+            for (let y = 0; y < game.nSquares; y++) animationColors[center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.y - y), progress, 8, 4)})`
+        }
+    })
 }
 
-export function classicCheckBoxAnimation(game: Board, c: CellCoordinates) {
-    for (const cell of game.ruleset.game.getBoxCellsCoordinates(c)) {
+export function classicCheckBoxAnimation(game: Board, center: CellCoordinates) {
+    for (const cell of game.ruleset.game.getBoxCellsCoordinates(center)) {
         if (game.get(cell).value === 0) return
     }
-    game.animations.push({ type: 'box', boxX: Math.floor(c.x / 3), boxY: Math.floor(c.y / 3) })
+
+    const boxX = Math.floor(center.x / 3)
+    const boxY = Math.floor(center.y / 3)
+    game.animations.push({
+        type: 'box',
+        startTime: null,
+        duration: 750,
+        func: ({ animationColors, themes, theme, progress }) => {
+            for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors[boxX * 3 + x][boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
+        }
+    })
 }
 
 export function classicGetBoxes(game: Board): CellCoordinates[][] {
