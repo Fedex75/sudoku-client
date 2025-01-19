@@ -297,22 +297,27 @@ export default class Board {
 		return false
 	}
 
-	setNote(_: number, of: CellCoordinates[], to: boolean | null = null, checkingAutoSolution: boolean = true): boolean | null {
+	setNote(withValue: number, of: CellCoordinates[], to: boolean | null = null, checkingAutoSolution: boolean = true): boolean | null {
 		let finalNoteState: boolean | null = null
+
+		if (to === null) {
+			if (of.every(c => this.get(c).notes.includes(withValue))) to = false
+			else to = true
+		}
 
 		for (const c of of) {
 			const cell = this.get(c)
 
 			if (cell.value === 0) {
 				//Check if only available place in any unit
-				if (SettingsHandler.settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(c, _)) {
+				if (SettingsHandler.settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(c, withValue)) {
 					finalNoteState = true
-					this.setValue([c], _)
+					this.setValue([c], withValue)
 					this.hasChanged = true
-				} else if (cell.notes.includes(_)) {
+				} else if (cell.notes.includes(withValue)) {
 					if (to !== true) {
 						//Remove note
-						this.get(c).notes = cell.notes.filter(note => note !== _)
+						this.get(c).notes = cell.notes.filter(note => note !== withValue)
 						this.hasChanged = true
 						finalNoteState = false
 						if ((SettingsHandler.settings.autoSolveCellsFullNotation && this.fullNotation) && this.get(c).notes.length === 1) {
@@ -322,8 +327,8 @@ export default class Board {
 					}
 				} else if (to !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
 					//Add note
-					if (!SettingsHandler.settings.showPossibleValues || this.get(c).cache.possibleValues.includes(_)) {
-						this.get(c).notes.push(_)
+					if (!SettingsHandler.settings.showPossibleValues || this.get(c).cache.possibleValues.includes(withValue)) {
+						this.get(c).notes.push(withValue)
 						finalNoteState = true
 						this.hasChanged = true
 					}
