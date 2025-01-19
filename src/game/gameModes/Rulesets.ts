@@ -2,7 +2,7 @@ import { commonDetectErrorsFromSolution, commonGetOrthogonalCells, commonInitCac
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicCalculatePossibleValues, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits, sudokuXCheckDiagonalAnimations } from "./SudokuX"
-import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
+import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichInitLateralClues, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
 
@@ -94,7 +94,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sandwichInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache, sandwichInitClueVisibility],
+            initBoardMatrix: [commonInitCacheBoard, sandwichInitLateralClues, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache, sandwichInitClueVisibility],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,

@@ -14,6 +14,12 @@ export function sandwichInitGameData({ game, data }: InitGameProps) {
     game.cache.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
 }
 
+export function sandwichInitLateralClues(game: Board) {
+    const [, horizontalClues, verticalClues] = game.mission.split(' ')
+    game.cache.sandwich__horizontalClues = horizontalClues.split(',').map(c => Number.parseInt(c))
+    game.cache.sandwich__verticalClues = verticalClues.split(',').map(c => Number.parseInt(c))
+}
+
 const lateralClueMarginFactor = 0.8
 
 export function sandwichResize({ game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth }: StateProps) {
