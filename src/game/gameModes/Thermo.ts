@@ -13,7 +13,6 @@ const thermosTempCanvas = document.createElement('canvas')
 const thermosTempCanvasCtx = thermosTempCanvas.getContext('2d')
 
 export function thermoInitGameData({ game, data }: InitGameProps) {
-    console.log(game.id)
     game.difficulty = getDifficulty(data.id[1] as DifficultyIdentifier)
     const [clues] = data.m.split(' ')
     game.clues = decodeMissionString(clues)

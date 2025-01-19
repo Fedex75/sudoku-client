@@ -111,7 +111,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
     thermo: {
         render: {
             init: [thermoRenderThermometersToOffscreenCanvas],
-            onResize: [classicResize],
+            onResize: [classicResize, thermoRenderThermometersToOffscreenCanvas],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, thermoRenderThermometers, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],

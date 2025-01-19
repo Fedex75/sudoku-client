@@ -88,7 +88,8 @@ export function initI18n() {
             language: 'LANGUAGE',
             languageAuto: 'Automatic',
             languageEnglish: 'English',
-            languageSpanish: 'Spanish'
+            languageSpanish: 'Spanish',
+            update: 'Update'
           },
           sudoku: {
             saved: 'Bookmarked',
@@ -204,7 +205,8 @@ export function initI18n() {
             language: 'IDIOMA',
             languageAuto: 'Automático',
             languageEnglish: 'Inglés',
-            languageSpanish: 'Español'
+            languageSpanish: 'Español',
+            update: 'Actualizar'
           },
           sudoku: {
             saved: 'Guardado',

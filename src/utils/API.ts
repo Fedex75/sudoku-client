@@ -7,7 +7,7 @@ class API {
 
 	constructor() {
 		this.host = 'https://sudoku.zaifo.com.ar'
-		this.clientVersion = '2.8.3'
+		this.clientVersion = '3.0.1'
 		this.clientVersionIsBeta = false
 	}
 

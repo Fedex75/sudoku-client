@@ -1,6 +1,6 @@
 import './settings.css'
 import { useCallback, useState } from 'react'
-import { Section, SectionContent, Topbar, ColorChooser } from '../../components'
+import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
 import SettingsHandler from '../../utils/SettingsHandler'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -15,6 +15,7 @@ import { AccentColor } from '../../utils/Colors'
 import FlagArg from '../../svg/flag_arg'
 import FlagUKSVG from '../../svg/flag_uk'
 import FlagSpainSVG from '../../svg/flag_spain'
+import { useServiceWorker } from '../../components/serviceWorker/useServiceWorker'
 
 type SectionLinkProps = {
 	color: string
@@ -37,6 +38,7 @@ function SectionLink({ color, icon, title, link }: SectionLinkProps) {
 
 function Main() {
 	const { t } = useTranslation()
+	const { isUpdateAvailable, updateAssets } = useServiceWorker()
 
 	return (
 		<Section>
@@ -49,6 +51,12 @@ function Main() {
 					<SectionLink color='var(--darkBlue)' icon={faGlobe} title={t('settings.sectionLanguage')} link='language' />
 					<SectionLink color='var(--darkBlue)' icon={faInfo} title={t('settings.sectionAbout')} link='about' />
 				</div>
+
+				{
+					isUpdateAvailable && (
+						<Button title={t('settings.update')} backgroundColor='var(--green)' onClick={updateAssets} />
+					)
+				}
 			</SectionContent>
 		</Section>
 	)

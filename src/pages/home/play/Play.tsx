@@ -50,6 +50,12 @@ export default function Play({ theme, accentColor }: Props) {
     sandwichMiniature.setValue([{ x: 0, y: 2 }], 7)
     sandwichMiniature.setValue([{ x: 2, y: 2 }], 9)
 
+    let thermoMiniature = new Board({ id: 'tu0', m: '1.3:4.8. 0,1,2,5;3,6,7,8' }, 3)
+    thermoMiniature.setValue([{ x: 1, y: 0 }], 2)
+    thermoMiniature.setValue([{ x: 0, y: 1 }], 6)
+    thermoMiniature.setValue([{ x: 0, y: 2 }], 7)
+    thermoMiniature.setValue([{ x: 2, y: 2 }], 9)
+
     const handleNewGame = useCallback((mode: GameModeName) => {
         GameHandler.newGame(mode, GameHandler.recommendations.perMode[mode])
         navigate('/sudoku')
@@ -152,7 +158,7 @@ export default function Play({ theme, accentColor }: Props) {
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('thermo', 4) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
+                            <Canvas notPlayable boxBorderWidthFactor={0} game={thermoMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.thermo} />
                             <div className='home__gameMode__name'>{t('gameModes.thermo')}</div>
                         </div>
                     </div>
