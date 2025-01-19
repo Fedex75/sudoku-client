@@ -249,7 +249,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 							</div>
 						</div> :
 
-						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} />
+						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
 				}
 			</SectionContent>
 

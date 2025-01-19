@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
 import brightness, { indexOf, union } from "../utils/Utils"
+import Board from "./Board"
 
 type Props = {
 	theme: ThemeName
@@ -20,9 +21,10 @@ type Props = {
 	handleComplete: () => void
 	ruleset: Ruleset,
 	boardAnimationDuration: number
+	game: Board
 }
 
-function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimationDuration }: Props) {
+function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimationDuration, game }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
 	const [showLinks, setShowLinks] = useState(false)
 	const [lockedInput, setLockedInput] = useState(0)
@@ -35,7 +37,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 	const [magicWandColor, setMagicWandColor] = useState<ColorName | null>(null)
 	const [calculatorValue, setCalculatorValue] = useState<number>(0)
 
-	const [selectMode, setSelectMode] = useState(GameHandler.game ? GameHandler.game.selectedCells.length > 1 : false)
+	const [selectMode, setSelectMode] = useState(game ? game.selectedCells.length > 1 : false)
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<CellCoordinates | null>(null)
 
 	const [possibleValues, setPossibleValues] = useState<number[]>([])
@@ -46,27 +48,27 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 	const canvasRef = useRef<CanvasRef>(null)
 
 	const updateCalculatorValue = useCallback(() => {
-		if (!GameHandler.game) return
+		if (!game) return
 
-		if (GameHandler.game.selectedCells.length < 2) {
+		if (game.selectedCells.length < 2) {
 			setCalculatorValue(0)
 			return
 		}
 
-		if (GameHandler.game.mode === 'killer') {
+		if (game.mode === 'killer') {
 			let selectedCages: KillerCage[] = []
 
 			function selectedCellsMatchCagesExactly(): boolean {
-				if (!GameHandler.game) return false
+				if (!game) return false
 
-				for (const c of GameHandler.game.selectedCells) {
-					const cell = GameHandler.game.get(c)
+				for (const c of game.selectedCells) {
+					const cell = game.get(c)
 					if (cell.value === 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) selectedCages.push(cell.cache.cage)
 				}
 
 				for (const cage of selectedCages) {
 					for (const coords of cage.members) {
-						if (indexOf(coords, GameHandler.game.selectedCells) === -1) {
+						if (indexOf(coords, game.selectedCells) === -1) {
 							return false
 						}
 					}
@@ -80,8 +82,8 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				for (const cage of selectedCages) {
 					sum += cage.sum
 				}
-				for (const c of GameHandler.game.selectedCells) {
-					const cell = GameHandler.game.get(c)
+				for (const c of game.selectedCells) {
+					const cell = game.get(c)
 					if (cell.value > 0 && cell.cache.cage && !selectedCages.includes(cell.cache.cage)) {
 						sum += cell.value
 					}
@@ -90,14 +92,14 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 			} else {
 				setCalculatorValue(0)
 			}
-		} else if (GameHandler.game.mode === 'sandwich') {
+		} else if (game.mode === 'sandwich') {
 			let shareSameColumn = true
 			let shareSameRow = true
 			let sum = 0
-			for (const c of GameHandler.game.selectedCells) {
-				if (c.x !== GameHandler.game.selectedCells[0].x) shareSameColumn = false
-				if (c.y !== GameHandler.game.selectedCells[0].y) shareSameRow = false
-				sum += GameHandler.game.get(c).value
+			for (const c of game.selectedCells) {
+				if (c.x !== game.selectedCells[0].x) shareSameColumn = false
+				if (c.y !== game.selectedCells[0].y) shareSameRow = false
+				sum += game.get(c).value
 			}
 			if (shareSameRow || shareSameColumn) {
 				setCalculatorValue(sum)
@@ -105,33 +107,33 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				setCalculatorValue(0)
 			}
 		}
-	}, [])
+	}, [game])
 
 	const updatePossibleValues = useCallback(() => {
-		if (!GameHandler.game) return
+		if (!game) return
 
 		let newPossibleValues: number[] = []
 
 		if (SettingsHandler.settings.showPossibleValues) {
-			for (const c of GameHandler.game.selectedCells) {
-				for (const v of GameHandler.game.get(c).cache.possibleValues) {
+			for (const c of game.selectedCells) {
+				for (const v of game.get(c).cache.possibleValues) {
 					if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
 				}
 			}
 		} else {
-			for (let i = 0; i < GameHandler.game.nSquares; i++) newPossibleValues.push(i + 1)
+			for (let i = 0; i < game.nSquares; i++) newPossibleValues.push(i + 1)
 		}
 
 		setPossibleValues(newPossibleValues)
-		setCompletedNumbers(GameHandler.game.getCompletedNumbers())
-	}, [])
+		setCompletedNumbers(game.getCompletedNumbers())
+	}, [game])
 
 	const shuffleMagicWandColor = useCallback(() => {
-		if (!GameHandler.game) return
+		if (!game) return
 
 		let selectedColors: ColorName[] = []
-		for (const c of GameHandler.game.selectedCells) {
-			const cell = GameHandler.game.get(c)
+		for (const c of game.selectedCells) {
+			const cell = game.get(c)
 			if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
 				selectedColors.push(cell.color)
 			}
@@ -146,9 +148,9 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				setMagicWandColor(selectedColors[0])
 			} else {
 				let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
-				const orthogonalCells = union(GameHandler.game.selectedCells.map(c => GameHandler.game!.ruleset.game.getOrthogonalCells(GameHandler.game!, c)))
+				const orthogonalCells = union(game.selectedCells.map(c => game!.ruleset.game.getOrthogonalCells(game!, c)))
 				for (const c of orthogonalCells) {
-					const cell = GameHandler.game.get(c)
+					const cell = game.get(c)
 					if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
 				}
 				if (magicWandColor === null || !possibleColorNames.includes(magicWandColor)) {
@@ -157,26 +159,26 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				}
 			}
 		}
-	}, [accentColor, magicWandColor])
+	}, [accentColor, magicWandColor, game])
 
 	const updateMagicWandMode = useCallback(() => {
-		if (!GameHandler.game) return
+		if (!game) return
 
 		if (colorMode) {
 			setMagicWandMode('clearColors')
-		} else if (GameHandler.game.selectedCells.length === 1 && (lockedInput !== 0 || GameHandler.game.get(GameHandler.game.selectedCells[0]).value > 0)) {
+		} else if (game.selectedCells.length === 1 && (lockedInput !== 0 || game.get(game.selectedCells[0]).value > 0)) {
 			setMagicWandMode('links')
 		} else {
 			let selectedColors: ColorName[] = []
-			for (const c of GameHandler.game.selectedCells) {
-				const cell = GameHandler.game.get(c)
+			for (const c of game.selectedCells) {
+				const cell = game.get(c)
 				if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
 					selectedColors.push(cell.color)
 				}
 
 			}
-			const length = GameHandler.game.selectedCells.length
-			if (length === 0 || (length === 1 && GameHandler.game.get(GameHandler.game.selectedCells[0]).color !== 'default') || selectedColors.length > 1) {
+			const length = game.selectedCells.length
+			if (length === 0 || (length === 1 && game.get(game.selectedCells[0]).color !== 'default') || selectedColors.length > 1) {
 				setMagicWandMode("disabled")
 				setMagicWandColor(null)
 			} else {
@@ -185,43 +187,43 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 			}
 		}
 		updateCalculatorValue()
-	}, [colorMode, lockedInput, updateCalculatorValue, shuffleMagicWandColor])
+	}, [colorMode, lockedInput, updateCalculatorValue, shuffleMagicWandColor, game])
 
 	const handleUserInteraction = useCallback((func: () => void, lastInteractionCoords: CellCoordinates | null) => {
-		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+		if (GameHandler.complete || !game || !canvasRef.current) return
 
-		GameHandler.game.stashBoard()
+		game.stashBoard()
 
 		func()
 
-		if (GameHandler.game.hasChanged) {
-			GameHandler.game.pushBoard()
+		if (game.hasChanged) {
+			game.pushBoard()
 
 			do {
-				GameHandler.game.hasChanged = false
-				for (const func of GameHandler.game.ruleset.game.afterValuesChanged) func(GameHandler.game)
-			} while (GameHandler.game.hasChanged)
+				game.hasChanged = false
+				for (const func of game.ruleset.game.afterValuesChanged) func(game)
+			} while (game.hasChanged)
 
-			GameHandler.game.checkFullNotation()
+			game.checkFullNotation()
 
-			if (GameHandler.game.isComplete()) {
-				const center = lastInteractionCoords || { x: Math.floor(GameHandler.game.nSquares / 2), y: Math.floor(GameHandler.game.nSquares / 2) }
-				GameHandler.game.animations = [{
+			if (game.isComplete()) {
+				const center = lastInteractionCoords || { x: Math.floor(game.nSquares / 2), y: Math.floor(game.nSquares / 2) }
+				game.animations = [{
 					type: 'board',
 					startTime: null,
 					duration: boardAnimationDuration,
 					func: ({ animationColors, themes, theme, progress }) => {
-						if (!GameHandler.game) return
-						GameHandler.game.iterateAllCells((cell, { x, y }) => { animationColors[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - x), Math.abs(center.y - y)), progress, 8, 8)})` })
+						if (!game) return
+						game.iterateAllCells((cell, { x, y }) => { animationColors[x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - x), Math.abs(center.y - y)), progress, 8, 8)})` })
 					}
 				}]
 				GameHandler.setComplete()
 				handleComplete()
 			}
 
-			if (GameHandler.game.animations.length > 0) {
-				canvasRef.current?.doAnimations(GameHandler.game.animations)
-				GameHandler.game.animations = []
+			if (game.animations.length > 0) {
+				canvasRef.current?.doAnimations(game.animations)
+				game.animations = []
 			}
 		}
 
@@ -229,67 +231,67 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 		updateMagicWandMode()
 
 		setRender(r => r === 100 ? 0 : r + 1)
-	}, [handleComplete, updateMagicWandMode, updatePossibleValues, boardAnimationDuration])
+	}, [handleComplete, updateMagicWandMode, updatePossibleValues, boardAnimationDuration, game])
 
 	const handleSelect = useCallback((withState: boolean | null) => {
-		if (!GameHandler.game) return
+		if (!game) return
 		const newState = (withState === null) ? !selectMode : withState
 		if (newState) {
-			if (GameHandler.game.selectedCells.length > 0) setSelectedCellBeforeSelectMode(GameHandler.game.selectedCells[0])
+			if (game.selectedCells.length > 0) setSelectedCellBeforeSelectMode(game.selectedCells[0])
 			else setSelectedCellBeforeSelectMode(null)
-			GameHandler.game.selectedCells = []
+			game.selectedCells = []
 		} else {
-			if (selectedCellBeforeSelectMode) GameHandler.game.selectedCells = [selectedCellBeforeSelectMode]
-			else GameHandler.game.selectedCells = []
+			if (selectedCellBeforeSelectMode) game.selectedCells = [selectedCellBeforeSelectMode]
+			else game.selectedCells = []
 		}
 
 		setSelectMode(newState)
 		updateMagicWandMode()
-	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode])
+	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode, game])
 
 	const handleSetColor = useCallback((selectedCoords: CellCoordinates[], color: ColorName = accentColor) => {
-		if (!GameHandler.game || GameHandler.complete || !canvasRef.current || selectedCoords.length === 0) return
+		if (!game || GameHandler.complete || !canvasRef.current || selectedCoords.length === 0) return
 
 		let selectedGroups: ColorGroup[] = []
 		for (const c of selectedCoords) {
-			const cell = GameHandler.game.get(c)
+			const cell = game.get(c)
 			for (const cg of cell.cache.colorGroups) {
 				if (!selectedGroups.includes(cg)) selectedGroups.push(cg)
 			}
 		}
 
 		for (const cg of selectedGroups) {
-			if (cg.members.every(coords => indexOf(coords, selectedCoords) !== -1) || (color !== GameHandler.game.get(cg.members[0]).color)) {
+			if (cg.members.every(coords => indexOf(coords, selectedCoords) !== -1) || (color !== game.get(cg.members[0]).color)) {
 				// Coincidence is full or coincidence is partial and color is different: remove the group
-				GameHandler.game.remove([cg])
+				game.remove([cg])
 			}
 		}
 
 		if (color !== 'default') {
 			if (selectedCoords.length > 1) {
-				GameHandler.game.createColorGroup(selectedCoords, color)
+				game.createColorGroup(selectedCoords, color)
 				handleSelect(false)
 				setColorMode(false)
-			} else GameHandler.game.setColor(selectedCoords[0], color)
+			} else game.setColor(selectedCoords[0], color)
 		}
-	}, [accentColor, handleSelect])
+	}, [accentColor, handleSelect, game])
 
 	const onCanvasClick = useCallback((coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => {
-		if (!GameHandler.game || GameHandler.complete || !canvasRef.current) return
+		if (!game || GameHandler.complete || !canvasRef.current) return
 
 		if (coords.length === 2) {
 			//Select rectangular area
 			setSelectMode(true)
-			GameHandler.game.selectBox(coords[0], coords[1])
+			game.selectBox(coords[0], coords[1])
 		} else if (coords.length === 1) {
-			const cell = GameHandler.game.get(coords[0])
-			const cellPossibleValues = GameHandler.game.get(coords[0]).cache.possibleValues
+			const cell = game.get(coords[0])
+			const cellPossibleValues = game.get(coords[0]).cache.possibleValues
 
 			if (selectMode) {
 				if (hold) {
-					GameHandler.game.select(coords[0], dragMode)
+					game.select(coords[0], dragMode)
 				} else {
-					setDragMode(GameHandler.game.select(coords[0]))
+					setDragMode(game.select(coords[0]))
 				}
 			} else if (type === 'tertiary') {
 				// Middle mouse button, set color
@@ -304,20 +306,20 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 						} else {
 							setDragMode(cell.color !== lockedColor)
 							handleUserInteraction(() => { handleSetColor(coords, lockedColor) }, coords[0])
-							GameHandler.game.selectedCells = coords
+							game.selectedCells = coords
 						}
 					} else {
-						GameHandler.game.selectedCells = coords
+						game.selectedCells = coords
 					}
 				} else {
 					if (lockedInput === 0) {
 						// No locked input, so select this cell (or its color group) and set the locked input if applicable
 						if (hold) {
-							GameHandler.game.select(coords[0])
+							game.select(coords[0])
 							setDragMode(true)
 							setSelectMode(true)
 						} else {
-							GameHandler.game.selectedCells = coords
+							game.selectedCells = coords
 
 							if (cell.value > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(cell.value)
 						}
@@ -327,38 +329,38 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 							if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
-									if (GameHandler.game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
-										GameHandler.game.setNote(lockedInput, coords, true)
+									if (game.onlyAvailableInAnyUnit(coords[0], lockedInput)) {
+										game.setNote(lockedInput, coords, true)
 									} else {
-										GameHandler.game.setNote(lockedInput, coords, dragMode)
+										game.setNote(lockedInput, coords, dragMode)
 									}
 
 								} else {
 									// If we're not in note mode or the cell has only one possible value, set the value if the cell doesn't already have a value (this helps with dragging)
 									if (cell.value === 0) {
-										GameHandler.game.setValue([coords[0]], lockedInput)
+										game.setValue([coords[0]], lockedInput)
 									}
 								}
 							}
 						} else {
 							// The user is not dragging, select the cell and lock the input
-							GameHandler.game.selectedCells = coords
+							game.selectedCells = coords
 							if (cell.value > 0) {
 								setLockedInput(li => cell.value === li ? 0 : cell.value)
 							} else {
 								if ((noteMode || type === 'secondary')) {
 									if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.length === 1) {
 										if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
-											GameHandler.game.setValue(coords, lockedInput)
+											game.setValue(coords, lockedInput)
 										}
 									} else {
 										if (!SettingsHandler.settings.showPossibleValues || cell.notes.includes(lockedInput) || cellPossibleValues.includes(lockedInput)) {
-											setDragMode(GameHandler.game.setNote(lockedInput, coords))
+											setDragMode(game.setNote(lockedInput, coords))
 										}
 									}
 								} else {
 									if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.includes(lockedInput)) {
-										GameHandler.game.setValue(coords, lockedInput)
+										game.setValue(coords, lockedInput)
 									}
 								}
 							}
@@ -367,38 +369,38 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				}
 			}
 		}
-	}, [dragMode, colorMode, handleSetColor, lockedColor, lockedInput, noteMode, selectMode, handleUserInteraction])
+	}, [dragMode, colorMode, handleSetColor, lockedColor, lockedInput, noteMode, selectMode, handleUserInteraction, game])
 
 	const onNote = useCallback(() => {
 		setNoteMode(n => !n)
 	}, [])
 
 	const onHint = useCallback(() => {
-		if (GameHandler.complete || !GameHandler.game) return
-		GameHandler.game.giveHint(GameHandler.game.selectedCells)
-	}, [])
+		if (GameHandler.complete || !game) return
+		game.giveHint(game.selectedCells)
+	}, [game])
 
 	const onMagicWand = useCallback(() => {
-		if (GameHandler.complete || !GameHandler.game) return
+		if (GameHandler.complete || !game) return
 		switch (magicWandMode) {
 			case 'links':
 				setShowLinks(l => !l)
 				break
 			case 'clearColors':
 				handleUserInteraction(() => {
-					if (GameHandler.game && !GameHandler.complete) GameHandler.game.clearColors()
+					if (game && !GameHandler.complete) game.clearColors()
 				}, null)
 				break
 			case 'setColor':
 				handleUserInteraction(() => {
-					if (!GameHandler.game) return
+					if (!game) return
 
-					handleSetColor(GameHandler.game.selectedCells, magicWandColor || accentColor)
+					handleSetColor(game.selectedCells, magicWandColor || accentColor)
 					shuffleMagicWandColor()
-				}, GameHandler.game.selectedCells[0])
+				}, game.selectedCells[0])
 				break
 		}
-	}, [magicWandMode, handleUserInteraction, accentColor, handleSetColor, magicWandColor, shuffleMagicWandColor])
+	}, [magicWandMode, handleUserInteraction, accentColor, handleSetColor, magicWandColor, shuffleMagicWandColor, game])
 
 	const onColor = useCallback(() => {
 		if (colorMode) {
@@ -410,40 +412,40 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 
 	const onColorButtonClick = useCallback((color: ColorName, type: "primary" | "secondary") => {
 		if (type === 'primary') {
-			handleUserInteraction(() => { if (GameHandler.game) handleSetColor(GameHandler.game.selectedCells, color) }, (GameHandler.game ? (GameHandler.game.selectedCells.length > 0 ? GameHandler.game.selectedCells[0] : null) : null))
+			handleUserInteraction(() => { if (game) handleSetColor(game.selectedCells, color) }, (game ? (game.selectedCells.length > 0 ? game.selectedCells[0] : null) : null))
 		} else {
 			setLockedColor(lc => lc === color ? null : color)
 		}
-	}, [handleSetColor, handleUserInteraction])
+	}, [handleSetColor, handleUserInteraction, game])
 
 	const onUndo = useCallback(() => {
-		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+		if (GameHandler.complete || !game || !canvasRef.current) return
 
-		GameHandler.game.popBoard()
+		game.popBoard()
 		canvasRef.current.stopAnimations()
-	}, [])
+	}, [game])
 
 	const onErase = useCallback(() => {
-		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+		if (GameHandler.complete || !game || !canvasRef.current) return
 
-		GameHandler.game.erase(GameHandler.game.selectedCells)
+		game.erase(game.selectedCells)
 		canvasRef.current.stopAnimations()
-	}, [])
+	}, [game])
 
 	const onNumpadButtonClick = useCallback((number: number, type: MouseButtonType) => {
-		if (GameHandler.complete || !GameHandler.game || !canvasRef.current) return
+		if (GameHandler.complete || !game || !canvasRef.current) return
 
 		if (type === 'primary') {
 			if (possibleValues.includes(number)) {
 				if (noteMode && (possibleValues.length > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
-					GameHandler.game.setNote(number, GameHandler.game.selectedCells)
+					game.setNote(number, game.selectedCells)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
-					GameHandler.game.setValue(GameHandler.game.selectedCells, number)
+					game.setValue(game.selectedCells, number)
 				}
 			}
 		} else setLockedInput(li => li === number ? 0 : number)
-	}, [noteMode, possibleValues, lockedInput])
+	}, [noteMode, possibleValues, lockedInput, game])
 
 	useEffect(() => {
 		if (magicWandMode !== 'links') setShowLinks(false)
@@ -475,7 +477,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 		if (completedNumbers.includes(lockedInput)) setLockedInput(0)
 	}, [lockedInput, completedNumbers])
 
-	if (!GameHandler.game) return <Navigate to="/"></Navigate>
+	if (!game) return <Navigate to="/"></Navigate>
 
 	return (
 		<div className="game">
@@ -484,7 +486,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 					ref={canvasRef}
 					onClick={(coords, type, hold) => { handleUserInteraction(() => { onCanvasClick(coords, type, hold) }, coords[0]) }}
 					showLinks={showLinks}
-					game={GameHandler.game}
+					game={game}
 					lockedInput={lockedInput}
 					theme={theme}
 					accentColor={accentColor}
@@ -509,16 +511,16 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 				magicWandDisabled={magicWandMode === 'disabled'}
 				selectHighlighted={selectMode}
 
-				undoDisabled={GameHandler.complete || GameHandler.game.history.length === 0}
+				undoDisabled={GameHandler.complete || game.history.length === 0}
 				eraseDisabled={
 					GameHandler.complete ||
-					GameHandler.game.selectedCells.length === 0 ||
-					GameHandler.game.selectedCells.every(c => {
-						const cell = GameHandler.game!.get(c)
+					game.selectedCells.length === 0 ||
+					game.selectedCells.every(c => {
+						const cell = game!.get(c)
 						return cell.cache.clue || (cell.value === 0 && cell.notes.length === 0 && cell.color === 'default')
 					})
 				}
-				hintDisabled={GameHandler.complete || GameHandler.game.selectedCells.length === 0 || GameHandler.game.selectedCells.every((c: CellCoordinates) => GameHandler.game!.get(c).cache.clue || GameHandler.game!.get(c).cache.solution === 0)}
+				hintDisabled={GameHandler.complete || game.selectedCells.length === 0 || game.selectedCells.every((c: CellCoordinates) => game!.get(c).cache.clue || game!.get(c).cache.solution === 0)}
 				colorDisabled={false}
 
 				colorMode={colorMode}
