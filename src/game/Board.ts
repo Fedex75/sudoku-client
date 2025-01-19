@@ -1,12 +1,12 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, getMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, KillerCage, CacheItem } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, KillerCage, CellCache, Thermometer } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
 import { indexOf, intersection, remove } from "../utils/Utils"
 import { rulesets } from "./gameModes/Rulesets"
 
-const defaultCacheItem: CacheItem = {
+const defaultCacheItem: CellCache = {
 	clue: false,
 	solution: 0,
 	possibleValues: [],
@@ -41,7 +41,7 @@ export default class Board {
 	animations: BoardAnimation[]
 
 	cache: {
-		board: CacheItem[][]
+		board: CellCache[][]
 
 		units: CellCoordinates[][]
 
@@ -55,6 +55,8 @@ export default class Board {
 		sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
 
 		sudokuX__diagonalErrors: [boolean, boolean]
+
+		thermo__thermometers: Thermometer[]
 	}
 
 	constructor(data: GameData | RawGameData, nSquares: number) {
@@ -88,6 +90,7 @@ export default class Board {
 				vertical: []
 			},
 			sudokuX__diagonalErrors: [false, false],
+			thermo__thermometers: []
 		}
 
 		if (isGameData(data)) {
@@ -477,7 +480,7 @@ export default class Board {
 	}
 
 	isComplete(): boolean {
-		this.checkErrors()
+		this.checkErrors(false)
 		let complete = true
 		this.iterateAllCells((cell, coords, exit) => {
 			if (cell.value === 0 || cell.cache.isError) {
@@ -580,7 +583,8 @@ export default class Board {
 		}
 	}
 
-	checkErrors() {
+	checkErrors(forcing: boolean) {
+		if (!SettingsHandler.settings.checkMistakes && !forcing) return
 		this.ruleset.game.checkErrors(this)
 	}
 

@@ -2,7 +2,6 @@ import brightness, { indexOf } from "../../utils/Utils"
 import { InitGameProps, CellCoordinates, RendererProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
-import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
 import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./Classic"
 import { commonDetectErrorsByVisibility } from "./Common"
@@ -40,8 +39,6 @@ export function sudokuXGetVisibleCells(game: Board, c: CellCoordinates): CellCoo
 }
 
 export function sudokuXDetectErrors(game: Board) {
-    if (!SettingsHandler.settings.checkMistakes) return
-
     commonDetectErrorsByVisibility(game)
 
     game.cache.sudokuX__diagonalErrors = [false, false]

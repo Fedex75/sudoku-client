@@ -5,6 +5,7 @@ import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, su
 import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichInitLateralClues, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
+import { thermoCalculatePossibleValues, thermoDetectErrors, thermoGetVisibleCells, thermoInitGameData, thermoInitThermometerData, thermoRenderThermometers, thermoRenderThermometersToOffscreenCanvas } from "./Thermo"
 
 export const rulesets: { [key in GameModeName]: Ruleset } = {
     classic: {
@@ -109,27 +110,27 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
     },
     thermo: {
         render: {
-            init: [],
-            onResize: [],
+            init: [thermoRenderThermometersToOffscreenCanvas],
+            onResize: [classicResize],
             screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
-            before: [() => { }],
-            unpaused: [],
+            before: [classicRenderBackground],
+            unpaused: [classicRenderCellBackground, thermoRenderThermometers, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [],
             after: [() => { }],
         },
         game: {
-            initGameData: () => { },
-            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initGameData: thermoInitGameData,
+            initBoardMatrix: [commonInitCacheBoard, thermoInitThermometerData, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getOrthogonalCells: commonGetOrthogonalCells,
-            getVisibleCells: classicGetVisibleCells,
+            getVisibleCells: thermoGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
             checkAnimations: [classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation],
             getBoxes: classicGetBoxes,
-            afterValuesChanged: [classicCalculatePossibleValues, commonDetectErrorsFromSolution],
-            checkErrors: () => { },
+            afterValuesChanged: [classicCalculatePossibleValues, thermoCalculatePossibleValues],
+            checkErrors: thermoDetectErrors,
             iterateAllCells: classicIterateAllCells,
             getCellUnits: classicGetCellUnits,
-            getAllUnits: () => []
+            getAllUnits: classicGetAllUnits
         },
     },
 }
