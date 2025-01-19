@@ -471,6 +471,10 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 		updateMagicWandMode()
 	}, [updateMagicWandMode])
 
+	useEffect(() => {
+		if (completedNumbers.includes(lockedInput)) setLockedInput(0)
+	}, [lockedInput, completedNumbers])
+
 	if (!GameHandler.game) return <Navigate to="/"></Navigate>
 
 	return (
