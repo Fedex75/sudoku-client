@@ -99,8 +99,6 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
 }
 
 export function commonDetectErrorsFromSolution(game: Board) {
-    if (!SettingsHandler.settings.checkMistakes) return []
-
     game.iterateAllCells(cell => { cell.cache.isError = cell.cache.solution > 0 && cell.value > 0 && cell.value !== cell.cache.solution })
 
     return []

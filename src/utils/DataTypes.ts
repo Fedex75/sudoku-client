@@ -39,6 +39,8 @@ export type KillerCage = {
     sum: number
 }
 
+export type Thermometer = CellCoordinates[]
+
 export type CageVector = {
     firstCell: CellCoordinates
     secondCell: CellCoordinates
@@ -46,7 +48,7 @@ export type CageVector = {
     ratio: number
 }
 
-export type CacheItem = {
+export type CellCache = {
     solution: number
     clue: boolean
     cage?: KillerCage
@@ -55,13 +57,14 @@ export type CacheItem = {
     units: CellCoordinates[][]
     isError: boolean
     colorGroups: ColorGroup[]
+    thermometer?: Thermometer
 }
 
 export type Cell = {
     value: number
     notes: number[]
     color: ColorName
-    cache: CacheItem
+    cache: CellCache
 }
 
 export type BoardMatrix = Cell[][]

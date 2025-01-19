@@ -149,6 +149,8 @@ export function sandwichGetSumBetween1and9(game: Board, row: number, column: num
 }
 
 export function sandwichDetectErrors(game: Board) {
+    commonDetectErrorsByVisibility(game)
+
     for (let x = 0; x < game.nSquares; x++) {
         const [sum, minY, maxY] = sandwichGetSumBetween1and9(game, -1, x)
         game.cache.sandwich__visibleVerticalClues[x] = true
@@ -177,11 +179,7 @@ export function sandwichDetectErrors(game: Board) {
         }
     }
 
-    if (!SettingsHandler.settings.checkMistakes) return []
-
-    commonDetectErrorsByVisibility(game)
-
-    return []
+    return
 }
 
 export function sandwichInitClueVisibility(game: Board) {
