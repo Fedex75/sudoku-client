@@ -1,5 +1,5 @@
 import './sudoku.css'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button } from '../../components'
 import GameHandler from '../../utils/GameHandler'
 import { DifficultyName, difficulties } from '../../utils/Difficulties'
@@ -192,6 +192,18 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		if (!menuActionSheetIsOpen) setPaused(false)
 	}, [menuActionSheetIsOpen])
 
+	const nextDifficulty = useMemo(() => {
+		if (!GameHandler.game) return null
+		if (!win) return null
+		const diffs = difficulties[GameHandler.game.mode]
+		const index = diffs.indexOf(GameHandler.game.difficulty)
+		if (index !== -1 && index < diffs.length - 1) {
+			return diffs[index + 1]
+		} else {
+			return null
+		}
+	}, [win])
+
 	if (GameHandler.game === null) return null
 
 	return (
@@ -214,19 +226,26 @@ export default function Sudoku({ theme, accentColor }: Props) {
 						<div className='sudoku__win-screen-wrapper'>
 							<div className='sudoku__win-screen'>
 								<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
-								<div className='sudoku__win-screen__stat'>
-									<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
-									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.game.timer)}</div>
+								<div className='sudoku__win-screen__stats'>
+									<div className='sudoku__win-screen__stat'>
+										<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
+										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.game.timer)}</div>
+									</div>
+									<div className='sudoku__win-screen__stat'>
+										<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
+										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
+									</div>
+									<div className='sudoku__win-screen__stat'>
+										<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
+										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
+									</div>
 								</div>
-								<div className='sudoku__win-screen__stat'>
-									<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
-									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
-								</div>
-								<div className='sudoku__win-screen__stat'>
-									<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
-									<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
-								</div>
-								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} />
+								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} marginBottom={30} />
+								{
+									nextDifficulty !== null ?
+										<Button title={t('sudoku.increaseDifficulty') + ' ' + t(`gameDifficulties.${nextDifficulty}`)} fontSize={16} backgroundColor={accentColor === 'purple' ? 'var(--orange)' : 'var(--purple)'} onClick={() => { handleNewGame(nextDifficulty) }} />
+										: null
+								}
 							</div>
 						</div> :
 

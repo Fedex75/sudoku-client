@@ -74,7 +74,11 @@
   grid-area: title;
   font-size: 30px;
   color: var(--primaryTextColor);
-  margin-bottom: 15px;
+  margin-bottom: 50px;
+}
+
+.sudoku__win-screen__stats {
+  margin-bottom: 30px;
 }
 
 .sudoku__win-screen__stat {
@@ -132,7 +136,8 @@
   width: 24px;
 }
 
-@media (min-aspect-ratio: 46/89){
+@media (min-aspect-ratio: 46/89) {
+
   /*Tablets*/
   .game {
     grid-template-rows: auto 200px;
@@ -145,7 +150,8 @@
 }
 
 /*@media (min-width: 1050px) {*/
-@media (min-aspect-ratio: 2/1) or (min-width: 1050px){
+@media (min-aspect-ratio: 2/1) or (min-width: 1050px) {
+
   /*Desktop and landscape phones*/
   .game {
     grid-template-columns: 500px 500px;
