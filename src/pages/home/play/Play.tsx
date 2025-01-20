@@ -15,6 +15,30 @@ import Canvas from "../../../game/Canvas"
 import SVGSettings from "../../../svg/settings"
 import { rulesets } from "../../../game/gameModes/Rulesets"
 
+let classicMiniature = new Board({ id: 'cu0', m: '1.3:4.8.' }, 3)
+classicMiniature.setValue([{ x: 1, y: 0 }], 2)
+classicMiniature.setValue([{ x: 0, y: 1 }], 6)
+classicMiniature.setValue([{ x: 0, y: 2 }], 7)
+classicMiniature.setValue([{ x: 2, y: 2 }], 9)
+
+let killerMiniature = new Board({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
+killerMiniature.setValue([{ x: 1, y: 0 }], 2)
+killerMiniature.setValue([{ x: 0, y: 1 }], 6)
+killerMiniature.setValue([{ x: 0, y: 2 }], 7)
+killerMiniature.setValue([{ x: 2, y: 2 }], 9)
+
+let sandwichMiniature = new Board({ id: 'wu0', m: '1.3:4.8. 35,9,3 13,30,11' }, 3)
+sandwichMiniature.setValue([{ x: 1, y: 0 }], 2)
+sandwichMiniature.setValue([{ x: 0, y: 1 }], 6)
+sandwichMiniature.setValue([{ x: 0, y: 2 }], 7)
+sandwichMiniature.setValue([{ x: 2, y: 2 }], 9)
+
+let thermoMiniature = new Board({ id: 'tu0', m: '1.3:4.8. 0,1,2,5;3,6,7,8' }, 3)
+thermoMiniature.setValue([{ x: 1, y: 0 }], 2)
+thermoMiniature.setValue([{ x: 0, y: 1 }], 6)
+thermoMiniature.setValue([{ x: 0, y: 2 }], 7)
+thermoMiniature.setValue([{ x: 2, y: 2 }], 9)
+
 type Props = {
     theme: ThemeName
     accentColor: AccentColor
@@ -31,30 +55,6 @@ export default function Play({ theme, accentColor }: Props) {
     let navigate = useNavigate()
 
     const { t } = useTranslation()
-
-    let classicMiniature = new Board({ id: 'cu0', m: '1.3:4.8.' }, 3)
-    classicMiniature.setValue([{ x: 1, y: 0 }], 2)
-    classicMiniature.setValue([{ x: 0, y: 1 }], 6)
-    classicMiniature.setValue([{ x: 0, y: 2 }], 7)
-    classicMiniature.setValue([{ x: 2, y: 2 }], 9)
-
-    let killerMiniature = new Board({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
-    killerMiniature.setValue([{ x: 1, y: 0 }], 2)
-    killerMiniature.setValue([{ x: 0, y: 1 }], 6)
-    killerMiniature.setValue([{ x: 0, y: 2 }], 7)
-    killerMiniature.setValue([{ x: 2, y: 2 }], 9)
-
-    let sandwichMiniature = new Board({ id: 'wu0', m: '1.3:4.8. 35,9,3 13,30,11' }, 3)
-    sandwichMiniature.setValue([{ x: 1, y: 0 }], 2)
-    sandwichMiniature.setValue([{ x: 0, y: 1 }], 6)
-    sandwichMiniature.setValue([{ x: 0, y: 2 }], 7)
-    sandwichMiniature.setValue([{ x: 2, y: 2 }], 9)
-
-    let thermoMiniature = new Board({ id: 'tu0', m: '1.3:4.8. 0,1,2,5;3,6,7,8' }, 3)
-    thermoMiniature.setValue([{ x: 1, y: 0 }], 2)
-    thermoMiniature.setValue([{ x: 0, y: 1 }], 6)
-    thermoMiniature.setValue([{ x: 0, y: 2 }], 7)
-    thermoMiniature.setValue([{ x: 2, y: 2 }], 9)
 
     const handleNewGame = useCallback((mode: GameModeName) => {
         GameHandler.newGame(mode, GameHandler.recommendations.perMode[mode])

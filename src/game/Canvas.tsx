@@ -309,9 +309,11 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 			resizeCanvas()
 			renderFrame()
 
-			const resizeObserver = new ResizeObserver(() => {
-				resizeCanvas()
-				renderFrame()
+			const resizeObserver = new ResizeObserver((entries) => {
+				for (const entry of entries) {
+					resizeCanvas()
+					renderFrame()
+				}
 			})
 
 			resizeObserver.observe(canvasRef.current)
