@@ -3,13 +3,13 @@ import { Link } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faBookmark, faChartSimple, faChevronLeft, faChevronRight, faPlay, faTrash } from "@fortawesome/free-solid-svg-icons"
 import './statistics.css'
-import { ThemeName } from "../../../utils/DataTypes"
 import { AccentColor } from "../../../utils/Colors"
 import GameHandler from "../../../utils/GameHandler"
 import { useCallback, useState } from "react"
 import { GameModeName } from "../../../utils/Difficulties"
 import { convertMillisecondsToHMS } from "../../../utils/Statistics"
 import { ActionSheet, ActionSheetButton } from "../../../components"
+import { ThemeName } from '../../../game/Themes'
 
 type Props = {
     theme: ThemeName

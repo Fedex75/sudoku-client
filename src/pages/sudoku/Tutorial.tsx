@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react"
 import Canvas from "../../game/Canvas"
 import { AccentColor } from "../../utils/Colors"
-import { ThemeName, Ruleset } from "../../utils/DataTypes"
+import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
 import Board from "../../game/Board"
 import { useTranslation } from 'react-i18next'
@@ -11,6 +11,7 @@ import './tutorial.css'
 import { Button } from '../../components'
 import { commonDetectErrorsByVisibility } from '../../game/gameModes/Common'
 import { rulesets } from '../../game/gameModes/Rulesets'
+import { ThemeName } from '../../game/Themes'
 
 interface TutorialProps {
     gameMode: GameModeName

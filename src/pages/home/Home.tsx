@@ -9,26 +9,26 @@ import Play from './play/Play'
 import SVGImport from '../../svg/import'
 import Bookmarks from './bookmarks/Bookmarks'
 import Statistics from './statistics/Statistics'
-import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 import { useCallback } from 'react'
+import { ThemeName } from '../../game/Themes'
 
 type Props = {
-	theme: ThemeName;
-	accentColor: AccentColor;
+	theme: ThemeName
+	accentColor: AccentColor
 }
 
 function Home({ theme, accentColor }: Props) {
-	const { t } = useTranslation();
+	const { t } = useTranslation()
 	let navigate = useNavigate()
 
 	const handleImport = useCallback(() => {
-		const board = prompt(t('home.importPrompt'));
+		const board = prompt(t('home.importPrompt'))
 		if (board) {
 			if (GameHandler.importGame(board)) {
-				navigate('/sudoku');
+				navigate('/sudoku')
 			} else {
-				alert(t('home.incompatibleData'));
+				alert(t('home.incompatibleData'))
 			}
 		}
 	}, [navigate, t])
@@ -36,7 +36,7 @@ function Home({ theme, accentColor }: Props) {
 	return (
 		<Section className="home">
 			<Topbar logo buttons={[
-				<div key={1} onClick={handleImport} style={{marginRight: 15}}><SVGImport /></div>,
+				<div key={1} onClick={handleImport} style={{ marginRight: 15 }}><SVGImport /></div>,
 				<Link key={2} to="/settings">
 					<SVGSettings />
 				</Link>

@@ -13,10 +13,10 @@ import { convertMillisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
 import Game from '../../game/Game'
-import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 import { WinScreen } from './WinScreen'
 import { Tutorial } from './Tutorial'
+import { ThemeName } from '../../game/Themes'
 
 const BOARD_ANIMATION_DURATION = 1350
 

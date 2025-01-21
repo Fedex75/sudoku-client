@@ -9,11 +9,12 @@ import { getDifficulty, getMode, GameModeIdentifier, DifficultyIdentifier } from
 import GameHandler from "../../../utils/GameHandler"
 import missionsData from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import { Bookmark, MissionsData, RawGameData, ThemeName, isIDBookmark } from '../../../utils/DataTypes'
+import { Bookmark, MissionsData, RawGameData, isIDBookmark } from '../../../utils/DataTypes'
 import Board from '../../../game/Board'
 import Canvas from '../../../game/Canvas'
 import { AccentColor } from '../../../utils/Colors'
 import { rulesets } from '../../../game/gameModes/Rulesets'
+import { ThemeName } from '../../../game/Themes'
 
 type Props = {
 	theme: ThemeName

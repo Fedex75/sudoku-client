@@ -1,10 +1,11 @@
 import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import Board from "./Board"
-import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset, ThemeName } from "../utils/DataTypes"
-import { AccentColor } from "../utils/Colors"
+import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset } from "../utils/DataTypes"
+import { AccentColor, ColorName } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
 import { isTouchDevice } from "../utils/isTouchDevice"
+import { ThemeName, themes } from './Themes'
 
 const roundedRatio = Math.round(window.devicePixelRatio)
 
@@ -13,50 +14,7 @@ const linksLineWidth = roundedRatio === 1 ? 4 : 8
 const colorBorderLineWidth = roundedRatio === 1 ? 3 : 6
 const cageLineWidth = roundedRatio === 1 ? 2 : 2
 
-const themes = {
-	light: {
-		background: '#e9e9e9',
-		canvasLightDefaultCellColor: 'white',
-		canvasDarkDefaultCellColor: '#e2ebf3',
-		canvasCellBorderColor: '#bec6d4',
-		canvasCellBorderColorRGBA: '190, 198, 212',
-		canvasBoxBorderColor: '#344861',
-		canvasBoxBorderColorRGBA: '52, 72, 97',
-		canvasClueColor: '#777',
-		canvasSelectedCellClueColor: '#344861',
-		canvasSelectedCellCandidateColor: '#75747c',
-		canvasSameValueCellBackground: '#c3d7ea',
-		canvasNoteHighlightColor: 'black',
-		canvasValueHighlightColor: '#344861',
-		canvasAnimationBaseColor: '0, 0, 0',
-		canvasAnimationDarkColor: '255, 255, 255',
-		canvasAnimationFadeBaseColor: '226, 235, 243',
-		canvasKillerCageColor: '#344861',
-		canvasKillerHighlightedCageColor: 'black',
-	},
-	dark: {
-		background: 'black',
-		canvasLightDefaultCellColor: '#25242c',
-		canvasDarkDefaultCellColor: '#161620',
-		canvasCellBorderColor: 'black',
-		canvasCellBorderColorRGBA: '0, 0, 0',
-		canvasBoxBorderColor: 'black',
-		canvasBoxBorderColorRGBA: '0, 0, 0',
-		canvasClueColor: '#75747c',
-		canvasSelectedCellClueColor: 'black',
-		canvasSelectedCellCandidateColor: 'black',
-		canvasSameValueCellBackground: '#0f0e12',
-		canvasNoteHighlightColor: 'white',
-		canvasValueHighlightColor: 'white',
-		canvasAnimationBaseColor: '255, 255, 255',
-		canvasAnimationDarkColor: '0, 0, 0',
-		canvasAnimationFadeBaseColor: '22, 22, 32',
-		canvasKillerCageColor: '#75747c',
-		canvasKillerHighlightedCageColor: 'white',
-	}
-}
-
-function updateColors(theme: ThemeName) {
+function updateColors(theme: ThemeName): Record<ColorName, string>[] {
 	const newColors = {
 		default: themes[theme].canvasLightDefaultCellColor,
 		red: '#fc5c65',
@@ -82,6 +40,7 @@ function updateColors(theme: ThemeName) {
 	}
 
 	const newSelectedCellColors = theme === 'light' ? {
+		default: '#000',
 		red: '#fcbdc0',
 		orange: '#fcdabd',
 		yellow: '#ffe999',

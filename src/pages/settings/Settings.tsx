@@ -10,12 +10,12 @@ import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
 import { colorNames } from '../../utils/Colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
 import FlagArg from '../../svg/flag_arg'
 import FlagUKSVG from '../../svg/flag_uk'
 import FlagSpainSVG from '../../svg/flag_spain'
 import { useServiceWorker } from '../../components/serviceWorker/useServiceWorker'
+import { ThemeName } from '../../game/Themes'
 
 type SectionLinkProps = {
 	color: string

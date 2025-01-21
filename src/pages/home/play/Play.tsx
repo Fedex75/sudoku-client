@@ -9,11 +9,11 @@ import { ActionSheet, ActionSheetButton } from "../../../components"
 import './play.css'
 import Board from "../../../game/Board"
 import { GameModeName } from "../../../utils/Difficulties"
-import { ThemeName } from "../../../utils/DataTypes"
 import { AccentColor } from "../../../utils/Colors"
 import Canvas from "../../../game/Canvas"
 import SVGSettings from "../../../svg/settings"
 import { rulesets } from "../../../game/gameModes/Rulesets"
+import { ThemeName } from '../../../game/Themes'
 
 type Props = {
     theme: ThemeName
