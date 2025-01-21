@@ -78,12 +78,12 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
             //Value
             const highlightValue = (lockedInput === 0 && selectedCellsValues.includes(cell.value)) || lockedInput === cell.value
             ctx.strokeStyle = ctx.fillStyle =
-                cell.cache.isError ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
+                (SettingsHandler.settings.checkMistakes && cell.cache.isError) ? (accentColor === 'red' ? '#ffe173' : '#fc5c65') :
                     highlightValue ? (cell.color === 'default' ? themes[theme].canvasValueHighlightColor : 'white') :
                         cell.color !== 'default' ? 'black' :
                             cell.cache.clue ? themes[theme].canvasClueColor :
                                 solutionColors[accentColor]
-            if (cell.cache.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+            if (SettingsHandler.settings.checkMistakes && cell.cache.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
             drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
         } else {
             //Candidates

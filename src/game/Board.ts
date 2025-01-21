@@ -149,7 +149,7 @@ export default class Board {
 		let completedNumbers: number[] = []
 		let count = Array(this.nSquares).fill(0)
 		this.iterateAllCells((cell) => {
-			if (cell.value > 0 && !cell.cache.isError) {
+			if (cell.value > 0) {
 				count[cell.value - 1]++
 				if (count[cell.value - 1] === this.nSquares) {
 					completedNumbers.push(cell.value)

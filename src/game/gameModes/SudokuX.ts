@@ -4,6 +4,7 @@ import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import Board from "../Board"
 import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./Classic"
+import SettingsHandler from '../../utils/SettingsHandler'
 
 export function sudokuXInitGameData({ game, data }: InitGameProps) {
     game.difficulty = getDifficulty(data.id[1] as DifficultyIdentifier)
@@ -59,8 +60,11 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
     const near = rendererState.cellPositions[0] + squareSize / 2
     const far = rendererState.cellPositions[game.nSquares - 1] + squareSize / 2
 
+    const mainDiagonalError = (SettingsHandler.settings.checkMistakes && game.cache.sudokuX__diagonalErrors[0])
+    const secondaryDiagonalError = (SettingsHandler.settings.checkMistakes && game.cache.sudokuX__diagonalErrors[1])
+
     // Main diagonal
-    ctx.fillStyle = ctx.strokeStyle = game.cache.sudokuX__diagonalErrors[0] ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
+    ctx.fillStyle = ctx.strokeStyle = mainDiagonalError ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
     ctx.lineWidth = squareSize * 0.2
     ctx.beginPath()
     ctx.moveTo(near, near)
@@ -72,7 +76,7 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
     }
 
     // Secondary diagonal
-    ctx.fillStyle = ctx.strokeStyle = game.cache.sudokuX__diagonalErrors[1] ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
+    ctx.fillStyle = ctx.strokeStyle = secondaryDiagonalError ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
     ctx.lineWidth = squareSize * 0.2
     ctx.moveTo(near, far)
     ctx.lineTo(far, near)
@@ -80,7 +84,7 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
 
     // Circles
 
-    ctx.fillStyle = ctx.strokeStyle = game.cache.sudokuX__diagonalErrors[0] ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
+    ctx.fillStyle = ctx.strokeStyle = mainDiagonalError ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
     // NW
     ctx.beginPath()
     ctx.arc(near, near, squareSize * 0.1, Math.PI * 0.75, - Math.PI * 0.25, false)
@@ -90,7 +94,7 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
     ctx.arc(far, far, squareSize * 0.1, - Math.PI * 0.25, Math.PI * 0.75, false)
     ctx.fill()
 
-    ctx.fillStyle = ctx.strokeStyle = game.cache.sudokuX__diagonalErrors[1] ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
+    ctx.fillStyle = ctx.strokeStyle = secondaryDiagonalError ? (accentColor === 'red' ? '#ffe17344' : '#ff525244') : (ctx.strokeStyle = theme === 'dark' ? '#333333aa' : '#ddddddaa')
     // SW
     ctx.beginPath()
     ctx.arc(near, far, squareSize * 0.1, Math.PI * 0.25, Math.PI * 1.25, false)

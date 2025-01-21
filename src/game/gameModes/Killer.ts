@@ -57,13 +57,15 @@ export function killerRenderCagesAndCageValues({ ctx, game, rendererState, accen
     }, 'white')
 
     // Paint cages with error red or yellow
-    applyColorWithMask(() => {
-        for (const cage of game.cache.killer__cageErrors) {
-            for (const c of cage.members) {
-                cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+    if (SettingsHandler.settings.checkMistakes && game.cache.killer__cageErrors.length > 0) {
+        applyColorWithMask(() => {
+            for (const cage of game.cache.killer__cageErrors) {
+                for (const c of cage.members) {
+                    cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+                }
             }
-        }
-    }, accentColor === 'red' ? '#ffe173' : '#ff5252')
+        }, accentColor === 'red' ? '#ffe173' : '#ff5252')
+    }
 
     cagesTempCanvasCtx.globalCompositeOperation = 'source-over'
 

@@ -137,15 +137,17 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
     }, theme === 'dark' ? '#777' : '#888')
 
     // Paint thermometers with errors red
-    applyColorWithMask(() => {
-        for (const thermo of game.cache.thermo__thermometers) {
-            if (thermo.error) {
-                for (const c of thermo.members) {
-                    thermosTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+    if (SettingsHandler.settings.checkMistakes) {
+        applyColorWithMask(() => {
+            for (const thermo of game.cache.thermo__thermometers) {
+                if (thermo.error) {
+                    for (const c of thermo.members) {
+                        thermosTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+                    }
                 }
             }
-        }
-    }, accentColor === 'red' ? '#ffe173' : '#ff5252')
+        }, accentColor === 'red' ? '#ffe173' : '#ff5252')
+    }
 
     thermosTempCanvasCtx.globalCompositeOperation = 'source-over'
 
