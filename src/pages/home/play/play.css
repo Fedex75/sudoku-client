@@ -71,7 +71,7 @@
 .home__gameMode.snapped {
   width: 150px !important;
   height: 150px;
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
   color: white;
 }
 
@@ -96,7 +96,7 @@
 
 .home__carousel-dots__dot.selected {
   width: 30px;
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
 }
 
 .home__continue {
@@ -104,7 +104,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
   border-radius: 20px;
   width: fit-content;
   padding: 10px 15px;
@@ -125,7 +125,7 @@
 .home__continue {
   display: flex;
   flex-flow: column;
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
   border-radius: 10px;
   padding: 5px;
   gap: 5px;

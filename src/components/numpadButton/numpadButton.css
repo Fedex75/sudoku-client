@@ -3,7 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--theme-color);
+  color: var(--themeColor);
   font-size: 50px;
   border-radius: 10px;
   cursor: pointer;
@@ -37,8 +37,8 @@
   border-width: 1px;
   border-style: solid;
   color: white;
-  background-color: var(--theme-color);
-  border-color: var(--theme-color);
+  background-color: var(--themeColor);
+  border-color: var(--themeColor);
 }
 
 .numpad__button.color {

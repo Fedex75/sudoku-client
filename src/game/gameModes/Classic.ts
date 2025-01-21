@@ -212,12 +212,12 @@ export function classicCheckBoxAnimation(game: Board, center: CellCoordinates) {
 
 export function classicGetBoxes(game: Board): CellCoordinates[][] {
     let boxes = []
-    for (let boxX = 0; boxX < 3; boxX++) {
-        for (let boxY = 0; boxY < 3; boxY++) {
+    for (let boxX = 0; boxX < game.nSquares; boxX += 3) {
+        for (let boxY = 0; boxY < game.nSquares; boxY += 3) {
             let box = []
-            for (let x = 0; x < 3; x++) {
-                for (let y = 0; y < 3; y++) {
-                    box.push({ x: boxX * 3 + x, y: boxY * 3 + y })
+            for (let dX = 0; dX < 3; dX++) {
+                for (let dY = 0; dY < 3; dY++) {
+                    box.push({ x: boxX + dX, y: boxY + dY })
                 }
             }
             boxes.push(box)

@@ -1,6 +1,6 @@
 import './sudoku.css'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton, Button } from '../../components'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components'
 import GameHandler from '../../utils/GameHandler'
 import { DifficultyName, difficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
@@ -15,6 +15,8 @@ import SVGRestart from '../../svg/restart'
 import Game from '../../game/Game'
 import { ThemeName } from '../../utils/DataTypes'
 import { AccentColor } from '../../utils/Colors'
+import { WinScreen } from './WinScreen'
+import { Tutorial } from './Tutorial'
 
 const BOARD_ANIMATION_DURATION = 1350
 
@@ -70,6 +72,8 @@ type Props = {
 
 export default function Sudoku({ theme, accentColor }: Props) {
 	const [win, setWin] = useState(false)
+	const [tutorialIsOpen, setTutorialIsOpen] = useState(false)
+
 	const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
 	const [menuActionSheetIsOpen, setMenuActionSheetIsOpen] = useState(false)
 	const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false)
@@ -159,6 +163,16 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		setPaused(p => !p)
 	}, [win])
 
+	const handleMenuTutorialClick = useCallback(() => {
+		GameHandler.game?.saveToLocalStorage()
+		setTutorialIsOpen(t => !t)
+		setMenuActionSheetIsOpen(false)
+	}, [])
+
+	const handleQuitTutorial = useCallback(() => {
+		setTutorialIsOpen(false)
+	}, [])
+
 	useEffect(() => {
 		if (GameHandler.game === null) {
 			navigate('/')
@@ -192,64 +206,28 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		if (!menuActionSheetIsOpen) setPaused(false)
 	}, [menuActionSheetIsOpen])
 
-	const nextDifficulty = useMemo(() => {
-		if (!GameHandler.game) return null
-		if (!win) return null
-		const diffs = difficulties[GameHandler.game.mode]
-		const index = diffs.indexOf(GameHandler.game.difficulty)
-		if (index !== -1 && index < diffs.length - 1) {
-			return diffs[index + 1]
-		} else {
-			return null
-		}
-	}, [win])
-
 	if (GameHandler.game === null) return null
 
 	return (
 		<Section>
 			<Topbar
 				title={t(`gameModes.${GameHandler.game.mode}`)}
-				subtitle={t(`gameDifficulties.${GameHandler.game.difficulty}`)}
+				subtitle={tutorialIsOpen ? t('tutorial.tutorial') : t(`gameDifficulties.${GameHandler.game.difficulty}`)}
 				backURL="/"
 				buttons={[
-					<div key={0} style={{ display: 'grid', placeContent: 'center', marginRight: 5 }} onClick={topbarMenuClick}><SVGMenu className='sudoku__open-menu-button' strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
+					!tutorialIsOpen && <div key={0} style={{ display: 'grid', placeContent: 'center', marginRight: 5 }} onClick={topbarMenuClick}><SVGMenu className='sudoku__open-menu-button' strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
 				]}
-				onTitleClick={() => { setMenuActionSheetIsOpen(true) }}
+				onTitleClick={() => { if (!tutorialIsOpen) setMenuActionSheetIsOpen(true) }}
 			>
-				<Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />
+				{!tutorialIsOpen && <Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />}
 			</Topbar>
 
 			<SectionContent>
 				{
 					win ?
-						<div className='sudoku__win-screen-wrapper'>
-							<div className='sudoku__win-screen'>
-								<div className='sudoku__win-screen__title'>{t('sudoku.excellent')}</div>
-								<div className='sudoku__win-screen__stats'>
-									<div className='sudoku__win-screen__stat'>
-										<div className='sudoku__win-screen__stat__title'>{t('sudoku.time')}</div>
-										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.game.timer)}</div>
-									</div>
-									<div className='sudoku__win-screen__stat'>
-										<div className='sudoku__win-screen__stat__title'>{t('sudoku.average')}</div>
-										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.average)}</div>
-									</div>
-									<div className='sudoku__win-screen__stat'>
-										<div className='sudoku__win-screen__stat__title'>{t('sudoku.best')}</div>
-										<div className='sudoku__win-screen__stat__value'>{convertMillisecondsToHMS(GameHandler.statistics[GameHandler.game.mode][GameHandler.game.difficulty]!.best)}</div>
-									</div>
-								</div>
-								<Button title={t('sudoku.newGame')} onClick={handleNewGameClick} marginBottom={30} />
-								{
-									nextDifficulty !== null ?
-										<Button title={t('sudoku.increaseDifficulty') + ' ' + t(`gameDifficulties.${nextDifficulty}`)} fontSize={16} backgroundColor={accentColor === 'purple' ? 'var(--orange)' : 'var(--purple)'} onClick={() => { handleNewGame(nextDifficulty) }} />
-										: null
-								}
-							</div>
-						</div> :
-
-						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
+						<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
+						tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} ruleset={GameHandler.game.ruleset} quitTutorial={handleQuitTutorial} /> :
+							<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
 				}
 			</SectionContent>
 
@@ -266,9 +244,9 @@ export default function Sudoku({ theme, accentColor }: Props) {
 						<FontAwesomeIcon icon={faArrowUpFromBracket} fontSize={24} />
 						<p>{t('common.share')}</p>
 					</div>
-					<div className='context-menu__button' style={{ gridArea: 'rules', marginTop: 25, marginBottom: 25 }}>
+					<div className='context-menu__button' style={{ gridArea: 'rules', marginTop: 25, marginBottom: 25 }} onClick={handleMenuTutorialClick}>
 						<FontAwesomeIcon icon={faInfoCircle} fontSize={24} />
-						<p>{t('sudoku.rules')}</p>
+						<p>{t('sudoku.howToPlay')}</p>
 					</div>
 					<div className='sudoku__context-menu__buttons' style={{ gridArea: 'buttons' }}>
 						{

@@ -106,7 +106,7 @@ export function initI18n() {
             copyClues: 'Copy clues',
             copyFullBoard: 'Copy full board',
             copyMission: 'Copy mission',
-            rules: 'Rules'
+            howToPlay: 'Tutorial'
           },
           gameModes: {
             classic: 'Classic',
@@ -123,6 +123,30 @@ export function initI18n() {
             evil: 'Evil',
             restart: 'Restart',
             unrated: 'Unrated'
+          },
+          tutorial: {
+            classic: {
+              rows: "Numbers can't be repeated in a row.",
+              columns: "Numbers can't be repeated in a column.",
+              boxes: "Numbers can't be repeated in a 3x3 box.",
+              solve: 'To win, you must fill the entire grid with the numbers 1 through 9.'
+            },
+            killer: {
+              cages: "The board has cages, indicated with dashed lines.\nNumbers can't be repeated inside a cage.",
+              cageSum: 'Numbers inside a cage must add up to the value of the cage.\n6 + 3 + 2 = 11.',
+            },
+            sudokux: {
+              diagonals: "Numbers can't be repeated in the two shown diagonals."
+            },
+            sandwich: {
+              sum: "In every row and column, the numbers between 1 and 9 must add up to the indicated number.\n8 + 2 + 6 = 16."
+            },
+            thermo: {
+              thermometers1: "The board has thermometers, drawn as connected sequences of cells, with a bulb (start) and a tip (end).",
+              thermometers2: "The numbers inside a thermometer must strictly increase from the bulb to the tip.\nThey do not need to be consecutive.",
+            },
+            tutorial: 'Tutorial',
+            exit: 'Quit tutorial'
           }
         },
       },
@@ -223,7 +247,7 @@ export function initI18n() {
             copyClues: 'Copiar pistas',
             copyFullBoard: 'Copiar tablero completo',
             copyMission: 'Copiar misión',
-            rules: 'Reglas'
+            howToPlay: 'Tutorial'
           },
           gameModes: {
             classic: 'Clásico',
@@ -240,6 +264,30 @@ export function initI18n() {
             evil: 'Malvado',
             restart: 'Reiniciar',
             unrated: 'Sin clasificar'
+          },
+          tutorial: {
+            classic: {
+              rows: "Los números no pueden repetirse en una fila.",
+              columns: "Los números no pueden repetirse en una columna.",
+              boxes: "Los números no pueden repetirse en una caja de 3x3.",
+              solve: 'Para ganar, deberá llenar todo el tablero con los números del 1 al 9.'
+            },
+            killer: {
+              cages: "El tablero tiene jaulas, señaladas con líneas discontinuas.\nLos números no pueden repetirse dentro de una jaula.",
+              cageSum: 'La suma de los números dentro de una jaula debe ser igual al valor de esa jaula.\n6 + 3 + 2 = 11.',
+            },
+            sudokux: {
+              diagonals: "Los números no pueden repetirse en las dos diagonales señaladas."
+            },
+            sandwich: {
+              sum: "En cada fila y columna, los números entre el 1 y el 9 deben sumar la cantidad indicada.\n8 + 2 + 6 = 16."
+            },
+            thermo: {
+              thermometers1: "El tablero tiene termómetros, dibujados como secuencias de celdas conectadas, con un bulbo (inicio) y una punta (final).",
+              thermometers2: "Los números dentro de un termómetro deben aumentar estrictamente desde el bulbo hacia la punta.\nNo hace falta que sean consecutivos.",
+            },
+            tutorial: 'Tutorial',
+            exit: 'Salir del tutorial'
           }
         }
       }

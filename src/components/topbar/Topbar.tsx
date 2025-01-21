@@ -23,12 +23,12 @@ export default function Topbar({logo = false, title = null, subtitle = null, chi
 					backURL ?
 					<Link to={backURL}>
 						<div className='topbar__top__back'>
-							<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} />
+							<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--themeColor)', fontSize: 24}} />
 						</div>
 					</Link> :
 					onBack ?
 					<div className='topbar__top__back'>
-						<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--theme-color)', fontSize: 24}} onClick={onBack} />
+						<FontAwesomeIcon icon={faChevronLeft} style={{color: 'var(--themeColor)', fontSize: 24}} onClick={onBack} />
 					</div> : null
 				}
 				{

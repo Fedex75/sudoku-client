@@ -9,6 +9,6 @@
 }
 
 .check.checked {
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
   border: none;
 }

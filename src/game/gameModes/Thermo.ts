@@ -17,7 +17,7 @@ export function thermoInitGameData({ game, data }: InitGameProps) {
     const [clues] = data.m.split(' ')
     game.clues = decodeMissionString(clues)
     game.mission = data.m
-    game.solution = '000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+    game.solution = ''
 }
 
 export function thermoInitThermometerData(game: Board) {
@@ -25,11 +25,14 @@ export function thermoInitThermometerData(game: Board) {
 
     game.cache.thermo__thermometers = []
     for (const thermometer of thermometers.split(';')) {
-        const newThermometer: Thermometer = []
+        const newThermometer: Thermometer = {
+            members: [],
+            error: false
+        }
         for (const cellIndex of thermometer.split(',').map(s => Number.parseInt(s))) {
             const y = Math.floor(cellIndex / game.nSquares)
             const x = cellIndex - y * game.nSquares
-            newThermometer.push({ x, y })
+            newThermometer.members.push({ x, y })
             game.get({ x, y }).cache.thermometer = newThermometer
         }
         game.cache.thermo__thermometers.push(newThermometer)
@@ -41,7 +44,7 @@ export function thermoGetVisibleCells(game: Board, coords: CellCoordinates) {
     let visibleCells = classicGetVisibleCells(game, coords)
 
     if (cell.cache.thermometer) {
-        for (const c of cell.cache.thermometer) {
+        for (const c of cell.cache.thermometer.members) {
             if ((c.x !== coords.x || c.y !== coords.y) && indexOf(c, visibleCells) === -1) visibleCells.push(c)
         }
     }
@@ -54,11 +57,13 @@ export function thermoDetectErrors(game: Board) {
 
     for (const thermo of game.cache.thermo__thermometers) {
         let currentMaxValue = 0
-        for (const coords of thermo) {
+        thermo.error = false
+        for (const coords of thermo.members) {
             const cell = game.get(coords)
             if (cell.value > 0) {
                 if (cell.value < currentMaxValue) {
                     cell.cache.isError = true
+                    thermo.error = true
                 } else {
                     currentMaxValue = cell.value
                 }
@@ -84,23 +89,23 @@ export function thermoRenderThermometersToOffscreenCanvas({ game, squareSize, re
     thermosOffScreenCanvasCtx.lineWidth = squareSize.current * THERMOMETER_WIDTH_FACTOR
     for (const thermo of game.cache.thermo__thermometers) {
         thermosOffScreenCanvasCtx.beginPath()
-        thermosOffScreenCanvasCtx.arc(rendererState.current.cellPositions[thermo[0].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo[0].y] + squareSize.current / 2, squareSize.current * THERMOMETER_WIDTH_FACTOR, 0, Math.PI * 2)
+        thermosOffScreenCanvasCtx.arc(rendererState.current.cellPositions[thermo.members[0].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo.members[0].y] + squareSize.current / 2, squareSize.current * THERMOMETER_WIDTH_FACTOR, 0, Math.PI * 2)
         thermosOffScreenCanvasCtx.fill()
 
-        for (let i = 1; i < thermo.length; i++) {
+        for (let i = 1; i < thermo.members.length; i++) {
             thermosOffScreenCanvasCtx.beginPath()
-            thermosOffScreenCanvasCtx.moveTo(rendererState.current.cellPositions[thermo[i - 1].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo[i - 1].y] + squareSize.current / 2)
-            thermosOffScreenCanvasCtx.lineTo(rendererState.current.cellPositions[thermo[i].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo[i].y] + squareSize.current / 2)
+            thermosOffScreenCanvasCtx.moveTo(rendererState.current.cellPositions[thermo.members[i - 1].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo.members[i - 1].y] + squareSize.current / 2)
+            thermosOffScreenCanvasCtx.lineTo(rendererState.current.cellPositions[thermo.members[i].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo.members[i].y] + squareSize.current / 2)
             thermosOffScreenCanvasCtx.stroke()
 
             thermosOffScreenCanvasCtx.beginPath()
-            thermosOffScreenCanvasCtx.arc(rendererState.current.cellPositions[thermo[i].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo[i].y] + squareSize.current / 2, squareSize.current * THERMOMETER_WIDTH_FACTOR / 2, 0, Math.PI * 2)
+            thermosOffScreenCanvasCtx.arc(rendererState.current.cellPositions[thermo.members[i].x] + squareSize.current / 2, rendererState.current.cellPositions[thermo.members[i].y] + squareSize.current / 2, squareSize.current * THERMOMETER_WIDTH_FACTOR / 2, 0, Math.PI * 2)
             thermosOffScreenCanvasCtx.fill()
         }
     }
 }
 
-export function thermoRenderThermometers({ ctx, game, squareSize, rendererState, logicalSize, cellBorderWidth, theme }: RendererProps) {
+export function thermoRenderThermometers({ ctx, game, squareSize, rendererState, logicalSize, cellBorderWidth, theme, accentColor }: RendererProps) {
     if (!thermosOffScreenCanvasCtx || !thermosTempCanvasCtx) return
 
     thermosTempCanvasCtx.clearRect(0, 0, logicalSize, logicalSize)
@@ -129,11 +134,22 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
     // Paint selected thermometers white
     applyColorWithMask(() => {
         for (const thermo of selectedThermometers) {
-            for (const c of thermo) {
+            for (const c of thermo.members) {
                 thermosTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
             }
         }
     }, theme === 'dark' ? '#777' : '#888')
+
+    // Paint thermometers with errors red
+    applyColorWithMask(() => {
+        for (const thermo of game.cache.thermo__thermometers) {
+            if (thermo.error){
+                for (const c of thermo.members) {
+                    thermosTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+                }
+            }
+        }
+    }, accentColor === 'red' ? '#ffe173' : '#ff5252')
 
     thermosTempCanvasCtx.globalCompositeOperation = 'source-over'
 
@@ -144,20 +160,20 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
 
 export function thermoCalculatePossibleValues(game: Board) {
     for (const thermo of game.cache.thermo__thermometers) {
-        for (let i = 0; i < thermo.length; i++) {
-            const cell = game.get(thermo[i])
+        for (let i = 0; i < thermo.members.length; i++) {
+            const cell = game.get(thermo.members[i])
             if (cell.value > 0) {
-                for (let j = i + 1; j < thermo.length; j++) {
-                    game.get(thermo[j]).cache.possibleValues = game.get(thermo[j]).cache.possibleValues.filter(n => n > cell.value)
+                for (let j = i + 1; j < thermo.members.length; j++) {
+                    game.get(thermo.members[j]).cache.possibleValues = game.get(thermo.members[j]).cache.possibleValues.filter(n => n > cell.value)
                     if (SettingsHandler.settings.showPossibleValues) {
-                        for (let n = cell.value; n > 0; n--) game.setNote(n, [thermo[j]], false)
+                        for (let n = cell.value; n > 0; n--) game.setNote(n, [thermo.members[j]], false)
                     }
                 }
 
                 for (let j = i - 1; j >= 0; j--) {
-                    game.get(thermo[j]).cache.possibleValues = game.get(thermo[j]).cache.possibleValues.filter(n => n < cell.value)
+                    game.get(thermo.members[j]).cache.possibleValues = game.get(thermo.members[j]).cache.possibleValues.filter(n => n < cell.value)
                     if (SettingsHandler.settings.showPossibleValues) {
-                        for (let n = cell.value; n < game.nSquares; n++) game.setNote(n, [thermo[j]], false)
+                        for (let n = cell.value; n < game.nSquares; n++) game.setNote(n, [thermo.members[j]], false)
                     }
                 }
             }

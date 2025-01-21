@@ -1,5 +1,5 @@
 :root {
-  --theme-color: #2e69f2;
+  --themeColor: #2e69f2;
   --red: #fc5c65;
   --darkRed: #eb3b5a;
   --orange: #fd9644;
@@ -27,7 +27,7 @@
   --actionSheetButtonBorder: #d8d8db;
   --contextMenuButtonColor: #505050;
   --contextMenuButtonBackground: #e7e7e7;
-  --editButtonColor: var(--theme-color);
+  --editButtonColor: var(--themeColor);
   --editButtonBackground: var(--lightGray);
   --editButtonDisabledFilter: brightness(0.7);
   --numpadButtonBackground: var(--lightGray);
@@ -94,35 +94,35 @@
 }
 
 [data-accent-color='red'] {
-  --theme-color: var(--red);
+  --themeColor: var(--red);
 }
 
 [data-accent-color='orange'] {
-  --theme-color: var(--orange);
+  --themeColor: var(--orange);
 }
 
 [data-accent-color='yellow'] {
-  --theme-color: var(--yellow);
+  --themeColor: var(--yellow);
 }
 
 [data-accent-color='green'] {
-  --theme-color: var(--green);
+  --themeColor: var(--green);
 }
 
 [data-accent-color='blueGreen'] {
-  --theme-color: var(--blueGreen);
+  --themeColor: var(--blueGreen);
 }
 
 [data-accent-color='lightBlue'] {
-  --theme-color: var(--lightBlue);
+  --themeColor: var(--lightBlue);
 }
 
 [data-accent-color='darkBlue'] {
-  --theme-color: var(--darkBlue);
+  --themeColor: var(--darkBlue);
 }
 
 [data-accent-color='purple'] {
-  --theme-color: var(--purple);
+  --themeColor: var(--purple);
 }
 
 html, body, #root, .app {

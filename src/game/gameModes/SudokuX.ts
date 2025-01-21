@@ -10,7 +10,7 @@ export function sudokuXInitGameData({ game, data }: InitGameProps) {
     game.difficulty = getDifficulty(data.id[1] as DifficultyIdentifier)
     game.clues = decodeMissionString(data.m)
     game.mission = data.m
-    game.solution = '000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+    game.solution = ''
 }
 
 export function sudokuXGetVisibleCells(game: Board, c: CellCoordinates): CellCoordinates[] {

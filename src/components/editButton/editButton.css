@@ -17,7 +17,7 @@
 }
 
 .edit-buttons__button.highlight {
-  background-color: var(--theme-color);
+  background-color: var(--themeColor);
   color: white;
 }
 

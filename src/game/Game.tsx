@@ -267,13 +267,11 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 			}
 		}
 
-		if (color !== 'default') {
-			if (selectedCoords.length > 1) {
-				game.createColorGroup(selectedCoords, color)
-				handleSelect(false)
-				setColorMode(false)
-			} else game.setColor(selectedCoords[0], color)
-		}
+		if (color !== 'default' && selectedCoords.length > 1) {
+			game.createColorGroup(selectedCoords, color)
+			handleSelect(false)
+			setColorMode(false)
+		} else game.setColor(selectedCoords[0], color)
 	}, [accentColor, handleSelect, game])
 
 	const onCanvasClick = useCallback((coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => {

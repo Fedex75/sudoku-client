@@ -90,7 +90,7 @@ export default class Board {
 				vertical: []
 			},
 			sudokuX__diagonalErrors: [false, false],
-			thermo__thermometers: []
+			thermo__thermometers: [],
 		}
 
 		if (isGameData(data)) {
@@ -585,6 +585,7 @@ export default class Board {
 
 	checkErrors(forcing: boolean) {
 		if (!SettingsHandler.settings.checkMistakes && !forcing) return
+		this.iterateAllCells(cell => cell.cache.isError = false)
 		this.ruleset.game.checkErrors(this)
 	}
 

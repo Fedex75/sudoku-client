@@ -39,7 +39,10 @@ export type KillerCage = {
     sum: number
 }
 
-export type Thermometer = CellCoordinates[]
+export type Thermometer = {
+    members: CellCoordinates[],
+    error: boolean
+}
 
 export type CageVector = {
     firstCell: CellCoordinates

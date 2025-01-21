@@ -82,7 +82,7 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
         {icon}
         <p className="settings__item__title">{title}</p>
         <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>
-        {SettingsHandler.settings.language === language ? <FontAwesomeIcon icon={faCheck} fontSize={20} color='var(--theme-color)' /> : null}
+        {SettingsHandler.settings.language === language ? <FontAwesomeIcon icon={faCheck} fontSize={20} color='var(--themeColor)' /> : null}
       </div>
     )
   }

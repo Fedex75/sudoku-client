@@ -99,14 +99,13 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
 }
 
 export function commonDetectErrorsFromSolution(game: Board) {
-    game.iterateAllCells(cell => { cell.cache.isError = cell.cache.solution > 0 && cell.value > 0 && cell.value !== cell.cache.solution })
+    if (game.solution === '') commonDetectErrorsByVisibility(game)
+    else game.iterateAllCells(cell => { if (cell.cache.solution > 0 && cell.value > 0 && cell.value !== cell.cache.solution) cell.cache.isError = true })
 
-    return []
+    return
 }
 
 export function commonDetectErrorsByVisibility(game: Board) {
-    game.iterateAllCells(cell => { cell.cache.isError = false })
-
     game.iterateAllCells((cell, { x, y }) => {
         if (cell.value > 0) {
             for (const vc of cell.cache.visibleCells) {
@@ -117,7 +116,7 @@ export function commonDetectErrorsByVisibility(game: Board) {
         }
     })
 
-    return []
+    return
 }
 
 export function commonInitCacheBoard(game: Board) {

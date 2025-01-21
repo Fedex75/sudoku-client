@@ -1,0 +1,31 @@
+.tutorial {
+    grid-area: numpad;
+    display: grid;
+    grid-template-rows: fit-content(0) auto fit-content(0);
+    gap: 20px;
+    place-items: center;
+}
+
+.tutorial__controls {
+    display: flex;
+    flex-flow: row;
+    gap: 20px;
+    align-items: center;
+}
+
+.tutorial__controls__step-number {
+    color: var(--secondaryTextColor);
+    font-size: 30px;
+}
+
+.tutorial__controls__icon {
+    color: var(--themeColor);
+    font-size: 30px;
+}
+
+.tutorial__text {
+    color: var(--primaryTextColor);
+    font-size: 20px;
+    text-align: center;
+    white-space: pre-line;
+}

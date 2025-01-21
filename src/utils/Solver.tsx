@@ -35,7 +35,7 @@ class Solver {
         // Check number of givens is at least MIN_GIVENS
         let nr_givens = 0
         for (const char of board) if (char !== this.BLANK_CHAR) ++nr_givens
-        if (nr_givens < this.MIN_GIVENS) return this.BLANK_BOARD
+        if (nr_givens < this.MIN_GIVENS) return ''
 
         let candidates = this._get_candidates_map(board)
         let result = this._search(candidates)
@@ -47,7 +47,7 @@ class Solver {
             }
             return solution
         }
-        return this.BLANK_BOARD
+        return ''
     }
 
     _get_candidates_map(board: string): StringMap | false {

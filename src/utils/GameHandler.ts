@@ -1,6 +1,6 @@
 import missionsData from '../data/missions.json'
 import { decodeMissionString } from './Decoder'
-import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
+import { difficulties, DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
 import { defaultStatistics, Statistics, update } from './Statistics'
 import Board from '../game/Board'
 import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
@@ -109,8 +109,19 @@ class GameHandler {
 			}
 		} else {
 			let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
-			if (candidates.length === 0) candidates = missions[mode][difficulty]
-			this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], 9))
+			if (candidates.length === 0){
+				if (missions[mode][difficulty].length === 0){
+					for (let diff of difficulties[mode]){
+						if (missions[mode][diff].length > 0){
+							candidates = missions[mode][diff]
+							break
+						}
+					}
+				} else {
+					candidates = missions[mode][difficulty]
+				}
+			}
+			if (candidates.length > 0) this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], 9))
 		}
 	}
 
@@ -157,7 +168,7 @@ class GameHandler {
 		try {
 			localStorage.setItem('game', data)
 		} catch (e) {
-			if (e instanceof DOMException && (e.code === 22 || e.name === 'QuotaExceededError')) {
+			if (e instanceof DOMException && e.name === 'QuotaExceededError') {
 				API.log({ message: 'Quota exceeded', date: Date.now() })
 			}
 		}
