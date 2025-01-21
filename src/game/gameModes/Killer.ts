@@ -5,7 +5,7 @@ import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
 import Board from "../Board"
 import { classicGetVisibleCells } from "./Classic"
-import { commonDetectErrorsFromSolution, dashedLine, drawSVGNumber } from "./Common"
+import { dashedLine, drawSVGNumber } from './Common'
 
 const cagesOffscreenCanvas = document.createElement('canvas')
 const cagesOffScreenCanvasCtx = cagesOffscreenCanvas.getContext('2d')
@@ -333,8 +333,6 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
 }
 
 export function killerCheckErrors(game: Board) {
-    commonDetectErrorsFromSolution(game)
-
     game.cache.killer__cageErrors = []
 
     for (const cage of game.cache.killer__cages) {

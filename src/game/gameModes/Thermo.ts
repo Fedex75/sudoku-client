@@ -5,7 +5,6 @@ import SettingsHandler from "../../utils/SettingsHandler"
 import { indexOf } from "../../utils/Utils"
 import Board from "../Board"
 import { classicGetVisibleCells } from "./Classic"
-import { commonDetectErrorsByVisibility } from "./Common"
 
 const thermosOffscreenCanvas = document.createElement('canvas')
 const thermosOffScreenCanvasCtx = thermosOffscreenCanvas.getContext('2d')
@@ -53,8 +52,6 @@ export function thermoGetVisibleCells(game: Board, coords: CellCoordinates) {
 }
 
 export function thermoDetectErrors(game: Board) {
-    commonDetectErrorsByVisibility(game)
-
     for (const thermo of game.cache.thermo__thermometers) {
         let currentMaxValue = 0
         thermo.error = false
@@ -62,7 +59,6 @@ export function thermoDetectErrors(game: Board) {
             const cell = game.get(coords)
             if (cell.value > 0) {
                 if (cell.value < currentMaxValue) {
-                    cell.cache.isError = true
                     thermo.error = true
                 } else {
                     currentMaxValue = cell.value
@@ -143,7 +139,7 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
     // Paint thermometers with errors red
     applyColorWithMask(() => {
         for (const thermo of game.cache.thermo__thermometers) {
-            if (thermo.error){
+            if (thermo.error) {
                 for (const c of thermo.members) {
                     thermosTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
                 }

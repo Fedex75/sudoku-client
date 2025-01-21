@@ -480,7 +480,7 @@ export default class Board {
 	}
 
 	isComplete(): boolean {
-		this.checkErrors(false)
+		this.checkErrors()
 		let complete = true
 		this.iterateAllCells((cell, coords, exit) => {
 			if (cell.value === 0 || cell.cache.isError) {
@@ -488,6 +488,23 @@ export default class Board {
 				exit()
 			}
 		})
+
+		if (complete && this.cache.killer__cageErrors.length > 0) {
+			complete = false
+		}
+
+		if (complete && (this.cache.sandwich__lateralCluesErrors.vertical.some(x => x) || this.cache.sandwich__lateralCluesErrors.horizontal.some(x => x))) {
+			complete = false
+		}
+
+		if (complete && this.cache.sudokuX__diagonalErrors.some(x => x)) {
+			complete = false
+		}
+
+		if (complete && this.cache.thermo__thermometers.some(t => t.error)) {
+			complete = false
+		}
+
 		return complete
 	}
 
@@ -583,10 +600,14 @@ export default class Board {
 		}
 	}
 
-	checkErrors(forcing: boolean) {
-		if (!SettingsHandler.settings.checkMistakes && !forcing) return
-		this.iterateAllCells(cell => cell.cache.isError = false)
-		this.ruleset.game.checkErrors(this)
+	checkErrors() {
+		if (this.nSquares < 9) return // THIS IS A HACK
+
+		this.iterateAllCells(cell => {
+			cell.cache.isError = cell.value > 0 && !cell.cache.possibleValues.includes(cell.value)
+		})
+
+		this.ruleset.game.checkAdditionalErrors(this)
 	}
 
 	recreateCache() {

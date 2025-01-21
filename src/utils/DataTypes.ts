@@ -189,7 +189,7 @@ export interface Ruleset {
         checkAnimations: ((game: Board, c: CellCoordinates) => void)[]
         getBoxes: (game: Board) => CellCoordinates[][]
         afterValuesChanged: ((game: Board) => void)[]
-        checkErrors: (game: Board) => void
+        checkAdditionalErrors: (game: Board) => void
         iterateAllCells: (game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
         getCellUnits: (game: Board, c: CellCoordinates) => CellCoordinates[][]
         getAllUnits: (game: Board) => CellCoordinates[][]

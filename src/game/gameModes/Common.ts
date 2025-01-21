@@ -98,27 +98,6 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
     })
 }
 
-export function commonDetectErrorsFromSolution(game: Board) {
-    if (game.solution === '') commonDetectErrorsByVisibility(game)
-    else game.iterateAllCells(cell => { if (cell.cache.solution > 0 && cell.value > 0 && cell.value !== cell.cache.solution) cell.cache.isError = true })
-
-    return
-}
-
-export function commonDetectErrorsByVisibility(game: Board) {
-    game.iterateAllCells((cell, { x, y }) => {
-        if (cell.value > 0) {
-            for (const vc of cell.cache.visibleCells) {
-                if ((vc.x !== x || vc.y !== y) && game.get(vc).value === cell.value) {
-                    cell.cache.isError = true
-                }
-            }
-        }
-    })
-
-    return
-}
-
 export function commonInitCacheBoard(game: Board) {
     for (let x = 0; x < game.nSquares; x++) {
         game.cache.board.push(Array(game.nSquares).fill(null))
@@ -163,4 +142,52 @@ export function commonGetOrthogonalCells(game: Board, coords: CellCoordinates) {
     if (coords.y > 0) result.push({ x: coords.x, y: coords.y - 1 })
     if (coords.y < game.nSquares - 1) result.push({ x: coords.x, y: coords.y + 1 })
     return result
+}
+
+export function commonCalculatePossibleValuesByVisibility(game: Board) {
+    game.iterateAllCells(cell => {
+        cell.cache.possibleValues = []
+        for (let k = 1; k <= game.nSquares; k++) cell.cache.possibleValues.push(k)
+    })
+
+    game.iterateAllCells((cell, { x, y }) => {
+        if (cell.value > 0) {
+            for (const c of cell.cache.visibleCells) {
+                const cell2 = game.get(c)
+                if (c.x !== x || c.y !== y) cell2.cache.possibleValues = cell2.cache.possibleValues.filter(n => n !== cell.value)
+            }
+        }
+    })
+
+    if (SettingsHandler.settings.lockCellsWithColor) {
+        game.iterateAllCells((cell, coords) => {
+            if (cell.color !== 'default') {
+                if (SettingsHandler.settings.autoSolveCellsWithColor && cell.notes.length === 1) game.setValue([coords], cell.notes[0])
+                else cell.cache.possibleValues = [...cell.notes]
+            }
+        })
+
+        for (const cg of game.colorGroups) {
+            let notes: number[] = []
+            let unsolvedCount = 0
+            for (let i = 0; i < cg.members.length; i++) {
+                notes = notes.concat(game.get(cg.members[i]).notes)
+                if (game.get(cg.members[i]).value === 0) unsolvedCount++
+            }
+
+            const uniqueNotes = new Set(notes)
+
+            if (uniqueNotes.size === unsolvedCount) {
+                // Remove possible values and notes from all the visible cells not in the group
+                for (const vc of cg.visibleCells) {
+                    if (!game.get(vc).cache.colorGroups.includes(cg)) {
+                        game.get(vc).cache.possibleValues = game.get(vc).cache.possibleValues.filter(pv => !notes.includes(pv))
+                        if (SettingsHandler.settings.showPossibleValues) for (const note of notes) game.setNote(note, [vc], false)
+                    }
+                }
+            }
+        }
+    }
+
+    return []
 }

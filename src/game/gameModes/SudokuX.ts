@@ -4,7 +4,6 @@ import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import Board from "../Board"
 import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./Classic"
-import { commonDetectErrorsByVisibility } from "./Common"
 
 export function sudokuXInitGameData({ game, data }: InitGameProps) {
     game.difficulty = getDifficulty(data.id[1] as DifficultyIdentifier)
@@ -39,21 +38,19 @@ export function sudokuXGetVisibleCells(game: Board, c: CellCoordinates): CellCoo
 }
 
 export function sudokuXDetectErrors(game: Board) {
-    commonDetectErrorsByVisibility(game)
-
     game.cache.sudokuX__diagonalErrors = [false, false]
-    for (let i = 0; i < game.nSquares - 1; i++) {
-        const value1_main_diagonal = game.get({ x: i, y: i }).value
-        const value1_secondary_diagonal = game.get({ x: i, y: game.nSquares - 1 - i }).value
-        for (let j = i + 1; j < game.nSquares; j++) {
-            const value2_main_diagonal = game.get({ x: j, y: j }).value
-            const value2_secondary_diagonal = game.get({ x: j, y: game.nSquares - 1 - j }).value
-            if (value2_main_diagonal > 0 && value1_main_diagonal > 0 && value2_main_diagonal === value1_main_diagonal) {
-                game.cache.sudokuX__diagonalErrors[0] = true
-            }
-            if (value2_secondary_diagonal > 0 && value1_secondary_diagonal > 0 && value2_secondary_diagonal === value1_secondary_diagonal) {
-                game.cache.sudokuX__diagonalErrors[1] = true
-            }
+
+    for (let i = 0; i < game.nSquares; i++) {
+        if (game.get({ x: i, y: i }).cache.isError) {
+            game.cache.sudokuX__diagonalErrors[0] = true
+            break
+        }
+    }
+
+    for (let i = 0; i < game.nSquares; i++) {
+        if (game.get({ x: i, y: game.nSquares - 1 - i }).cache.isError) {
+            game.cache.sudokuX__diagonalErrors[1] = true
+            break
         }
     }
 }

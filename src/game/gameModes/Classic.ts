@@ -269,60 +269,6 @@ export function classicScreenCoordsToBoardCoords(clickX: number, clickY: number,
     return undefined
 }
 
-export function classicCalculatePossibleValues(game: Board) {
-    for (let x = 0; x <= game.nSquares - 1; x++) {
-        for (let y = 0; y <= game.nSquares - 1; y++) {
-            const cell = game.get({ x, y })
-            cell.cache.possibleValues = []
-            for (let k = 1; k <= game.nSquares; k++) {
-                cell.cache.possibleValues.push(k)
-            }
-        }
-    }
-
-    for (let x = 0; x <= game.nSquares - 1; x++) {
-        for (let y = 0; y <= game.nSquares - 1; y++) {
-            const cell = game.get({ x, y })
-            for (const c of cell.cache.visibleCells) {
-                const cell2 = game.get(c)
-                cell2.cache.possibleValues = cell2.cache.possibleValues.filter(n => n !== cell.value)
-            }
-        }
-    }
-
-    if (SettingsHandler.settings.lockCellsWithColor) {
-        game.iterateAllCells((cell, coords) => {
-            if (cell.color !== 'default') {
-                if (SettingsHandler.settings.autoSolveCellsWithColor && cell.notes.length === 1) game.setValue([coords], cell.notes[0])
-                else cell.cache.possibleValues = [...cell.notes]
-            }
-        })
-
-        for (const cg of game.colorGroups) {
-            let notes: number[] = []
-            let unsolvedCount = 0
-            for (let i = 0; i < cg.members.length; i++) {
-                notes = notes.concat(game.get(cg.members[i]).notes)
-                if (game.get(cg.members[i]).value === 0) unsolvedCount++
-            }
-
-            const uniqueNotes = new Set(notes)
-
-            if (uniqueNotes.size === unsolvedCount) {
-                // Remove possible values and notes from all the visible cells not in the group
-                for (const vc of cg.visibleCells) {
-                    if (!game.get(vc).cache.colorGroups.includes(cg)) {
-                        game.get(vc).cache.possibleValues = game.get(vc).cache.possibleValues.filter(pv => !notes.includes(pv))
-                        if (SettingsHandler.settings.showPossibleValues) for (const note of notes) game.setNote(note, [vc], false)
-                    }
-                }
-            }
-        }
-    }
-
-    return []
-}
-
 export function classicIterateAllCells(game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) {
     let shouldBreak = false
     const setShouldBreakTrue = () => { shouldBreak = true }

@@ -9,9 +9,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import './tutorial.css'
 import { Button } from '../../components'
-import { commonDetectErrorsByVisibility } from '../../game/gameModes/Common'
 import { rulesets } from '../../game/gameModes/Rulesets'
 import { ThemeName } from '../../game/Themes'
+import { commonCalculatePossibleValuesByVisibility } from '../../game/gameModes/Common'
+import { thermoCalculatePossibleValues } from '../../game/gameModes/Thermo'
 
 interface TutorialProps {
     gameMode: GameModeName
@@ -162,6 +163,8 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
 
         newTutorialGames.classic[3].board.iterateAllCells(cell => cell.value = cell.cache.solution)
 
+        for (const game of newTutorialGames.classic) commonCalculatePossibleValuesByVisibility(game.board)
+
         // KILLER
 
         newTutorialGames.killer[0].board.setValue([{ x: 6, y: 1 }], 7)
@@ -184,6 +187,8 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
 
         newTutorialGames.killer[5].board.iterateAllCells(cell => cell.value = cell.cache.solution)
 
+        for (const game of newTutorialGames.killer) commonCalculatePossibleValuesByVisibility(game.board)
+
         // SUDOKU X
 
         newTutorialGames.sudokuX[0].board.setValue([{ x: 5, y: 2 }], 4)
@@ -198,10 +203,12 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
         newTutorialGames.sudokuX[3].board.setValue([{ x: 8, y: 0 }], 1)
         newTutorialGames.sudokuX[3].board.setValue([{ x: 7, y: 7 }], 6)
 
-        rulesets.sudokuX.game.checkErrors(newTutorialGames.sudokuX[3].board)
+        rulesets.sudokuX.game.checkAdditionalErrors(newTutorialGames.sudokuX[3].board)
 
         const sudokuXSolution = '958324617712856934346719825173295468865143279429687351631978542597432186284561793'
         newTutorialGames.sudokuX[4].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(sudokuXSolution[coords.y * 9 + coords.x]))
+
+        for (const game of newTutorialGames.sudokuX) commonCalculatePossibleValuesByVisibility(game.board)
 
         // SANDWICH
 
@@ -218,6 +225,11 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
         newTutorialGames.sandwich[3].board.setValue([{ x: 4, y: 5 }], 2)
         newTutorialGames.sandwich[3].board.setValue([{ x: 5, y: 5 }], 6)
         newTutorialGames.sandwich[3].board.selectedCells = [{ x: 2, y: 5 }, { x: 3, y: 5 }, { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }]
+
+        for (const game of newTutorialGames.sandwich) commonCalculatePossibleValuesByVisibility(game.board)
+
+        const sandwichSolution = '931682574465713928827459613183597462652341789749268135374125896518936247296874351'
+        newTutorialGames.sandwich[4].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(sandwichSolution[coords.y * 9 + coords.x]))
 
         // THERMO
 
@@ -240,16 +252,22 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
         newTutorialGames.thermo[4].board.setValue([{ x: 8, y: 2 }], 9)
         newTutorialGames.thermo[4].board.setValue([{ x: 1, y: 0 }], 1)
         newTutorialGames.thermo[4].board.selectedCells = [{ x: 6, y: 3 }, { x: 6, y: 4 }, { x: 7, y: 4 }, { x: 8, y: 4 }, { x: 8, y: 3 }, { x: 8, y: 2 }, { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
-        rulesets.thermo.game.checkErrors(newTutorialGames.thermo[4].board)
 
         const thermoSolution = '932781645576942183184635729649528317218379456357164298795216834823457961461893572'
-        newTutorialGames.thermo[4].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(thermoSolution[coords.y * 9 + coords.x]))
+        newTutorialGames.thermo[5].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(thermoSolution[coords.y * 9 + coords.x]))
+
+        for (const game of newTutorialGames.thermo) {
+            commonCalculatePossibleValuesByVisibility(game.board)
+            thermoCalculatePossibleValues(game.board)
+        }
 
         for (const mode in newTutorialGames) {
             for (const step of newTutorialGames[mode as GameModeName]) {
-                commonDetectErrorsByVisibility(step.board)
+                step.board.checkErrors()
             }
         }
+
+        rulesets.thermo.game.checkAdditionalErrors(newTutorialGames.thermo[4].board)
 
         return newTutorialGames
     }, [t])
