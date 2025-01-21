@@ -46,13 +46,19 @@ export default class Board {
 		units: CellCoordinates[][]
 
 		killer__cages: KillerCage[]
-		killer__cageErrors: KillerCage[]
 
-		sandwich__horizontalClues: number[]
-		sandwich__verticalClues: number[]
-		sandwich__visibleHorizontalClues: boolean[]
-		sandwich__visibleVerticalClues: boolean[]
-		sandwich__lateralCluesErrors: { horizontal: boolean[], vertical: boolean[] }
+		sandwich__clues: {
+			horizontal: {
+				value: number,
+				visible: boolean,
+				error: boolean
+			}[],
+			vertical: {
+				value: number,
+				visible: boolean,
+				error: boolean
+			}[]
+		}
 
 		sudokuX__diagonalErrors: [boolean, boolean]
 
@@ -80,12 +86,7 @@ export default class Board {
 			board: [],
 			units: [],
 			killer__cages: [],
-			killer__cageErrors: [],
-			sandwich__horizontalClues: [],
-			sandwich__verticalClues: [],
-			sandwich__visibleHorizontalClues: [],
-			sandwich__visibleVerticalClues: [],
-			sandwich__lateralCluesErrors: {
+			sandwich__clues: {
 				horizontal: [],
 				vertical: []
 			},
@@ -489,11 +490,11 @@ export default class Board {
 			}
 		})
 
-		if (complete && this.cache.killer__cageErrors.length > 0) {
+		if (complete && this.cache.killer__cages.some(cage => cage.error)) {
 			complete = false
 		}
 
-		if (complete && (this.cache.sandwich__lateralCluesErrors.vertical.some(x => x) || this.cache.sandwich__lateralCluesErrors.horizontal.some(x => x))) {
+		if (complete && (this.cache.sandwich__clues.vertical.some(clue => clue.error) || this.cache.sandwich__clues.horizontal.some(clue => clue.error))) {
 			complete = false
 		}
 

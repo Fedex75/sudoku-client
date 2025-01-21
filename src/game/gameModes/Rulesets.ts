@@ -2,7 +2,7 @@ import { commonCalculatePossibleValuesByVisibility, commonGetOrthogonalCells, co
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits, sudokuXCheckDiagonalAnimations } from "./SudokuX"
-import { sandwichDetectErrors, sandwichInitClueVisibility, sandwichInitGameData, sandwichInitLateralClues, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
+import { sandwichDetectErrors, sandwichInitGameData, sandwichInitLateralClues, sandwichRenderBackground, sandwichRenderBorders, sandwichRenderLateralClues, sandwichResize } from "./Sandwich"
 import { Ruleset } from "../../utils/DataTypes"
 import { GameModeName } from "../../utils/Difficulties"
 import { thermoCalculatePossibleValues, thermoDetectErrors, thermoGetVisibleCells, thermoInitGameData, thermoInitThermometerData, thermoRenderThermometers, thermoRenderThermometersToOffscreenCanvas } from "./Thermo"
@@ -95,7 +95,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sandwichInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, sandwichInitLateralClues, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache, sandwichInitClueVisibility],
+            initBoardMatrix: [commonInitCacheBoard, sandwichInitLateralClues, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,

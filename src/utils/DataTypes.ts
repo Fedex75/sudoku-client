@@ -35,7 +35,8 @@ export type MouseButtonType = 'primary' | 'secondary' | 'tertiary'
 
 export type KillerCage = {
     members: CellCoordinates[]
-    sum: number
+    sum: number,
+    error: boolean
 }
 
 export type Thermometer = {

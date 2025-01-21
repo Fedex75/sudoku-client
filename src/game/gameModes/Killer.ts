@@ -57,11 +57,13 @@ export function killerRenderCagesAndCageValues({ ctx, game, rendererState, accen
     }, 'white')
 
     // Paint cages with error red or yellow
-    if (SettingsHandler.settings.checkMistakes && game.cache.killer__cageErrors.length > 0) {
+    if (SettingsHandler.settings.checkMistakes) {
         applyColorWithMask(() => {
-            for (const cage of game.cache.killer__cageErrors) {
-                for (const c of cage.members) {
-                    cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+            for (const cage of game.cache.killer__cages) {
+                if (cage.error) {
+                    for (const c of cage.members) {
+                        cagesTempCanvasCtx.rect(rendererState.cellPositions[c.x] - cellBorderWidth, rendererState.cellPositions[c.y] - cellBorderWidth, squareSize + cellBorderWidth * 2, squareSize + cellBorderWidth * 2)
+                    }
                 }
             }
         }, accentColor === 'red' ? '#ffe173' : '#ff5252')
@@ -108,7 +110,8 @@ export function killerInitCages(game: Board) {
     for (const cage of cages.split(',')) {
         let newCage: KillerCage = {
             members: [],
-            sum: 0
+            sum: 0,
+            error: false
         }
         for (let i = 0; i < cage.length; i += 2) {
             newCage.members.push({ x: Number(cage[i]), y: Number(cage[i + 1]) })
@@ -335,8 +338,6 @@ export function killerCalculateCageVectors({ game, rendererState, squareSize, ca
 }
 
 export function killerCheckErrors(game: Board) {
-    game.cache.killer__cageErrors = []
-
     for (const cage of game.cache.killer__cages) {
         let sum = 0
         for (const coords of cage.members) {
@@ -347,8 +348,7 @@ export function killerCheckErrors(game: Board) {
                 break
             }
         }
-        if (sum !== -1 && sum !== cage.sum) {
-            game.cache.killer__cageErrors.push(cage)
-        }
+
+        cage.error = (sum !== -1 && sum !== cage.sum)
     }
 }
