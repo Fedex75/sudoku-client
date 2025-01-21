@@ -1,6 +1,6 @@
 import { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import Board from "./Board"
-import { BoardAnimation, CanvasRef, CellCoordinates, MouseButtonType, Ruleset } from "../utils/DataTypes"
+import { BoardAnimation, CanvasRef, Cell, MouseButtonType, Ruleset } from "../utils/DataTypes"
 import { AccentColor, ColorName } from "../utils/Colors"
 //@ts-ignore
 import o9n from 'o9n'
@@ -66,7 +66,7 @@ const solutionColors = {
 }
 
 type Props = {
-	onClick?: (coords: CellCoordinates[], type: MouseButtonType, hold: boolean) => void
+	onClick?: (coords: Cell[], type: MouseButtonType, hold: boolean) => void
 	showLinks?: boolean
 	game: Board
 	lockedInput?: number
@@ -87,7 +87,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 	const animationGammas = useRef<number[] | null>(null)
 	const currentAnimations = useRef<BoardAnimation[]>([])
 	const hasAddedFadeInAnimation = useRef(false)
-	const lastMouseCell = useRef<CellCoordinates>()
+	const lastMouseCell = useRef<Cell | null>()
 	const lastMouseButton = useRef<MouseButtonType | null>(null)
 	const colors = useRef<Record<string, string>>()
 	const darkColors = useRef<Record<string, string>>()
@@ -113,15 +113,15 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 
 		const ctx = canvasRef.current.getContext('2d')
 		if (!ctx) return
-		const highlightedCells = game.getHighlightedCells(lockedInput)
+		game.calculateHighlightedCells(lockedInput)
 		const boxBorderWidth = logicalSize.current * boxBorderWidthFactor
 
 		let selectedCellsValues = []
-		for (const c of game.selectedCells) {
-			if (game.get(c).value > 0) selectedCellsValues.push(game.get(c).value)
+		for (const cell of game.selectedCells) {
+			if (cell.value > 0) selectedCellsValues.push(cell.value)
 		}
 
-		const props = { ctx, themes, theme, logicalSize: logicalSize.current, game, lockedInput, notPlayable, colors: colors.current!, darkColors: darkColors.current!, highlightedCells, selectedCellsValues, squareSize: squareSize.current, animationColors: animationColors.current, currentAnimations: currentAnimations.current, accentColor, solutionColors, colorBorderLineWidth, boxBorderWidth, showLinks, linksLineWidth, animationGammas: animationGammas.current, cellBorderWidth, rendererState: rendererState.current, cageLineWidth }
+		const props = { ctx, themes, theme, logicalSize: logicalSize.current, game, lockedInput, notPlayable, colors: colors.current!, darkColors: darkColors.current!, selectedCellsValues, squareSize: squareSize.current, animationColors: animationColors.current, currentAnimations: currentAnimations.current, accentColor, solutionColors, colorBorderLineWidth, boxBorderWidth, showLinks, linksLineWidth, animationGammas: animationGammas.current, cellBorderWidth, rendererState: rendererState.current, cageLineWidth }
 
 		for (const func of ruleset.render.before) func(props)
 
@@ -196,25 +196,25 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		const rect = canvasRef.current.getBoundingClientRect()
 		const clickX = (clientX - rect.left) / canvasRef.current.offsetWidth * logicalSize.current
 		const clickY = (clientY - rect.top) / canvasRef.current.offsetHeight * logicalSize.current
-		return ruleset.render.screenCoordsToBoardCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
+		return ruleset.render.getCellFromScreenCoords(clickX, clickY, { game, rendererState, squareSize, logicalSize, boxBorderWidthFactor, cellBorderWidth, cageLineWidth, themes, theme })
 	}, [boxBorderWidthFactor, ruleset.render, game, theme])
 
-	const handleInputStart = useCallback((coords: CellCoordinates[], type: MouseButtonType) => {
-		if (coords.length === 1) lastMouseCell.current = coords[0]
-		onClick(coords, type, false)
+	const handleInputStart = useCallback((cells: Cell[], type: MouseButtonType) => {
+		if (cells.length === 1) lastMouseCell.current = cells[0]
+		onClick(cells, type, false)
 	}, [onClick])
 
 	const onTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
 		if (!notPlayable && !paused) {
 			e.stopPropagation()
-			let coords: CellCoordinates[] = []
+			let cells: Cell[] = []
 			for (let i = 0; i < e.targetTouches.length; i++) {
-				const newCoord = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY)
-				if (newCoord !== undefined) coords.push(newCoord)
+				const newCell = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY)
+				if (newCell !== undefined) cells.push(newCell)
 			}
-			if (coords.length > 0) {
-				if (coords.length === 1) lastMouseCell.current = coords[0]
-				onClick(coords, 'primary', false)
+			if (cells.length > 0) {
+				if (cells.length === 1) lastMouseCell.current = cells[0]
+				onClick(cells, 'primary', false)
 			}
 		}
 	}, [notPlayable, onClick, paused, screenCoordsToBoardCoords])
@@ -229,23 +229,23 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		}
 	}, [handleInputStart, notPlayable, paused, screenCoordsToBoardCoords])
 
-	const handleInputMove = useCallback((coords: CellCoordinates[], type: MouseButtonType) => {
-		if (coords.length === 2) onClick(coords, type, false)
-		else if (lastMouseCell.current && coords.length === 1 && (lastMouseCell.current.x !== coords[0].x || lastMouseCell.current.y !== coords[0].y)) {
-			lastMouseCell.current = coords[0]
-			onClick(coords, type, true)
+	const handleInputMove = useCallback((cells: Cell[], type: MouseButtonType) => {
+		if (cells.length === 2) onClick(cells, type, false)
+		else if (lastMouseCell.current && cells.length === 1 && lastMouseCell.current !== cells[0]) {
+			lastMouseCell.current = cells[0]
+			onClick(cells, type, true)
 		}
 	}, [onClick])
 
 	const onTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
 		if (!notPlayable && !paused) {
 			e.stopPropagation()
-			let coords: CellCoordinates[] = []
+			let cells: Cell[] = []
 			for (let i = 0; i < e.targetTouches.length; i++) {
-				const newCoord = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY)
-				if (newCoord !== undefined) coords.push(newCoord)
+				const newCell = screenCoordsToBoardCoords(e.targetTouches[i].clientX, e.targetTouches[i].clientY)
+				if (newCell !== undefined) cells.push(newCell)
 			}
-			if (!notPlayable && !paused && coords.length > 0) handleInputMove(coords, 'primary')
+			if (!notPlayable && !paused && cells.length > 0) handleInputMove(cells, 'primary')
 		}
 	}, [handleInputMove, notPlayable, paused, screenCoordsToBoardCoords])
 
@@ -300,7 +300,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 			}])
 			hasAddedFadeInAnimation.current = true
 		}
-	}, [addAnimations, notPlayable, game.nSquares, theme])
+	}, [addAnimations, notPlayable, game, theme])
 
 	useEffect(() => {
 		window.addEventListener('resize', resizeCanvas, false)
@@ -344,7 +344,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 				}
 			}])
 		}
-	}, [paused, addAnimations, notPlayable, game.nSquares, theme])
+	}, [paused, addAnimations, notPlayable, game, theme])
 
 	useEffect(() => {
 		[colors.current, darkColors.current, selectedCellColors.current] = updateColors(theme)
@@ -368,7 +368,7 @@ const Canvas = forwardRef(({ onClick = () => { }, showLinks = false, game, locke
 		onContextMenu={onContextMenu}
 		onMouseDown={onMouseDown}
 		onMouseMove={onMouseMove}
-		onMouseUp={() => { lastMouseCell.current = { x: 0, y: 0 }; lastMouseButton.current = null }}
+		onMouseUp={() => { lastMouseCell.current = null; lastMouseButton.current = null }}
 	/>
 })
 

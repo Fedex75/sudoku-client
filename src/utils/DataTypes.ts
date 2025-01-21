@@ -6,7 +6,7 @@ import { ThemeName } from '../game/Themes'
 
 export type DigitChar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
-export type Coordinates = {
+export type ScreenCoordinates = {
     x: number,
     y: number
 }
@@ -34,33 +34,35 @@ export type CanvasRef = {
 export type MouseButtonType = 'primary' | 'secondary' | 'tertiary'
 
 export type KillerCage = {
-    members: CellCoordinates[]
+    members: Cell[]
     sum: number,
     error: boolean
 }
 
 export type Thermometer = {
-    members: CellCoordinates[],
+    members: Cell[],
     error: boolean
 }
 
 export type CageVector = {
-    firstCell: CellCoordinates
-    secondCell: CellCoordinates
+    start: ScreenCoordinates
+    end: ScreenCoordinates
     cage: KillerCage
     ratio: number
 }
 
 export type CellCache = {
+    coords: CellCoordinates
     solution: number
     clue: boolean
     cage?: KillerCage
     possibleValues: number[]
-    visibleCells: CellCoordinates[]
-    units: CellCoordinates[][]
+    visibleCells: Cell[]
+    units: Cell[][]
     isError: boolean
     colorGroups: ColorGroup[]
-    thermometer?: Thermometer
+    thermometer?: Thermometer,
+    highlighted: boolean
 }
 
 export type Cell = {
@@ -81,8 +83,8 @@ export type HistoryItem = {
 export type History = string[]
 
 export type ColorGroup = {
-    members: CellCoordinates[]
-    visibleCells: CellCoordinates[]
+    members: Cell[]
+    visibleCells: Cell[]
 }
 
 export type GameData = {
@@ -137,7 +139,6 @@ export interface RendererProps {
     notPlayable: boolean
     colors: Record<string, string>
     darkColors: Record<string, string>
-    highlightedCells: boolean[][]
     selectedCellsValues: number[]
     squareSize: number
     animationColors: string[][] | null
@@ -175,7 +176,7 @@ export interface Ruleset {
     render: {
         init: ((props: StateProps) => void)[]
         onResize: ((props: StateProps) => void)[]
-        screenCoordsToBoardCoords: (clickX: number, clickY: number, state: StateProps) => CellCoordinates | undefined
+        getCellFromScreenCoords: (clickX: number, clickY: number, state: StateProps) => Cell | undefined
         before: ((props: RendererProps) => void)[]
         unpaused: ((props: RendererProps) => void)[]
         paused: ((props: RendererProps) => void)[]
@@ -184,15 +185,15 @@ export interface Ruleset {
     game: {
         initGameData: (props: InitGameProps) => void
         initBoardMatrix: ((game: Board) => void)[]
-        getOrthogonalCells: (game: Board, coords: CellCoordinates) => CellCoordinates[]
-        getVisibleCells: (game: Board, c: CellCoordinates) => CellCoordinates[]
-        getBoxCellsCoordinates: (c: CellCoordinates) => CellCoordinates[]
-        checkAnimations: ((game: Board, c: CellCoordinates) => void)[]
-        getBoxes: (game: Board) => CellCoordinates[][]
+        getOrthogonalCells: (game: Board, cell: Cell) => Cell[]
+        getVisibleCells: (game: Board, c: Cell) => Cell[]
+        getBoxCellsCoordinates: (game: Board, c: Cell) => Cell[]
+        checkAnimations: ((game: Board, center: Cell) => void)[]
+        getBoxes: (game: Board) => Cell[][]
         afterValuesChanged: ((game: Board) => void)[]
         checkAdditionalErrors: (game: Board) => void
         iterateAllCells: (game: Board, func: (cell: Cell, coords: CellCoordinates, exit: () => void) => void) => void
-        getCellUnits: (game: Board, c: CellCoordinates) => CellCoordinates[][]
-        getAllUnits: (game: Board) => CellCoordinates[][]
+        getCellUnits: (game: Board, c: Cell) => Cell[][]
+        getAllUnits: (game: Board) => Cell[][]
     }
 }

@@ -1,4 +1,4 @@
-import { CellCoordinates } from "./DataTypes"
+import { Cell, CellCoordinates } from "./DataTypes"
 
 export function indexOf(coords: CellCoordinates, within: CellCoordinates[]) {
     for (let i = 0; i < within.length; i++) {
@@ -12,17 +12,17 @@ export function remove<T>(reference: T, from: T[]) {
     if (index > -1) from.splice(from.indexOf(reference), 1)
 }
 
-export function intersection(of: CellCoordinates[][]): CellCoordinates[] {
+export function intersection(of: Cell[][]): Cell[] {
     if (of.length === 0) return []
-    return [...of[0]].filter(coords => of.every(arr => indexOf(coords, arr) !== -1))
+    return [...of[0]].filter(cell => of.every(arr => arr.includes(cell)))
 }
 
-export function union(of: CellCoordinates[][]): CellCoordinates[] {
-    const result: CellCoordinates[] = []
+export function union(of: Cell[][]): Cell[] {
+    const result: Cell[] = []
 
     for (const array of of) {
-        for (const coords of array) {
-            if (indexOf(coords, result) === -1) result.push(coords)
+        for (const cell of array) {
+            if (result.includes(cell)) result.push(cell)
         }
     }
 

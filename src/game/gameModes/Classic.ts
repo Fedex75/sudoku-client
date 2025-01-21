@@ -1,4 +1,4 @@
-import brightness, { indexOf } from "../../utils/Utils"
+import brightness from "../../utils/Utils"
 import { Cell, CellCoordinates, InitGameProps, RendererProps, StateProps } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { DifficultyIdentifier, getDifficulty } from "../../utils/Difficulties"
@@ -12,58 +12,69 @@ export function classicRenderBackground({ ctx, themes, theme, logicalSize }: Ren
     ctx.fillRect(0, 0, logicalSize, logicalSize)
 }
 
-export function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, highlightedCells, selectedCellsValues, squareSize, animationColors, currentAnimations, rendererState }: RendererProps) {
-    game.iterateAllCells((cell, { x, y }) => {
+export function classicRenderCellBackground({ ctx, game, lockedInput, notPlayable, colors, darkColors, selectedCellsValues, squareSize, currentAnimations, animationColors, rendererState }: RendererProps) {
+    game.iterateAllCells(cell => {
         const hasSameValueAsSelected = ((lockedInput > 0 && lockedInput === cell.value) || (lockedInput === 0 && selectedCellsValues.length > 0 && selectedCellsValues.includes(cell.value)))
 
         //Background
         ctx.fillStyle =
             notPlayable ? colors.default :
-                (hasSameValueAsSelected || highlightedCells[x][y]) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
+                (hasSameValueAsSelected || cell.cache.highlighted) ? darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
                     (colors[cell.color]) //Cell color
 
-        ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
+        ctx.fillRect(rendererState.cellPositions[cell.cache.coords.x], rendererState.cellPositions[cell.cache.coords.y], squareSize, squareSize)
 
-        if (animationColors && animationColors[x][y] && currentAnimations.length > 0 && currentAnimations[0].type !== 'fadein' && currentAnimations[0].type !== 'fadeout' && currentAnimations[0].type !== 'fadein') {
-            ctx.fillStyle = animationColors[x][y]
-            ctx.fillRect(rendererState.cellPositions[x], rendererState.cellPositions[y], squareSize, squareSize)
+        if (animationColors && animationColors[cell.cache.coords.x][cell.cache.coords.y] && currentAnimations.length > 0 && currentAnimations[0].type !== 'fadein' && currentAnimations[0].type !== 'fadeout' && currentAnimations[0].type !== 'fadein') {
+            ctx.fillStyle = animationColors[cell.cache.coords.x][cell.cache.coords.y]
+            ctx.fillRect(rendererState.cellPositions[cell.cache.coords.x], rendererState.cellPositions[cell.cache.coords.y], squareSize, squareSize)
         }
     })
 }
 
-export function classicRenderSelection({ ctx, accentColor, colors, game, squareSize, colorBorderLineWidth, boxBorderWidth, rendererState }: RendererProps) {
+export function classicRenderSelection({ ctx, accentColor, colors, game, squareSize, colorBorderLineWidth, rendererState }: RendererProps) {
     //Selection
-    for (const c of game.selectedCells) {
+    for (const cell of game.selectedCells) {
         ctx.fillStyle = ctx.strokeStyle = colors[accentColor]
 
-        const left = rendererState.cellPositions[c.x]
-        const right = rendererState.cellPositions[c.x] + squareSize - colorBorderLineWidth
-        const top = rendererState.cellPositions[c.y]
-        const bottom = rendererState.cellPositions[c.y] + squareSize - colorBorderLineWidth
+        const left = rendererState.cellPositions[cell.cache.coords.x]
+        const right = rendererState.cellPositions[cell.cache.coords.x] + squareSize - colorBorderLineWidth
+        const top = rendererState.cellPositions[cell.cache.coords.y]
+        const bottom = rendererState.cellPositions[cell.cache.coords.y] + squareSize - colorBorderLineWidth
 
         const lineLength = squareSize
 
+        const topCellIsSelected = cell.cache.coords.y > 0 && game.selectedCells.includes(game.get({ x: cell.cache.coords.x, y: cell.cache.coords.y - 1 }))
+        const rightCellIsSelected = cell.cache.coords.x < (game.nSquares - 1) && game.selectedCells.includes(game.get({ x: cell.cache.coords.x + 1, y: cell.cache.coords.y }))
+        const topRightCellIsSelected = cell.cache.coords.y > 0 && cell.cache.coords.x < (game.nSquares - 1) && game.selectedCells.includes(game.get({ x: cell.cache.coords.x + 1, y: cell.cache.coords.y - 1 }))
+        const bottomRightCellIsSelected = cell.cache.coords.y < (game.nSquares - 1) && cell.cache.coords.x < (game.nSquares - 1) && game.selectedCells.includes(game.get({ x: cell.cache.coords.x + 1, y: cell.cache.coords.y + 1 }))
+        const bottomCellIsSelected = cell.cache.coords.y < (game.nSquares - 1) && game.selectedCells.includes(game.get({ x: cell.cache.coords.x, y: cell.cache.coords.y + 1 }))
+        const leftCellIsSelected = cell.cache.coords.x > 0 && game.selectedCells.includes(game.get({ x: cell.cache.coords.x - 1, y: cell.cache.coords.y }))
+        const bottomLeftCellIsSelected = cell.cache.coords.x > 0 && cell.cache.coords.y < (game.nSquares - 1) && game.selectedCells.includes(game.get({ x: cell.cache.coords.x - 1, y: cell.cache.coords.y + 1 }))
+
+        const rightCellLeft = cell.cache.coords.x < (game.nSquares - 1) ? rendererState.cellPositions[cell.cache.coords.x + 1][cell.cache.coords.y] : 0
+        const bottomCellTop = cell.cache.coords.y < (game.nSquares - 1) ? rendererState.cellPositions[cell.cache.coords.x][cell.cache.coords.y + 1] : 0
+
         //Top
-        if (c.y === 0 || (indexOf({ x: c.x, y: c.y - 1 }, game.selectedCells) === -1)) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
+        if (!topCellIsSelected) ctx.fillRect(left, top, lineLength, colorBorderLineWidth)
 
         //Right
-        if (c.x === (game.nSquares - 1) || (indexOf({ x: c.x + 1, y: c.y }, game.selectedCells) === -1)) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
+        if (!rightCellIsSelected) ctx.fillRect(right, top, colorBorderLineWidth, lineLength)
         else {
             //Right bridges
-            if (!(c.y > 0 && (indexOf({ x: c.x + 1, y: c.y - 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y - 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, top, rendererState.cellPositions[c.x + 1] - right + colorBorderLineWidth, colorBorderLineWidth)
-            if (!(c.y < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0) && (indexOf({ x: c.x, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, rendererState.cellPositions[c.x + 1] - right + colorBorderLineWidth, colorBorderLineWidth)
+            if (!topCellIsSelected || !topRightCellIsSelected) ctx.fillRect(right, top, rightCellLeft - right + colorBorderLineWidth, colorBorderLineWidth)
+            if (!bottomRightCellIsSelected || !bottomCellIsSelected) ctx.fillRect(right, bottom, rightCellLeft - right + colorBorderLineWidth, colorBorderLineWidth)
         }
 
         //Bottom
-        if (c.y === (game.nSquares - 1) || (indexOf({ x: c.x, y: c.y + 1 }, game.selectedCells) === -1)) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
+        if (!bottomCellIsSelected) ctx.fillRect(left, bottom, lineLength, colorBorderLineWidth)
         else {
             //Bottom bridges
-            if (!(c.x > 0 && (indexOf({ x: c.x - 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x - 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(left, bottom, colorBorderLineWidth, rendererState.cellPositions[c.y + 1] - bottom + colorBorderLineWidth)
-            if (!(c.x < (game.nSquares - 1) && (indexOf({ x: c.x + 1, y: c.y }, game.selectedCells) >= 0) && (indexOf({ x: c.x + 1, y: c.y + 1 }, game.selectedCells) >= 0))) ctx.fillRect(right, bottom, colorBorderLineWidth, rendererState.cellPositions[c.y + 1] - bottom + colorBorderLineWidth)
+            if (!leftCellIsSelected || !bottomLeftCellIsSelected) ctx.fillRect(left, bottom, colorBorderLineWidth, bottomCellTop - bottom + colorBorderLineWidth)
+            if (!rightCellIsSelected || !bottomRightCellIsSelected) ctx.fillRect(right, bottom, colorBorderLineWidth, bottomCellTop - bottom + colorBorderLineWidth)
         }
 
         //Left
-        if (c.x === 0 || (indexOf({ x: c.x - 1, y: c.y }, game.selectedCells) === -1)) ctx.fillRect(left, top, colorBorderLineWidth, lineLength)
+        if (!leftCellIsSelected) ctx.fillRect(left, top, colorBorderLineWidth, lineLength)
     }
 }
 
@@ -78,13 +89,13 @@ export function classicRenderLinks({ ctx, game, showLinks, lockedInput, selected
             const noteDelta = rendererState.noteDeltas[target - 1]
             link.forEach(cell => {
                 ctx.beginPath()
-                ctx.arc(rendererState.cellPositions[cell.x] + noteDelta.x, rendererState.cellPositions[cell.y] + noteDelta.y, squareSize / 8, 0, 2 * Math.PI, false)
+                ctx.arc(rendererState.cellPositions[cell.cache.coords.x] + noteDelta.x, rendererState.cellPositions[cell.cache.coords.y] + noteDelta.y, squareSize / 8, 0, 2 * Math.PI, false)
                 ctx.fill()
             })
             if (link.length === 2) {
                 ctx.beginPath()
-                ctx.moveTo(rendererState.cellPositions[link[0].x] + noteDelta.x, rendererState.cellPositions[link[0].y] + noteDelta.y)
-                ctx.lineTo(rendererState.cellPositions[link[1].x] + noteDelta.x, rendererState.cellPositions[link[1].y] + noteDelta.y)
+                ctx.moveTo(rendererState.cellPositions[link[0].cache.coords.x] + noteDelta.x, rendererState.cellPositions[link[0].cache.coords.y] + noteDelta.y)
+                ctx.lineTo(rendererState.cellPositions[link[1].cache.coords.x] + noteDelta.x, rendererState.cellPositions[link[1].cache.coords.y] + noteDelta.y)
                 ctx.stroke()
             }
         })
@@ -143,81 +154,81 @@ export function classicInitGameData({ game, data }: InitGameProps) {
     game.solution = Solver.solve(game.clues)
 }
 
-export function classicGetBoxCellsCoordinates(c: CellCoordinates): CellCoordinates[] {
+export function classicGetBoxCellsCoordinates(game: Board, c: Cell): Cell[] {
     let boxCells = []
-    const boxX = Math.floor(c.x / 3)
-    const boxY = Math.floor(c.y / 3)
-    for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (x !== c.x || y !== c.y) boxCells.push({ x: boxX * 3 + x, y: boxY * 3 + y })
+    const boxX = Math.floor(c.cache.coords.x / 3)
+    const boxY = Math.floor(c.cache.coords.y / 3)
+    for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) if (x !== c.cache.coords.x || y !== c.cache.coords.y) boxCells.push(game.get({ x: boxX * 3 + x, y: boxY * 3 + y }))
     return boxCells
 }
 
-export function classicGetVisibleCells(game: Board, c: CellCoordinates): CellCoordinates[] {
-    let visibleCells: CellCoordinates[] = []
-    const boxX = Math.floor(c.x / 3)
-    const boxY = Math.floor(c.y / 3)
-    visibleCells = visibleCells.concat(game.ruleset.game.getBoxCellsCoordinates(c))
+export function classicGetVisibleCells(game: Board, c: Cell): Cell[] {
+    let visibleCells: Cell[] = []
+    const boxX = Math.floor(c.cache.coords.x / 3)
+    const boxY = Math.floor(c.cache.coords.y / 3)
+    visibleCells = visibleCells.concat(game.ruleset.game.getBoxCellsCoordinates(game, c))
     for (let i = 0; i < game.nSquares; i++) {
-        if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push({ x: i, y: c.y })
-        if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push({ x: c.x, y: i })
+        if (i < boxX * 3 || i >= boxX * 3 + 3) visibleCells.push(game.get({ x: i, y: c.cache.coords.y }))
+        if (i < boxY * 3 || i >= boxY * 3 + 3) visibleCells.push(game.get({ x: c.cache.coords.x, y: i }))
     }
     return visibleCells
 }
 
-export function classicCheckRowAnimation(game: Board, center: CellCoordinates) {
+export function classicCheckRowAnimation(game: Board, center: Cell) {
     for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: i, y: center.y }).value === 0) return
+        if (game.get({ x: i, y: center.cache.coords.y }).value === 0) return
     }
 
     game.animations.push({
         type: 'col',
         startTime: null,
         duration: 750,
-        func: ({ animationColors, themes, theme, progress }) => {
-            for (let x = 0; x < game.nSquares; x++) animationColors[x][center.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - x), progress, 8, 4)})`
+        func: ({ themes, theme, progress, animationColors }) => {
+            for (let x = 0; x < game.nSquares; x++) animationColors[x][center.cache.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.cache.coords.x - x), progress, 8, 4)})`
         }
     })
 }
 
-export function classicCheckColumnAnimation(game: Board, center: CellCoordinates) {
+export function classicCheckColumnAnimation(game: Board, center: Cell) {
     for (let i = 0; i < game.nSquares; i++) {
-        if (game.get({ x: center.x, y: i }).value === 0) return
+        if (game.get({ x: center.cache.coords.x, y: i }).value === 0) return
     }
 
     game.animations.push({
         type: 'col',
         startTime: null,
         duration: 750,
-        func: ({ animationColors, themes, theme, progress }) => {
-            for (let y = 0; y < game.nSquares; y++) animationColors[center.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.y - y), progress, 8, 4)})`
+        func: ({ themes, theme, progress, animationColors }) => {
+            for (let y = 0; y < game.nSquares; y++) animationColors[center.cache.coords.x][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.cache.coords.y - y), progress, 8, 4)})`
         }
     })
 }
 
-export function classicCheckBoxAnimation(game: Board, center: CellCoordinates) {
-    for (const cell of game.ruleset.game.getBoxCellsCoordinates(center)) {
-        if (game.get(cell).value === 0) return
+export function classicCheckBoxAnimation(game: Board, center: Cell) {
+    for (const cell of game.ruleset.game.getBoxCellsCoordinates(game, center)) {
+        if (cell.value === 0) return
     }
 
-    const boxX = Math.floor(center.x / 3)
-    const boxY = Math.floor(center.y / 3)
+    const boxX = Math.floor(center.cache.coords.x / 3)
+    const boxY = Math.floor(center.cache.coords.y / 3)
     game.animations.push({
         type: 'box',
         startTime: null,
         duration: 750,
-        func: ({ animationColors, themes, theme, progress }) => {
+        func: ({ themes, theme, progress, animationColors }) => {
             for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors[boxX * 3 + x][boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
         }
     })
 }
 
-export function classicGetBoxes(game: Board): CellCoordinates[][] {
-    let boxes = []
+export function classicGetBoxes(game: Board): Cell[][] {
+    let boxes: Cell[][] = []
     for (let boxX = 0; boxX < game.nSquares; boxX += 3) {
         for (let boxY = 0; boxY < game.nSquares; boxY += 3) {
-            let box = []
+            let box: Cell[] = []
             for (let dX = 0; dX < 3; dX++) {
                 for (let dY = 0; dY < 3; dY++) {
-                    box.push({ x: boxX + dX, y: boxY + dY })
+                    box.push(game.get({ x: boxX + dX, y: boxY + dY }))
                 }
             }
             boxes.push(box)
@@ -258,11 +269,11 @@ export function classicResize({ game, rendererState, squareSize, logicalSize, bo
     rendererState.current.valuePositions = newValuePositions
 }
 
-export function classicScreenCoordsToBoardCoords(clickX: number, clickY: number, { game, rendererState, squareSize }: StateProps): CellCoordinates | undefined {
+export function classicScreenCoordsToBoardCoords(clickX: number, clickY: number, { game, rendererState, squareSize }: StateProps): Cell | undefined {
     for (let x = 0; x < game.nSquares; x++) {
         if (clickX <= rendererState.current.cellPositions[x] + squareSize.current) {
             for (let y = 0; y < game.nSquares; y++) {
-                if (clickY <= rendererState.current.cellPositions[y] + squareSize.current) return { x, y }
+                if (clickY <= rendererState.current.cellPositions[y] + squareSize.current) return game.get({ x, y })
             }
         }
     }
@@ -280,26 +291,26 @@ export function classicIterateAllCells(game: Board, func: (cell: Cell, coords: C
     }
 }
 
-export function classicGetCellUnits(game: Board, coords: CellCoordinates) {
-    let units: CellCoordinates[][] = []
+export function classicGetCellUnits(game: Board, cell: Cell) {
+    let units: Cell[][] = []
 
     // Row
-    let row: CellCoordinates[] = []
-    for (let x = 0; x < game.nSquares; x++) row.push({ x, y: coords.y })
+    let row: Cell[] = []
+    for (let x = 0; x < game.nSquares; x++) row.push(game.get({ x, y: cell.cache.coords.y }))
     units.push(row)
 
     // Col
-    let col: CellCoordinates[] = []
-    for (let y = 0; y < game.nSquares; y++) col.push({ x: coords.x, y })
+    let col: Cell[] = []
+    for (let y = 0; y < game.nSquares; y++) col.push(game.get({ x: cell.cache.coords.x, y }))
     units.push(col)
 
     // Box
-    let box: CellCoordinates[] = []
-    const x0 = Math.floor(coords.x / 3) * 3
-    const y0 = Math.floor(coords.y / 3) * 3
+    let box: Cell[] = []
+    const x0 = Math.floor(cell.cache.coords.x / 3) * 3
+    const y0 = Math.floor(cell.cache.coords.y / 3) * 3
     for (let x = 0; x < 3; x++) {
         for (let y = 0; y < 3; y++) {
-            box.push({ x: x0 + x, y: y0 + y })
+            box.push(game.get({ x: x0 + x, y: y0 + y }))
         }
     }
     units.push(box)
@@ -307,13 +318,13 @@ export function classicGetCellUnits(game: Board, coords: CellCoordinates) {
     return units
 }
 
-export function classicGetAllUnits(game: Board): CellCoordinates[][] {
-    let units: CellCoordinates[][] = []
-    let currentUnit: CellCoordinates[] = []
+export function classicGetAllUnits(game: Board): Cell[][] {
+    let units: Cell[][] = []
+    let currentUnit: Cell[] = []
     for (let row = 0; row < game.nSquares; row++) {
         currentUnit = []
         for (let y = 0; y < game.nSquares; y++) {
-            currentUnit.push({ x: row, y })
+            currentUnit.push(game.get({ x: row, y }))
         }
         units.push([...currentUnit])
     }
@@ -322,7 +333,7 @@ export function classicGetAllUnits(game: Board): CellCoordinates[][] {
     for (let col = 0; col < game.nSquares; col++) {
         currentUnit = []
         for (let x = 0; x < game.nSquares; x++) {
-            currentUnit.push({ x, y: col })
+            currentUnit.push(game.get({ x, y: col }))
         }
         units.push([...currentUnit])
     }

@@ -98,9 +98,9 @@ export function sandwichRenderLateralClues({ ctx, game, squareSize, themes, them
     const size = squareSize * 0.35
     const halfSquareSize = squareSize / 2
     for (let i = 0; i < game.nSquares; i++) {
-        ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && game.cache.sandwich__clues.horizontal[i].error) ? '#ff5252' : (game.selectedCells.some(cell => cell.y === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
+        ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && game.cache.sandwich__clues.horizontal[i].error) ? '#ff5252' : (game.selectedCells.some(cell => cell.cache.coords.y === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
         if (game.cache.sandwich__clues.horizontal[i].visible) drawSVGNumber(ctx, game.cache.sandwich__clues.horizontal[i].value, x, rendererState.cellPositions[i] + halfSquareSize, size, 'left', 'center', null)
-        ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && game.cache.sandwich__clues.vertical[i].error) ? '#ff5252' : (game.selectedCells.some(cell => cell.x === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
+        ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && game.cache.sandwich__clues.vertical[i].error) ? '#ff5252' : (game.selectedCells.some(cell => cell.cache.coords.x === i) ? themes[theme].canvasNoteHighlightColor : themes[theme].canvasClueColor)
         if (game.cache.sandwich__clues.vertical[i].visible) drawSVGNumber(ctx, game.cache.sandwich__clues.vertical[i].value, rendererState.cellPositions[i] + halfSquareSize, y, size, 'center', 'top', null)
     }
 }

@@ -1,5 +1,5 @@
-import brightness, { indexOf } from "../../utils/Utils"
-import { InitGameProps, CellCoordinates, RendererProps } from "../../utils/DataTypes"
+import brightness from "../../utils/Utils"
+import { InitGameProps, RendererProps, Cell } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import Board from "../Board"
@@ -13,24 +13,26 @@ export function sudokuXInitGameData({ game, data }: InitGameProps) {
     game.solution = ''
 }
 
-export function sudokuXGetVisibleCells(game: Board, c: CellCoordinates): CellCoordinates[] {
-    let visibleCells = classicGetVisibleCells(game, c)
+export function sudokuXGetVisibleCells(game: Board, cell: Cell): Cell[] {
+    let visibleCells = classicGetVisibleCells(game, cell)
 
     // If the cell is in the NW-SE diagonal
-    if (c.x === c.y) {
+    if (cell.cache.coords.x === cell.cache.coords.y) {
         for (let i = 0; i < game.nSquares; i++) {
-            if ((i !== c.x || i !== c.y) && indexOf({ x: i, y: i }, visibleCells) === -1) {
-                visibleCells.push({ x: i, y: i })
+            const c = game.get({ x: i, y: i })
+            if (c !== cell && !visibleCells.includes(c)) {
+                visibleCells.push(c)
             }
         }
     }
 
     // If the cell is in the SW-NE diagonal
-    if (c.y === game.nSquares - 1 - c.x) {
+    if (cell.cache.coords.y === game.nSquares - 1 - cell.cache.coords.x) {
         for (let i = 0; i < game.nSquares; i++) {
             const newY = game.nSquares - 1 - i
-            if ((i !== c.x || newY !== c.y) && indexOf({ x: i, y: newY }, visibleCells) === -1) {
-                visibleCells.push({ x: i, y: newY })
+            const c = game.get({ x: i, y: newY })
+            if (c !== cell && !visibleCells.includes(c)) {
+                visibleCells.push(c)
             }
         }
     }
@@ -105,23 +107,23 @@ export function sudokuXRenderDiagonals({ ctx, theme, game, rendererState, square
     ctx.fill()
 }
 
-export function sudokuXGetCellUnits(game: Board, coords: CellCoordinates) {
-    let units: CellCoordinates[][] = classicGetCellUnits(game, coords)
+export function sudokuXGetCellUnits(game: Board, cell: Cell) {
+    let units: Cell[][] = classicGetCellUnits(game, cell)
 
     // NW-SE diagonal
-    if (coords.x === coords.y) {
-        let nwseDiagonal: CellCoordinates[] = []
+    if (cell.cache.coords.x === cell.cache.coords.y) {
+        let nwseDiagonal: Cell[] = []
         for (let i = 0; i < game.nSquares; i++) {
-            nwseDiagonal.push({ x: i, y: i })
+            nwseDiagonal.push(game.get({ x: i, y: i }))
         }
         units.push(nwseDiagonal)
     }
 
     // SW-NE diagonal
-    if (coords.y === game.nSquares - 1 - coords.x) {
-        let swneDiagonal: CellCoordinates[] = []
+    if (cell.cache.coords.y === game.nSquares - 1 - cell.cache.coords.x) {
+        let swneDiagonal: Cell[] = []
         for (let i = 0; i < game.nSquares; i++) {
-            swneDiagonal.push({ x: i, y: game.nSquares - 1 - i })
+            swneDiagonal.push(game.get({ x: i, y: game.nSquares - 1 - i }))
         }
         units.push(swneDiagonal)
     }
@@ -129,28 +131,28 @@ export function sudokuXGetCellUnits(game: Board, coords: CellCoordinates) {
     return units
 }
 
-export function sudokuXGetAllUnits(game: Board): CellCoordinates[][] {
+export function sudokuXGetAllUnits(game: Board): Cell[][] {
     let units = classicGetAllUnits(game)
-    let currentUnit: CellCoordinates[] = []
+    let currentUnit: Cell[] = []
 
     //NW-SE diagonal
     for (let i = 0; i < game.nSquares; i++) {
-        currentUnit.push({ x: i, y: i })
+        currentUnit.push(game.get({ x: i, y: i }))
     }
     units.push([...currentUnit])
 
     //NW-SE diagonal
     currentUnit = []
     for (let i = 0; i < game.nSquares; i++) {
-        currentUnit.push({ x: i, y: game.nSquares - 1 - i })
+        currentUnit.push(game.get({ x: i, y: game.nSquares - 1 - i }))
     }
     units.push([...currentUnit])
 
     return units
 }
 
-export function sudokuXCheckDiagonalAnimations(game: Board, center: CellCoordinates) {
-    if (center.x === center.y) {
+export function sudokuXCheckDiagonalAnimations(game: Board, center: Cell) {
+    if (center.cache.coords.x === center.cache.coords.y) {
         let shouldAddMainDiagonalAnimation = true
         for (let i = 0; i < game.nSquares; i++) {
             if (game.get({ x: i, y: i }).value === 0) {
@@ -165,13 +167,13 @@ export function sudokuXCheckDiagonalAnimations(game: Board, center: CellCoordina
                 startTime: null,
                 duration: 750,
                 func: ({ animationColors, themes, theme, progress }) => {
-                    for (let i = 0; i < game.nSquares; i++) animationColors[i][i] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - i), progress, 8, 4)})`
+                    for (let i = 0; i < game.nSquares; i++) animationColors[i][i] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.cache.coords.x - i), progress, 8, 4)})`
                 }
             })
         }
     }
 
-    if (center.x === game.nSquares - 1 - center.x) {
+    if (center.cache.coords.x === game.nSquares - 1 - center.cache.coords.x) {
         let shouldAddSecondaryDiagonalAnimation = true
         for (let i = 0; i < game.nSquares; i++) {
             if (game.get({ x: i, y: game.nSquares - 1 - i }).value === 0) {
@@ -188,7 +190,7 @@ export function sudokuXCheckDiagonalAnimations(game: Board, center: CellCoordina
                 func: ({ animationColors, themes, theme, progress }) => {
                     for (let i = 0; i < game.nSquares; i++) {
                         const y = game.nSquares - 1 - i
-                        animationColors[i][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.x - i), progress, 8, 4)})`
+                        animationColors[i][y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.cache.coords.x - i), progress, 8, 4)})`
                     }
                 }
             })

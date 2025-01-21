@@ -1,4 +1,4 @@
-import { CellCoordinates, DigitChar, RendererProps } from "../../utils/DataTypes"
+import { Cell, DigitChar, RendererProps, ScreenCoordinates } from "../../utils/DataTypes"
 import SettingsHandler from "../../utils/SettingsHandler"
 import { intersection } from "../../utils/Utils"
 import Board from "../Board"
@@ -66,14 +66,14 @@ export function drawSVGNumber(ctx: CanvasRenderingContext2D, n: number, x: numbe
     })
 }
 
-export function dashedLine(ctx: CanvasRenderingContext2D, c1: CellCoordinates, c2: CellCoordinates, ratio: number, cageLineWidth: number) {
+export function dashedLine(ctx: CanvasRenderingContext2D, c1: ScreenCoordinates, c2: ScreenCoordinates, ratio: number, cageLineWidth: number) {
     const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
     if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
     else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
 }
 
 export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, lockedInput, colors, selectedCellsValues, squareSize, accentColor, solutionColors, rendererState }: RendererProps) {
-    game.iterateAllCells((cell, { x, y }) => {
+    game.iterateAllCells(cell => {
         if (cell.value > 0) {
             //Value
             const highlightValue = (lockedInput === 0 && selectedCellsValues.includes(cell.value)) || lockedInput === cell.value
@@ -84,7 +84,7 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
                             cell.cache.clue ? themes[theme].canvasClueColor :
                                 solutionColors[accentColor]
             if (SettingsHandler.settings.checkMistakes && cell.cache.isError && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
-            drawSVGNumber(ctx, cell.value, rendererState.valuePositions[x], rendererState.valuePositions[y], squareSize * 0.55, 'center', 'center', null)
+            drawSVGNumber(ctx, cell.value, rendererState.valuePositions[cell.cache.coords.x], rendererState.valuePositions[cell.cache.coords.y], squareSize * 0.55, 'center', 'center', null)
         } else {
             //Candidates
             for (const n of cell.notes) {
@@ -92,7 +92,7 @@ export function commonRenderCellValueAndCandidates({ ctx, themes, theme, game, l
 
                 ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
 
-                drawSVGNumber(ctx, n, rendererState.cellPositions[x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor && cell.color === 'default' ? colors[accentColor] : null)
+                drawSVGNumber(ctx, n, rendererState.cellPositions[cell.cache.coords.x] + rendererState.noteDeltas[n - 1].x, rendererState.cellPositions[cell.cache.coords.y] + rendererState.noteDeltas[n - 1].y, squareSize * (game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor && cell.color === 'default' ? colors[accentColor] : null)
             }
         }
     })
@@ -104,13 +104,15 @@ export function commonInitCacheBoard(game: Board) {
         for (let y = 0; y < game.nSquares; y++) {
             const number = Number.parseInt(game.clues[y * game.nSquares + x])
             game.cache.board[x][y] = {
+                coords: { x, y },
                 clue: number > 0,
                 solution: game.solution === '' ? 0 : Number.parseInt(game.solution[y * game.nSquares + x]),
                 possibleValues: [],
                 visibleCells: [],
                 units: [],
                 isError: false,
-                colorGroups: []
+                colorGroups: [],
+                highlighted: false
             }
             game.get({ x, y }).cache = game.cache.board[x][y]
         }
@@ -119,28 +121,28 @@ export function commonInitCacheBoard(game: Board) {
 
 export function commonInitColorGroupsCache(game: Board) {
     for (const cg of game.colorGroups) {
-        for (const c of cg.members) {
-            game.get(c).cache.colorGroups.push(cg)
+        for (const cell of cg.members) {
+            cell.cache.colorGroups.push(cg)
         }
-        cg.visibleCells = intersection(cg.members.map(m => game.get(m).cache.visibleCells))
+        cg.visibleCells = intersection(cg.members.map(m => m.cache.visibleCells))
     }
 }
 
 export function commonInitUnitsAndVisibilityCache(game: Board) {
-    game.iterateAllCells((cell, coords) => {
-        cell.cache.visibleCells = game.ruleset.game.getVisibleCells(game, coords)
-        cell.cache.units = game.ruleset.game.getCellUnits(game, coords)
+    game.iterateAllCells(cell => {
+        cell.cache.visibleCells = game.ruleset.game.getVisibleCells(game, cell)
+        cell.cache.units = game.ruleset.game.getCellUnits(game, cell)
     })
 
     game.cache.units = game.ruleset.game.getAllUnits(game)
 }
 
-export function commonGetOrthogonalCells(game: Board, coords: CellCoordinates) {
-    let result: CellCoordinates[] = []
-    if (coords.x > 0) result.push({ x: coords.x - 1, y: coords.y })
-    if (coords.x < game.nSquares - 1) result.push({ x: coords.x + 1, y: coords.y })
-    if (coords.y > 0) result.push({ x: coords.x, y: coords.y - 1 })
-    if (coords.y < game.nSquares - 1) result.push({ x: coords.x, y: coords.y + 1 })
+export function commonGetOrthogonalCells(game: Board, cell: Cell) {
+    let result: Cell[] = []
+    if (cell.cache.coords.x > 0) result.push(game.get({ x: cell.cache.coords.x - 1, y: cell.cache.coords.y }))
+    if (cell.cache.coords.x < game.nSquares - 1) result.push(game.get({ x: cell.cache.coords.x + 1, y: cell.cache.coords.y }))
+    if (cell.cache.coords.y > 0) result.push(game.get({ x: cell.cache.coords.x, y: cell.cache.coords.y - 1 }))
+    if (cell.cache.coords.y < game.nSquares - 1) result.push(game.get({ x: cell.cache.coords.x, y: cell.cache.coords.y + 1 }))
     return result
 }
 
@@ -150,19 +152,18 @@ export function commonCalculatePossibleValuesByVisibility(game: Board) {
         for (let k = 1; k <= game.nSquares; k++) cell.cache.possibleValues.push(k)
     })
 
-    game.iterateAllCells((cell, { x, y }) => {
+    game.iterateAllCells(cell => {
         if (cell.value > 0) {
-            for (const c of cell.cache.visibleCells) {
-                const cell2 = game.get(c)
-                if (c.x !== x || c.y !== y) cell2.cache.possibleValues = cell2.cache.possibleValues.filter(n => n !== cell.value)
+            for (const cell2 of cell.cache.visibleCells) {
+                if (cell2.cache.coords.x !== cell.cache.coords.x || cell2.cache.coords.y !== cell.cache.coords.y) cell2.cache.possibleValues = cell2.cache.possibleValues.filter(n => n !== cell.value)
             }
         }
     })
 
     if (SettingsHandler.settings.lockCellsWithColor) {
-        game.iterateAllCells((cell, coords) => {
+        game.iterateAllCells(cell => {
             if (cell.color !== 'default') {
-                if (SettingsHandler.settings.autoSolveCellsWithColor && cell.notes.length === 1) game.setValue([coords], cell.notes[0])
+                if (SettingsHandler.settings.autoSolveCellsWithColor && cell.notes.length === 1) game.setValue([cell], cell.notes[0])
                 else cell.cache.possibleValues = [...cell.notes]
             }
         })
@@ -171,8 +172,8 @@ export function commonCalculatePossibleValuesByVisibility(game: Board) {
             let notes: number[] = []
             let unsolvedCount = 0
             for (let i = 0; i < cg.members.length; i++) {
-                notes = notes.concat(game.get(cg.members[i]).notes)
-                if (game.get(cg.members[i]).value === 0) unsolvedCount++
+                notes = notes.concat(cg.members[i].notes)
+                if (cg.members[i].value === 0) unsolvedCount++
             }
 
             const uniqueNotes = new Set(notes)
@@ -180,8 +181,8 @@ export function commonCalculatePossibleValuesByVisibility(game: Board) {
             if (uniqueNotes.size === unsolvedCount) {
                 // Remove possible values and notes from all the visible cells not in the group
                 for (const vc of cg.visibleCells) {
-                    if (!game.get(vc).cache.colorGroups.includes(cg)) {
-                        game.get(vc).cache.possibleValues = game.get(vc).cache.possibleValues.filter(pv => !notes.includes(pv))
+                    if (!vc.cache.colorGroups.includes(cg)) {
+                        vc.cache.possibleValues = vc.cache.possibleValues.filter(pv => !notes.includes(pv))
                         if (SettingsHandler.settings.showPossibleValues) for (const note of notes) game.setNote(note, [vc], false)
                     }
                 }

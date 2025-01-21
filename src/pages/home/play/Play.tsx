@@ -33,37 +33,37 @@ export default function Play({ theme, accentColor }: Props) {
 
     const classicMiniature = useMemo(() => {
         const newBoard = new Board({ id: 'cu0', m: '1.3:4.8.' }, 3)
-        newBoard.setValue([{ x: 1, y: 0 }], 2)
-        newBoard.setValue([{ x: 0, y: 1 }], 6)
-        newBoard.setValue([{ x: 0, y: 2 }], 7)
-        newBoard.setValue([{ x: 2, y: 2 }], 9)
+        newBoard.get({ x: 1, y: 0 }).value = 2
+        newBoard.get({ x: 0, y: 1 }).value = 6
+        newBoard.get({ x: 0, y: 2 }).value = 7
+        newBoard.get({ x: 2, y: 2 }).value = 9
         return newBoard
     }, [])
 
     const killerMiniature = useMemo(() => {
         let newBoard = new Board({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
-        newBoard.setValue([{ x: 1, y: 0 }], 2)
-        newBoard.setValue([{ x: 0, y: 1 }], 6)
-        newBoard.setValue([{ x: 0, y: 2 }], 7)
-        newBoard.setValue([{ x: 2, y: 2 }], 9)
+        newBoard.get({ x: 1, y: 0 }).value = 2
+        newBoard.get({ x: 0, y: 1 }).value = 6
+        newBoard.get({ x: 0, y: 2 }).value = 7
+        newBoard.get({ x: 2, y: 2 }).value = 9
         return newBoard
     }, [])
 
     const sandwichMiniature = useMemo(() => {
         let newBoard = new Board({ id: 'wu0', m: '1.3:4.8. 35,9,3 13,30,11' }, 3)
-        newBoard.setValue([{ x: 1, y: 0 }], 2)
-        newBoard.setValue([{ x: 0, y: 1 }], 6)
-        newBoard.setValue([{ x: 0, y: 2 }], 7)
-        newBoard.setValue([{ x: 2, y: 2 }], 9)
+        newBoard.get({ x: 1, y: 0 }).value = 2
+        newBoard.get({ x: 0, y: 1 }).value = 6
+        newBoard.get({ x: 0, y: 2 }).value = 7
+        newBoard.get({ x: 2, y: 2 }).value = 9
         return newBoard
     }, [])
 
     const thermoMiniature = useMemo(() => {
         let newBoard = new Board({ id: 'tu0', m: '1.3:4.8. 0,1,2,5;3,6,7,8' }, 3)
-        newBoard.setValue([{ x: 1, y: 0 }], 2)
-        newBoard.setValue([{ x: 0, y: 1 }], 6)
-        newBoard.setValue([{ x: 0, y: 2 }], 7)
-        newBoard.setValue([{ x: 2, y: 2 }], 9)
+        newBoard.get({ x: 1, y: 0 }).value = 2
+        newBoard.get({ x: 0, y: 1 }).value = 6
+        newBoard.get({ x: 0, y: 2 }).value = 7
+        newBoard.get({ x: 2, y: 2 }).value = 9
         return newBoard
     }, [])
 

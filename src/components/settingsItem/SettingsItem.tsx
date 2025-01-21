@@ -46,10 +46,10 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
 
   if (type === 'theme') {
     let classicMiniature = new Board({ id: 'ce0', m: '1.3:4.8.' }, 3)
-    classicMiniature.setValue([{ x: 1, y: 0 }], 2)
-    classicMiniature.setValue([{ x: 0, y: 1 }], 6)
-    classicMiniature.setValue([{ x: 0, y: 2 }], 7)
-    classicMiniature.setValue([{ x: 2, y: 2 }], 9)
+    classicMiniature.get({ x: 1, y: 0 }).value = 2
+    classicMiniature.get({ x: 0, y: 1 }).value = 6
+    classicMiniature.get({ x: 0, y: 2 }).value = 7
+    classicMiniature.get({ x: 2, y: 2 }).value = 9
 
     return (
       <div className='settings__item theme'>

@@ -152,14 +152,17 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
         }
 
         // CLASSIC
-        newTutorialGames.classic[0].board.setValue([{ x: 2, y: 3 }], 4)
-        for (let x = 0; x < 9; x++) newTutorialGames.classic[0].board.selectedCells.push({ x, y: 3 })
+        let board = newTutorialGames.classic[0].board
+        board.get({ x: 2, y: 3 }).value = 4
+        for (let x = 0; x < 9; x++) newTutorialGames.classic[0].board.selectedCells.push(board.get({ x, y: 3 }))
 
-        newTutorialGames.classic[1].board.setValue([{ x: 1, y: 7 }], 6)
-        for (let y = 0; y < 9; y++) newTutorialGames.classic[1].board.selectedCells.push({ x: 1, y })
+        board = newTutorialGames.classic[1].board
+        board.get({ x: 1, y: 7 }).value = 6
+        for (let y = 0; y < 9; y++) newTutorialGames.classic[1].board.selectedCells.push(board.get({ x: 1, y }))
 
-        newTutorialGames.classic[2].board.setValue([{ x: 8, y: 5 }], 5)
-        newTutorialGames.classic[2].board.selectedCells = rulesets.classic.game.getBoxCellsCoordinates({ x: 6, y: 3 })
+        board = newTutorialGames.classic[2].board
+        board.setValue([board.get({ x: 8, y: 5 })], 5)
+        board.selectedCells = rulesets.classic.game.getBoxCellsCoordinates(board, board.get({ x: 6, y: 3 }))
 
         newTutorialGames.classic[3].board.iterateAllCells(cell => cell.value = cell.cache.solution)
 
@@ -167,23 +170,28 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
 
         // KILLER
 
-        newTutorialGames.killer[0].board.setValue([{ x: 6, y: 1 }], 7)
-        for (let x = 0; x < 9; x++) newTutorialGames.killer[0].board.selectedCells.push({ x, y: 1 })
+        board = newTutorialGames.killer[0].board
+        board.get({ x: 6, y: 1 }).value = 7
+        for (let x = 0; x < 9; x++) board.selectedCells.push(board.get({ x, y: 1 }))
 
-        newTutorialGames.killer[1].board.setValue([{ x: 6, y: 2 }], 5)
-        for (let y = 0; y < 9; y++) newTutorialGames.killer[1].board.selectedCells.push({ x: 6, y })
+        board = newTutorialGames.killer[1].board
+        board.get({ x: 6, y: 2 }).value = 5
+        for (let y = 0; y < 9; y++) board.selectedCells.push(board.get({ x: 6, y }))
 
-        newTutorialGames.killer[2].board.setValue([{ x: 8, y: 8 }], 6)
-        newTutorialGames.killer[2].board.selectedCells = newTutorialGames.killer[2].board.ruleset.game.getBoxCellsCoordinates({ x: 6, y: 6 })
+        board = newTutorialGames.killer[2].board
+        board.get({ x: 8, y: 8 }).value = 6
+        board.selectedCells = board.ruleset.game.getBoxCellsCoordinates(board, board.get({ x: 6, y: 6 }))
 
-        newTutorialGames.killer[3].board.setValue([{ x: 3, y: 3 }], 7)
-        newTutorialGames.killer[3].board.selectedCells = newTutorialGames.killer[3].board.get({ x: 2, y: 1 }).cache.cage!.members
-        newTutorialGames.killer[3].board.get({ x: 2, y: 1 }).cache.isError = true
-        newTutorialGames.killer[3].board.get({ x: 3, y: 3 }).cache.isError = true
+        board = newTutorialGames.killer[3].board
+        board.get({ x: 3, y: 3 }).value = 7
+        board.selectedCells = board.get({ x: 2, y: 1 }).cache.cage!.members
+        board.get({ x: 2, y: 1 }).cache.isError = true
+        board.get({ x: 3, y: 3 }).cache.isError = true
 
-        newTutorialGames.killer[4].board.setValue([{ x: 7, y: 7 }], 2)
-        newTutorialGames.killer[4].board.setValue([{ x: 8, y: 6 }], 3)
-        newTutorialGames.killer[4].board.selectedCells = newTutorialGames.killer[4].board.get({ x: 7, y: 7 }).cache.cage!.members
+        board = newTutorialGames.killer[4].board
+        board.get({ x: 7, y: 7 }).value = 2
+        board.get({ x: 8, y: 6 }).value = 3
+        board.selectedCells = board.get({ x: 7, y: 7 }).cache.cage!.members
 
         newTutorialGames.killer[5].board.iterateAllCells(cell => cell.value = cell.cache.solution)
 
@@ -191,70 +199,84 @@ export function Tutorial({ gameMode, theme, accentColor, ruleset, quitTutorial }
 
         // SUDOKU X
 
-        newTutorialGames.sudokuX[0].board.setValue([{ x: 5, y: 2 }], 4)
-        for (let x = 0; x < 9; x++) newTutorialGames.sudokuX[0].board.selectedCells.push({ x, y: 2 })
+        board = newTutorialGames.sudokuX[0].board
+        board.get({ x: 5, y: 2 }).value = 4
+        for (let x = 0; x < 9; x++) board.selectedCells.push(board.get({ x, y: 2 }))
 
-        newTutorialGames.sudokuX[1].board.setValue([{ x: 4, y: 1 }], 8)
-        for (let y = 0; y < 9; y++) newTutorialGames.sudokuX[1].board.selectedCells.push({ x: 4, y })
+        board = newTutorialGames.sudokuX[1].board
+        board.get({ x: 4, y: 1 }).value = 8
+        for (let y = 0; y < 9; y++) board.selectedCells.push(board.get({ x: 4, y }))
 
-        newTutorialGames.sudokuX[2].board.setValue([{ x: 5, y: 6 }], 4)
-        newTutorialGames.sudokuX[2].board.selectedCells = rulesets.sudokuX.game.getBoxCellsCoordinates({ x: 3, y: 6 })
+        board = newTutorialGames.sudokuX[2].board
+        board.get({ x: 5, y: 6 }).value = 4
+        board.selectedCells = rulesets.sudokuX.game.getBoxCellsCoordinates(board, board.get({ x: 3, y: 6 }))
 
-        newTutorialGames.sudokuX[3].board.setValue([{ x: 8, y: 0 }], 1)
-        newTutorialGames.sudokuX[3].board.setValue([{ x: 7, y: 7 }], 6)
+        board = newTutorialGames.sudokuX[3].board
+        board.get({ x: 8, y: 0 }).value = 1
+        board.get({ x: 7, y: 7 }).value = 6
 
         rulesets.sudokuX.game.checkAdditionalErrors(newTutorialGames.sudokuX[3].board)
 
         const sudokuXSolution = '958324617712856934346719825173295468865143279429687351631978542597432186284561793'
-        newTutorialGames.sudokuX[4].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(sudokuXSolution[coords.y * 9 + coords.x]))
+        newTutorialGames.sudokuX[4].board.iterateAllCells((cell) => cell.value = Number.parseInt(sudokuXSolution[cell.cache.coords.y * 9 + cell.cache.coords.x]))
 
         for (const game of newTutorialGames.sudokuX) commonCalculatePossibleValuesByVisibility(game.board)
 
         // SANDWICH
 
-        newTutorialGames.sandwich[0].board.setValue([{ x: 6, y: 2 }], 2)
-        for (let x = 0; x < 9; x++) newTutorialGames.sandwich[0].board.selectedCells.push({ x, y: 2 })
+        board = newTutorialGames.sandwich[0].board
+        board.get({ x: 6, y: 2 }).value = 2
+        for (let x = 0; x < 9; x++) newTutorialGames.sandwich[0].board.selectedCells.push(board.get({ x, y: 2 }))
 
-        newTutorialGames.sandwich[1].board.setValue([{ x: 2, y: 7 }], 5)
-        for (let y = 0; y < 9; y++) newTutorialGames.sandwich[1].board.selectedCells.push({ x: 2, y })
+        board = newTutorialGames.sandwich[1].board
+        board.get({ x: 2, y: 7 }).value = 5
+        for (let y = 0; y < 9; y++) newTutorialGames.sandwich[1].board.selectedCells.push(board.get({ x: 2, y }))
 
-        newTutorialGames.sandwich[2].board.setValue([{ x: 8, y: 5 }], 6)
-        newTutorialGames.sandwich[2].board.selectedCells = rulesets.sandwich.game.getBoxCellsCoordinates({ x: 6, y: 3 })
+        board = newTutorialGames.sandwich[2].board
+        board.get({ x: 8, y: 5 }).value = 6
+        board.selectedCells = rulesets.sandwich.game.getBoxCellsCoordinates(board, board.get({ x: 6, y: 3 }))
 
-        newTutorialGames.sandwich[3].board.setValue([{ x: 3, y: 5 }], 8)
-        newTutorialGames.sandwich[3].board.setValue([{ x: 4, y: 5 }], 2)
-        newTutorialGames.sandwich[3].board.setValue([{ x: 5, y: 5 }], 6)
-        newTutorialGames.sandwich[3].board.selectedCells = [{ x: 2, y: 5 }, { x: 3, y: 5 }, { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }]
+        board = newTutorialGames.sandwich[3].board
+        board.get({ x: 3, y: 5 }).value = 8
+        board.get({ x: 4, y: 5 }).value = 2
+        board.get({ x: 5, y: 5 }).value = 6
+        newTutorialGames.sandwich[3].board.selectedCells = [board.get({ x: 2, y: 5 }), board.get({ x: 3, y: 5 }), board.get({ x: 4, y: 5 }), board.get({ x: 5, y: 5 }), board.get({ x: 6, y: 5 })]
 
         for (const game of newTutorialGames.sandwich) commonCalculatePossibleValuesByVisibility(game.board)
 
         const sandwichSolution = '931682574465713928827459613183597462652341789749268135374125896518936247296874351'
-        newTutorialGames.sandwich[4].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(sandwichSolution[coords.y * 9 + coords.x]))
+        newTutorialGames.sandwich[4].board.iterateAllCells(cell => cell.value = Number.parseInt(sandwichSolution[cell.cache.coords.y * 9 + cell.cache.coords.x]))
 
         // THERMO
 
-        newTutorialGames.thermo[0].board.setValue([{ x: 6, y: 3 }], 4)
-        for (let x = 0; x < 9; x++) newTutorialGames.thermo[0].board.selectedCells.push({ x, y: 3 })
+        board = newTutorialGames.thermo[0].board
+        board.get({ x: 6, y: 3 }).value = 4
+        for (let x = 0; x < 9; x++) board.selectedCells.push(board.get({ x, y: 3 }))
 
-        newTutorialGames.thermo[1].board.setValue([{ x: 0, y: 1 }], 3)
-        for (let y = 0; y < 9; y++) newTutorialGames.thermo[1].board.selectedCells.push({ x: 0, y })
+        board = newTutorialGames.thermo[1].board
+        board.get({ x: 0, y: 1 }).value = 3
+        for (let y = 0; y < 9; y++) board.selectedCells.push(board.get({ x: 0, y }))
 
-        newTutorialGames.thermo[2].board.setValue([{ x: 5, y: 1 }], 6)
-        newTutorialGames.thermo[2].board.selectedCells = rulesets.thermo.game.getBoxCellsCoordinates({ x: 3, y: 0 })
+        board = newTutorialGames.thermo[2].board
+        board.get({ x: 5, y: 1 }).value = 6
+        board.selectedCells = rulesets.thermo.game.getBoxCellsCoordinates(board, board.get({ x: 3, y: 0 }))
 
-        newTutorialGames.thermo[3].board.selectedCells = [{ x: 4, y: 0 }, { x: 4, y: 3 }]
+        board = newTutorialGames.thermo[3].board
+        board.selectedCells = [board.get({ x: 4, y: 0 }), board.get({ x: 4, y: 3 })]
 
-        newTutorialGames.thermo[4].board.setValue([{ x: 6, y: 3 }], 1)
-        newTutorialGames.thermo[4].board.setValue([{ x: 6, y: 4 }], 3)
-        newTutorialGames.thermo[4].board.setValue([{ x: 7, y: 4 }], 4)
-        newTutorialGames.thermo[4].board.setValue([{ x: 8, y: 4 }], 6)
-        newTutorialGames.thermo[4].board.setValue([{ x: 8, y: 3 }], 8)
-        newTutorialGames.thermo[4].board.setValue([{ x: 8, y: 2 }], 9)
-        newTutorialGames.thermo[4].board.setValue([{ x: 1, y: 0 }], 1)
-        newTutorialGames.thermo[4].board.selectedCells = [{ x: 6, y: 3 }, { x: 6, y: 4 }, { x: 7, y: 4 }, { x: 8, y: 4 }, { x: 8, y: 3 }, { x: 8, y: 2 }, { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }]
+        board = newTutorialGames.thermo[4].board
+        board.get({ x: 6, y: 3 }).value = 1
+        board.get({ x: 6, y: 4 }).value = 3
+        board.get({ x: 7, y: 4 }).value = 4
+        board.get({ x: 8, y: 4 }).value = 6
+        board.get({ x: 8, y: 3 }).value = 8
+        board.get({ x: 8, y: 2 }).value = 9
+        board.get({ x: 1, y: 0 }).value = 1
+
+        board.selectedCells = [board.get({ x: 6, y: 3 }), board.get({ x: 6, y: 4 }), board.get({ x: 7, y: 4 }), board.get({ x: 8, y: 4 }), board.get({ x: 8, y: 3 }), board.get({ x: 8, y: 2 }), board.get({ x: 0, y: 0 }), board.get({ x: 1, y: 0 }), board.get({ x: 2, y: 0 })]
 
         const thermoSolution = '932781645576942183184635729649528317218379456357164298795216834823457961461893572'
-        newTutorialGames.thermo[5].board.iterateAllCells((cell, coords) => cell.value = Number.parseInt(thermoSolution[coords.y * 9 + coords.x]))
+        newTutorialGames.thermo[5].board.iterateAllCells(cell => cell.value = Number.parseInt(thermoSolution[cell.cache.coords.y * 9 + cell.cache.coords.x]))
 
         for (const game of newTutorialGames.thermo) {
             commonCalculatePossibleValuesByVisibility(game.board)

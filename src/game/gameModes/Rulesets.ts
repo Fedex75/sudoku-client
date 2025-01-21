@@ -12,7 +12,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         render: {
             init: [],
             onResize: [classicResize],
-            screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
+            getCellFromScreenCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
@@ -37,7 +37,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         render: {
             init: [killerCalculateCageVectors],
             onResize: [killerResize, killerCalculateCageVectors],
-            screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
+            getCellFromScreenCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, killerRenderCagesAndCageValues, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
@@ -62,7 +62,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         render: {
             init: [],
             onResize: [classicResize],
-            screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
+            getCellFromScreenCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, sudokuXRenderDiagonals, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
@@ -87,7 +87,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         render: {
             init: [],
             onResize: [sandwichResize],
-            screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
+            getCellFromScreenCoords: classicScreenCoordsToBoardCoords,
             before: [sandwichRenderBackground],
             unpaused: [classicRenderCellBackground, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, sandwichRenderLateralClues],
             paused: [classicRenderPaused],
@@ -112,7 +112,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         render: {
             init: [thermoRenderThermometersToOffscreenCanvas],
             onResize: [classicResize, thermoRenderThermometersToOffscreenCanvas],
-            screenCoordsToBoardCoords: classicScreenCoordsToBoardCoords,
+            getCellFromScreenCoords: classicScreenCoordsToBoardCoords,
             before: [classicRenderBackground],
             unpaused: [classicRenderCellBackground, thermoRenderThermometers, commonRenderCellValueAndCandidates, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations],
             paused: [classicRenderPaused],
