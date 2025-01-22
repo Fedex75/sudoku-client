@@ -1,6 +1,5 @@
 import { Cell, DigitChar, RendererProps, ScreenCoordinates } from "../../utils/DataTypes"
 import SettingsHandler from "../../utils/SettingsHandler"
-import { intersection } from "../../utils/Utils"
 import Board from "../Board"
 
 const SVGHeight = 30
@@ -116,15 +115,6 @@ export function commonInitCacheBoard(game: Board) {
             }
             game.get({ x, y }).cache = game.cache.board[x][y]
         }
-    }
-}
-
-export function commonInitColorGroupsCache(game: Board) {
-    for (const cg of game.colorGroups) {
-        for (const cell of cg.members) {
-            cell.cache.colorGroups.push(cg)
-        }
-        cg.visibleCells = intersection(cg.members.map(m => m.cache.visibleCells))
     }
 }
 

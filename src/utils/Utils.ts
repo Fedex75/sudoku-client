@@ -9,7 +9,7 @@ export function indexOf(coords: CellCoordinates, within: CellCoordinates[]) {
 
 export function remove<T>(reference: T, from: T[]) {
     const index = from.indexOf(reference)
-    if (index > -1) from.splice(from.indexOf(reference), 1)
+    if (index > -1) from.splice(index, 1)
 }
 
 export function intersection(of: Cell[][]): Cell[] {

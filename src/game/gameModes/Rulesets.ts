@@ -1,4 +1,4 @@
-import { commonCalculatePossibleValuesByVisibility, commonGetOrthogonalCells, commonInitCacheBoard, commonInitColorGroupsCache, commonInitUnitsAndVisibilityCache, commonRenderCellValueAndCandidates } from "./Common"
+import { commonCalculatePossibleValuesByVisibility, commonGetOrthogonalCells, commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonRenderCellValueAndCandidates } from "./Common"
 import { classicGetVisibleCells, classicGetCellUnits, classicResize, classicScreenCoordsToBoardCoords, classicRenderBackground, classicRenderCellBackground, classicRenderSelection, classicRenderLinks, classicRenderFadeAnimations, classicRenderPaused, classicRenderBorders, classicInitGameData, classicGetBoxCellsCoordinates, classicCheckRowAnimation, classicCheckColumnAnimation, classicCheckBoxAnimation, classicGetBoxes, classicIterateAllCells, classicGetAllUnits } from "./Classic"
 import { killerCalculateCageVectors, killerResize, killerRenderCagesAndCageValues, killerInitGameData, killerInitCages, killerGetVisibleCells, killerSolveLastInCages, killerCheckErrors } from "./Killer"
 import { sudokuXRenderDiagonals, sudokuXInitGameData, sudokuXGetVisibleCells, sudokuXDetectErrors, sudokuXGetCellUnits, sudokuXGetAllUnits, sudokuXCheckDiagonalAnimations } from "./SudokuX"
@@ -20,7 +20,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: classicInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
@@ -45,7 +45,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: killerInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, killerInitCages, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initBoardMatrix: [commonInitCacheBoard, killerInitCages, commonInitUnitsAndVisibilityCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: killerGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
@@ -70,7 +70,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sudokuXInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initBoardMatrix: [commonInitCacheBoard, commonInitUnitsAndVisibilityCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: sudokuXGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
@@ -95,7 +95,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: sandwichInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, sandwichInitLateralClues, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initBoardMatrix: [commonInitCacheBoard, sandwichInitLateralClues, commonInitUnitsAndVisibilityCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: classicGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,
@@ -120,7 +120,7 @@ export const rulesets: { [key in GameModeName]: Ruleset } = {
         },
         game: {
             initGameData: thermoInitGameData,
-            initBoardMatrix: [commonInitCacheBoard, thermoInitThermometerData, commonInitUnitsAndVisibilityCache, commonInitColorGroupsCache],
+            initBoardMatrix: [commonInitCacheBoard, thermoInitThermometerData, commonInitUnitsAndVisibilityCache],
             getOrthogonalCells: commonGetOrthogonalCells,
             getVisibleCells: thermoGetVisibleCells,
             getBoxCellsCoordinates: classicGetBoxCellsCoordinates,

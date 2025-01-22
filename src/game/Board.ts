@@ -1,10 +1,11 @@
 import SettingsHandler from "../utils/SettingsHandler"
 import GameHandler from "../utils/GameHandler"
 import { DifficultyName, GameModeIdentifier, GameModeName, getMode } from "../utils/Difficulties"
-import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, ColorGroup, GameData, History, RawGameData, isGameData, Ruleset, KillerCage, CellCache, Thermometer } from "../utils/DataTypes"
+import { BoardMatrix, BoardAnimation, Cell, CellCoordinates, GameData, History, RawGameData, isGameData, Ruleset, KillerCage, CellCache, Thermometer } from "../utils/DataTypes"
 import { ColorName } from "../utils/Colors"
-import { intersection, remove } from "../utils/Utils"
+import { remove } from "../utils/Utils"
 import { rulesets } from "./gameModes/Rulesets"
+import { ColorGroup } from '../utils/ColorGroup'
 
 const defaultCacheItem: CellCache = {
 	coords: { x: 0, y: 0 },
@@ -218,13 +219,15 @@ export default class Board {
 	getColorGroupsFromSavedString(data: string): ColorGroup[] {
 		if (data === '') return []
 
-		return data.split(' ').map(cg => ({
-			members: cg.split(',').map(coords => (this.get({
-				x: Number.parseInt(coords[0]),
-				y: Number.parseInt(coords[1])
-			}))),
-			visibleCells: []
-		}))
+		return data
+			.split(' ')
+			.map(colorGroupString => {
+				const members = colorGroupString.split(',').map(coordPair => {
+					const [x, y] = coordPair.split('').map(n => Number.parseInt(n))
+					return this.get({ x, y })
+				})
+				return new ColorGroup(members, null)
+			})
 	}
 
 	stashBoard() {
@@ -258,14 +261,14 @@ export default class Board {
 
 	select(cell: Cell, withState: boolean | null = null): boolean | null {
 		if (this.selectedCells.includes(cell)) {
-			if (withState === null || withState) {
-				this.selectedCells.push(cell)
-				return true
-			}
-		} else {
 			if (!withState) {
 				this.selectedCells = this.selectedCells.filter(c => c !== cell)
 				return false
+			}
+		} else {
+			if (withState === null || withState) {
+				this.selectedCells.push(cell)
+				return true
 			}
 		}
 
@@ -356,21 +359,9 @@ export default class Board {
 				}
 
 				if (SettingsHandler.settings.clearColorOnInput) {
-					// If the cell is in a color group
-					if (cell.cache.colorGroups.length > 0) {
-						// If every cell in every color group has a value, clear their color and remove the color group
-						if (cell.cache.colorGroups.every(cg => cg.members.every(colorGroupCell => colorGroupCell.value > 0))) {
-							for (const cg of cell.cache.colorGroups) {
-								for (const colorGroupCell of cg.members) {
-									colorGroupCell.color = 'default'
-								}
-							}
-							this.remove(cell.cache.colorGroups)
-						}
-
-					} else {
-						cell.color = 'default'
-					}
+					cell.color = 'default'
+					this.hasChanged = true
+					for (const cg of cell.cache.colorGroups) cg.remove(cell)
 				}
 
 				//Check animations
@@ -395,12 +386,9 @@ export default class Board {
 				cell.value = 0
 				cell.notes = []
 				cell.color = 'default'
-
-				if (cell.cache.colorGroups.length > 0) {
-					this.remove(cell.cache.colorGroups)
-				}
-
 				this.hasChanged = true
+
+				for (const cg of cell.cache.colorGroups) cg.remove(cell)
 			}
 		}
 	}
@@ -467,14 +455,13 @@ export default class Board {
 		this.iterateAllCells(cell => {
 			if (cell.color !== 'default') {
 				cell.color = 'default'
-				cell.cache.colorGroups = []
 				this.hasChanged = true
 			}
 		})
-		this.colorGroups = []
+		this.removeColorGroups(this.colorGroups)
 	}
 
-	isComplete(): boolean {
+	get complete(): boolean {
 		this.checkErrors()
 		let complete = true
 		this.iterateAllCells((cell, _, exit) => {
@@ -484,23 +471,25 @@ export default class Board {
 			}
 		})
 
-		if (complete && this.cache.killer__cages.some(cage => cage.error)) {
-			complete = false
+		if (!complete) return false
+
+		if (this.cache.killer__cages.some(cage => cage.error)) {
+			return false
 		}
 
-		if (complete && (this.cache.sandwich__clues.vertical.some(clue => clue.error) || this.cache.sandwich__clues.horizontal.some(clue => clue.error))) {
-			complete = false
+		if (this.cache.sandwich__clues.vertical.some(clue => clue.error) || this.cache.sandwich__clues.horizontal.some(clue => clue.error)) {
+			return false
 		}
 
-		if (complete && this.cache.sudokuX__diagonalErrors.some(x => x)) {
-			complete = false
+		if (this.cache.sudokuX__diagonalErrors.some(x => x)) {
+			return false
 		}
 
-		if (complete && this.cache.thermo__thermometers.some(t => t.error)) {
-			complete = false
+		if (this.cache.thermo__thermometers.some(t => t.error)) {
+			return false
 		}
 
-		return complete
+		return true
 	}
 
 	saveToLocalStorage() {
@@ -566,27 +555,18 @@ export default class Board {
 	createColorGroup(withCells: Cell[], painted: ColorName) {
 		if (withCells.length < 2 || painted === 'default') return
 
-		const newColorGroup = {
-			members: withCells,
-			visibleCells: intersection(withCells.map(c => c.cache.visibleCells))
-		}
-
-		this.colorGroups.push(newColorGroup)
-
-		for (const cell of withCells) {
-			cell.cache.colorGroups.push(this.colorGroups[this.colorGroups.length - 1])
-			cell.color = painted
-		}
+		this.colorGroups.push(new ColorGroup(withCells, painted))
 
 		this.hasChanged = true
 	}
 
-	remove(colorGroups: ColorGroup[]) {
-		for (const group of colorGroups) {
+	removeColorGroups(_: ColorGroup[]) {
+		for (const group of _) {
 			// Remove the reference to the group from its members
 			for (const cell of group.members) {
 				remove(group, cell.cache.colorGroups)
 				cell.color = 'default'
+				this.hasChanged = true
 			}
 
 			// Remove the color group
@@ -597,8 +577,20 @@ export default class Board {
 	checkErrors() {
 		if (this.nSquares < 9) return // THIS IS A HACK
 
+		this.iterateAllCells(cell => cell.cache.isError = false)
+
 		this.iterateAllCells(cell => {
-			cell.cache.isError = cell.value > 0 && !cell.cache.possibleValues.includes(cell.value)
+			if (
+				(
+					cell.value > 0 &&
+					!cell.cache.possibleValues.includes(cell.value)
+				) ||
+				(
+					this.solution !== '' &&
+					cell.value !== cell.cache.solution
+				)
+			)
+				cell.cache.isError = true
 		})
 
 		this.ruleset.game.checkAdditionalErrors(this)
@@ -608,6 +600,5 @@ export default class Board {
 		for (const func of this.ruleset.game.initBoardMatrix) func(this)
 		for (const func of this.ruleset.game.afterValuesChanged) func(this)
 		this.checkFullNotation()
-		this.isComplete()
 	}
 }

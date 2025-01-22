@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
 import Canvas from "./Canvas"
-import { CanvasRef, Cell, CellCoordinates, ColorGroup, KillerCage, MouseButtonType, Ruleset } from "../utils/DataTypes"
+import { CanvasRef, Cell, CellCoordinates, KillerCage, MouseButtonType, Ruleset } from "../utils/DataTypes"
 import { Navigate } from "react-router"
 import { AccentColor, ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
 import SettingsHandler from "../utils/SettingsHandler"
@@ -14,6 +14,7 @@ import ColorCircleSVG from "../svg/color_circle"
 import brightness, { union } from "../utils/Utils"
 import Board from "./Board"
 import { ThemeName } from './Themes'
+import { ColorGroup } from '../utils/ColorGroup'
 
 type Props = {
 	theme: ThemeName
@@ -115,8 +116,10 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 
 		if (SettingsHandler.settings.showPossibleValues) {
 			for (const cell of game.selectedCells) {
-				for (const v of cell.cache.possibleValues) {
-					if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
+				if (!cell.cache.clue) {
+					for (const v of cell.cache.possibleValues) {
+						if (!newPossibleValues.includes(v)) newPossibleValues = newPossibleValues.concat(v)
+					}
 				}
 			}
 		} else {
@@ -202,7 +205,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 
 			game.checkFullNotation()
 
-			if (game.isComplete()) {
+			if (game.complete) {
 				const center: CellCoordinates = lastInteractedCell?.cache.coords || { x: Math.floor(game.nSquares / 2), y: Math.floor(game.nSquares / 2) }
 				game.animations = [{
 					type: 'board',
@@ -258,7 +261,7 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 		for (const cg of selectedGroups) {
 			if (cg.members.every(cell => !selectedCells.includes(cell)) || (color !== cg.members[0].color)) {
 				// Coincidence is full or coincidence is partial and color is different: remove the group
-				game.remove([cg])
+				game.removeColorGroups([cg])
 			}
 		}
 
@@ -457,9 +460,9 @@ function Game({ theme, accentColor, paused, handleComplete, ruleset, boardAnimat
 		} else if (magicWandMode === 'clearColors') {
 			return <ColorCircleSVG />
 		} else {
-			return <MagicWandSVG fill={magicWandMode === 'setColor' ? ColorDefinitions[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
+			return <MagicWandSVG fill={magicWandMode === 'setColor' && !game.fullNotation ? ColorDefinitions[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
 		}
-	}, [magicWandMode, magicWandColor, accentColor])
+	}, [magicWandMode, magicWandColor, accentColor, game.fullNotation])
 
 	useEffect(() => {
 		updateMagicWandMode()
