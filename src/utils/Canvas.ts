@@ -111,6 +111,8 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     static dashedLine(ctx: CanvasRenderingContext2D, c1: ScreenCoordinates, c2: ScreenCoordinates, ratio: number, cageLineWidth: number) {
+        if (ratio <= 0) return
+
         const segmentCount = Math.round(Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y))) / ratio
         if (c1.x === c2.x) for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x, c1.y + ratio * i, cageLineWidth, ratio)
         else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
@@ -340,6 +342,8 @@ export abstract class Canvas<BoardType extends Board> {
 
     public resizeCanvas() {
         if (!this.canvasRef || !this._game) return
+
+        if (this.canvasRef.offsetWidth === 0 || this.canvasRef.offsetHeight === 0) return
 
         this.logicalSize = this.canvasRef.offsetWidth * Canvas.ROUNDED_RATIO
         this.canvasRef.width = this.logicalSize

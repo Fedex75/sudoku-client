@@ -203,10 +203,6 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 	if (GameHandler.game === null) return null
 
-	console.log('[i] About to render win screen!')
-
-	if (win) return <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} />
-
 	return (
 		<Section>
 			<Topbar
@@ -223,10 +219,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 			<SectionContent>
 				{
-					//win ?
-					//<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
-					tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
-						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
+					win ?
+						<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
+						tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
+							<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
 				}
 			</SectionContent>
 

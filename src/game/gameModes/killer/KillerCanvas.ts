@@ -118,18 +118,11 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         const targetRatio = Math.floor(this.squareSize * 0.075) + 1
 
         function addVector(c1: ScreenCoordinates, c2: ScreenCoordinates, cage: KillerCage) {
-            let i = 1
-            let ratio = 0
             const delta = Math.max(Math.abs(c2.x - c1.x), Math.abs(c2.y - c1.y)) + Canvas.CAGE_LINE_WIDTH
+            const i = Math.ceil(delta / (2 * targetRatio) - 0.5)
+            let ratio = delta / (2 * i + 1)
 
-            while (true) {
-                ratio = delta / i
-                if (ratio <= targetRatio) {
-                    if ((targetRatio - ratio) > (delta / (i - 1) - targetRatio)) ratio = delta / (i - 2)
-                    break
-                }
-                i += 2
-            }
+            if ((targetRatio - ratio) > (delta / (i - 1) - targetRatio)) ratio = delta / (i - 2)
 
             newCageVectors.push({ start: c1, end: c2, cage, ratio })
         }
