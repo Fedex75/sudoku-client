@@ -1,9 +1,9 @@
-import brightness from "../../utils/Utils"
+/*import brightness from "../../utils/Utils"
 import { InitGameProps, RendererProps, Cell } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
-import Board from "../Board"
-import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./Classic"
+import Board from "../../utils/Board"
+import { classicGetVisibleCells, classicGetCellUnits, classicGetAllUnits } from "./classic/ClassicBoard"
 import SettingsHandler from '../../utils/SettingsHandler'
 
 export function sudokuXInitGameData({ game, data }: InitGameProps) {
@@ -17,7 +17,7 @@ export function sudokuXGetVisibleCells(game: Board, cell: Cell): Cell[] {
     let visibleCells = classicGetVisibleCells(game, cell)
 
     // If the cell is in the NW-SE diagonal
-    if (cell.cache.coords.x === cell.cache.coords.y) {
+    if (cell.coords.x === cell.coords.y) {
         for (let i = 0; i < game.nSquares; i++) {
             const c = game.get({ x: i, y: i })
             if (c !== cell && !visibleCells.includes(c)) {
@@ -27,7 +27,7 @@ export function sudokuXGetVisibleCells(game: Board, cell: Cell): Cell[] {
     }
 
     // If the cell is in the SW-NE diagonal
-    if (cell.cache.coords.y === game.nSquares - 1 - cell.cache.coords.x) {
+    if (cell.coords.y === game.nSquares - 1 - cell.coords.x) {
         for (let i = 0; i < game.nSquares; i++) {
             const newY = game.nSquares - 1 - i
             const c = game.get({ x: i, y: newY })
@@ -111,7 +111,7 @@ export function sudokuXGetCellUnits(game: Board, cell: Cell) {
     let units: Cell[][] = classicGetCellUnits(game, cell)
 
     // NW-SE diagonal
-    if (cell.cache.coords.x === cell.cache.coords.y) {
+    if (cell.coords.x === cell.coords.y) {
         let nwseDiagonal: Cell[] = []
         for (let i = 0; i < game.nSquares; i++) {
             nwseDiagonal.push(game.get({ x: i, y: i }))
@@ -120,7 +120,7 @@ export function sudokuXGetCellUnits(game: Board, cell: Cell) {
     }
 
     // SW-NE diagonal
-    if (cell.cache.coords.y === game.nSquares - 1 - cell.cache.coords.x) {
+    if (cell.coords.y === game.nSquares - 1 - cell.coords.x) {
         let swneDiagonal: Cell[] = []
         for (let i = 0; i < game.nSquares; i++) {
             swneDiagonal.push(game.get({ x: i, y: game.nSquares - 1 - i }))
@@ -197,3 +197,4 @@ export function sudokuXCheckDiagonalAnimations(game: Board, center: Cell) {
         }
     }
 }
+*/

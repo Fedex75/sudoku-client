@@ -1,9 +1,9 @@
-import { Cell, InitGameProps, RendererProps, StateProps, Thermometer } from "../../utils/DataTypes"
+/*import { Cell, InitGameProps, RendererProps, StateProps, Thermometer } from "../../utils/DataTypes"
 import { decodeMissionString } from "../../utils/Decoder"
 import { getDifficulty, DifficultyIdentifier } from "../../utils/Difficulties"
 import SettingsHandler from "../../utils/SettingsHandler"
-import Board from "../Board"
-import { classicGetVisibleCells } from "./Classic"
+import Board from "../../utils/Board"
+import { classicGetVisibleCells } from "./classic/ClassicBoard"
 
 const thermosOffscreenCanvas = document.createElement('canvas')
 const thermosOffScreenCanvasCtx = thermosOffscreenCanvas.getContext('2d')
@@ -40,9 +40,9 @@ export function thermoInitThermometerData(game: Board) {
 export function thermoGetVisibleCells(game: Board, cell: Cell) {
     let visibleCells = classicGetVisibleCells(game, cell)
 
-    if (cell.cache.thermometer) {
-        for (const tc of cell.cache.thermometer.members) {
-            if ((tc.cache.coords.x !== cell.cache.coords.x || tc.cache.coords.y !== cell.cache.coords.y) && !visibleCells.includes(tc)) visibleCells.push(tc)
+    if (cell.thermometer) {
+        for (const tc of cell.thermometer.members) {
+            if ((tc.cache.coords.x !== cell.coords.x || tc.cache.coords.y !== cell.coords.y) && !visibleCells.includes(tc)) visibleCells.push(tc)
         }
     }
 
@@ -106,7 +106,7 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
 
     let selectedThermometers: Thermometer[] = []
     for (const cell of game.selectedCells) {
-        if (cell.cache.thermometer && !selectedThermometers.includes(cell.cache.thermometer)) selectedThermometers.push(cell.cache.thermometer)
+        if (cell.thermometer && !selectedThermometers.includes(cell.thermometer)) selectedThermometers.push(cell.thermometer)
     }
 
     thermosTempCanvasCtx.globalCompositeOperation = 'source-in'
@@ -153,7 +153,7 @@ export function thermoRenderThermometers({ ctx, game, squareSize, rendererState,
 }
 
 export function thermoCalculatePossibleValues(game: Board) {
-    for (const thermo of game.cache.thermo__thermometers) {
+    for (const thermo of game.thermo__thermometers) {
         for (let i = 0; i < thermo.members.length; i++) {
             const cell = thermo.members[i]
             if (cell.value > 0) {
@@ -175,4 +175,4 @@ export function thermoCalculatePossibleValues(game: Board) {
             }
         }
     }
-}
+}*/

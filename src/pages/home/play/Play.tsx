@@ -7,13 +7,17 @@ import { faChevronRight, faBookmark, faChartSimple, faPlay } from "@fortawesome/
 import GameHandler from "../../../utils/GameHandler"
 import { ActionSheet, ActionSheetButton } from "../../../components"
 import './play.css'
-import Board from "../../../game/Board"
 import { GameModeName } from "../../../utils/Difficulties"
 import { AccentColor } from "../../../utils/Colors"
-import Canvas from "../../../game/Canvas"
+import Canvas from "../../../components/CanvasComponent"
 import SVGSettings from "../../../svg/settings"
-import { rulesets } from "../../../game/gameModes/Rulesets"
 import { ThemeName } from '../../../game/Themes'
+import { ClassicBoard } from '../../../game/gameModes/classic/ClassicBoard'
+import { KillerBoard } from '../../../game/gameModes/killer/KillerBoard'
+import { SandwichBoard } from '../../../game/gameModes/sandwich/SandwichBoard'
+import { ThermoBoard } from '../../../game/gameModes/thermo/ThermoBoard'
+import { SudokuXBoard } from '../../../game/gameModes/sudokuX/SudokuXBoard'
+import { createCanvas } from '../../../game/gameModes/createCanvas'
 
 type Props = {
     theme: ThemeName
@@ -24,6 +28,12 @@ export default function Play({ theme, accentColor }: Props) {
     const [newGameMode, setNewGameMode] = useState<GameModeName>()
     const [snappedIndex, setSnappedIndex] = useState(2)
 
+    const classicCanvasRef = useRef(createCanvas('classic', accentColor, true, 0))
+    const killerCanvasRef = useRef(createCanvas('killer', accentColor, true, 0))
+    const sudokuXCanvasRef = useRef(createCanvas('sudokuX', accentColor, true, 0))
+    const sandwichCanvasRef = useRef(createCanvas('sandwich', accentColor, true, 0))
+    const thermoCanvasRef = useRef(createCanvas('thermo', accentColor, true, 0))
+
     const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
 
     const carouselRef = useRef<HTMLDivElement>(null)
@@ -31,40 +41,49 @@ export default function Play({ theme, accentColor }: Props) {
 
     const { t } = useTranslation()
 
-    const classicMiniature = useMemo(() => {
-        const newBoard = new Board({ id: 'cu0', m: '1.3:4.8.' }, 3)
-        newBoard.get({ x: 1, y: 0 }).value = 2
-        newBoard.get({ x: 0, y: 1 }).value = 6
-        newBoard.get({ x: 0, y: 2 }).value = 7
-        newBoard.get({ x: 2, y: 2 }).value = 9
-        return newBoard
+    const classicBoard = useMemo(() => {
+        const newClassicBoard = new ClassicBoard({ id: 'cu0', mission: '3 1.3:4.8.' })
+        newClassicBoard.get({ x: 1, y: 0 })!.value = 2
+        newClassicBoard.get({ x: 0, y: 1 })!.value = 6
+        newClassicBoard.get({ x: 0, y: 2 })!.value = 7
+        newClassicBoard.get({ x: 2, y: 2 })!.value = 9
+        return newClassicBoard
     }, [])
 
-    const killerMiniature = useMemo(() => {
-        let newBoard = new Board({ id: 'ku0', m: '1.3:4.8. 123654789 0010,2021,0102,11,1222' }, 3)
-        newBoard.get({ x: 1, y: 0 }).value = 2
-        newBoard.get({ x: 0, y: 1 }).value = 6
-        newBoard.get({ x: 0, y: 2 }).value = 7
-        newBoard.get({ x: 2, y: 2 }).value = 9
-        return newBoard
+    const killerBoard = useMemo(() => {
+        const newKillerBoard = new KillerBoard({ id: 'ku0', mission: '3 1.3:4.8. 123654789 0010,2021,0102,11,1222' })
+        newKillerBoard.get({ x: 1, y: 0 })!.value = 2
+        newKillerBoard.get({ x: 0, y: 1 })!.value = 6
+        newKillerBoard.get({ x: 0, y: 2 })!.value = 7
+        newKillerBoard.get({ x: 2, y: 2 })!.value = 9
+        return newKillerBoard
     }, [])
 
-    const sandwichMiniature = useMemo(() => {
-        let newBoard = new Board({ id: 'wu0', m: '1.3:4.8. 35,9,3 13,30,11' }, 3)
-        newBoard.get({ x: 1, y: 0 }).value = 2
-        newBoard.get({ x: 0, y: 1 }).value = 6
-        newBoard.get({ x: 0, y: 2 }).value = 7
-        newBoard.get({ x: 2, y: 2 }).value = 9
-        return newBoard
+    const sudokuXBoard = useMemo(() => {
+        const newSudokuXBoard = new SudokuXBoard({ id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
+        newSudokuXBoard.get({ x: 1, y: 0 })!.value = 2
+        newSudokuXBoard.get({ x: 0, y: 1 })!.value = 6
+        newSudokuXBoard.get({ x: 0, y: 2 })!.value = 7
+        newSudokuXBoard.get({ x: 2, y: 2 })!.value = 9
+        return newSudokuXBoard
     }, [])
 
-    const thermoMiniature = useMemo(() => {
-        let newBoard = new Board({ id: 'tu0', m: '1.3:4.8. 0,1,2,5;3,6,7,8' }, 3)
-        newBoard.get({ x: 1, y: 0 }).value = 2
-        newBoard.get({ x: 0, y: 1 }).value = 6
-        newBoard.get({ x: 0, y: 2 }).value = 7
-        newBoard.get({ x: 2, y: 2 }).value = 9
-        return newBoard
+    const sandwichBoard = useMemo(() => {
+        const newSandwichBoard = new SandwichBoard({ id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
+        newSandwichBoard.get({ x: 1, y: 0 })!.value = 2
+        newSandwichBoard.get({ x: 0, y: 1 })!.value = 6
+        newSandwichBoard.get({ x: 0, y: 2 })!.value = 7
+        newSandwichBoard.get({ x: 2, y: 2 })!.value = 9
+        return newSandwichBoard
+    }, [])
+
+    const thermoBoard = useMemo(() => {
+        const newThermoBoard = new ThermoBoard({ id: 'tu0', mission: '3 1.3:4.8. 0,1,2,5;3,6,7,8' })
+        newThermoBoard.get({ x: 1, y: 0 })!.value = 2
+        newThermoBoard.get({ x: 0, y: 1 })!.value = 6
+        newThermoBoard.get({ x: 0, y: 2 })!.value = 7
+        newThermoBoard.get({ x: 2, y: 2 })!.value = 9
+        return newThermoBoard
     }, [])
 
     const handleNewGame = useCallback((mode: GameModeName) => {
@@ -120,6 +139,19 @@ export default function Play({ theme, accentColor }: Props) {
     }, [openNewGameActionSheet])
 
     useEffect(() => {
+        classicCanvasRef.current.game = classicBoard
+        classicCanvasRef.current.theme = 'light'
+        killerCanvasRef.current.game = killerBoard
+        killerCanvasRef.current.theme = 'light'
+        sudokuXCanvasRef.current.game = sudokuXBoard
+        sudokuXCanvasRef.current.theme = 'light'
+        sandwichCanvasRef.current.game = sandwichBoard
+        sandwichCanvasRef.current.theme = 'light'
+        thermoCanvasRef.current.game = thermoBoard
+        thermoCanvasRef.current.theme = 'light'
+    }, [classicBoard, killerBoard, sudokuXBoard, sandwichBoard, thermoBoard])
+
+    useEffect(() => {
         if (carouselRef.current) {
             const carousel = carouselRef.current
 
@@ -145,31 +177,31 @@ export default function Play({ theme, accentColor }: Props) {
                 <div ref={carouselRef} className='home__carousel'>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 0 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sandwich', 0) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={sandwichMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sandwich} />
+                            <Canvas paused={false} canvasHandler={sandwichCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.sandwich')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sudokuX', 1) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.sudokuX} />
+                            <Canvas paused={false} canvasHandler={sudokuXCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.sudokuX')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 2 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('classic', 2) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={classicMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.classic} />
+                            <Canvas paused={false} canvasHandler={classicCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.classic')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('killer', 3) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={killerMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.killer} />
+                            <Canvas paused={false} canvasHandler={killerCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.killer')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('thermo', 4) }}>
-                            <Canvas notPlayable boxBorderWidthFactor={0} game={thermoMiniature} theme="light" accentColor={accentColor} ruleset={rulesets.thermo} />
+                            <Canvas paused={false} canvasHandler={thermoCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.thermo')}</div>
                         </div>
                     </div>
@@ -189,22 +221,6 @@ export default function Play({ theme, accentColor }: Props) {
                 GameHandler.game && !GameHandler.complete ?
                     <>
                         <Link to="/sudoku">
-                            {/*<div className="home__continue-wrapper">
-                                <div className='home__continue'>
-                                    <div className='home__continue__timer'>
-                                        <FontAwesomeIcon className='home__continue__timer__icon' icon={faClock} />
-                                        <p className='home__continue__timer__time'>{millisecondsToHMS(GameHandler.game.timer)}</p>
-                                    </div>
-                                    <div className='home__continue__inner'>
-                                        <p className='home__continue__gameMode'>{t(`gameModes.${GameHandler.game.mode}`)}</p>
-                                        <p className='home__continue__difficulty'>{t(`gameDifficulties.${GameHandler.game.difficulty}`)}</p>
-                                        <p className='home__continue__button'>
-                                            {t('home.continue')}
-                                            <FontAwesomeIcon className='home__continue__icon' icon={faChevronRight} />
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>*/}
                             <div className='home__continue'>
                                 <p>{t('home.continue')}</p>
                                 <FontAwesomeIcon className='home__continue__icon' icon={faChevronRight} />

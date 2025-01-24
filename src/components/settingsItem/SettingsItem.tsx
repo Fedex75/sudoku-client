@@ -3,12 +3,12 @@ import ReactSwitch from 'react-switch'
 import SettingsHandler from '../../utils/SettingsHandler'
 import Check from '../check/Check'
 import './settingsItem.css'
-import Board from '../../game/Board'
-import Canvas from '../../game/Canvas'
+import Canvas from '../CanvasComponent'
 import { AccentColor } from '../../utils/Colors'
-import { rulesets } from '../../game/gameModes/Rulesets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import { ClassicBoard } from '../../game/gameModes/classic/ClassicBoard'
+import { createCanvas } from '../../game/gameModes/createCanvas'
 
 type Props = {
   title: string
@@ -45,21 +45,29 @@ export default function SettingsItem({ title, name = '', handleSettingChange = (
   )
 
   if (type === 'theme') {
-    let classicMiniature = new Board({ id: 'ce0', m: '1.3:4.8.' }, 3)
-    classicMiniature.get({ x: 1, y: 0 }).value = 2
-    classicMiniature.get({ x: 0, y: 1 }).value = 6
-    classicMiniature.get({ x: 0, y: 2 }).value = 7
-    classicMiniature.get({ x: 2, y: 2 }).value = 9
+    let classicMiniature = new ClassicBoard({ id: 'ce0', mission: '3 1.3:4.8.' })
+    classicMiniature.get({ x: 1, y: 0 })!.value = 2
+    classicMiniature.get({ x: 0, y: 1 })!.value = 6
+    classicMiniature.get({ x: 0, y: 2 })!.value = 7
+    classicMiniature.get({ x: 2, y: 2 })!.value = 9
+
+    const canvasHandlerLight = createCanvas('classic', accentColor, true, 0)
+    canvasHandlerLight.game = classicMiniature
+    canvasHandlerLight.theme = 'light'
+
+    const canvasHandlerDark = createCanvas('classic', accentColor, true, 0)
+    canvasHandlerLight.game = classicMiniature
+    canvasHandlerLight.theme = 'dark'
 
     return (
       <div className='settings__item theme'>
         <div className='settings__item__theme-wrapper' onClick={() => { setTheme('light') }}>
-          <Canvas notPlayable game={classicMiniature} theme='light' accentColor={accentColor} ruleset={rulesets.classic} />
+          <Canvas canvasHandler={canvasHandlerLight} paused={false} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
         <div className='settings__item__theme-wrapper' onClick={() => { setTheme('dark') }}>
-          <Canvas notPlayable game={classicMiniature} theme='dark' accentColor={accentColor} ruleset={rulesets.classic} />
+          <Canvas canvasHandler={canvasHandlerDark} paused={false} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>

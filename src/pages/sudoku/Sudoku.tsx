@@ -46,7 +46,7 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, o
 		if (isTimerRunning && !paused) {
 			interval = setInterval(() => {
 				setTime((time: number) => {
-					GameHandler.game?.setTimer(time + 100)
+					if (GameHandler.game) GameHandler.game.timer = time + 100
 					return time + 100
 				})
 			}, 100)
@@ -140,15 +140,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 		if (bookmark) {
 			setBookmark(false)
-			if (GameHandler.game.id !== '') {
-				GameHandler.removeBookmark({
-					id: GameHandler.game.id
-				})
-			} else {
-				GameHandler.removeBookmark({
-					m: GameHandler.game.mission
-				})
-			}
+			GameHandler.removeBookmark({
+				id: GameHandler.game.id,
+				m: GameHandler.game.mission
+			})
 		} else {
 			setBookmark(true)
 			GameHandler.bookmarkCurrentGame()
@@ -164,7 +159,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 	}, [win])
 
 	const handleMenuTutorialClick = useCallback(() => {
-		GameHandler.game?.saveToLocalStorage()
+		GameHandler.saveGame()
 		setTutorialIsOpen(t => !t)
 		setMenuActionSheetIsOpen(false)
 	}, [])
@@ -180,7 +175,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		}
 
 		const windowVisibilityChangeEvent = () => {
-			if (!GameHandler.complete) GameHandler.game?.saveToLocalStorage()
+			if (!GameHandler.complete) GameHandler.saveGame()
 			if (document.visibilityState === 'visible') {
 				if (!paused) setIsTimerRunning(true)
 			} else setIsTimerRunning(false)
@@ -190,7 +185,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 		return () => {
 			window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
-			GameHandler.game?.saveToLocalStorage()
+			GameHandler.saveGame()
 		}
 	}, [navigate, paused])
 
@@ -208,6 +203,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 	if (GameHandler.game === null) return null
 
+	console.log('[i] About to render win screen!')
+
+	if (win) return <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} />
+
 	return (
 		<Section>
 			<Topbar
@@ -224,10 +223,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
 			<SectionContent>
 				{
-					win ?
-						<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
-						tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} ruleset={GameHandler.game.ruleset} quitTutorial={handleQuitTutorial} /> :
-							<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} ruleset={GameHandler.game.ruleset} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
+					//win ?
+					//<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
+					tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
+						<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
 				}
 			</SectionContent>
 
