@@ -96,6 +96,29 @@ export class KillerBoard extends ClassicBoard {
         }
     }
 
+    get calculatorValue(): number {
+        const selectedCages = new Set([...this.selectedCells].filter(cell => cell.value === 0).map(cell => cell.cage).filter(cage => cage !== null)) // Get all the cages that the selected cells belong to
+        let selectedCellsMatchCagesExactly = [...selectedCages].every(cage => [...cage.members].every(cell => this.selectedCells.has(cell))) // If every cell of every selected cage is in the selected cells
+
+        if (selectedCellsMatchCagesExactly) {
+            let sum = 0
+            for (const cage of selectedCages) {
+                sum += cage.sum
+            }
+
+            for (const cell of this.selectedCells) {
+                if (cell.value > 0 && cell.cage && !selectedCages.has(cell.cage)) {
+                    sum += cell.value
+                }
+            }
+
+            return sum
+        } else {
+            return 0
+        }
+    }
+
+
     hasAdditionalErrors(): boolean {
         return [...this.cages].some(cage => cage.error)
     }
