@@ -9,12 +9,12 @@ import { getDifficulty, getMode, GameModeIdentifier, DifficultyIdentifier } from
 import GameHandler from "../../../utils/GameHandler"
 import missionsData from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import { Bookmark, MissionsData, RawGameData, isIDBookmark } from '../../../utils/DataTypes'
-import Board from '../../../game/Board'
-import Canvas from '../../../game/Canvas'
+import { Bookmark, MissionsData, RawGameData } from '../../../utils/DataTypes'
+import Canvas from '../../../components/CanvasComponent'
 import { AccentColor } from '../../../utils/Colors'
-import { rulesets } from '../../../game/gameModes/Rulesets'
 import { ThemeName } from '../../../game/Themes'
+import { createBoard } from '../../../game/gameModes/createBoard'
+import { createCanvas } from '../../../game/gameModes/createCanvas'
 
 type Props = {
 	theme: ThemeName
@@ -87,14 +87,21 @@ function Bookmarks({ theme, accentColor }: Props) {
 								let board
 								let solved
 
-								if (isIDBookmark(bm)) {
-									const mode = getMode(bm.id[0] as GameModeIdentifier)
-									board = new Board(missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData, 9)
-									solved = GameHandler.solved.includes(bm.id)
-								} else {
-									board = GameHandler.boardFromCustomMission(bm.m)
+								const mode = getMode(bm.id[0] as GameModeIdentifier)
+
+								if (bm.m) {
+									board = GameHandler.boardFromCustomMission(mode, bm.m)
 									solved = false
+								} else {
+									const mission = missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData
+									board = createBoard(mode, {
+										id: bm.id,
+										mission: mission.m
+									})
+									solved = GameHandler.solved.includes(bm.id)
 								}
+
+								const canvasHandlerRef = createCanvas(mode, accentColor, true, 0.01)
 
 								return (
 									<div key={i} className="bookmarks__item">
@@ -104,7 +111,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
 										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											<Canvas game={board} accentColor={accentColor} notPlayable theme={theme} ruleset={rulesets[board.mode]} />
+											<Canvas canvasHandler={canvasHandlerRef} paused={false} />
 										</div>
 									</div>
 								)

@@ -38,8 +38,8 @@ type Props = {
 
   lockedInput: number
   lockedColor: ColorName | null
-  possibleValues: number[]
-  completedNumbers: number[]
+  possibleValues: Set<number>
+  completedNumbers: Set<number>
   colorDisabled: boolean
 }
 
@@ -85,9 +85,9 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
           <NunmpadButton
             key={buttonIndex + 7}
             number={buttonIndex + 1}
-            disabled={possibleValues !== null && !possibleValues.includes(buttonIndex + 1)}
-            hidden={completedNumbers.includes(buttonIndex + 1)}
-            locked={!completedNumbers.includes(buttonIndex + 1) && lockedInput === buttonIndex + 1
+            disabled={possibleValues !== null && !possibleValues.has(buttonIndex + 1)}
+            hidden={completedNumbers.has(buttonIndex + 1)}
+            locked={!completedNumbers.has(buttonIndex + 1) && lockedInput === buttonIndex + 1
             }
             onClick={onNumpadButtonClick}
           />

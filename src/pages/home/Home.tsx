@@ -1,8 +1,7 @@
 import './home.css'
 import { Route, Routes } from 'react-router'
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Section, SectionContent, Topbar } from "../../components"
-import GameHandler from "../../utils/GameHandler"
 import { useTranslation } from 'react-i18next'
 import SVGSettings from '../../svg/settings'
 import Play from './play/Play'
@@ -20,18 +19,17 @@ type Props = {
 
 function Home({ theme, accentColor }: Props) {
 	const { t } = useTranslation()
-	let navigate = useNavigate()
 
 	const handleImport = useCallback(() => {
 		const board = prompt(t('home.importPrompt'))
 		if (board) {
-			if (GameHandler.importGame(board)) {
+			/*if (GameHandler.importGame(board)) {
 				navigate('/sudoku')
 			} else {
 				alert(t('home.incompatibleData'))
-			}
+			}*/
 		}
-	}, [navigate, t])
+	}, [t])
 
 	return (
 		<Section className="home">

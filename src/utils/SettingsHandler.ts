@@ -8,7 +8,7 @@ class SettingsHandler {
 	template: SettingsTemplateItem[] = []
 	settings: any
 
-	init() {
+	constructor() {
 		this.template = [
 			{
 				name: 'autoTheme',

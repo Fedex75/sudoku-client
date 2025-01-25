@@ -1,17 +1,10 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import './utils/SettingsHandler'
 import { Home, Sudoku, Settings } from './pages'
 import useLocalStorage from 'use-local-storage'
-import GameHandler from './utils/GameHandler'
 import { AccentColor } from './utils/Colors'
-import SettingsHandler from './utils/SettingsHandler'
-import { initI18n } from './utils/i18n'
 import { ThemeName } from './game/Themes'
-
-initI18n()
-SettingsHandler.init()
-GameHandler.init()
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 

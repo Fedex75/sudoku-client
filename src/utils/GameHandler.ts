@@ -1,13 +1,10 @@
 import missionsData from '../data/missions.json'
-import { decodeMissionString } from './Decoder'
 import { difficulties, DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
 import { defaultStatistics, Statistics, update } from './Statistics'
-import Board from '../game/Board'
-import { Bookmark, MissionsData, RawGameData, isIDBookmark } from './DataTypes'
+import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes'
 import API from './API'
-
-const BOARD_API_VERSION = 8
-const STORAGE_SCHEMA_VERSION = 5
+import { createBoard, AnyBoard } from '../game/gameModes/createBoard'
+import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION } from './Constants'
 
 const missions: MissionsData = missionsData as MissionsData
 
@@ -26,7 +23,7 @@ type Recommendations = {
 }
 
 class GameHandler {
-	game: Board | null = null
+	game: AnyBoard | null = null
 	complete: boolean = false
 	bookmarks: Bookmark[] = []
 	solved: string[] = []
@@ -49,6 +46,7 @@ class GameHandler {
 		}
 
 		this.statistics = defaultStatistics
+		this.init()
 	}
 
 	init() {
@@ -62,13 +60,13 @@ class GameHandler {
 		if (lsRecommendations) this.recommendations = JSON.parse(lsRecommendations)
 		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 
-		let data
+		let data: GameData
 		const lsGame = localStorage.getItem('game')
 		data = lsGame ? JSON.parse(lsGame) : null
 
 		if (data?.version && data.version === BOARD_API_VERSION) {
 			try {
-				this.setCurrentGame(new Board(data, 9))
+				this.setCurrentGame(createBoard(getMode(data.id[0] as GameModeIdentifier), data))
 			} catch (e) {
 				console.error(e)
 				this.game = null
@@ -88,16 +86,15 @@ class GameHandler {
 		localStorage.setItem('statistics', JSON.stringify(this.statistics))
 	}
 
-	setCurrentGame(board: Board) {
+	setCurrentGame(board: AnyBoard) {
 		this.game = board
 		this.complete = false
-		this.game.version = BOARD_API_VERSION
-		this.game.saveToLocalStorage()
+		this.saveGame()
 		this.recommendations.newGame = {
 			mode: this.game.mode,
 			difficulty: this.game.difficulty
 		}
-		this.recommendations.perMode[this.game.mode] = this.game.difficulty
+		this.recommendations.perMode[this.game.mode] = getDifficulty(this.game.id[1] as DifficultyIdentifier)
 		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
 	}
 
@@ -109,10 +106,10 @@ class GameHandler {
 			}
 		} else {
 			let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
-			if (candidates.length === 0){
-				if (missions[mode][difficulty].length === 0){
-					for (let diff of difficulties[mode]){
-						if (missions[mode][diff].length > 0){
+			if (candidates.length === 0) {
+				if (missions[mode][difficulty].length === 0) {
+					for (let diff of difficulties[mode]) {
+						if (missions[mode][diff].length > 0) {
 							candidates = missions[mode][diff]
 							break
 						}
@@ -121,23 +118,32 @@ class GameHandler {
 					candidates = missions[mode][difficulty]
 				}
 			}
-			if (candidates.length > 0) this.setCurrentGame(new Board(candidates[Math.floor(Math.random() * candidates.length)], 9))
+			if (candidates.length > 0) {
+				const rawData = candidates[Math.floor(Math.random() * candidates.length)]
+				this.setCurrentGame(createBoard(mode, {
+					id: rawData.id,
+					mission: rawData.m
+				}))
+			}
 		}
 	}
 
-	boardFromCustomMission(mission: string) {
-		return new Board({
+	boardFromCustomMission(mode: GameModeName, mission: string) {
+		return createBoard(mode, {
 			id: '',
-			m: mission
-		}, 9)
+			mission: mission
+		})
 	}
 
-	importGame(data: string) {
+	/*importGame(data: string) {
 		if (data[0] === '{') {
 			//Data is mission JSON
 			try {
-				const gameData = JSON.parse(data) as RawGameData
-				this.setCurrentGame(new Board(gameData, 9))
+				const rawData = JSON.parse(data) as RawGameData
+				this.setCurrentGame(new Board({
+					id: rawData.id,
+					mission: rawData.m
+				}))
 				return (true)
 			} catch (e) {
 				return (false)
@@ -151,7 +157,7 @@ class GameHandler {
 				return (false)
 			}
 		}
-	}
+	}*/
 
 	findMissionFromID(id: string) {
 		return missions[getMode(id[0] as GameModeIdentifier)][getDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData
@@ -164,9 +170,10 @@ class GameHandler {
 		return ''
 	}
 
-	saveGame(data: string) {
+	saveGame() {
+		if (!this.game) return
 		try {
-			localStorage.setItem('game', data)
+			localStorage.setItem('game', this.game.getDataToSave())
 		} catch (e) {
 			if (e instanceof DOMException && e.name === 'QuotaExceededError') {
 				API.log({ message: 'Quota exceeded', date: Date.now() })
@@ -186,7 +193,7 @@ class GameHandler {
 	}
 
 	currentGameIsBookmarked() {
-		if (this.game === null) return false
+		if (!this.game) return false
 
 		if (this.game.id === '') {
 			return this.bookmarks.some(bm => bm.m === this.game?.mission)
@@ -198,12 +205,13 @@ class GameHandler {
 	bookmarkCurrentGame() {
 		if (this.game === null) return
 		if (!this.currentGameIsBookmarked()) {
-			if (this.game.id !== '') {
+			if (this.game.difficulty === 'unrated') {
 				this.bookmarks.push({
 					id: this.game.id
 				})
 			} else {
 				this.bookmarks.push({
+					id: this.game.id,
 					m: this.game.mission
 				})
 			}
@@ -223,10 +231,14 @@ class GameHandler {
 	}
 
 	loadGameFromBookmark(bm: Bookmark) {
-		if (isIDBookmark(bm)) {
-			this.setCurrentGame(new Board(this.findMissionFromID(bm.id), 9))
+		if (bm.m) {
+			this.setCurrentGame(this.boardFromCustomMission(getMode(bm.id[0] as GameModeIdentifier), bm.m))
 		} else {
-			this.setCurrentGame(this.boardFromCustomMission(bm.m))
+			const rawData = this.findMissionFromID(bm.id)
+			this.setCurrentGame(createBoard(getMode(rawData.id[0] as GameModeIdentifier), {
+				id: rawData.id,
+				mission: rawData.m
+			}))
 		}
 	}
 
