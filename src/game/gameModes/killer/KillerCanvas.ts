@@ -96,9 +96,8 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         ctx.drawImage(this.cagesTempCanvas, 0, 0)
     }
 
-    afterCanvasChangedSize() {
+    protected renderCagesToOffscreenCanvas() {
         if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this._game) return
-        super.afterCanvasChangedSize()
 
         this.cagePadding = Math.floor(this.squareSize * 0.08)
         let cageLinePositions = Array(this._game.nSquares * 2).fill(0)
@@ -292,6 +291,11 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         for (const cell of this._game.allCells) {
             if (cell.cage && cell.cageSum > 0) KillerCanvas.drawSVGNumber(this.cagesOffscreenCanvasCtx, cell.cageSum, cell.screenPosition.x + this.cagePadding, cell.screenPosition.y + this.cagePadding + this.squareSize * 0.08, this.squareSize * 0.15, 'right', 'center', null)
         }
+    }
+
+    afterCanvasChangedSize() {
+        super.afterCanvasChangedSize()
+        this.renderCagesToOffscreenCanvas()
     }
 
     renderActiveGame(): void {

@@ -69,7 +69,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const sandwichBoard = useMemo(() => {
-        const newSandwichBoard = new SandwichBoard({ id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
+        const newSandwichBoard = new SandwichBoard({ id: 'wu0', mission: '3 1.3:4.8. 123456789 35,9,3 13,30,11' })
         newSandwichBoard.get({ x: 1, y: 0 })!.value = 2
         newSandwichBoard.get({ x: 0, y: 1 })!.value = 6
         newSandwichBoard.get({ x: 0, y: 2 })!.value = 7

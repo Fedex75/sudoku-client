@@ -4,12 +4,12 @@ import SettingsHandler from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class KillerBoard extends ClassicBoard {
-    public cages: Set<KillerCage>
+    public cages: KillerCage[]
 
     constructor(data: GameData) {
         super(data)
 
-        this.cages = new Set()
+        this.cages = []
         this.createCages()
     }
 
@@ -31,7 +31,7 @@ export class KillerBoard extends ClassicBoard {
     createCages() {
         const [, , , cages] = this.mission.split(' ')
 
-        this.cages = new Set()
+        this.cages = []
         for (const cage of cages.split(',')) {
             const newCage: KillerCage = {
                 members: new Set(),
@@ -47,7 +47,11 @@ export class KillerBoard extends ClassicBoard {
             }
             const cell = this.get({ x: Number.parseInt(cage[0]), y: Number.parseInt(cage[1]) })
             if (cell) cell.cageSum = newCage.sum
-            this.cages.add(newCage)
+            this.cages.push(newCage)
+        }
+
+        for (const cell of this.allCells) {
+            if (cell.cage) cell.visibleCells = cell.visibleCells.union(cell.cage.members).difference(new Set([cell]))
         }
     }
 
@@ -70,14 +74,6 @@ export class KillerBoard extends ClassicBoard {
                     })
                 }
             }
-        }
-    }
-
-    calculateUnitsAndVisibility(): void {
-        super.calculateUnitsAndVisibility()
-
-        for (const cell of this.allCells) {
-            if (cell.cage) cell.visibleCells = cell.visibleCells.union(cell.cage.members).difference(new Set([cell]))
         }
     }
 

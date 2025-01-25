@@ -1,16 +1,110 @@
 import { Cell } from '../../../utils/Cell'
+import { GameData } from '../../../utils/DataTypes'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
+export type SandwichClue = {
+    value: number
+    visible: boolean
+    error: boolean
+}
+
 export class SandwichBoard extends ClassicBoard {
-    setMode(): void {
-        this._mode = 'sandwich'
+    public horizontalClues: SandwichClue[]
+    public verticalClues: SandwichClue[]
+
+    constructor(data: GameData) {
+        super(data)
+
+        this.horizontalClues = []
+        this.verticalClues = []
+        this.initializeClues()
     }
 
     createBoardMatrix(): Cell[][] {
-        const result = super.createBoardMatrix()
+        const boardMatrix = super.createBoardMatrix()
 
-        // TODO: add sandwich clues
+        const [, , solution] = this.mission.split(' ')
 
-        return result
+        for (let x = 0; x < this.nSquares; x++) {
+            for (let y = 0; y < this.nSquares; y++) {
+                const index = y * this.nSquares + x
+                boardMatrix[x][y].solution = Number.parseInt(solution[index])
+            }
+        }
+
+        return boardMatrix
+    }
+
+    protected initializeClues() {
+        const [, , , hClues, vClues] = this._mission.split(' ')
+
+        this.horizontalClues = hClues.split(',').map(clue => ({
+            value: Number.parseInt(clue),
+            visible: true,
+            error: false
+        }))
+
+        this.verticalClues = vClues.split(',').map(clue => ({
+            value: Number.parseInt(clue),
+            visible: true,
+            error: false
+        }))
+    }
+
+    protected getSumBetween1And9(row: number, column: number) {
+        let unit = []
+        let cell: Cell | undefined
+
+        if (row >= 0) {
+            cell = this.get({ x: 0, y: row })
+            if (!cell) return -1
+            unit = [...cell.row]
+        } else {
+            cell = this.get({ x: column, y: 0 })
+            if (!cell) return -1
+            unit = [...cell.column]
+        }
+
+        let found1or9 = false
+        let sum = 0
+        for (cell of unit) {
+            if (found1or9) {
+                if (cell.value === 0) return -1
+                if (cell.value === 1 || cell.value === 9) return sum
+                sum += cell.value
+            } else {
+                if (cell.value === 1 || cell.value === 9) found1or9 = true
+            }
+        }
+
+        return -1
+    }
+
+    checkAdditionalErrors(): void {
+        for (let x = 0; x < this.nSquares; x++) {
+            const sum = this.getSumBetween1And9(-1, x)
+            this.verticalClues[x].visible = true
+            this.verticalClues[x].error = false
+            if (sum !== -1 && sum !== this.verticalClues[x].value) {
+                this.verticalClues[x].error = true
+            } else if (sum === this.verticalClues[x].value) {
+                this.verticalClues[x].visible = false
+            }
+        }
+
+        for (let y = 0; y < this.nSquares; y++) {
+            const sum = this.getSumBetween1And9(y, -1)
+            this.horizontalClues[y].visible = true
+            this.horizontalClues[y].error = false
+            if (sum !== -1 && sum !== this.horizontalClues[y].value) {
+                this.horizontalClues[y].error = true
+            } else if (sum === this.horizontalClues[y].value) {
+                this.horizontalClues[y].visible = false
+            }
+        }
+    }
+
+    hasAdditionalErrors(): boolean {
+        return this.horizontalClues.some(clue => clue.error) || this.verticalClues.some(clue => clue.error)
     }
 }

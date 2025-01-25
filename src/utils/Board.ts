@@ -252,7 +252,7 @@ export default abstract class Board {
 			this.updateColorGroupsFromSavedString(colorGroupsString)
 			this.history.pop()
 
-			this.checkFullNotation()
+			this.triggerValuesChanged()
 		}
 	}
 
@@ -444,6 +444,7 @@ export default abstract class Board {
 				for (const vc of sc.visibleCells) {
 					vc.highlighted = true
 				}
+				sc.highlighted = true
 			}
 		}
 	}

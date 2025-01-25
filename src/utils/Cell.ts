@@ -6,7 +6,7 @@ export type ScreenCoordinates = {
 }
 
 export type Thermometer = {
-    members: Set<Cell>[],
+    members: Set<Cell>,
     error: boolean
 }
 
@@ -34,7 +34,8 @@ export class ColorGroup {
     }
 
     calculateVisibleCells() {
-        this._visibleCells = [...this._members].map(cell => cell.visibleCells).reduce((a, b) => a.intersection(b), new Set())
+        if (this._members.size === 0) return
+        this._visibleCells = [...this._members].map(cell => cell.visibleCells).reduce((a, b) => a.intersection(b))
     }
 
     remove(cell: Cell) {
