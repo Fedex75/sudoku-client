@@ -120,7 +120,7 @@ export abstract class Canvas<BoardType extends Board> {
     public canvasRef: HTMLCanvasElement | null = null
     protected _game: BoardType | null = null
 
-    protected accentColor: AccentColor
+    protected _accentColor: AccentColor
     protected _notPlayable: boolean
     protected boxBorderWidthFactor: number
 
@@ -147,7 +147,7 @@ export abstract class Canvas<BoardType extends Board> {
     protected topAndLeftMarginFactor = 0 // How much space to leave around the board for clues, expressed as a fraction of a board square
 
     constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
-        this.accentColor = accentColor
+        this._accentColor = accentColor
         this._notPlayable = notPlayable
         this.boxBorderWidthFactor = boxBorderWidthFactor
 
@@ -254,6 +254,15 @@ export abstract class Canvas<BoardType extends Board> {
 
     get notPlayable() {
         return this._notPlayable
+    }
+
+    set accentColor(value: AccentColor) {
+        this._accentColor = value
+        this.renderFrame()
+    }
+
+    get accentColor() {
+        return this._accentColor
     }
 
     public renderFrame() {
