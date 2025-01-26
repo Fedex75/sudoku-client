@@ -45,7 +45,8 @@ export const themes: Record<ThemeName, Theme> = {
     dark: {
         background: 'black',
         canvasLightDefaultCellColor: '#25242c',
-        canvasDarkDefaultCellColor: '#161620',
+        //canvasDarkDefaultCellColor: '#161620',
+        canvasDarkDefaultCellColor: '#0D1117',
         canvasCellBorderColor: 'black',
         canvasCellBorderColorRGBA: '0, 0, 0',
         canvasBoxBorderColor: 'black',
