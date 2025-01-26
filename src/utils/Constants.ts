@@ -1,2 +1,6 @@
-export const BOARD_API_VERSION = 8
 export const STORAGE_SCHEMA_VERSION = 5
+export const BOARD_API_VERSION = 8
+export const RECOMMENDATIONS_API_VERSION = 1
+export const BOOKMARKS_API_VERSION = 1
+export const SOLVED_API_VERSION = 1
+export const STATISTICS_API_VERSION = 1

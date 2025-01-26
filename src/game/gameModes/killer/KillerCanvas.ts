@@ -1,7 +1,6 @@
 import { Canvas } from '../../../utils/Canvas'
 import { ScreenCoordinates, KillerCage } from '../../../utils/Cell'
 import { AccentColor } from '../../../utils/Colors'
-import SettingsHandler from '../../../utils/SettingsHandler'
 import { themes } from '../../Themes'
 import { KillerBoard } from './KillerBoard'
 
@@ -77,7 +76,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         }, 'white')
 
         // Paint cages with error red or yellow
-        if (SettingsHandler.settings.checkMistakes) {
+        if (this._game.settings.checkErrors) {
             this.applyColorWithMask(() => {
                 if (!this.cagesTempCanvasCtx || !this._game) return
 

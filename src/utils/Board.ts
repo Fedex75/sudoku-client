@@ -1,9 +1,9 @@
-import SettingsHandler from "./SettingsHandler"
 import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from "./Difficulties"
 import { BoardAnimation, BoardHistory, GameData } from "./DataTypes"
 import { ColorName } from "./Colors"
 import { Cell, CellCoordinates, ColorGroup } from './Cell'
 import { BOARD_API_VERSION } from './Constants'
+import { defaultSettings, Settings } from './SettingsHandler'
 
 export type HistoryItem = {
 	board: string
@@ -29,6 +29,7 @@ export default abstract class Board {
 	protected units: Set<Cell>[] = []
 	protected _selectedCells: Set<Cell> = new Set()
 	protected _selectedCellsValues: Set<number> = new Set()
+	protected _settings: Settings = defaultSettings
 
 	public timer: number
 	public animations: BoardAnimation[] = []
@@ -128,6 +129,14 @@ export default abstract class Board {
 
 	get difficulty() {
 		return this._difficulty
+	}
+
+	set settings(v: Settings) {
+		this._settings = v
+	}
+
+	get settings() {
+		return this._settings
 	}
 
 	restart() {
@@ -334,7 +343,7 @@ export default abstract class Board {
 		for (const cell of cells) {
 			if (cell.value === 0) {
 				//Check if only available place in any unit
-				if (SettingsHandler.settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(cell, withValue)) {
+				if (this._settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(cell, withValue)) {
 					finalNoteState = true
 					this.setValue(cell, withValue)
 					this._hasChanged = true
@@ -344,14 +353,14 @@ export default abstract class Board {
 						cell.notes.delete(withValue)
 						this._hasChanged = true
 						finalNoteState = false
-						if ((SettingsHandler.settings.autoSolveCellsFullNotation && this._fullNotation) && cell.notes.size === 1) {
+						if ((this._settings.autoSolveCellsFullNotation && this._fullNotation) && cell.notes.size === 1) {
 							finalNoteState = true
 							this.setValue(cell, [...cell.notes][0])
 						}
 					}
-				} else if (to !== false && (!SettingsHandler.settings.lockCellsWithColor || (cell.color === 'default'))) {
+				} else if (to !== false && (!this._settings.lockCellsWithColor || (cell.color === 'default'))) {
 					//Add note
-					if (!SettingsHandler.settings.showPossibleValues || cell.possibleValues.has(withValue)) {
+					if (!this._settings.showPossibleValues || cell.possibleValues.has(withValue)) {
 
 						cell.notes.add(withValue)
 						finalNoteState = true
@@ -379,10 +388,10 @@ export default abstract class Board {
 				cell.notes = new Set()
 				this._hasChanged = true
 				for (const visibleCell of cell.visibleCells) {
-					if (SettingsHandler.settings.autoRemoveCandidates) this.setNote(to, visibleCell, false, false)
+					if (this._settings.autoRemoveCandidates) this.setNote(to, visibleCell, false, false)
 				}
 
-				if (SettingsHandler.settings.clearColorOnInput) {
+				if (this._settings.clearColorOnInput) {
 					cell.color = 'default'
 					this._hasChanged = true
 					for (const cg of cell.colorGroups) cg.remove(cell)
@@ -423,7 +432,7 @@ export default abstract class Board {
 
 		let targetValues: number[] = []
 
-		if (SettingsHandler.settings.advancedHighlight) {
+		if (this._settings.advancedHighlight) {
 			if (forValue > 0) {
 				targetValues = [forValue]
 			} else {
@@ -439,7 +448,7 @@ export default abstract class Board {
 			}
 		}
 
-		if (!SettingsHandler.settings.advancedHighlight || targetValues.length === 0) {
+		if (!this._settings.advancedHighlight || targetValues.length === 0) {
 			for (const sc of this._selectedCells) {
 				for (const vc of sc.visibleCells) {
 					vc.highlighted = true
@@ -517,7 +526,7 @@ export default abstract class Board {
 
 		this._fullNotation = true
 
-		if (SettingsHandler.settings.clearColorFullNotation) this.clearColors()
+		if (this._settings.clearColorFullNotation) this.clearColors()
 	}
 
 	public getTextRepresentation(cluesOnly: boolean) {
@@ -603,10 +612,10 @@ export default abstract class Board {
 				}
 			}
 
-			if (SettingsHandler.settings.lockCellsWithColor) {
+			if (this._settings.lockCellsWithColor) {
 				for (const cell of this.allCells) {
 					if (cell.color !== 'default') {
-						if (SettingsHandler.settings.autoSolveCellsWithColor && cell.notes.size === 1) this.setValue(cell, [...cell.notes][0])
+						if (this._settings.autoSolveCellsWithColor && cell.notes.size === 1) this.setValue(cell, [...cell.notes][0])
 						else cell.possibleValues = new Set(cell.notes)
 					}
 				}
@@ -624,7 +633,7 @@ export default abstract class Board {
 						for (const vc of cg.visibleCells) {
 							if (!vc.colorGroups.has(cg)) {
 								for (const note of notes) vc.possibleValues.delete(note)
-								if (SettingsHandler.settings.showPossibleValues) for (const note of notes) this.setNote(note, vc, false)
+								if (this._settings.showPossibleValues) for (const note of notes) this.setNote(note, vc, false)
 							}
 						}
 					}

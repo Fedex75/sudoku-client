@@ -4,7 +4,6 @@ import Numpad from "../components/numpad/Numpad"
 import { MouseButtonType } from "../utils/DataTypes"
 import { Navigate } from "react-router"
 import { AccentColor, ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
-import SettingsHandler from "../utils/SettingsHandler"
 import { isTouchDevice } from "../utils/isTouchDevice"
 import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -16,6 +15,7 @@ import { Cell, CellCoordinates } from '../utils/Cell'
 import CanvasComponent from '../components/CanvasComponent'
 import { AnyBoard } from './gameModes/createBoard'
 import { createCanvas } from './gameModes/createCanvas'
+import { useSettings } from '../utils/SettingsHandler'
 
 type Props = {
 	theme: ThemeName
@@ -47,6 +47,8 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 	const [, setRender] = useState(0)
 
+	const { settings } = useSettings()
+
 	const canvasHandlerRef = useRef(createCanvas(game.mode, accentColor, false, 0.01))
 
 	const updateCalculatorValue = useCallback(() => {
@@ -64,7 +66,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 		if (!game) return
 
 		const newPossibleValues =
-			SettingsHandler.settings.showPossibleValues ?
+			game.settings.showPossibleValues ?
 				[...game.selectedCells].filter(cell => !cell.clue).map(cell => cell.possibleValues).reduce((a, b) => a.union(b), new Set())
 				: new Set(Array.from({ length: game.nSquares }, (_, i) => i + 1))
 
@@ -249,13 +251,13 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 						} else {
 							game.selectedCells = cellSet
 
-							if (cells[0].value > 0 && SettingsHandler.settings.autoChangeInputLock) setLockedInput(cells[0].value)
+							if (cells[0].value > 0 && game.settings.autoChangeInputLock) setLockedInput(cells[0].value)
 						}
 					} else {
 						if (hold) {
 							// If the user is dragging the cursor...
-							if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
-								if ((noteMode || type === 'secondary') && (cellPossibleValues.size > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
+							if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
+								if ((noteMode || type === 'secondary') && (cellPossibleValues.size > 1 || !game.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
 									if (game.onlyAvailableInAnyUnit(cells[0], lockedInput)) {
 										game.setNote(lockedInput, cellSet, true)
@@ -277,17 +279,17 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 								setLockedInput(li => cells[0].value === li ? 0 : cells[0].value)
 							} else {
 								if ((noteMode || type === 'secondary')) {
-									if (SettingsHandler.settings.autoSolveNakedSingles && cellPossibleValues.size === 1) {
-										if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
+									if (game.settings.autoSolveNakedSingles && cellPossibleValues.size === 1) {
+										if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
 											game.setValue(cellSet, lockedInput)
 										}
 									} else {
-										if (!SettingsHandler.settings.showPossibleValues || cells[0].notes.has(lockedInput) || cellPossibleValues.has(lockedInput)) {
+										if (!game.settings.showPossibleValues || cells[0].notes.has(lockedInput) || cellPossibleValues.has(lockedInput)) {
 											setDragMode(game.setNote(lockedInput, cellSet))
 										}
 									}
 								} else {
-									if (!SettingsHandler.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
+									if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
 										game.setValue(cellSet, lockedInput)
 									}
 								}
@@ -365,7 +367,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 		if (type === 'primary') {
 			if (possibleValues.has(number)) {
-				if (noteMode && (possibleValues.size > 1 || !SettingsHandler.settings.autoSolveNakedSingles)) {
+				if (noteMode && (possibleValues.size > 1 || !game.settings.autoSolveNakedSingles)) {
 					game.setNote(number, game.selectedCells)
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
@@ -406,8 +408,9 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [lockedInput, completedNumbers])
 
 	useEffect(() => {
+		if (game) game.settings = settings
 		canvasHandlerRef.current.game = game
-	}, [game])
+	}, [game, settings])
 
 	useEffect(() => {
 		canvasHandlerRef.current.theme = theme

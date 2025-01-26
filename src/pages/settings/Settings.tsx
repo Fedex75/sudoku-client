@@ -1,7 +1,6 @@
 import './settings.css'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
-import SettingsHandler from '../../utils/SettingsHandler'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPalette, faChevronRight, faBorderAll, faGear, faInfo, faHeart, faGlobe } from '@fortawesome/free-solid-svg-icons'
@@ -16,6 +15,7 @@ import FlagUKSVG from '../../svg/flag_uk'
 import FlagSpainSVG from '../../svg/flag_spain'
 import { useServiceWorker } from '../../components/serviceWorker/useServiceWorker'
 import { ThemeName } from '../../game/Themes'
+import { Language, useSettings } from '../../utils/SettingsHandler'
 
 type SectionLinkProps = {
 	color: string
@@ -62,8 +62,7 @@ function Main() {
 	)
 }
 
-type AppearanceProps = {
-	handleSettingChange: (name: string, c: any) => void
+type AppearanceSettingsProps = {
 	theme: ThemeName
 	setTheme: (t: ThemeName) => void
 	accentColor: AccentColor
@@ -71,16 +70,17 @@ type AppearanceProps = {
 	accentColorHex: string
 }
 
-function Appearance({ handleSettingChange, theme, setTheme, accentColor, setAccentColor, accentColorHex }: AppearanceProps) {
+function AppearanceSettings({ theme, setTheme, accentColor, setAccentColor, accentColorHex }: AppearanceSettingsProps) {
 	const { t } = useTranslation()
+	const { settings, updateSettings } = useSettings()
 
 	return (
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list" >
-					<SettingsItem title='' name='' handleSettingChange={handleSettingChange} type='theme' theme={theme} setTheme={(t: string) => { setTheme(t as ThemeName) }} accentColor={accentColor} />
-					<SettingsItem title={t('settings.automatic')} name='autoTheme' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem type='theme' theme={theme} onChange={t => { setTheme(t) }} value='' accentColor={accentColor} />
+					<SettingsItem title={t('settings.automatic')} onChange={v => { updateSettings({ autoTheme: v }) }} value={settings.autoTheme} accentColorHex={accentColorHex} />
 				</div>
 
 				<div className='settings__label'>{t('settings.accentColor')}</div>
@@ -92,8 +92,8 @@ function Appearance({ handleSettingChange, theme, setTheme, accentColor, setAcce
 				<div className='settings__label'>{t('settings.highContrast')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.candidates')} name='highlightCandidatesWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.grid')} name='highContrastGrid' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.candidates')} onChange={v => { updateSettings({ highlightCandidatesWithColor: v }) }} value={settings.highlightCandidatesWithColor} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.grid')} onChange={v => { updateSettings({ highContrastGrid: v }) }} value={settings.highContrastGrid} accentColorHex={accentColorHex} />
 				</div>
 			</SectionContent>
 		</Section>
@@ -101,20 +101,20 @@ function Appearance({ handleSettingChange, theme, setTheme, accentColor, setAcce
 }
 
 type GameProps = {
-	handleSettingChange: (name: string, c: any) => void
 	accentColorHex: string
 }
 
-function Game({ handleSettingChange, accentColorHex }: GameProps) {
+function Game({ accentColorHex }: GameProps) {
 	const { t } = useTranslation()
+	const { settings, updateSettings } = useSettings()
 
 	return (
 		<Section>
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.showErrors')} name='checkMistakes' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.advancedHighlight')} name='advancedHighlight' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.showErrors')} onChange={v => { updateSettings({ checkErrors: v }) }} value={settings.checkErrors} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.advancedHighlight')} onChange={v => { updateSettings({ advancedHighlight: v }) }} value={settings.advancedHighlight} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.advancedHighlightExplanation')}</p>
@@ -122,8 +122,8 @@ function Game({ handleSettingChange, accentColorHex }: GameProps) {
 				<div className='settings__label'>{t('settings.candidates')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.autoRemove')} name='autoRemoveCandidates' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.showOnlyPossibleValues')} name='showPossibleValues' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.autoRemove')} onChange={v => { updateSettings({ autoRemoveCandidates: v }) }} value={settings.autoRemoveCandidates} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.showOnlyPossibleValues')} onChange={v => { updateSettings({ showPossibleValues: v }) }} value={settings.showPossibleValues} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
@@ -131,7 +131,7 @@ function Game({ handleSettingChange, accentColorHex }: GameProps) {
 				<div className='settings__label'>{t('settings.killer')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} name='killerAutoSolveLastInCage' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.killerAutoSolveLastInCage')} onChange={v => { updateSettings({ killerAutoSolveLastInCage: v }) }} value={settings.killerAutoSolveLastInCage} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.killerAutoSolveLastInCageExplanation')}</p>
@@ -141,12 +141,12 @@ function Game({ handleSettingChange, accentColorHex }: GameProps) {
 }
 
 type AdvancedProps = {
-	handleSettingChange: (name: string, c: any) => void
 	accentColorHex: string
 }
 
-function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
+function AdvancedSettings({ accentColorHex }: AdvancedProps) {
 	const { t } = useTranslation()
+	const { settings, updateSettings } = useSettings()
 
 	return (
 		<Section>
@@ -155,7 +155,7 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				<div className='settings__label'>{t('settings.inputLock')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.autoChangeInputLock')} name='autoChangeInputLock' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.autoChangeInputLock')} onChange={v => { updateSettings({ autoChangeInputLock: v }) }} value={settings.autoChangeInputLock} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.autoChangeInputLockExplanation')}</p>
@@ -163,15 +163,15 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				<div className='settings__label'>{t('settings.coloredCells')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.clearColorSolved')} name='clearColorOnInput' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.clearColorFullNotation')} name='clearColorFullNotation' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.lockColoredCells')} name='lockCellsWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.clearColorSolved')} onChange={v => { updateSettings({ clearColorOnInput: v }) }} value={settings.clearColorOnInput} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.clearColorFullNotation')} onChange={v => { updateSettings({ clearColorFullNotation: v }) }} value={settings.clearColorFullNotation} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.lockColoredCells')} onChange={v => { updateSettings({ lockCellsWithColor: v }) }} value={settings.lockCellsWithColor} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation' style={{ marginBottom: 10 }}>{t('settings.lockColoredCellsExplanation')}</p>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.autoSolve')} name='autoSolveCellsWithColor' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.autoSolve')} onChange={v => { updateSettings({ autoSolveCellsWithColor: v }) }} value={settings.autoSolveCellsWithColor} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.autoSolveColoredCellsExplanation')}</p>
@@ -179,9 +179,9 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				<div className='settings__label'>{t('settings.autoSolveTitle')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.nakedSingle')} name='autoSolveNakedSingles' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.onlyInBox')} name='autoSolveOnlyInBox' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.fullNotation')} name='autoSolveCellsFullNotation' handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.nakedSingle')} onChange={v => { updateSettings({ autoSolveNakedSingles: v }) }} value={settings.autoSolveNakedSingles} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.onlyInBox')} onChange={v => { updateSettings({ autoSolveOnlyInBox: v }) }} value={settings.autoSolveOnlyInBox} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.fullNotation')} onChange={v => { updateSettings({ autoSolveCellsFullNotation: v }) }} value={settings.autoSolveCellsFullNotation} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.fullNotationExplanation')}</p>
@@ -190,17 +190,18 @@ function Advanced({ handleSettingChange, accentColorHex }: AdvancedProps) {
 	)
 }
 
-function Language({ handleSettingChange, accentColorHex }: AdvancedProps) {
+function LanguageSettings({ accentColorHex }: AdvancedProps) {
 	const { t, i18n } = useTranslation()
+	const { settings, updateSettings } = useSettings()
 
-	const handleChangeLanguage = useCallback((settingName: string, newLang: string) => {
-		handleSettingChange('language', newLang)
+	const handleChangeLanguage = useCallback((newLang: Language) => {
+		updateSettings({ language: newLang })
 		if (newLang === 'auto') {
 			i18n.changeLanguage(navigator.language.split('-')[0])
 		} else {
 			i18n.changeLanguage(newLang)
 		}
-	}, [handleSettingChange, i18n])
+	}, [i18n, updateSettings])
 
 	return (
 		<Section>
@@ -209,16 +210,16 @@ function Language({ handleSettingChange, accentColorHex }: AdvancedProps) {
 				<div className='settings__label'>{t('settings.language')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem type='language' language='auto' title={t('settings.languageAuto')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
-					<SettingsItem type='language' language='en' icon={<FlagUKSVG className='settings__item__icon' />} title={t('settings.languageEnglish')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
-					<SettingsItem type='language' language='es' icon={<FlagSpainSVG className='settings__item__icon' />} title={t('settings.languageSpanish')} handleSettingChange={handleChangeLanguage} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='auto' title={t('settings.languageAuto')} onChange={handleChangeLanguage} value={settings.language === 'auto'} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='en' icon={<FlagUKSVG className='settings__item__icon' />} title={t('settings.languageEnglish')} onChange={handleChangeLanguage} value={settings.language === 'en'} accentColorHex={accentColorHex} />
+					<SettingsItem type='language' language='es' icon={<FlagSpainSVG className='settings__item__icon' />} title={t('settings.languageSpanish')} onChange={handleChangeLanguage} value={settings.language === 'es'} accentColorHex={accentColorHex} />
 				</div>
 			</SectionContent>
 		</Section>
 	)
 }
 
-function About() {
+function AboutSection() {
 	const { t } = useTranslation()
 
 	return (
@@ -243,23 +244,16 @@ type SettingsProps = {
 }
 
 export default function Settings({ theme, setTheme, accentColor, setAccentColor }: SettingsProps) {
-	const [, setRender] = useState(0)
-
 	const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue(`--${accentColor}`)
-
-	const handleSettingChange = useCallback((name: string, value: any) => {
-		SettingsHandler.setSetting(name, value)
-		setRender(r => r === 100 ? 0 : r + 1)
-	}, [])
 
 	return (
 		<Routes>
 			<Route path="/" element={<Main />} />
-			<Route path='/appearance' element={<Appearance theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
-			<Route path='/game' element={<Game handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
-			<Route path='/advanced' element={<Advanced handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
-			<Route path='/language' element={<Language handleSettingChange={handleSettingChange} accentColorHex={accentColorHex} />} />
-			<Route path='/about' element={<About />} />
+			<Route path='/appearance' element={<AppearanceSettings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} accentColorHex={accentColorHex} />} />
+			<Route path='/game' element={<Game accentColorHex={accentColorHex} />} />
+			<Route path='/advanced' element={<AdvancedSettings accentColorHex={accentColorHex} />} />
+			<Route path='/language' element={<LanguageSettings accentColorHex={accentColorHex} />} />
+			<Route path='/about' element={<AboutSection />} />
 		</Routes>
 	)
 }

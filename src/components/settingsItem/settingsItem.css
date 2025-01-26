@@ -45,6 +45,8 @@
 
 .settings__item__theme-wrapper canvas {
   width: 100px;
+  border: solid 1px black;
+  border-radius: 8%;
 }
 
 .settings__item__icon {

@@ -1,6 +1,5 @@
 import { Canvas } from '../../../utils/Canvas'
 import { AccentColor } from '../../../utils/Colors'
-import SettingsHandler from '../../../utils/SettingsHandler'
 import { themes } from '../../Themes'
 import { SandwichBoard } from './SandwichBoard'
 
@@ -22,9 +21,9 @@ export class SandwichCanvas extends Canvas<SandwichBoard> {
         for (let i = 0; i < this._game.nSquares; i++) {
             const cell = this._game.get({ x: i, y: i })
             if (!cell) continue
-            ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && this._game.horizontalClues[i].error) ? '#ff5252' : ([...this._game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
+            ctx.fillStyle = ctx.strokeStyle = (this._game.settings.checkErrors && this._game.horizontalClues[i].error) ? '#ff5252' : ([...this._game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
             if (this._game.horizontalClues[i].visible) Canvas.drawSVGNumber(ctx, this._game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
-            ctx.fillStyle = ctx.strokeStyle = (SettingsHandler.settings.checkMistakes && this._game.verticalClues[i].error) ? '#ff5252' : ([...this._game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
+            ctx.fillStyle = ctx.strokeStyle = (this._game.settings.checkErrors && this._game.verticalClues[i].error) ? '#ff5252' : ([...this._game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
             if (this._game.verticalClues[i].visible) Canvas.drawSVGNumber(ctx, this._game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
         }
     }

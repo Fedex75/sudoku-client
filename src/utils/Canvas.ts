@@ -5,7 +5,6 @@ import { Cell, ScreenCoordinates } from './Cell'
 import { AccentColor, ColorName } from './Colors'
 import { BoardAnimation, DigitChar, MouseButtonType } from './DataTypes'
 import { isTouchDevice } from "../utils/isTouchDevice"
-import SettingsHandler from './SettingsHandler'
 
 const SVGHeight = 30
 const SVGWidth = 20
@@ -131,8 +130,8 @@ export abstract class Canvas<BoardType extends Board> {
     protected animationGammas: number[][] | null = null
     protected currentAnimations: BoardAnimation[] = []
     protected noteDeltas: ScreenCoordinates[] = []
-    protected colors: Record<ColorName, string> = defaultColors
-    protected darkColors: Record<ColorName, string> = defaultDarkColors
+    protected colors: Record<ColorName, string> = { ...defaultColors }
+    protected darkColors: Record<ColorName, string> = { ...defaultDarkColors }
     protected lastMouseCell: Cell | null = null
     protected lastMouseButton: MouseButtonType | null = null
 
@@ -464,20 +463,20 @@ export abstract class Canvas<BoardType extends Board> {
                 //Value
                 const highlightValue = (this._lockedInput === 0 && this._game.selectedCellsValues.has(cell.value)) || this._lockedInput === cell.value
                 ctx.strokeStyle = ctx.fillStyle =
-                    (SettingsHandler.settings.checkMistakes && cell.error) ? (this.accentColor === 'red' ? '#ffe173' : '#fc5c65') :
+                    (this._game.settings.checkErrors && cell.error) ? (this.accentColor === 'red' ? '#ffe173' : '#fc5c65') :
                         highlightValue ? (cell.color === 'default' ? themes[this.theme].canvasValueHighlightColor : 'white') :
                             cell.color !== 'default' ? 'black' :
                                 cell.clue ? themes[this.theme].canvasClueColor :
                                     solutionColors[this.accentColor]
-                if (SettingsHandler.settings.checkMistakes && cell.error && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+                if (this._game.settings.checkErrors && cell.error && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
                 Canvas.drawSVGNumber(ctx, cell.value, cell.valuePosition.x, cell.valuePosition.y, this.squareSize * 0.55, 'center', 'center', null)
             } else {
                 //Candidates
                 for (const n of cell.notes) {
                     const highlightCandidate = (this._lockedInput === 0 && this._game.selectedCellsValues.has(n)) || this._lockedInput === n
 
-                    ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (SettingsHandler.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[this.theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
-                    Canvas.drawSVGNumber(ctx, n, cell.screenPosition.x + this.noteDeltas[n - 1].x, cell.screenPosition.y + this.noteDeltas[n - 1].y, this.squareSize * (this._game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && SettingsHandler.settings.highlightCandidatesWithColor && cell.color === 'default' ? this.colors[this.accentColor] : null)
+                    ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (this._game.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[this.theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
+                    Canvas.drawSVGNumber(ctx, n, cell.screenPosition.x + this.noteDeltas[n - 1].x, cell.screenPosition.y + this.noteDeltas[n - 1].y, this.squareSize * (this._game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && this._game.settings.highlightCandidatesWithColor && cell.color === 'default' ? this.colors[this.accentColor] : null)
                 }
             }
         }
@@ -622,7 +621,7 @@ export abstract class Canvas<BoardType extends Board> {
                     ctx.fillRect(lateralMargin, cell.screenPosition.y + this.squareSize, this.logicalSize - lateralMargin, boxBorderWidth)
                 }
             }
-        } else if (SettingsHandler.settings.highContrastGrid) {
+        } else if (this._game.settings.highContrastGrid) {
             ctx.fillStyle = 'white'
             for (let i = 2; i < this._game.nSquares - 1; i += 3) {
                 const cell = this._game.get({ x: i, y: i })
@@ -634,7 +633,7 @@ export abstract class Canvas<BoardType extends Board> {
         }
     }
 
-    renderBackground(): void {
+    protected renderBackground(): void {
         if (!this.canvasRef || !this._game) return
         const ctx = this.canvasRef.getContext('2d')
         if (!ctx) return
@@ -670,7 +669,7 @@ export abstract class Canvas<BoardType extends Board> {
         }
     }
 
-    afterCanvasChangedSize(): void {
+    protected afterCanvasChangedSize(): void {
         if (!this._game) return
 
         const boxBorderWidth = this.logicalSize * this.boxBorderWidthFactor

@@ -1,6 +1,5 @@
 import { Canvas } from '../../../utils/Canvas'
 import { Thermometer } from '../../../utils/Cell'
-import SettingsHandler from '../../../utils/SettingsHandler'
 import { ThermoBoard } from './ThermoBoard'
 
 export class ThermoCanvas extends Canvas<ThermoBoard> {
@@ -81,7 +80,7 @@ export class ThermoCanvas extends Canvas<ThermoBoard> {
         }, this._theme === 'dark' ? '#777' : '#888')
 
         // Paint thermometers with errors red
-        if (SettingsHandler.settings.checkMistakes) {
+        if (this._game.settings.checkErrors) {
             this.applyColorWithMask(() => {
                 if (!this.thermometersTempCanvasCtx || !this._game) return
                 for (const thermo of this._game.thermometers) {

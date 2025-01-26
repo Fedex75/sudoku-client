@@ -1,6 +1,5 @@
 import { Thermometer } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
-import SettingsHandler from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class ThermoBoard extends ClassicBoard {
@@ -69,7 +68,7 @@ export class ThermoBoard extends ClassicBoard {
                     for (let j = i + 1; j < members.length; j++) {
                         const cell2 = members[j]
                         for (let n = 1; n <= cell.value; n++) cell2.possibleValues.delete(n)
-                        if (SettingsHandler.settings.showPossibleValues) {
+                        if (this._settings.showPossibleValues) {
                             for (let n = 1; n <= cell.value; n++) this.setNote(n, cell2, false)
                         }
                     }
@@ -78,7 +77,7 @@ export class ThermoBoard extends ClassicBoard {
                     for (let j = i - 1; j >= 0; j--) {
                         const cell2 = members[j]
                         for (let n = cell.value; n <= this.nSquares; n++) cell2.possibleValues.delete(n)
-                        if (SettingsHandler.settings.showPossibleValues) {
+                        if (this._settings.showPossibleValues) {
                             for (let n = cell.value; n <= this.nSquares; n++) this.setNote(n, cell2, false)
                         }
                     }

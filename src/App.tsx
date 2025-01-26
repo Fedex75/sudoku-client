@@ -2,23 +2,21 @@ import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import './utils/SettingsHandler'
 import { Home, Sudoku, Settings } from './pages'
-import useLocalStorage from 'use-local-storage'
 import { AccentColor } from './utils/Colors'
 import { ThemeName } from './game/Themes'
+import { useLocalStorage } from './utils/LocalStorageHandler'
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
-const options = {
-	parser: (str: string) => {
-		let parsed = JSON.parse(str)
-		if (typeof parsed === 'string') return parsed as ThemeName
-		return 'dark'
-	}
+const parser = (str: string) => {
+	let parsed = JSON.parse(str)
+	if (typeof parsed === 'string') return parsed as ThemeName
+	return 'dark'
 }
 
 function App() {
-	const [theme, setTheme] = useLocalStorage<ThemeName>('theme', matchMediaColorScheme?.matches ? 'dark' : 'light', options)
-	const [accentColor, setAccentColor] = useLocalStorage<AccentColor>('accent_color', 'darkBlue')
+	const [theme, setTheme] = useLocalStorage<ThemeName>('theme', 1, matchMediaColorScheme?.matches ? 'dark' : 'light', parser)
+	const [accentColor, setAccentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
 
 	useEffect(() => {
 		const handleScroll = (e: Event) => {

@@ -1,6 +1,8 @@
 import { Cell } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
 import { decodeMissionString } from '../../../utils/Decoder'
+import brightness from '../../../utils/Utils'
+import { themes } from '../../Themes'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 interface Diagonal {
@@ -85,5 +87,35 @@ export class SudokuXBoard extends ClassicBoard {
     checkAdditionalErrors(): void {
         this.mainDiagonal.error = [...this.mainDiagonal.members].some(cell => cell.error)
         this.secondaryDiagonal.error = [...this.secondaryDiagonal.members].some(cell => cell.error)
+    }
+
+    checkAnimations(center: Cell): void {
+        super.checkAnimations(center)
+
+        if (this.mainDiagonal.members.has(center) && [...this.mainDiagonal.members].every(cell => cell.value !== 0)) {
+            this.animations.push({
+                type: 'row',
+                startTime: null,
+                duration: 750,
+                func: ({ theme, progress, animationColors }) => {
+                    this.mainDiagonal.members.forEach(cell => {
+                        animationColors[cell.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                    })
+                }
+            })
+        }
+
+        if (this.secondaryDiagonal.members.has(center) && [...this.secondaryDiagonal.members].every(cell => cell.value !== 0)) {
+            this.animations.push({
+                type: 'row',
+                startTime: null,
+                duration: 750,
+                func: ({ theme, progress, animationColors }) => {
+                    this.secondaryDiagonal.members.forEach(cell => {
+                        animationColors[cell.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                    })
+                }
+            })
+        }
     }
 }

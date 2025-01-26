@@ -1,6 +1,5 @@
 import { Cell, KillerCage } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
-import SettingsHandler from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class KillerBoard extends ClassicBoard {
@@ -58,7 +57,7 @@ export class KillerBoard extends ClassicBoard {
     customAfterValuesChanged(): void {
         super.customAfterValuesChanged()
 
-        if (SettingsHandler.settings.killerAutoSolveLastInCage && this.nSquares > 3) {
+        if (this._settings.killerAutoSolveLastInCage && this.nSquares > 3) {
             for (const cage of this.cages) {
                 let remaining = cage.members.size
                 let sum = 0

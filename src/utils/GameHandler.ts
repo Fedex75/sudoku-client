@@ -2,9 +2,9 @@ import missionsData from '../data/missions.json'
 import { difficulties, DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
 import { defaultStatistics, Statistics, update } from './Statistics'
 import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes'
-import API from './API'
 import { createBoard, AnyBoard } from '../game/gameModes/createBoard'
-import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION } from './Constants'
+import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION, RECOMMENDATIONS_API_VERSION, BOOKMARKS_API_VERSION, SOLVED_API_VERSION, STATISTICS_API_VERSION } from './Constants'
+import { getStoredData, saveData } from './LocalStorageHandler'
 
 const missions: MissionsData = missionsData as MissionsData
 
@@ -22,29 +22,40 @@ type Recommendations = {
 	}
 }
 
+const defaultRecommendations: Recommendations = {
+	newGame: {
+		mode: 'classic',
+		difficulty: 'easy'
+	},
+	perMode: {
+		classic: 'easy',
+		killer: 'easy',
+		sudokuX: 'easy',
+		sandwich: 'easy',
+		thermo: 'easy'
+	}
+}
+
+const RECOMMENDATIONS_KEY = 'recommendations'
+const GAME_KEY = 'game'
+const BOOKMARKS_KEY = 'bookmarks'
+const SOLVED_KEY = 'solved'
+const STATISTICS_KEY = 'statistics'
+
 class GameHandler {
-	game: AnyBoard | null = null
-	complete: boolean = false
-	bookmarks: Bookmark[] = []
-	solved: string[] = []
+	game: AnyBoard | null
+	complete: boolean
+	bookmarks: Bookmark[]
+	solved: string[]
 	recommendations: Recommendations
 	statistics: Statistics<GameModeName, DifficultyName>
 
 	constructor() {
-		this.recommendations = {
-			newGame: {
-				mode: 'classic',
-				difficulty: 'easy'
-			},
-			perMode: {
-				classic: 'easy',
-				killer: 'easy',
-				sudokuX: 'easy',
-				sandwich: 'easy',
-				thermo: 'easy'
-			}
-		}
-
+		this.game = null
+		this.complete = true
+		this.bookmarks = []
+		this.solved = []
+		this.recommendations = defaultRecommendations
 		this.statistics = defaultStatistics
 		this.init()
 	}
@@ -56,34 +67,15 @@ class GameHandler {
 			localStorage.setItem('SCHEMA_VERSION', STORAGE_SCHEMA_VERSION.toString())
 		}
 
-		const lsRecommendations = localStorage.getItem('recommendations')
-		if (lsRecommendations) this.recommendations = JSON.parse(lsRecommendations)
-		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
+		this.recommendations = getStoredData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, defaultRecommendations)
 
-		let data: GameData
-		const lsGame = localStorage.getItem('game')
-		data = lsGame ? JSON.parse(lsGame) : null
+		this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? createBoard(getMode(gameData.id[0] as GameModeIdentifier), gameData) : null)
 
-		if (data?.version && data.version === BOARD_API_VERSION) {
-			try {
-				this.setCurrentGame(createBoard(getMode(data.id[0] as GameModeIdentifier), data))
-			} catch (e) {
-				console.error(e)
-				this.game = null
-			}
-		} else {
-			this.game = null
-		}
+		this.bookmarks = getStoredData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, [])
 
-		const lsBookmarks = localStorage.getItem('bookmarks')
-		if (lsBookmarks) this.bookmarks = JSON.parse(lsBookmarks)
+		this.solved = getStoredData(SOLVED_KEY, SOLVED_API_VERSION, [])
 
-		const lsSolved = localStorage.getItem('solved')
-		if (lsSolved) this.solved = JSON.parse(lsSolved)
-
-		const lsStatistics = localStorage.getItem('statistics')
-		if (lsStatistics) this.statistics = JSON.parse(lsStatistics)
-		localStorage.setItem('statistics', JSON.stringify(this.statistics))
+		this.statistics = getStoredData(STATISTICS_KEY, STATISTICS_API_VERSION, defaultStatistics)
 	}
 
 	setCurrentGame(board: AnyBoard) {
@@ -95,7 +87,7 @@ class GameHandler {
 			difficulty: this.game.difficulty
 		}
 		this.recommendations.perMode[this.game.mode] = getDifficulty(this.game.id[1] as DifficultyIdentifier)
-		localStorage.setItem('recommendations', JSON.stringify(this.recommendations))
+		saveData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, this.recommendations)
 	}
 
 	newGame(mode: GameModeName, difficulty: DifficultyName | 'restart') {
@@ -172,23 +164,17 @@ class GameHandler {
 
 	saveGame() {
 		if (!this.game) return
-		try {
-			localStorage.setItem('game', this.game.getDataToSave())
-		} catch (e) {
-			if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-				API.log({ message: 'Quota exceeded', date: Date.now() })
-			}
-		}
+		saveData(GAME_KEY, BOARD_API_VERSION, this.game.getDataToSave())
 	}
 
 	setComplete() {
 		if (this.game) {
 			this.complete = true
-			localStorage.removeItem('game')
+			saveData(GAME_KEY, BOARD_API_VERSION, null)
 			if (this.game.difficulty !== 'unrated' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
-			localStorage.setItem('solved', JSON.stringify(this.solved))
+			saveData(SOLVED_KEY, SOLVED_API_VERSION, this.solved)
 			update(this.statistics[this.game.mode][this.game.difficulty], this.game.timer)
-			localStorage.setItem('statistics', JSON.stringify(this.statistics))
+			saveData(STATISTICS_KEY, STATISTICS_API_VERSION, this.statistics)
 		}
 	}
 
@@ -215,19 +201,19 @@ class GameHandler {
 					m: this.game.mission
 				})
 			}
-			localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
+			saveData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, this.bookmarks)
 		}
 	}
 
 	clearBookmarks() {
 		this.bookmarks = []
-		localStorage.setItem('bookmarks', '[]')
+		saveData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, this.bookmarks)
 	}
 
 	removeBookmark(bm: Bookmark) {
 		const bmString = JSON.stringify(bm)
 		this.bookmarks = this.bookmarks.filter(bm2 => bmString !== JSON.stringify(bm2))
-		localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks))
+		saveData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, this.bookmarks)
 	}
 
 	loadGameFromBookmark(bm: Bookmark) {
@@ -244,7 +230,7 @@ class GameHandler {
 
 	resetStatistics() {
 		this.statistics = defaultStatistics
-		localStorage.setItem('statistics', JSON.stringify(this.statistics))
+		saveData(STATISTICS_KEY, STATISTICS_API_VERSION, this.statistics)
 	}
 }
 
