@@ -97,9 +97,9 @@ export class SudokuXBoard extends ClassicBoard {
                 type: 'row',
                 startTime: null,
                 duration: 750,
-                func: ({ theme, progress, animationColors }) => {
+                func: ({ theme, progress }) => {
                     this.mainDiagonal.members.forEach(cell => {
-                        animationColors[cell.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })
@@ -110,9 +110,9 @@ export class SudokuXBoard extends ClassicBoard {
                 type: 'row',
                 startTime: null,
                 duration: 750,
-                func: ({ theme, progress, animationColors }) => {
+                func: ({ theme, progress }) => {
                     this.secondaryDiagonal.members.forEach(cell => {
-                        animationColors[cell.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })

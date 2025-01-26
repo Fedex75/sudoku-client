@@ -9,7 +9,6 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { ClassicBoard } from '../../game/gameModes/classic/ClassicBoard'
 import { createCanvas } from '../../game/gameModes/createCanvas'
 import { useMemo } from 'react'
-import { useSettings } from '../../utils/SettingsHandler'
 
 type Props = {
   title?: string
@@ -26,7 +25,6 @@ type Props = {
 
 export default function SettingsItem({ title = '', type = 'boolean', theme, accentColor = 'darkBlue', accentColorHex = '', info = '', icon, language, value = null, onChange = () => { } }: Props) {
   const { t } = useTranslation()
-  const { settings } = useSettings()
 
   const [canvasHandlerLight, canvasHandlerDark] = useMemo(() => {
     if (type !== 'theme') return [null, null]
@@ -46,7 +44,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
     newCanvasHandlerDark.theme = 'dark'
 
     return [newCanvasHandlerLight, newCanvasHandlerDark]
-  }, [accentColor, type])
+  }, [type])
 
   if (type === 'boolean') return (
     <div className="settings__item">

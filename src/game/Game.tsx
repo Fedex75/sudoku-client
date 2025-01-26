@@ -152,9 +152,9 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 					type: 'board',
 					startTime: null,
 					duration: boardAnimationDuration,
-					func: ({ theme, progress, animationColors }) => {
+					func: ({ theme, progress }) => {
 						if (!game) return
-						for (const cell of game.allCells) { animationColors[cell.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - cell.coords.x), Math.abs(center.y - cell.coords.y)), progress, 8, 8)})` }
+						for (const cell of game.allCells) { cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - cell.coords.x), Math.abs(center.y - cell.coords.y)), progress, 8, 8)})` }
 					}
 				}]
 				GameHandler.setComplete()
@@ -402,10 +402,6 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	useEffect(() => {
 		updateMagicWandMode()
 	}, [updateMagicWandMode])
-
-	useEffect(() => {
-		if (completedNumbers.has(lockedInput)) setLockedInput(0)
-	}, [lockedInput, completedNumbers])
 
 	useEffect(() => {
 		if (game) game.settings = settings

@@ -41,9 +41,9 @@ export class ClassicBoard extends Board {
                 type: 'row',
                 startTime: null,
                 duration: 750,
-                func: ({ theme, progress, animationColors }) => {
+                func: ({ theme, progress }) => {
                     center.row.forEach(cell => {
-                        animationColors[cell.coords.x][center.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })
@@ -54,23 +54,23 @@ export class ClassicBoard extends Board {
                 type: 'col',
                 startTime: null,
                 duration: 750,
-                func: ({ theme, progress, animationColors }) => {
+                func: ({ theme, progress }) => {
                     center.column.forEach(cell => {
-                        animationColors[center.coords.x][cell.coords.y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.y - cell.coords.y), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.y - cell.coords.y), progress, 8, 4)})`
                     })
                 }
             })
         }
 
         if ([...center.box].every(cell => cell.value !== 0)) {
-            const boxX = Math.floor(center.coords.x / 3)
-            const boxY = Math.floor(center.coords.y / 3)
             this.animations.push({
                 type: 'box',
                 startTime: null,
                 duration: 750,
-                func: ({ theme, progress, animationColors }) => {
-                    for (let x = 0; x < 3; x++) for (let y = 0; y < 3; y++) animationColors[boxX * 3 + x][boxY * 3 + y] = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(y * 3 + x, progress, 8, 8)})`
+                func: ({ theme, progress }) => {
+                    for (const cell of center.box) {
+                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(cell.coords.y % 3 * 3 + cell.coords.x % 3, progress, 8, 8)})`
+                    }
                 }
             })
         }

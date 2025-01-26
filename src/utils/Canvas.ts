@@ -126,8 +126,6 @@ export abstract class Canvas<BoardType extends Board> {
 
     protected logicalSize: number = 0
     protected squareSize: number = 0
-    protected animationColors: string[][] | null = null
-    protected animationGammas: number[][] | null = null
     protected currentAnimations: BoardAnimation[] = []
     protected noteDeltas: ScreenCoordinates[] = []
     protected colors: Record<ColorName, string> = { ...defaultColors }
@@ -168,21 +166,16 @@ export abstract class Canvas<BoardType extends Board> {
                 type: 'fadein',
                 startTime: null,
                 duration: 1350,
-                func: ({ animationColors, progress }) => {
+                func: ({ progress }) => {
                     if (!this._game) return
-                    const newAnimationGammas = []
                     for (let y = 0; y < this._game.nSquares; y++) {
                         const gamma = Math.min(Math.max((y - 2 * progress * (this._game.nSquares - 1)) / (this._game.nSquares - 1) + 1, 0), 1)
-                        for (let x = 0; x < this._game.nSquares; x++) animationColors[x][y] = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
-                        newAnimationGammas.push(gamma)
-                    }
-                    this.animationGammas = []
-                    for (let x = 0; x < this._game.nSquares; x++) {
-                        const newColumn = []
-                        for (let y = 0; y < this._game.nSquares; y++) {
-                            newColumn.push(newAnimationGammas[y])
+                        for (let x = 0; x < this._game.nSquares; x++) {
+                            const cell = this._game.get({ x, y })
+                            if (!cell) continue
+                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationGamma = gamma
                         }
-                        this.animationGammas.push(newColumn)
                     }
                 }
             }])
@@ -225,21 +218,16 @@ export abstract class Canvas<BoardType extends Board> {
                 type: 'fadeout',
                 startTime: null,
                 duration: 750,
-                func: ({ animationColors, progress }) => {
+                func: ({ progress }) => {
                     if (!this._game) return
-                    const newAnimationGammas = []
                     for (let y = 0; y < this._game.nSquares; y++) {
                         const gamma = Math.min(Math.max((y - 2 * progress * (this._game.nSquares - 1)) / (-this._game.nSquares + 1), 0), 1)
-                        for (let x = 0; x < this._game.nSquares; x++) animationColors[x][y] = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
-                        newAnimationGammas.push(gamma)
-                    }
-                    this.animationGammas = []
-                    for (let x = 0; x < this._game.nSquares; x++) {
-                        const newColumn = []
-                        for (let y = 0; y < this._game.nSquares; y++) {
-                            newColumn.push(newAnimationGammas[y])
+                        for (let x = 0; x < this._game.nSquares; x++) {
+                            const cell = this._game.get({ x, y })
+                            if (!cell) continue
+                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationGamma = gamma
                         }
-                        this.animationGammas.push(newColumn)
                     }
                 }
             }])
@@ -248,21 +236,16 @@ export abstract class Canvas<BoardType extends Board> {
                 type: 'fadein',
                 startTime: null,
                 duration: 750,
-                func: ({ animationColors, progress }) => {
+                func: ({ progress }) => {
                     if (!this._game) return
-                    const newAnimationGammas = []
                     for (let y = 0; y < this._game.nSquares; y++) {
                         const gamma = Math.min(Math.max((y - 2 * progress * (this._game.nSquares - 1)) / (this._game.nSquares - 1) + 1, 0), 1)
-                        for (let x = 0; x < this._game.nSquares; x++) animationColors[x][y] = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
-                        newAnimationGammas.push(gamma)
-                    }
-                    this.animationGammas = []
-                    for (let x = 0; x < this._game.nSquares; x++) {
-                        const newColumn = []
-                        for (let y = 0; y < this._game.nSquares; y++) {
-                            newColumn.push(newAnimationGammas[y])
+                        for (let x = 0; x < this._game.nSquares; x++) {
+                            const cell = this._game.get({ x, y })
+                            if (!cell) continue
+                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationGamma = gamma
                         }
-                        this.animationGammas.push(newColumn)
                     }
                 }
             }])
@@ -309,9 +292,9 @@ export abstract class Canvas<BoardType extends Board> {
     protected doAnimations(timestamp: number) {
         if (!this.canvasRef || !this._game) return
 
-        this.animationColors = []
-        for (let x = 0; x < this._game.nSquares; x++) {
-            this.animationColors.push(Array(this._game.nSquares).fill(''))
+        for (const cell of this._game.allCells) {
+            cell.animationColor = ''
+            cell.animationGamma = 1
         }
 
         let i = 0
@@ -323,7 +306,6 @@ export abstract class Canvas<BoardType extends Board> {
 
             if (progress < 1) {
                 animation.func({
-                    animationColors: this.animationColors,
                     theme: this._theme,
                     progress
                 })
@@ -338,8 +320,10 @@ export abstract class Canvas<BoardType extends Board> {
         if (this.currentAnimations.length > 0) {
             requestAnimationFrame(timestamp => { this.doAnimations(timestamp) })
         } else {
-            this.animationColors = null
-            this.animationGammas = null
+            for (const cell of this._game.allCells) {
+                cell.animationColor = ''
+                cell.animationGamma = 1
+            }
             this.renderFrame()
         }
     }
@@ -569,23 +553,23 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     protected renderFadeAnimations() {
-        if (!this.canvasRef || !this._game) return
+        if (!this.canvasRef || !this._game || this.currentAnimations.length === 0) return
         const ctx = this.canvasRef.getContext('2d')
         if (!ctx) return
 
-        if (this.animationColors && this.animationGammas && ['fadein', 'fadein', 'fadeout'].includes(this.currentAnimations[0]?.type)) {
+        if (['fadein', 'fadein', 'fadeout'].includes(this.currentAnimations[0]?.type)) {
             const boxBorderWidth = this.logicalSize * this.boxBorderWidthFactor
             for (const cell of this._game.allCells) {
                 const { x, y } = cell.coords
-                ctx.fillStyle = this.animationColors[x][y]
+                ctx.fillStyle = cell.animationColor
                 ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
 
                 //Right border
-                ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${this.animationGammas[y]})`
+                ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${cell.animationGamma})`
                 ctx.fillRect(cell.screenPosition.x + this.squareSize, cell.screenPosition.y, x % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH, this.squareSize)
 
                 //Bottom border
-                ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${this.animationGammas[y]})`
+                ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${cell.animationGamma})`
                 ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y + this.squareSize, this.squareSize, y % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH)
             }
         }
@@ -662,8 +646,8 @@ export abstract class Canvas<BoardType extends Board> {
 
             ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
 
-            if (this.animationColors && this.animationColors[cell.coords.x][cell.coords.y] && this.currentAnimations.length > 0 && this.currentAnimations[0].type !== 'fadein' && this.currentAnimations[0].type !== 'fadeout' && this.currentAnimations[0].type !== 'fadein') {
-                ctx.fillStyle = this.animationColors[cell.coords.x][cell.coords.y]
+            if (cell.animationColor !== '' && this.currentAnimations.length > 0 && this.currentAnimations[0].type !== 'fadein' && this.currentAnimations[0].type !== 'fadeout' && this.currentAnimations[0].type !== 'fadein') {
+                ctx.fillStyle = cell.animationColor
                 ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
             }
         }

@@ -86,6 +86,8 @@ export class Cell {
     // Render properties
     public screenPosition: ScreenCoordinates = { x: 0, y: 0 }
     public valuePosition: ScreenCoordinates = { x: 0, y: 0 }
+    public animationColor: string = ''
+    public animationGamma: number = 1
 
     // Killer
     public cage: KillerCage | null = null
