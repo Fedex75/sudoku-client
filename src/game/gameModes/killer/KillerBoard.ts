@@ -114,9 +114,4 @@ export class KillerBoard extends ClassicBoard {
     protected hasAdditionalErrors(): boolean {
         return [...this.cages].some(cage => cage.error)
     }
-
-    protected recreatePossibleValuesCache(): void {
-        super.recreatePossibleValuesCache()
-        if (this.cages) for (const cage of this.cages) this.solveLastInCage(cage)
-    }
 }
