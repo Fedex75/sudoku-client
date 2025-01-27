@@ -44,7 +44,6 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<Cell | null>(null)
 
 	const [possibleValues, setPossibleValues] = useState<Set<number>>(new Set())
-	const [completedNumbers, setCompletedNumbers] = useState<Set<number>>(new Set())
 
 	const [, setRender] = useState(0)
 
@@ -72,7 +71,6 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 				: new Set(Array.from({ length: game.nSquares }, (_, i) => i + 1))
 
 		setPossibleValues(newPossibleValues)
-		setCompletedNumbers(game.completedNumbers)
 	}, [game])
 
 	const shuffleMagicWandColor = useCallback(() => {
@@ -96,8 +94,18 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 				let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
 				const orthogonalCells = [...game.selectedCells].map(cell => cell.orthogonalCells).reduce((a, b) => a.union(b), new Set())
 
-				for (const cell of orthogonalCells) {
-					if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+				let colorsAlreadyOnBoard: ColorName[] = []
+				for (const cell of game.allCells) {
+					if (cell.color !== 'default' && !colorsAlreadyOnBoard.includes(cell.color)) colorsAlreadyOnBoard.push(cell.color)
+				}
+
+				const possibleColorNamesWithoutAlreadyOnBoard = possibleColorNames.filter(c => !colorsAlreadyOnBoard.includes(c))
+				if (possibleColorNamesWithoutAlreadyOnBoard.length > 0) {
+					possibleColorNames = possibleColorNamesWithoutAlreadyOnBoard
+				} else {
+					for (const cell of orthogonalCells) {
+						if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+					}
 				}
 
 				if (magicWandColor === null || !possibleColorNames.includes(magicWandColor)) {
@@ -468,7 +476,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 				lockedInput={lockedInput}
 				possibleValues={possibleValues}
-				completedNumbers={completedNumbers}
+				completedNumbers={game.completedNumbers}
 
 				calculatorValue={calculatorValue}
 			/>
