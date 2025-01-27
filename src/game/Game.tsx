@@ -24,9 +24,10 @@ type Props = {
 	handleComplete: () => void
 	boardAnimationDuration: number
 	game: AnyBoard
+	handleFullNotation: () => void
 }
 
-function Game({ theme, accentColor, paused, handleComplete, boardAnimationDuration, game }: Props) {
+function Game({ theme, accentColor, paused, handleComplete, boardAnimationDuration, game, handleFullNotation }: Props) {
 	const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
 	const [showLinks, setShowLinks] = useState(false)
 	const [lockedInput, setLockedInput] = useState(0)
@@ -179,10 +180,10 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 		if (newState) {
 			if (game.selectedCells.size > 0) setSelectedCellBeforeSelectMode([...game.selectedCells][0])
 			else setSelectedCellBeforeSelectMode(null)
-			game.selectedCells.clear()
+			game.selectedCells = new Set()
 		} else {
 			if (selectedCellBeforeSelectMode) game.selectedCells = new Set([selectedCellBeforeSelectMode])
-			else game.selectedCells.clear()
+			else game.selectedCells = new Set()
 		}
 
 		setSelectMode(newState)
@@ -428,6 +429,10 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	useEffect(() => {
 		canvasHandlerRef.current.onClick = (coords, type, hold) => { handleUserInteraction(() => { onCanvasClick(coords, type, hold) }, [...coords][0]) }
 	}, [onCanvasClick, handleUserInteraction])
+
+	useEffect(() => {
+		if (game.fullNotation) handleFullNotation()
+	}, [game.fullNotation, handleFullNotation])
 
 	if (!game) return <Navigate to="/"></Navigate>
 

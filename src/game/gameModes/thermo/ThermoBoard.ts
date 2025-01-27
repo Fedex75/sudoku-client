@@ -12,7 +12,6 @@ export class ThermoBoard extends ClassicBoard {
         this.thermometers = []
         this.createThermometers()
         this.recreatePossibleValuesCache()
-        console.log(this._solution)
     }
 
     public setValue(of: Cell | Set<Cell>, to: number): void {

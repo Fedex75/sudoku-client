@@ -336,8 +336,6 @@ export default abstract class Board {
 			}
 		}
 
-		console.log(to)
-
 		// If removing these notes would make fullNotation false (i.e. if the test fails),
 		// then ignore the fact that the notation is currently full and remove the notes without setValue.
 		const ignoreFullNotaion = this._fullNotation && to === false && !this.testFullNotation(new Set(cells), withValue)
@@ -392,7 +390,7 @@ export default abstract class Board {
 				if (this._settings.clearColorOnInput) {
 					cell.color = 'default'
 					this._hasChanged = true
-					for (const cg of cell.colorGroups) cg.remove(cell)
+					for (const cg of cell.colorGroups) this.removeCellFromColorGroup(cell, cg)
 				}
 
 				this.updatePossibleValuesByValue(cell)
@@ -425,7 +423,7 @@ export default abstract class Board {
 				cell.color = 'default'
 				this._hasChanged = true
 
-				for (const cg of cell.colorGroups) cg.remove(cell)
+				for (const cg of cell.colorGroups) this.removeCellFromColorGroup(cell, cg)
 
 				this.recreatePossibleValuesCache()
 			}
@@ -539,6 +537,11 @@ export default abstract class Board {
 		return [...this.colorGroups].map(cg => ([...cg.members].map(m => `${m.coords.x}${m.coords.y}`).join(','))).join(' ')
 	}
 
+	private removeCellFromColorGroup(cell: Cell, cg: ColorGroup) {
+		cg.remove(cell)
+		if (cg.members.size === 0) this.colorGroups.delete(cg)
+	}
+
 	private updateColorGroupsFromSavedString(data: string) {
 		if (data === '') return
 
@@ -557,7 +560,7 @@ export default abstract class Board {
 	}
 
 	private updateSelectedCellsValues() {
-		this._selectedCellsValues = new Set([...this.selectedCells].map(cell => cell.value).filter(value => value > 0))
+		this._selectedCellsValues = new Set([...this._selectedCells].map(cell => cell.value).filter(value => value > 0))
 	}
 
 	private testFullNotation(except: Set<Cell> = new Set(), withValue: number | null = null): boolean {

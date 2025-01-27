@@ -29,15 +29,25 @@ type TimerProps = {
 
 type TimerRef = {
 	resetTimer: () => void
+	showMessage: (text: string, duration: number) => void
 }
 
 const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, onClick }, ref) => {
 	const [time, setTime] = useState(GameHandler.game?.timer || 0)
+	const [showingMessage, setShowingMessage] = useState(false)
+	const [message, setMessage] = useState('')
 
 	useImperativeHandle(ref, () => ({
 		resetTimer() {
 			setTime(0)
-		}
+		},
+		showMessage(text, duration) {
+			setMessage(text)
+			setShowingMessage(true)
+			setTimeout(() => {
+				setShowingMessage(false)
+			}, duration)
+		},
 	}))
 
 	useEffect(() => {
@@ -59,8 +69,9 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, o
 
 	return (
 		<div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
-			{!win ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
-			<p className='sudoku__timer__time'>{convertMillisecondsToHMS(time)}</p>
+			{(!win && !showingMessage) ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
+			{!showingMessage ? <p className='sudoku__timer__time'>{convertMillisecondsToHMS(time)}</p> : null}
+			{showingMessage ? <p className='sudoku__timer__message'>{message}</p> : null}
 		</div>
 	)
 })
@@ -168,6 +179,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		setTutorialIsOpen(false)
 	}, [])
 
+	const handleFullNotation = useCallback(() => {
+		timerRef.current?.showMessage(t('sudoku.timerFullNotation'), 2000)
+	}, [t])
+
 	useEffect(() => {
 		if (GameHandler.game === null) {
 			navigate('/')
@@ -222,7 +237,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 					win ?
 						<WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
 						tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
-							<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} />
+							<Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} handleFullNotation={handleFullNotation} />
 				}
 			</SectionContent>
 
