@@ -454,6 +454,7 @@ export abstract class Canvas<BoardType extends Board> {
         for (const cell of this._game.allCells) {
             if (cell.value > 0) {
                 //Value
+                console.log(this._game.settings.checkErrors, cell.error)
                 const highlightValue = (this._lockedInput === 0 && this._game.selectedCellsValues.has(cell.value)) || this._lockedInput === cell.value
                 ctx.strokeStyle = ctx.fillStyle =
                     (this._game.settings.checkErrors && cell.error) ? (this.accentColor === 'red' ? '#ffe173' : '#fc5c65') :
@@ -461,7 +462,26 @@ export abstract class Canvas<BoardType extends Board> {
                             cell.color !== 'default' ? 'black' :
                                 cell.clue ? themes[this.theme].canvasClueColor :
                                     solutionColors[this.accentColor]
-                if (this._game.settings.checkErrors && cell.error && cell.color !== 'default') ctx.strokeStyle = ctx.fillStyle = 'white'
+                if (this._game.settings.checkErrors && cell.error) {
+                    if (cell.color === 'default') ctx.strokeStyle = ctx.fillStyle = (this.accentColor === 'red' ? '#ffe173' : '#fc5c65')
+                    else {
+                        if (cell.color === 'red' && this.accentColor === 'yellow') { // Errors are red and cell is red, but yellow is the accent color
+                            ctx.strokeStyle = ctx.fillStyle = '#a55eea' // Paint it purple
+                        } else if (cell.color === 'yellow' && this.accentColor === 'red') { // Errors are yellow and cell is yellow, but red is the accent color
+                            ctx.strokeStyle = ctx.fillStyle = '#a55eea' // Paint it purple
+                        } else if (cell.color === 'red' && this.accentColor !== 'red') { // Errors are red and cell is red
+                            ctx.strokeStyle = ctx.fillStyle = 'ffe173' // Paint it yellow
+                        } else {
+                            ctx.strokeStyle = ctx.fillStyle = (this.accentColor === 'red' ? '#ffe173' : '#fc5c65')
+                        }
+                    }
+                } else {
+                    ctx.strokeStyle = ctx.fillStyle =
+                        highlightValue ? (cell.color === 'default' ? themes[this.theme].canvasValueHighlightColor : 'white') :
+                            cell.color !== 'default' ? 'black' :
+                                cell.clue ? themes[this.theme].canvasClueColor :
+                                    solutionColors[this.accentColor]
+                }
                 Canvas.drawSVGNumber(ctx, cell.value, cell.valuePosition.x, cell.valuePosition.y, this.squareSize * 0.55, 'center', 'center', null)
             } else {
                 //Candidates
