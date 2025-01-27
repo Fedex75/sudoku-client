@@ -6,10 +6,15 @@ import { themes } from '../../Themes'
 import { Cell } from '../../../utils/Cell'
 
 export class ClassicBoard extends Board {
-    createBoardMatrix(): Cell[][] {
+    protected findSolution(): string {
         const [, encodedClues] = this._mission.split(' ')
         const decodedClues = decodeMissionString(encodedClues)
-        const solution = Solver.solve(decodedClues)
+        return Solver.solve(decodedClues)
+    }
+
+    protected createBoardMatrix(): Cell[][] {
+        const [, encodedClues] = this._mission.split(' ')
+        const decodedClues = decodeMissionString(encodedClues)
 
         const newMatrix: Cell[][] = []
         let column: Cell[] = []
@@ -20,7 +25,7 @@ export class ClassicBoard extends Board {
                 column.push(new Cell(
                     { x, y },
                     decodedClues[index] !== '0',
-                    Number.parseInt(solution[index]) || 0,
+                    Number.parseInt(this._solution[index]) || 0,
                     Number.parseInt(decodedClues[index])
                 ))
             }
@@ -29,13 +34,13 @@ export class ClassicBoard extends Board {
         return newMatrix
     }
 
-    hasAdditionalErrors(): boolean {
+    protected hasAdditionalErrors(): boolean {
         return false
     }
 
-    checkAdditionalErrors(): void { }
+    protected checkAdditionalErrors(): void { }
 
-    checkAnimations(center: Cell): void {
+    protected checkAnimations(center: Cell): void {
         if ([...center.row].every(cell => cell.value !== 0)) {
             this.animations.push({
                 type: 'row',
@@ -76,7 +81,7 @@ export class ClassicBoard extends Board {
         }
     }
 
-    calculateUnitsAndVisibility() {
+    protected createBoardGeometry() {
         this.units = []
 
         for (let row = 0; row < this.nSquares; row++) {
@@ -144,5 +149,5 @@ export class ClassicBoard extends Board {
         return [...this.selectedCellsValues].reduce((a, b) => a + b, 0)
     }
 
-    customAfterValuesChanged(): void { }
+    protected customAfterValuesChanged(): void { }
 }

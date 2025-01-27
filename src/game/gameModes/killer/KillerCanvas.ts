@@ -53,6 +53,17 @@ export class KillerCanvas extends Canvas<KillerBoard> {
 
         this.cagesTempCanvasCtx.globalCompositeOperation = 'source-in'
 
+        // Paint selected cages
+        this.applyColorWithMask(() => {
+            if (!this.cagesTempCanvasCtx) return
+
+            for (const cage of selectedCages) {
+                for (const cell of cage.members) {
+                    this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                }
+            }
+        }, themes[this._theme].canvasKillerHighlightedCageColor)
+
         // Paint cages that are on colored cells black to improve contrast
         this.applyColorWithMask(() => {
             if (!this.cagesTempCanvasCtx || !this._game) return
@@ -62,18 +73,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                     this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
                 }
             }
-        }, 'black')
-
-        // Paint selected cages white
-        this.applyColorWithMask(() => {
-            if (!this.cagesTempCanvasCtx) return
-
-            for (const cage of selectedCages) {
-                for (const cell of cage.members) {
-                    this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
-                }
-            }
-        }, 'white')
+        }, themes[this._theme].canvasKillerCageOnColoredCellColor)
 
         // Paint cages with error red or yellow
         if (this._game.settings.checkErrors) {

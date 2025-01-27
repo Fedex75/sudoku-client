@@ -5,6 +5,7 @@ import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes'
 import { createBoard, AnyBoard } from '../game/gameModes/createBoard'
 import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION, RECOMMENDATIONS_API_VERSION, BOOKMARKS_API_VERSION, SOLVED_API_VERSION, STATISTICS_API_VERSION } from './Constants'
 import { getStoredData, saveData } from './LocalStorageHandler'
+import { getCurrentSettings } from './SettingsHandler'
 
 const missions: MissionsData = missionsData as MissionsData
 
@@ -52,7 +53,7 @@ class GameHandler {
 
 	constructor() {
 		this.game = null
-		this.complete = true
+		this.complete = false
 		this.bookmarks = []
 		this.solved = []
 		this.recommendations = defaultRecommendations
@@ -69,7 +70,7 @@ class GameHandler {
 
 		this.recommendations = getStoredData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, defaultRecommendations)
 
-		this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? createBoard(getMode(gameData.id[0] as GameModeIdentifier), gameData) : null)
+		this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? createBoard(getMode(gameData.id[0] as GameModeIdentifier), gameData, getCurrentSettings()) : null)
 
 		this.bookmarks = getStoredData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, [])
 
@@ -115,7 +116,7 @@ class GameHandler {
 				this.setCurrentGame(createBoard(mode, {
 					id: rawData.id,
 					mission: rawData.m
-				}))
+				}, getCurrentSettings()))
 			}
 		}
 	}

@@ -17,10 +17,11 @@ export default abstract class Board {
 	protected readonly _difficulty: DifficultyName
 	public readonly nSquares: number
 	protected readonly _mission: string
-	protected readonly version: number = 0;
-	protected readonly _board: Cell[][] = []
+	protected readonly version: number
+	protected readonly _board: Cell[][]
+	protected readonly _solution: string
 	protected _complete: boolean = false
-	protected _mode: GameModeName = 'classic'
+	protected _mode: GameModeName
 	protected stash: string = ''
 	protected _hasChanged: boolean = false
 	protected history: BoardHistory
@@ -29,8 +30,7 @@ export default abstract class Board {
 	protected units: Set<Cell>[] = []
 	protected _selectedCells: Set<Cell> = new Set()
 	protected _selectedCellsValues: Set<number> = new Set()
-	protected _settings: Settings = defaultSettings
-
+	protected _settings: Settings
 	public timer: number
 	public animations: BoardAnimation[] = []
 
@@ -46,7 +46,7 @@ export default abstract class Board {
 			timer = 0,
 			history = [],
 			version = BOARD_API_VERSION
-		}: GameData) {
+		}: GameData, settings: Settings = defaultSettings) {
 		this._id = id
 		this._mode = getMode(this._id[0] as GameModeIdentifier)
 		this._difficulty = getDifficulty(this._id[1] as DifficultyIdentifier)
@@ -54,15 +54,19 @@ export default abstract class Board {
 		const [nSquares] = mission.split(' ')
 		this.nSquares = Number.parseInt(nSquares)
 
+		this._settings = settings
+
 		this.timer = timer
 		this.history = history
 		this.version = version
 
-		this._board = this.createBoardMatrix()
-		this.calculateUnitsAndVisibility()
-		if (boardString) this.updateBoardMatrixFromSavedString(boardString)
+		this._solution = this.findSolution()
 
+		this._board = this.createBoardMatrix()
+		this.createBoardGeometry()
+		if (boardString) this.updateBoardMatrixFromSavedString(boardString)
 		if (colorGroupsString) this.updateColorGroupsFromSavedString(colorGroupsString)
+		this.recreatePossibleValuesCache()
 	}
 
 	get fullNotation() { return this._fullNotation }
@@ -87,7 +91,7 @@ export default abstract class Board {
 		return this._mode
 	}
 
-	private checkIsComplete(): boolean {
+	protected checkIsComplete(): boolean {
 		this.checkErrors()
 		for (const cell of this.allCells) {
 			if (cell.value === 0 || cell.error) {
@@ -139,27 +143,7 @@ export default abstract class Board {
 		return this._settings
 	}
 
-	restart() {
-		// Restore initial state
-		this._selectedCells = new Set()
-		this.history = []
-		this.timer = 0
-		this.stash = ''
-		this._hasChanged = false
-		this.animations = []
-		this._fullNotation = false
-		this.clearColors()
-		for (const cell of this.allCells) {
-			if (!cell.clue || cell.hint) {
-				cell.hint = false
-				cell.notes = new Set()
-				cell.value = 0
-			}
-		}
-		this.triggerValuesChanged()
-	}
-
-	getCompletedNumbers() {
+	get completedNumbers() {
 		let completedNumbers: Set<number> = new Set()
 		let count = Array(this.nSquares).fill(0)
 		for (const cell of this.allCells) {
@@ -174,7 +158,7 @@ export default abstract class Board {
 		return completedNumbers
 	}
 
-	getBoardToSave() {
+	get boardToSave() {
 		let boardToSave = ''
 		for (let x = 0; x < this.nSquares; x++) {
 			for (let y = 0; y < this.nSquares; y++) {
@@ -195,6 +179,98 @@ export default abstract class Board {
 		}
 
 		return boardToSave.trimEnd()
+	}
+
+	public getLinks(forValue: number) {
+		let links: Cell[][] = []
+
+		for (const unit of this.units) {
+			let newLink = []
+			for (const cell of unit) {
+				if (cell.notes.has(forValue)) {
+					newLink.push(cell)
+				}
+			}
+			if (newLink.length <= 2) {
+				links.push(newLink)
+			}
+		}
+
+		return links
+	}
+
+	public restart() {
+		// Restore initial state
+		this._selectedCells.clear()
+		this.history = []
+		this.timer = 0
+		this.stash = ''
+		this._hasChanged = false
+		this.animations = []
+		this._fullNotation = false
+		this.clearColors()
+		for (const cell of this.allCells) {
+			if (!cell.clue || cell.hint) {
+				cell.hint = false
+				cell.notes.clear()
+				cell.value = 0
+			}
+		}
+
+		this.recreatePossibleValuesCache()
+		this.triggerValuesChanged()
+	}
+
+	public stashBoard() {
+		this.stash = `${this.boardToSave};${this.colorGroupsToSave}`
+		this._hasChanged = false
+	}
+
+	public pushBoard() {
+		if (this.stash && this._hasChanged) {
+			this.history.push(this.stash)
+			this._hasChanged = false
+		}
+	}
+
+	public popBoard() {
+		if (this.history.length > 0) {
+			const [boardString, colorGroupsString] = this.history[this.history.length - 1].split(';')
+
+			this.updateBoardMatrixFromSavedString(boardString)
+			this.updateColorGroupsFromSavedString(colorGroupsString)
+			this.history.pop()
+
+			this.recreatePossibleValuesCache()
+			this.triggerValuesChanged()
+		}
+	}
+
+	public get(coords: CellCoordinates): Cell | undefined {
+		if (
+			coords.x >= 0 &&
+			coords.x < this.nSquares &&
+			coords.y >= 0 &&
+			coords.y < this.nSquares
+		) return this._board[coords.x][coords.y]
+	}
+
+	public select(cell: Cell, withState: boolean | null = null): boolean | null {
+		if (this._selectedCells.has(cell)) {
+			if (!withState) {
+				this._selectedCells.delete(cell)
+				this.updateSelectedCellsValues()
+				return false
+			}
+		} else {
+			if (withState === null || withState) {
+				this._selectedCells.add(cell)
+				this.updateSelectedCellsValues()
+				return true
+			}
+		}
+
+		return null
 	}
 
 	private updateBoardMatrixFromSavedString(data: string) {
@@ -218,90 +294,12 @@ export default abstract class Board {
 		}
 	}
 
-	private getColorGroupsToSave(): string {
-		return [...this.colorGroups].map(cg => ([...cg.members].map(m => `${m.coords.x}${m.coords.y}`).join(','))).join(' ')
-	}
-
-	private updateColorGroupsFromSavedString(data: string) {
-		if (data === '') return
-
-		this.colorGroups = new Set()
-		for (const cell of this.allCells) cell.colorGroups = new Set()
-
-		data
-			.split(' ')
-			.forEach(colorGroupString => {
-				const members = new Set(colorGroupString.split(',').map(coordPair => {
-					const [x, y] = coordPair.split('').map(n => Number.parseInt(n))
-					return this.get({ x, y })
-				}).filter(c => c !== undefined))
-				const cg = new ColorGroup(members, null)
-				this.colorGroups.add(cg)
-				for (const cell of members) cell.colorGroups.add(cg)
-			})
-	}
-
-	public stashBoard() {
-		this.stash = `${this.getBoardToSave()};${this.getColorGroupsToSave()}`
-		this._hasChanged = false
-	}
-
-	public pushBoard() {
-		if (this.stash && this._hasChanged) {
-			this.history.push(this.stash)
-			this._hasChanged = false
-		}
-	}
-
-	public popBoard() {
-		if (this.history.length > 0) {
-			const [boardString, colorGroupsString] = this.history[this.history.length - 1].split(';')
-
-			this.updateBoardMatrixFromSavedString(boardString)
-			this.updateColorGroupsFromSavedString(colorGroupsString)
-			this.history.pop()
-
-			this.triggerValuesChanged()
-		}
-	}
-
-	public get(coords: CellCoordinates): Cell | undefined {
-		if (
-			coords.x >= 0 &&
-			coords.x < this.nSquares &&
-			coords.y >= 0 &&
-			coords.y < this.nSquares
-		) return this._board[coords.x][coords.y]
-	}
-
-	select(cell: Cell, withState: boolean | null = null): boolean | null {
-		if (this._selectedCells.has(cell)) {
-			if (!withState) {
-				this._selectedCells.delete(cell)
-				this.updateSelectedCellsValues()
-				return false
-			}
-		} else {
-			if (withState === null || withState) {
-				this._selectedCells.add(cell)
-				this.updateSelectedCellsValues()
-				return true
-			}
-		}
-
-		return null
-	}
-
-	private updateSelectedCellsValues() {
-		this._selectedCellsValues = new Set([...this.selectedCells].map(cell => cell.value).filter(value => value > 0))
-	}
-
-	selectBox(from: Cell, to: Cell) {
+	public selectBox(from: Cell, to: Cell) {
 		const minX = Math.min(from.coords.x, to.coords.x)
 		const maxX = Math.max(from.coords.x, to.coords.x)
 		const minY = Math.min(from.coords.y, to.coords.y)
 		const maxY = Math.max(from.coords.y, to.coords.y)
-		this._selectedCells = new Set()
+		this._selectedCells.clear()
 		for (let x = minX; x <= maxX; x++) {
 			for (let y = minY; y <= maxY; y++) {
 				const cell = this.get({ x, y })
@@ -310,35 +308,39 @@ export default abstract class Board {
 		}
 	}
 
-	onlyAvailableInAnyUnit(c: Cell, n: number) {
+	public onlyAvailableInAnyUnit(c: Cell, n: number) {
 		if (!c.possibleValues.has(n)) return false
-		for (const unit of c.units) {
-			let found = 0
-			for (const uc of unit) {
-				if (uc.value === 0 && uc.possibleValues.has(n)) {
-					found++
-				}
-			}
-			if (found === 1) {
-				return true
-			}
-		}
-
-		return false
+		return c.units.some(unit => [...unit].filter(cell => cell.value === 0 && cell.possibleValues.has(n)).length === 1)
 	}
 
-	setNote(withValue: number, of: Cell | Set<Cell>, to: boolean | null = null, checkingAutoSolution: boolean = true): boolean | null {
-		let cells: Cell[]
-
-		if (of instanceof Cell) cells = [of]
-		else cells = [...of]
-
+	public setNote(withValue: number, of: Cell | Set<Cell>, to: boolean | null = null, checkingAutoSolution: boolean = true): boolean | null {
+		let cells = (of instanceof Cell) ? [of] : [...of]
 		let finalNoteState: boolean | null = null
 
 		if (to === null) {
-			if (cells.every(c => c.notes.has(withValue))) to = false
-			else to = true
+			if (this._settings.showPossibleValues) {
+				to = cells.some(cell => (
+					cell.value === 0 &&
+					cell.possibleValues.has(withValue) &&
+					!cell.notes.has(withValue
+					)))
+			} else {
+				to = cells.some(cell => (
+					cell.value === 0 &&
+					!cell.notes.has(withValue) &&
+					(
+						cell.color === 'default' ||
+						!this._settings.lockCellsWithColor
+					)
+				))
+			}
 		}
+
+		console.log(to)
+
+		// If removing these notes would make fullNotation false (i.e. if the test fails),
+		// then ignore the fact that the notation is currently full and remove the notes without setValue.
+		const ignoreFullNotaion = this._fullNotation && to === false && !this.testFullNotation(new Set(cells), withValue)
 
 		for (const cell of cells) {
 			if (cell.value === 0) {
@@ -353,7 +355,7 @@ export default abstract class Board {
 						cell.notes.delete(withValue)
 						this._hasChanged = true
 						finalNoteState = false
-						if ((this._settings.autoSolveCellsFullNotation && this._fullNotation) && cell.notes.size === 1) {
+						if (cell.notes.size === 1 && ((this._settings.autoSolveCellsWithColor && cell.color !== 'default') || (this._settings.autoSolveCellsFullNotation && this._fullNotation && !ignoreFullNotaion))) {
 							finalNoteState = true
 							this.setValue(cell, [...cell.notes][0])
 						}
@@ -361,7 +363,6 @@ export default abstract class Board {
 				} else if (to !== false && (!this._settings.lockCellsWithColor || (cell.color === 'default'))) {
 					//Add note
 					if (!this._settings.showPossibleValues || cell.possibleValues.has(withValue)) {
-
 						cell.notes.add(withValue)
 						finalNoteState = true
 						this._hasChanged = true
@@ -376,16 +377,13 @@ export default abstract class Board {
 		return null
 	}
 
-	setValue(of: Cell | Set<Cell>, to: number) {
-		let cells: Cell[]
-
-		if (of instanceof Cell) cells = [of]
-		else cells = [...of]
+	public setValue(of: Cell | Set<Cell>, to: number) {
+		let cells = (of instanceof Cell) ? [of] : [...of]
 
 		for (const cell of cells) {
 			if (!cell.clue && cell.value !== to) {
 				cell.value = to
-				cell.notes = new Set()
+				cell.notes.clear()
 				this._hasChanged = true
 				for (const visibleCell of cell.visibleCells) {
 					if (this._settings.autoRemoveCandidates) this.setNote(to, visibleCell, false, false)
@@ -397,37 +395,44 @@ export default abstract class Board {
 					for (const cg of cell.colorGroups) cg.remove(cell)
 				}
 
+				this.updatePossibleValuesByValue(cell)
+
 				this.checkAnimations(cell)
 			}
 		}
 	}
 
-	giveHint(forCells: Set<Cell>) {
+	public giveHint(forCells: Set<Cell>) {
 		for (const cell of forCells) {
 			if (!cell.clue && cell.solution > 0) {
 				// Attempt to set the cell to a clue, which will also set the value
 				// It will fail if the solution is unknown
 				cell.hint = true
 
-				if (cell.clue) this._hasChanged = true
+				if (cell.clue) {
+					this._hasChanged = true
+					this.updatePossibleValuesByValue(cell)
+				}
 			}
 		}
 	}
 
-	erase(cells: Set<Cell>) {
+	public erase(cells: Set<Cell>) {
 		for (const cell of cells) {
 			if (!cell.clue && (cell.value > 0 || cell.notes.size > 0 || cell.color !== 'default')) {
 				cell.value = 0
-				cell.notes = new Set()
+				cell.notes.clear()
 				cell.color = 'default'
 				this._hasChanged = true
 
 				for (const cg of cell.colorGroups) cg.remove(cell)
+
+				this.recreatePossibleValuesCache()
 			}
 		}
 	}
 
-	calculateHighlightedCells(forValue: number) {
+	public calculateHighlightedCells(forValue: number) {
 		for (const cell of this.allCells) cell.highlighted = false
 
 		let targetValues: number[] = []
@@ -458,32 +463,15 @@ export default abstract class Board {
 		}
 	}
 
-	getLinks(forValue: number) {
-		let links: Cell[][] = []
-
-		for (const unit of this.units) {
-			let newLink = []
-			for (const cell of unit) {
-				if (cell.notes.has(forValue)) {
-					newLink.push(cell)
-				}
-			}
-			if (newLink.length <= 2) {
-				links.push(newLink)
-			}
-		}
-
-		return links
-	}
-
-	setColor(of: Cell, to: ColorName) {
+	public setColor(of: Cell, to: ColorName) {
 		if (of.color !== to) {
 			of.color = to
 			this._hasChanged = true
+			this.updatePossibleValuesByColor(of)
 		}
 	}
 
-	clearColors() {
+	public clearColors() {
 		for (const cell of this.allCells) {
 			if (cell.color !== 'default') {
 				cell.color = 'default'
@@ -493,40 +481,18 @@ export default abstract class Board {
 		this.removeColorGroups(this.colorGroups)
 	}
 
-	public getDataToSave(): string {
+	public getDataToSave() {
 		const dataToSave: GameData = {
 			id: this._id,
 			mission: this._mission,
-			boardString: this.getBoardToSave(),
-			colorGroupsString: this.getColorGroupsToSave(),
+			boardString: this.boardToSave,
+			colorGroupsString: this.colorGroupsToSave,
 			timer: this.timer,
 			version: this.version,
 			history: this.history
 		}
 
-		return JSON.stringify(dataToSave)
-	}
-
-	protected checkFullNotation() {
-		for (const unit of this.units) {
-			for (let n = 1; n <= 9; n++) {
-				let found = false
-				for (const cell of unit) {
-					if (cell.value === n || cell.notes.has(n)) {
-						found = true
-						break
-					}
-				}
-				if (!found) {
-					this._fullNotation = false
-					return
-				}
-			}
-		}
-
-		this._fullNotation = true
-
-		if (this._settings.clearColorFullNotation) this.clearColors()
+		return dataToSave
 	}
 
 	public getTextRepresentation(cluesOnly: boolean) {
@@ -537,20 +503,13 @@ export default abstract class Board {
 		return text
 	}
 
-	protected *iterateAllCells(): IterableIterator<Cell> {
-		for (let x = 0; x < this.nSquares; x++) {
-			for (let y = 0; y < this.nSquares; y++) {
-				const cell = this.get({ x, y })
-				if (cell) yield cell
-			}
-		}
-	}
-
 	public createColorGroup(withCells: Set<Cell>, painted: ColorName) {
 		if (withCells.size < 2 || painted === 'default') return
 
-		this.colorGroups.add(new ColorGroup(withCells, painted))
-
+		const newColorGroup = new ColorGroup(withCells, painted)
+		this.colorGroups.add(newColorGroup)
+		for (const cell of withCells) this.updatePossibleValuesByColor(cell)
+		this.updatePossibleValuesByColorGroups(newColorGroup)
 		this._hasChanged = true
 	}
 
@@ -565,6 +524,81 @@ export default abstract class Board {
 
 			// Remove the color group
 			this.colorGroups.delete(group)
+		}
+
+		this.recreatePossibleValuesCache()
+	}
+
+	public triggerValuesChanged() {
+		this.pushBoard()
+		this._complete = this.checkIsComplete()
+		this.checkFullNotation()
+	}
+
+	private get colorGroupsToSave(): string {
+		return [...this.colorGroups].map(cg => ([...cg.members].map(m => `${m.coords.x}${m.coords.y}`).join(','))).join(' ')
+	}
+
+	private updateColorGroupsFromSavedString(data: string) {
+		if (data === '') return
+
+		this.colorGroups.clear()
+		for (const cell of this.allCells) cell.colorGroups.clear()
+
+		data
+			.split(' ')
+			.forEach(colorGroupString => {
+				const members = new Set(colorGroupString.split(',').map(coordPair => {
+					const [x, y] = coordPair.split('').map(n => Number.parseInt(n))
+					return this.get({ x, y })
+				}).filter(c => c !== undefined))
+				if (members.size > 0) this.createColorGroup(members, [...members][0].color)
+			})
+	}
+
+	private updateSelectedCellsValues() {
+		this._selectedCellsValues = new Set([...this.selectedCells].map(cell => cell.value).filter(value => value > 0))
+	}
+
+	private testFullNotation(except: Set<Cell> = new Set(), withValue: number | null = null): boolean {
+		// If we're testing with exception, then we don't care about the other values, only withValue
+		const specialTest = this._fullNotation && except.size > 0 && withValue
+		for (const unit of this.units) {
+			for (let n = specialTest ? withValue : 1; n <= 9; n++) {
+				let found = false
+				for (const cell of unit) {
+					if (!(n === withValue && except.has(cell)) && (cell.value === n || cell.notes.has(n))) {
+						found = true
+						break
+					}
+				}
+				if (!found) {
+					return false
+				}
+				if (specialTest) return true
+			}
+		}
+
+		return true
+	}
+
+	protected checkFullNotation() {
+		if (!this.testFullNotation()) {
+			this._fullNotation = false
+			return
+		}
+
+		this._fullNotation = true
+
+		if (this._settings.clearColorFullNotation) this.clearColors()
+	}
+
+	protected *iterateAllCells(): IterableIterator<Cell> {
+		for (let x = 0; x < this.nSquares; x++) {
+			for (let y = 0; y < this.nSquares; y++) {
+				const cell = this.get({ x, y })
+				if (cell) yield cell
+			}
 		}
 	}
 
@@ -587,67 +621,50 @@ export default abstract class Board {
 		this.checkAdditionalErrors()
 	}
 
-	public triggerValuesChanged() {
-		this.pushBoard()
-
-		do {
-			this._hasChanged = false
-
-			// Reset possible values
-
-			for (const cell of this.allCells) {
-				cell.possibleValues = new Set()
-				for (let k = 1; k <= this.nSquares; k++) {
-					cell.possibleValues.add(k)
-				}
-			}
-
-			// Check possible values by visibility
-
-			for (const cell of this.allCells) {
-				if (cell.value > 0) {
-					for (const cell2 of cell.visibleCells) {
-						if (cell !== cell2) cell2.possibleValues.delete(cell.value)
-					}
-				}
-			}
-
-			if (this._settings.lockCellsWithColor) {
-				for (const cell of this.allCells) {
-					if (cell.color !== 'default') {
-						if (this._settings.autoSolveCellsWithColor && cell.notes.size === 1) this.setValue(cell, [...cell.notes][0])
-						else cell.possibleValues = new Set(cell.notes)
-					}
-				}
-
-				for (const cg of this.colorGroups) {
-					let notes = new Set<number>()
-					let unsolvedCount = 0
-					for (const cell of cg.members) {
-						notes = notes.union(cell.notes)
-						if (cell.value === 0) unsolvedCount++
-					}
-
-					if (notes.size === unsolvedCount) {
-						// Remove possible values and notes from all the visible cells not in the group
-						for (const vc of cg.visibleCells) {
-							if (!vc.colorGroups.has(cg)) {
-								for (const note of notes) vc.possibleValues.delete(note)
-								if (this._settings.showPossibleValues) for (const note of notes) this.setNote(note, vc, false)
-							}
-						}
-					}
-				}
-			}
-
-			this.customAfterValuesChanged()
-
-		} while (this._hasChanged)
-
-		this._complete = this.checkIsComplete()
-
-		this.checkFullNotation()
+	protected recreatePossibleValuesCache() {
+		for (const cell of this.allCells) cell.possibleValues = new Set(Array.from({ length: this.nSquares }, (_, i) => i + 1))
+		for (const cell of this.allCells) this.updatePossibleValuesByValue(cell)
+		for (const cell of this.allCells) this.updatePossibleValuesByColor(cell)
+		for (const cg of this.colorGroups) this.updatePossibleValuesByColorGroups(cg)
 	}
+
+	protected updatePossibleValuesByValue(cell: Cell) {
+		for (const vc of cell.visibleCells) {
+			if (cell !== vc) vc.possibleValues.delete(cell.value)
+		}
+	}
+
+	protected updatePossibleValuesByColor(cell: Cell) {
+		if (cell.color !== 'default') {
+			if (this._settings.autoSolveCellsWithColor && cell.notes.size === 1) this.setValue(cell, [...cell.notes][0])
+			else if (this._settings.lockCellsWithColor) cell.possibleValues = new Set(cell.notes)
+		}
+	}
+
+	protected updatePossibleValuesByColorGroups(cg: ColorGroup) {
+		if (!this._settings.lockCellsWithColor) return
+
+		let notes = new Set<number>()
+		let unsolvedCount = 0
+		for (const cell of cg.members) {
+			notes = notes.union(cell.notes)
+			if (cell.value === 0) unsolvedCount++
+		}
+
+		if (notes.size === unsolvedCount) {
+			// Remove possible values and notes from all the visible cells not in the group
+			for (const vc of cg.visibleCells) {
+				if (!vc.colorGroups.has(cg)) {
+					for (const note of notes) vc.possibleValues.delete(note)
+					if (this._settings.showPossibleValues) for (const note of notes) this.setNote(note, vc, false)
+				}
+			}
+		}
+	}
+
+	protected abstract get calculatorValue(): number
+
+	protected abstract findSolution(): string
 
 	protected abstract createBoardMatrix(): Cell[][]
 
@@ -657,9 +674,7 @@ export default abstract class Board {
 
 	protected abstract checkAnimations(center: Cell): void
 
-	protected abstract calculateUnitsAndVisibility(): void
-
-	abstract get calculatorValue(): number
+	protected abstract createBoardGeometry(): void
 
 	protected abstract customAfterValuesChanged(): void
 }

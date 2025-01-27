@@ -1,6 +1,7 @@
 import { Cell } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
 import { decodeMissionString } from '../../../utils/Decoder'
+import { defaultSettings } from '../../../utils/SettingsHandler'
 import brightness from '../../../utils/Utils'
 import { themes } from '../../Themes'
 import { ClassicBoard } from '../classic/ClassicBoard'
@@ -14,8 +15,8 @@ export class SudokuXBoard extends ClassicBoard {
     protected mainDiagonal: Diagonal
     protected secondaryDiagonal: Diagonal
 
-    constructor(data: GameData) {
-        super(data)
+    constructor(data: GameData, settings = defaultSettings) {
+        super(data, settings)
 
         this.mainDiagonal = { members: new Set(), error: false }
         this.secondaryDiagonal = { members: new Set(), error: false }

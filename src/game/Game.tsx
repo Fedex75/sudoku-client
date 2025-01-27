@@ -71,7 +71,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 				: new Set(Array.from({ length: game.nSquares }, (_, i) => i + 1))
 
 		setPossibleValues(newPossibleValues)
-		setCompletedNumbers(game.getCompletedNumbers())
+		setCompletedNumbers(game.completedNumbers)
 	}, [game])
 
 	const shuffleMagicWandColor = useCallback(() => {
@@ -179,15 +179,16 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 		if (newState) {
 			if (game.selectedCells.size > 0) setSelectedCellBeforeSelectMode([...game.selectedCells][0])
 			else setSelectedCellBeforeSelectMode(null)
-			game.selectedCells = new Set()
+			game.selectedCells.clear()
 		} else {
 			if (selectedCellBeforeSelectMode) game.selectedCells = new Set([selectedCellBeforeSelectMode])
-			else game.selectedCells = new Set()
+			else game.selectedCells.clear()
 		}
 
 		setSelectMode(newState)
+		updatePossibleValues()
 		updateMagicWandMode()
-	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode, game])
+	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode, game, updatePossibleValues])
 
 	const handleSetColor = useCallback((selectedCells: Set<Cell>, color: ColorName = accentColor) => {
 		if (!game || GameHandler.complete || selectedCells.size === 0) return

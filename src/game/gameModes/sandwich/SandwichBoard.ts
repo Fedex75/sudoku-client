@@ -1,6 +1,7 @@
 import { Cell } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
 import { ClassicBoard } from '../classic/ClassicBoard'
+import { defaultSettings } from '../../../utils/SettingsHandler'
 
 export type SandwichClue = {
     value: number
@@ -12,30 +13,20 @@ export class SandwichBoard extends ClassicBoard {
     public horizontalClues: SandwichClue[]
     public verticalClues: SandwichClue[]
 
-    constructor(data: GameData) {
-        super(data)
+    constructor(data: GameData, settings = defaultSettings) {
+        super(data, settings)
 
         this.horizontalClues = []
         this.verticalClues = []
-        this.initializeClues()
+        this.initializeSandwichClues()
     }
 
-    createBoardMatrix(): Cell[][] {
-        const boardMatrix = super.createBoardMatrix()
-
+    protected findSolution(): string {
         const [, , solution] = this.mission.split(' ')
-
-        for (let x = 0; x < this.nSquares; x++) {
-            for (let y = 0; y < this.nSquares; y++) {
-                const index = y * this.nSquares + x
-                boardMatrix[x][y].solution = Number.parseInt(solution[index])
-            }
-        }
-
-        return boardMatrix
+        return solution
     }
 
-    protected initializeClues() {
+    protected initializeSandwichClues() {
         const [, , , hClues, vClues] = this._mission.split(' ')
 
         this.horizontalClues = hClues.split(',').map(clue => ({
@@ -80,7 +71,7 @@ export class SandwichBoard extends ClassicBoard {
         return -1
     }
 
-    checkAdditionalErrors(): void {
+    protected checkAdditionalErrors(): void {
         for (let x = 0; x < this.nSquares; x++) {
             const sum = this.getSumBetween1And9(-1, x)
             this.verticalClues[x].visible = true
@@ -104,7 +95,7 @@ export class SandwichBoard extends ClassicBoard {
         }
     }
 
-    hasAdditionalErrors(): boolean {
+    protected hasAdditionalErrors(): boolean {
         return this.horizontalClues.some(clue => clue.error) || this.verticalClues.some(clue => clue.error)
     }
 }

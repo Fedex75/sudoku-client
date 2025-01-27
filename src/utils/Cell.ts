@@ -64,10 +64,10 @@ export class Cell {
     // Primary properties
     private _value: number = 0
     private _notes: Set<number> = new Set()
-    private _clue: boolean = false
+    private readonly _clue: boolean = false
     private _hint: boolean = false
     private _color: ColorName = 'default'
-    private _solution: number
+    private readonly _solution: number
 
     // Additional properties
     public error: boolean = false
@@ -128,8 +128,7 @@ export class Cell {
         }
     }
 
-    get solution() { return this._solution }
-    set solution(value: number) {
-        this._solution = value
+    get solution() {
+        return this._solution
     }
 }

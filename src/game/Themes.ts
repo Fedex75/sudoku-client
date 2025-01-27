@@ -19,6 +19,7 @@ export type Theme = {
     canvasAnimationFadeBaseColor: string
     canvasKillerCageColor: string
     canvasKillerHighlightedCageColor: string
+    canvasKillerCageOnColoredCellColor: string
 }
 
 export const themes: Record<ThemeName, Theme> = {
@@ -41,6 +42,7 @@ export const themes: Record<ThemeName, Theme> = {
         canvasAnimationFadeBaseColor: '226, 235, 243',
         canvasKillerCageColor: '#344861',
         canvasKillerHighlightedCageColor: 'black',
+        canvasKillerCageOnColoredCellColor: 'white'
     },
     dark: {
         background: 'black',
@@ -62,5 +64,6 @@ export const themes: Record<ThemeName, Theme> = {
         canvasAnimationFadeBaseColor: '22, 22, 32',
         canvasKillerCageColor: '#75747c',
         canvasKillerHighlightedCageColor: 'white',
+        canvasKillerCageOnColoredCellColor: 'black'
     }
 }

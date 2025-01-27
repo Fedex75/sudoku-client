@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { ClassicBoard } from '../../game/gameModes/classic/ClassicBoard'
 import { createCanvas } from '../../game/gameModes/createCanvas'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 type Props = {
   title?: string
@@ -44,13 +44,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
     newCanvasHandlerDark.theme = 'dark'
 
     return [newCanvasHandlerLight, newCanvasHandlerDark]
-  }, [type])
-
-  useEffect(() => {
-    if (!canvasHandlerLight || !canvasHandlerDark) return
-    canvasHandlerLight.accentColor = accentColor
-    canvasHandlerDark.accentColor = accentColor
-  }, [accentColor])
+  }, [type, accentColor])
 
   if (type === 'boolean') return (
     <div className="settings__item">

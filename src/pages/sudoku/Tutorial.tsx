@@ -155,11 +155,11 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
         // CLASSIC
         let game = newTutorialGames.classic[0].game
         game.get({ x: 2, y: 3 })!.value = 4
-        for (let x = 0; x < 9; x++) newTutorialGames.classic[0].game.selectedCells.add(game.get({ x, y: 3 })!)
+        game.selectedCells = game.get({ x: 2, y: 3 })!.row
 
         game = newTutorialGames.classic[1].game
         game.get({ x: 1, y: 7 })!.value = 6
-        for (let y = 0; y < 9; y++) newTutorialGames.classic[1].game.selectedCells.add(game.get({ x: 1, y })!)
+        game.selectedCells = game.get({ x: 1, y: 7 })!.column
 
         game = newTutorialGames.classic[2].game
         game.setValue(game.get({ x: 8, y: 5 })!, 5)
@@ -218,12 +218,12 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
         // SANDWICH
 
         game = newTutorialGames.sandwich[0].game
-        game.get({ x: 6, y: 2 })!.value = 2
-        for (let x = 0; x < 9; x++) newTutorialGames.sandwich[0].game.selectedCells.add(game.get({ x, y: 2 })!)
+        game.get({ x: 1, y: 3 })!.value = 6
+        game.selectedCells = game.get({ x: 1, y: 3 })!.row
 
         game = newTutorialGames.sandwich[1].game
         game.get({ x: 2, y: 7 })!.value = 5
-        for (let y = 0; y < 9; y++) newTutorialGames.sandwich[1].game.selectedCells.add(game.get({ x: 2, y })!)
+        game.selectedCells = game.get({ x: 2, y: 7 })!.column
 
         game = newTutorialGames.sandwich[2].game
         game.get({ x: 8, y: 5 })!.value = 6
@@ -233,7 +233,7 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
         game.get({ x: 3, y: 5 })!.value = 8
         game.get({ x: 4, y: 5 })!.value = 2
         game.get({ x: 5, y: 5 })!.value = 6
-        newTutorialGames.sandwich[3].game.selectedCells = new Set([game.get({ x: 2, y: 5 })!, game.get({ x: 3, y: 5 })!, game.get({ x: 4, y: 5 })!, game.get({ x: 5, y: 5 })!, game.get({ x: 6, y: 5 })!])
+        for (let x = 2; x <= 6; x++) game.selectedCells.add(game.get({ x, y: 5 })!)
 
         const sandwichSolution = '931682574465713928827459613183597462652341789749268135374125896518936247296874351'
         for (const cell of newTutorialGames.sandwich[4].game.allCells) cell.value = Number.parseInt(sandwichSolution[cell.coords.y * 9 + cell.coords.x])
@@ -242,11 +242,11 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
 
         game = newTutorialGames.thermo[0].game
         game.get({ x: 6, y: 3 })!.value = 4
-        for (let x = 0; x < 9; x++) game.selectedCells.add(game.get({ x, y: 3 })!)
+        game.selectedCells = game.get({ x: 6, y: 3 })!.row
 
         game = newTutorialGames.thermo[1].game
         game.get({ x: 0, y: 1 })!.value = 3
-        for (let y = 0; y < 9; y++) game.selectedCells.add(game.get({ x: 0, y })!)
+        game.selectedCells = game.get({ x: 0, y: 1 })!.column
 
         game = newTutorialGames.thermo[2].game
         game.get({ x: 5, y: 1 })!.value = 6
@@ -264,7 +264,7 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
         game.get({ x: 8, y: 2 })!.value = 9
         game.get({ x: 1, y: 0 })!.value = 1
 
-        game.selectedCells = new Set([game.get({ x: 6, y: 3 })!, game.get({ x: 6, y: 4 })!, game.get({ x: 7, y: 4 })!, game.get({ x: 8, y: 4 })!, game.get({ x: 8, y: 3 })!, game.get({ x: 8, y: 2 })!, game.get({ x: 0, y: 0 })!, game.get({ x: 1, y: 0 })!, game.get({ x: 2, y: 0 })!])
+        game.selectedCells = game.get({ x: 0, y: 0 })!.thermometer!.members.union(game.get({ x: 8, y: 2 })!.thermometer!.members)
 
         const thermoSolution = '932781645576942183184635729649528317218379456357164298795216834823457961461893572'
         for (const cell of newTutorialGames.thermo[5].game.allCells) cell.value = Number.parseInt(thermoSolution[cell.coords.y * 9 + cell.coords.x])

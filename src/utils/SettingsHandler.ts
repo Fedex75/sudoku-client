@@ -1,5 +1,6 @@
-import { useLocalStorage } from './LocalStorageHandler'
+import { getStoredData, useLocalStorage } from './LocalStorageHandler'
 
+const SETTINGS_KEY = 'settings'
 const SETTINGS_SCHEMA_VERSION = 1
 
 export type Language = 'auto' | 'es' | 'en'
@@ -44,7 +45,9 @@ export const defaultSettings: Settings = {
 	language: 'auto'
 }
 
-const SETTINGS_KEY = 'settings'
+export function getCurrentSettings() {
+	return getStoredData(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings)
+}
 
 export function useSettings() {
 	const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings)

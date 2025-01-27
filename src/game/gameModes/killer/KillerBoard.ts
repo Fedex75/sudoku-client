@@ -1,94 +1,15 @@
 import { Cell, KillerCage } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
+import { defaultSettings } from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class KillerBoard extends ClassicBoard {
     public cages: KillerCage[]
 
-    constructor(data: GameData) {
-        super(data)
-
-        this.cages = []
-        this.createCages()
-    }
-
-    createBoardMatrix(): Cell[][] {
-        const boardMatrix = super.createBoardMatrix()
-
-        const [, , solution] = this.mission.split(' ')
-
-        for (let x = 0; x < this.nSquares; x++) {
-            for (let y = 0; y < this.nSquares; y++) {
-                const index = y * this.nSquares + x
-                boardMatrix[x][y].solution = Number.parseInt(solution[index])
-            }
-        }
-
-        return boardMatrix
-    }
-
-    createCages() {
-        const [, , , cages] = this.mission.split(' ')
-
-        this.cages = []
-        for (const cage of cages.split(',')) {
-            const newCage: KillerCage = {
-                members: new Set(),
-                sum: 0,
-                error: false
-            }
-            for (let i = 0; i < cage.length; i += 2) {
-                const cell = this.get({ x: Number.parseInt(cage[i]), y: Number.parseInt(cage[i + 1]) })
-                if (!cell) continue
-                newCage.members.add(cell)
-                cell.cage = newCage
-                newCage.sum += cell.solution
-            }
-            const cell = this.get({ x: Number.parseInt(cage[0]), y: Number.parseInt(cage[1]) })
-            if (cell) cell.cageSum = newCage.sum
-            this.cages.push(newCage)
-        }
-
-        for (const cell of this.allCells) {
-            if (cell.cage) cell.visibleCells = cell.visibleCells.union(cell.cage.members).difference(new Set([cell]))
-        }
-    }
-
-    customAfterValuesChanged(): void {
-        super.customAfterValuesChanged()
-
-        if (this._settings.killerAutoSolveLastInCage && this.nSquares > 3) {
-            for (const cage of this.cages) {
-                let remaining = cage.members.size
-                let sum = 0
-                cage.members.forEach(cell => {
-                    if (cell.value > 0) remaining--
-                    sum += cell.value
-                })
-                if (remaining === 1 && cage.sum - sum <= 9) {
-                    cage.members.forEach(cell => {
-                        if (cell.value === 0) {
-                            this.setValue(cell, cage.sum - sum)
-                        }
-                    })
-                }
-            }
-        }
-    }
-
-    checkAdditionalErrors(): void {
-        for (const cage of this.cages) {
-            let sum = 0
-            for (const cell of cage.members) {
-                if (cell.value > 0) sum += cell.value
-                else {
-                    sum = -1
-                    break
-                }
-            }
-
-            cage.error = (sum !== -1 && sum !== cage.sum)
-        }
+    constructor(data: GameData, settings = defaultSettings) {
+        super(data, settings)
+        this.cages = this.createCages()
+        for (const cage of this.cages) this.solveLastInCage(cage)
     }
 
     get calculatorValue(): number {
@@ -113,8 +34,89 @@ export class KillerBoard extends ClassicBoard {
         }
     }
 
+    public setValue(of: Cell | Set<Cell>, to: number): void {
+        super.setValue(of, to)
+        let cells = (of instanceof Cell) ? [of] : [...of]
+        for (const cage of cells.map(cell => cell.cage)) {
+            if (!cage) continue
+            this.solveLastInCage(cage)
+        }
+    }
 
-    hasAdditionalErrors(): boolean {
+    private solveLastInCage(cage: KillerCage) {
+        if (!this._settings.killerAutoSolveLastInCage || this.nSquares <= 3) return
+
+        let remaining = cage.members.size
+        let sum = 0
+        cage.members.forEach(cell => {
+            if (cell.value > 0) remaining--
+            sum += cell.value
+        })
+
+        if (remaining === 1 && cage.sum - sum <= 9) {
+            cage.members.forEach(cell => {
+                if (cell.value === 0) {
+                    this.setValue(cell, cage.sum - sum)
+                }
+            })
+        }
+    }
+
+    private createCages() {
+        const [, , , cages] = this.mission.split(' ')
+
+        const newCages: KillerCage[] = []
+        for (const cage of cages.split(',')) {
+            const newCage: KillerCage = {
+                members: new Set(),
+                sum: 0,
+                error: false
+            }
+            for (let i = 0; i < cage.length; i += 2) {
+                const cell = this.get({ x: Number.parseInt(cage[i]), y: Number.parseInt(cage[i + 1]) })
+                if (!cell) continue
+                newCage.members.add(cell)
+                cell.cage = newCage
+                newCage.sum += cell.solution
+            }
+            const cell = this.get({ x: Number.parseInt(cage[0]), y: Number.parseInt(cage[1]) })
+            if (cell) cell.cageSum = newCage.sum
+            newCages.push(newCage)
+        }
+
+        for (const cell of this.allCells) {
+            if (cell.cage) cell.visibleCells = cell.visibleCells.union(cell.cage.members).difference(new Set([cell]))
+        }
+
+        return newCages
+    }
+
+    protected findSolution(): string {
+        const [, , solution] = this.mission.split(' ')
+        return solution
+    }
+
+    protected checkAdditionalErrors(): void {
+        for (const cage of this.cages) {
+            let sum = 0
+            for (const cell of cage.members) {
+                if (cell.value > 0) sum += cell.value
+                else {
+                    sum = -1
+                    break
+                }
+            }
+
+            cage.error = (sum !== -1 && sum !== cage.sum)
+        }
+    }
+
+    protected hasAdditionalErrors(): boolean {
         return [...this.cages].some(cage => cage.error)
+    }
+
+    protected recreatePossibleValuesCache(): void {
+        super.recreatePossibleValuesCache()
+        if (this.cages) for (const cage of this.cages) this.solveLastInCage(cage)
     }
 }

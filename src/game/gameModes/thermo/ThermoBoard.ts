@@ -1,18 +1,28 @@
-import { Thermometer } from '../../../utils/Cell'
+import { Cell, Thermometer } from '../../../utils/Cell'
 import { GameData } from '../../../utils/DataTypes'
+import { defaultSettings } from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class ThermoBoard extends ClassicBoard {
     public thermometers: Thermometer[]
 
-    constructor(data: GameData) {
-        super(data)
+    constructor(data: GameData, settings = defaultSettings) {
+        super(data, settings)
 
         this.thermometers = []
         this.createThermometers()
+        this.recreatePossibleValuesCache()
+        console.log(this._solution)
     }
 
-    createThermometers() {
+    public setValue(of: Cell | Set<Cell>, to: number): void {
+        super.setValue(of, to)
+
+        let cells = (of instanceof Cell) ? [of] : [...of]
+        for (const cell of cells) if (cell.thermometer) this.updatePossibleValuesByThermometer(cell.thermometer)
+    }
+
+    private createThermometers() {
         const [, , thermometersData] = this._mission.split(' ')
 
         for (const thermometerString of thermometersData.split(';')) {
@@ -38,7 +48,11 @@ export class ThermoBoard extends ClassicBoard {
         }
     }
 
-    checkAdditionalErrors(): void {
+    protected findSolution(): string {
+        return ''
+    }
+
+    protected checkAdditionalErrors(): void {
         for (const thermo of this.thermometers) {
             let currentMaxValue = 0
             thermo.error = false
@@ -54,35 +68,38 @@ export class ThermoBoard extends ClassicBoard {
         }
     }
 
-    hasAdditionalErrors(): boolean {
+    protected hasAdditionalErrors(): boolean {
         return [...this.thermometers].some(t => t.error)
     }
 
-    customAfterValuesChanged(): void {
-        for (const thermo of this.thermometers) {
-            const members = [...thermo.members]
-            for (let i = 0; i < members.length; i++) {
-                const cell = members[i]
-                if (cell.value > 0) {
-                    // Remove smaller values from cells after this one
-                    for (let j = i + 1; j < members.length; j++) {
-                        const cell2 = members[j]
-                        for (let n = 1; n <= cell.value; n++) cell2.possibleValues.delete(n)
-                        if (this._settings.showPossibleValues) {
-                            for (let n = 1; n <= cell.value; n++) this.setNote(n, cell2, false)
-                        }
+    protected updatePossibleValuesByThermometer(thermo: Thermometer): void {
+        const members = [...thermo.members]
+        for (let i = 0; i < members.length; i++) {
+            const cell = members[i]
+            if (cell.value > 0) {
+                // Remove smaller values from cells after this one
+                for (let j = i + 1; j < members.length; j++) {
+                    const cell2 = members[j]
+                    for (let n = 1; n <= cell.value; n++) cell2.possibleValues.delete(n)
+                    if (this._settings.showPossibleValues) {
+                        for (let n = 1; n <= cell.value; n++) this.setNote(n, cell2, false)
                     }
+                }
 
-                    // Remove higher values from cells before this one
-                    for (let j = i - 1; j >= 0; j--) {
-                        const cell2 = members[j]
-                        for (let n = cell.value; n <= this.nSquares; n++) cell2.possibleValues.delete(n)
-                        if (this._settings.showPossibleValues) {
-                            for (let n = cell.value; n <= this.nSquares; n++) this.setNote(n, cell2, false)
-                        }
+                // Remove higher values from cells before this one
+                for (let j = i - 1; j >= 0; j--) {
+                    const cell2 = members[j]
+                    for (let n = cell.value; n <= this.nSquares; n++) cell2.possibleValues.delete(n)
+                    if (this._settings.showPossibleValues) {
+                        for (let n = cell.value; n <= this.nSquares; n++) this.setNote(n, cell2, false)
                     }
                 }
             }
         }
+    }
+
+    protected recreatePossibleValuesCache(): void {
+        super.recreatePossibleValuesCache()
+        if (this.thermometers) for (const thermo of this.thermometers) this.updatePossibleValuesByThermometer(thermo)
     }
 }
