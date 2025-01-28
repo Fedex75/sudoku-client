@@ -440,11 +440,14 @@ export default abstract class Board {
 	}
 
 	@UseHistory
-	public setColor({ of, to }: { of: Cell, to: ColorName, causedByUser: boolean }) {
+	public setColor({ of, to, causedByUser }: { of: Cell, to: ColorName, causedByUser: boolean }) {
 		if (of.color !== to) {
 			of.color = to
 			this._hasChanged = true
-			this.updatePossibleValuesByColor(of)
+			if (to === 'default') {
+				if (causedByUser) this.recreatePossibleValuesCache()
+			}
+			else this.updatePossibleValuesByColor(of)
 		}
 	}
 

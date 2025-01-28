@@ -1,5 +1,4 @@
 import { Cell } from '../../../utils/Cell'
-import { decodeMissionString } from '../../../utils/Decoder'
 import brightness from '../../../utils/Utils'
 import { themes } from '../../Themes'
 import { ClassicBoard } from '../classic/ClassicBoard'
