@@ -1,15 +1,14 @@
 import { Cell, KillerCage } from '../../../utils/Cell'
-import { GameData } from '../../../utils/DataTypes'
-import { defaultSettings } from '../../../utils/SettingsHandler'
+import { UseHistory } from '../../../utils/DataTypes'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class KillerBoard extends ClassicBoard {
-    public cages: KillerCage[]
+    public cages: KillerCage[] = []
 
-    constructor(data: GameData, settings = defaultSettings) {
-        super(data, settings)
-        this.cages = this.createCages()
-        for (const cage of this.cages) this.solveLastInCage(cage)
+    protected getDataFromMission(): void {
+        const [nSquares, , solution] = this.mission.split(' ')
+        this._nSquares = Number.parseInt(nSquares)
+        this._solution = solution
     }
 
     get calculatorValue(): number {
@@ -34,17 +33,26 @@ export class KillerBoard extends ClassicBoard {
         }
     }
 
-    public setValue(of: Cell | Set<Cell>, to: number): void {
-        super.setValue(of, to)
-        let cells = (of instanceof Cell) ? [of] : [...of]
+    @UseHistory
+    public setValue(params: { of: Cell | Set<Cell>, to: number, causedByUser: boolean }): void {
+        super.setValue({ of: params.of, to: params.to, causedByUser: false })
+
+        let cells = (params.of instanceof Cell) ? [params.of] : [...params.of]
         for (const cage of cells.map(cell => cell.cage)) {
             if (!cage) continue
             this.solveLastInCage(cage)
         }
     }
 
+    public restart(): void {
+        super.restart()
+        for (const cage of this.cages) this.solveLastInCage(cage)
+        this.recreatePossibleValuesCache()
+        this.triggerValuesChanged(false)
+    }
+
     private solveLastInCage(cage: KillerCage) {
-        if (!this._settings.killerAutoSolveLastInCage || this.nSquares <= 3) return
+        if (!this._settings.killerAutoSolveLastInCage || this._nSquares <= 3) return
 
         let remaining = cage.members.size
         let sum = 0
@@ -56,16 +64,17 @@ export class KillerBoard extends ClassicBoard {
         if (remaining === 1 && cage.sum - sum <= 9) {
             cage.members.forEach(cell => {
                 if (cell.value === 0) {
-                    this.setValue(cell, cage.sum - sum)
+                    this.setValue({ of: cell, to: cage.sum - sum, causedByUser: false })
                 }
             })
         }
     }
 
-    private createCages() {
+    protected createBoardGeometry(): void {
+        super.createBoardGeometry()
         const [, , , cages] = this.mission.split(' ')
 
-        const newCages: KillerCage[] = []
+        this.cages = []
         for (const cage of cages.split(',')) {
             const newCage: KillerCage = {
                 members: new Set(),
@@ -81,22 +90,19 @@ export class KillerBoard extends ClassicBoard {
             }
             const cell = this.get({ x: Number.parseInt(cage[0]), y: Number.parseInt(cage[1]) })
             if (cell) cell.cageSum = newCage.sum
-            newCages.push(newCage)
+            this.cages.push(newCage)
         }
 
         for (const cell of this.allCells) {
             if (cell.cage) cell.visibleCells = cell.visibleCells.union(cell.cage.members).difference(new Set([cell]))
         }
 
-        return newCages
+        for (const cage of this.cages) this.solveLastInCage(cage)
     }
 
-    protected findSolution(): string {
-        const [, , solution] = this.mission.split(' ')
-        return solution
-    }
+    protected checkErrors(): void {
+        super.checkErrors()
 
-    protected checkAdditionalErrors(): void {
         for (const cage of this.cages) {
             let sum = 0
             for (const cell of cage.members) {
@@ -107,11 +113,12 @@ export class KillerBoard extends ClassicBoard {
                 }
             }
 
-            cage.error = (sum !== -1 && sum !== cage.sum)
+            if (sum !== -1 && sum !== cage.sum) {
+                cage.error = true
+                this._hasErrors = true
+            } else {
+                cage.error = false
+            }
         }
-    }
-
-    protected hasAdditionalErrors(): boolean {
-        return [...this.cages].some(cage => cage.error)
     }
 }

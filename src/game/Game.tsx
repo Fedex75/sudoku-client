@@ -13,9 +13,9 @@ import brightness from "../utils/Utils"
 import { ThemeName, themes } from './Themes'
 import { Cell, CellCoordinates } from '../utils/Cell'
 import CanvasComponent from '../components/CanvasComponent'
-import { AnyBoard } from './gameModes/createBoard'
-import { createCanvas } from './gameModes/createCanvas'
+import { CanvasFactory } from './gameModes/CanvasFactory'
 import { useSettings } from '../utils/SettingsHandler'
+import Board from '../utils/Board'
 
 type Props = {
 	theme: ThemeName
@@ -23,7 +23,7 @@ type Props = {
 	paused: boolean
 	handleComplete: () => void
 	boardAnimationDuration: number
-	game: AnyBoard
+	game: Board
 	handleFullNotation: () => void
 }
 
@@ -49,7 +49,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 	const { settings } = useSettings()
 
-	const canvasHandlerRef = useRef(createCanvas(game.mode, accentColor, false, 0.01))
+	const canvasHandlerRef = useRef(CanvasFactory(game.mode, accentColor, false, 0.01))
 
 	const updateCalculatorValue = useCallback(() => {
 		if (!game) return
@@ -146,12 +146,9 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	const handleUserInteraction = useCallback((func: () => void, lastInteractedCell: Cell | null) => {
 		if (GameHandler.complete || !game) return
 
-		game.stashBoard()
-
 		func()
 
 		if (game.hasChanged) {
-			game.triggerValuesChanged()
 			if (process.env.NODE_ENV === 'development') GameHandler.saveGame()
 
 			if (game.complete) {
@@ -206,13 +203,13 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 		// Coincidence is full or coincidence is partial and color is different: remove the group
 		const groupsToRemove = new Set([...selectedGroups].filter(cg => [...cg.members].every(cell => !selectedCells.has(cell)) || (color !== [...cg.members][0].color)))
-		game.removeColorGroups(groupsToRemove)
+		game.removeColorGroups({ from: groupsToRemove, causedByUser: false })
 
 		if (color !== 'default' && selectedCells.size > 1) {
-			game.createColorGroup(selectedCells, color)
+			game.createColorGroup({ withCells: selectedCells, painted: color, causedByUser: true })
 			handleSelect(false)
 			setColorMode(false)
-		} else game.setColor([...selectedCells][0], color)
+		} else game.setColor({ of: [...selectedCells][0], to: color, causedByUser: true })
 	}, [accentColor, handleSelect, game])
 
 	const onCanvasClick = useCallback((cellSet: Set<Cell>, type: MouseButtonType, hold: boolean) => {
@@ -270,15 +267,15 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 								if ((noteMode || type === 'secondary') && (cellPossibleValues.size > 1 || !game.settings.autoSolveNakedSingles)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
 									if (game.onlyAvailableInAnyUnit(cells[0], lockedInput)) {
-										game.setNote(lockedInput, cellSet, true)
+										game.setNote({ withValue: lockedInput, of: cellSet, to: true, checkingAutoSolution: true, causedByUser: true })
 									} else {
-										game.setNote(lockedInput, cellSet, dragMode)
+										game.setNote({ withValue: lockedInput, of: cellSet, to: dragMode, checkingAutoSolution: true, causedByUser: true })
 									}
 
 								} else {
 									// If we're not in note mode or the cell has only one possible value, set the value if the cell doesn't already have a value (this helps with dragging)
 									if (cells[0].value === 0) {
-										game.setValue(cells[0], lockedInput)
+										game.setValue({ of: cells[0], to: lockedInput, causedByUser: true })
 									}
 								}
 							}
@@ -291,16 +288,16 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 								if ((noteMode || type === 'secondary')) {
 									if (game.settings.autoSolveNakedSingles && cellPossibleValues.size === 1) {
 										if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
-											game.setValue(cellSet, lockedInput)
+											game.setValue({ of: cellSet, to: lockedInput, causedByUser: true })
 										}
 									} else {
 										if (!game.settings.showPossibleValues || cells[0].notes.has(lockedInput) || cellPossibleValues.has(lockedInput)) {
-											setDragMode(game.setNote(lockedInput, cellSet))
+											setDragMode(game.setNote({ withValue: lockedInput, of: cellSet, to: null, checkingAutoSolution: true, causedByUser: true }))
 										}
 									}
 								} else {
 									if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
-										game.setValue(cellSet, lockedInput)
+										game.setValue({ of: cellSet, to: lockedInput, causedByUser: true })
 									}
 								}
 							}
@@ -317,7 +314,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 	const onHint = useCallback(() => {
 		if (GameHandler.complete || !game) return
-		game.giveHint(game.selectedCells)
+		game.giveHint({ forCells: game.selectedCells, causedByUser: true })
 	}, [game])
 
 	const onMagicWand = useCallback(() => {
@@ -328,7 +325,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 				break
 			case 'clearColors':
 				handleUserInteraction(() => {
-					if (game && !GameHandler.complete) game.clearColors()
+					if (game && !GameHandler.complete) game.clearColors({ causedByUser: true })
 				}, null)
 				break
 			case 'setColor':
@@ -368,7 +365,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	const onErase = useCallback(() => {
 		if (GameHandler.complete || !game) return
 
-		game.erase(game.selectedCells)
+		game.erase({ cells: game.selectedCells, causedByUser: true })
 		canvasHandlerRef.current.stopAnimations()
 	}, [game])
 
@@ -378,10 +375,10 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 		if (type === 'primary') {
 			if (possibleValues.has(number)) {
 				if (noteMode && (possibleValues.size > 1 || !game.settings.autoSolveNakedSingles)) {
-					game.setNote(number, game.selectedCells)
+					game.setNote({ withValue: number, of: game.selectedCells, to: null, checkingAutoSolution: true, causedByUser: true })
 				} else {
 					if (lockedInput > 0) setLockedInput(number)
-					game.setValue(game.selectedCells, number)
+					game.setValue({ of: game.selectedCells, to: number, causedByUser: true })
 				}
 			}
 		} else setLockedInput(li => li === number ? 0 : number)
@@ -412,6 +409,11 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	useEffect(() => {
 		updateMagicWandMode()
 	}, [updateMagicWandMode])
+
+	useEffect(() => {
+		updateCalculatorValue()
+		updatePossibleValues()
+	}, [game.selectedCells, updateCalculatorValue, updatePossibleValues])
 
 	useEffect(() => {
 		if (game) game.settings = settings

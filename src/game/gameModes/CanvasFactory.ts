@@ -1,3 +1,5 @@
+import Board from '../../utils/Board'
+import { Canvas } from '../../utils/Canvas'
 import { AccentColor } from '../../utils/Colors'
 import { GameModeName } from '../../utils/Difficulties'
 import { ClassicCanvas } from './classic/ClassicCanvas'
@@ -6,9 +8,7 @@ import { SandwichCanvas } from './sandwich/SandwichCanvas'
 import { SudokuXCanvas } from './sudokuX/SudokuXCanvas'
 import { ThermoCanvas } from './thermo/ThermoCanvas'
 
-export type AnyCanvas = ClassicCanvas | KillerCanvas | SudokuXCanvas | SandwichCanvas | ThermoCanvas
-
-export function createCanvas(gameMode: GameModeName, accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number): AnyCanvas {
+export function CanvasFactory(gameMode: GameModeName, accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number): Canvas<Board> {
     switch (gameMode) {
         case 'classic':
             return new ClassicCanvas(accentColor, notPlayable, boxBorderWidthFactor)

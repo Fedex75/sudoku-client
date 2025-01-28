@@ -1,7 +1,5 @@
 import { Cell } from '../../../utils/Cell'
-import { GameData } from '../../../utils/DataTypes'
 import { decodeMissionString } from '../../../utils/Decoder'
-import { defaultSettings } from '../../../utils/SettingsHandler'
 import brightness from '../../../utils/Utils'
 import { themes } from '../../Themes'
 import { ClassicBoard } from '../classic/ClassicBoard'
@@ -12,16 +10,8 @@ interface Diagonal {
 }
 
 export class SudokuXBoard extends ClassicBoard {
-    protected mainDiagonal: Diagonal
-    protected secondaryDiagonal: Diagonal
-
-    constructor(data: GameData, settings = defaultSettings) {
-        super(data, settings)
-
-        this.mainDiagonal = { members: new Set(), error: false }
-        this.secondaryDiagonal = { members: new Set(), error: false }
-        this.calculateDiagonals()
-    }
+    protected mainDiagonal: Diagonal = { members: new Set(), error: false }
+    protected secondaryDiagonal: Diagonal = { members: new Set(), error: false }
 
     get mainDiagonalError() {
         return this.mainDiagonal.error
@@ -31,41 +21,26 @@ export class SudokuXBoard extends ClassicBoard {
         return this.secondaryDiagonal.error
     }
 
-    createBoardMatrix(): Cell[][] {
-        // When we have solutions for all boards, this will be the same as ClassicBoard's
-        const [, encodedClues] = this._mission.split(' ')
-        const decodedClues = decodeMissionString(encodedClues)
-
-        const newMatrix: Cell[][] = []
-        let column: Cell[] = []
-        for (let x = 0; x < this.nSquares; x++) {
-            column = []
-            for (let y = 0; y < this.nSquares; y++) {
-                const index = y * this.nSquares + x
-                column.push(new Cell(
-                    { x, y },
-                    decodedClues[index] !== '0',
-                    0,
-                    Number.parseInt(decodedClues[index])
-                ))
-            }
-            newMatrix.push(column)
-        }
-        return newMatrix
+    protected getDataFromMission(): void {
+        const [nSquares, , solution] = this.mission.split(' ')
+        this._nSquares = Number.parseInt(nSquares)
+        this._solution = solution
     }
 
-    calculateDiagonals() {
+    protected createBoardGeometry(): void {
+        super.createBoardGeometry()
+
         this.mainDiagonal = { members: new Set(), error: false }
         this.secondaryDiagonal = { members: new Set(), error: false }
 
-        for (let i = 0; i < this.nSquares; i++) {
+        for (let i = 0; i < this._nSquares; i++) {
             const cellMainDiagonal = this.get({ x: i, y: i })
             if (cellMainDiagonal) {
                 cellMainDiagonal.units.push(this.mainDiagonal.members)
                 this.mainDiagonal.members.add(cellMainDiagonal)
             }
 
-            const cellSecondaryDiagonal = this.get({ x: i, y: this.nSquares - 1 - i })
+            const cellSecondaryDiagonal = this.get({ x: i, y: this._nSquares - 1 - i })
             if (cellSecondaryDiagonal) {
                 cellSecondaryDiagonal.units.push(this.secondaryDiagonal.members)
                 this.secondaryDiagonal.members.add(cellSecondaryDiagonal)
@@ -81,16 +56,14 @@ export class SudokuXBoard extends ClassicBoard {
         }
     }
 
-    hasAdditionalErrors(): boolean {
-        return this.mainDiagonal.error || this.secondaryDiagonal.error
-    }
-
-    checkAdditionalErrors(): void {
+    protected checkErrors(): void {
+        super.checkErrors()
         this.mainDiagonal.error = [...this.mainDiagonal.members].some(cell => cell.error)
         this.secondaryDiagonal.error = [...this.secondaryDiagonal.members].some(cell => cell.error)
+        if (this.mainDiagonal.error || this.secondaryDiagonal.error) this._hasErrors = true
     }
 
-    checkAnimations(center: Cell): void {
+    protected checkAnimations(center: Cell): void {
         super.checkAnimations(center)
 
         if (this.mainDiagonal.members.has(center) && [...this.mainDiagonal.members].every(cell => cell.value !== 0)) {

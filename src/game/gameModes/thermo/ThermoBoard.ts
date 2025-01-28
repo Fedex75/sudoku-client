@@ -1,27 +1,24 @@
 import { Cell, Thermometer } from '../../../utils/Cell'
-import { GameData } from '../../../utils/DataTypes'
-import { defaultSettings } from '../../../utils/SettingsHandler'
 import { ClassicBoard } from '../classic/ClassicBoard'
 
 export class ThermoBoard extends ClassicBoard {
-    public thermometers: Thermometer[]
+    public thermometers: Thermometer[] = []
 
-    constructor(data: GameData, settings = defaultSettings) {
-        super(data, settings)
-
-        this.thermometers = []
-        this.createThermometers()
-        this.recreatePossibleValuesCache()
+    protected getDataFromMission(): void {
+        const [nSquares, ,] = this.mission.split(' ')
+        this._nSquares = Number.parseInt(nSquares)
     }
 
-    public setValue(of: Cell | Set<Cell>, to: number): void {
-        super.setValue(of, to)
+    public setValue(params: { of: Cell | Set<Cell>, to: number, causedByUser: boolean }): void {
+        super.setValue(params)
 
-        let cells = (of instanceof Cell) ? [of] : [...of]
+        let cells = (params.of instanceof Cell) ? [params.of] : [...params.of]
         for (const cell of cells) if (cell.thermometer) this.updatePossibleValuesByThermometer(cell.thermometer)
     }
 
-    private createThermometers() {
+    protected createBoardGeometry(): void {
+        super.createBoardGeometry()
+
         const [, , thermometersData] = this._mission.split(' ')
 
         for (const thermometerString of thermometersData.split(';')) {
@@ -31,8 +28,8 @@ export class ThermoBoard extends ClassicBoard {
             }
 
             for (const cellIndex of thermometerString.split(',').map(s => Number.parseInt(s))) {
-                const y = Math.floor(cellIndex / this.nSquares)
-                const x = cellIndex - y * this.nSquares
+                const y = Math.floor(cellIndex / this._nSquares)
+                const x = cellIndex - y * this._nSquares
                 const cell = this.get({ x, y })
                 if (!cell) continue
                 cell.thermometer = newThermometer
@@ -47,10 +44,6 @@ export class ThermoBoard extends ClassicBoard {
         }
     }
 
-    protected findSolution(): string {
-        return ''
-    }
-
     protected checkAdditionalErrors(): void {
         for (const thermo of this.thermometers) {
             let currentMaxValue = 0
@@ -59,16 +52,13 @@ export class ThermoBoard extends ClassicBoard {
                 if (cell.value > 0) {
                     if (cell.value < currentMaxValue) {
                         thermo.error = true
+                        this._hasErrors = true
                     } else {
                         currentMaxValue = cell.value
                     }
                 }
             }
         }
-    }
-
-    protected hasAdditionalErrors(): boolean {
-        return [...this.thermometers].some(t => t.error)
     }
 
     protected updatePossibleValuesByThermometer(thermo: Thermometer): void {
@@ -81,16 +71,16 @@ export class ThermoBoard extends ClassicBoard {
                     const cell2 = members[j]
                     for (let n = 1; n <= cell.value; n++) cell2.possibleValues.delete(n)
                     if (this._settings.showPossibleValues) {
-                        for (let n = 1; n <= cell.value; n++) this.setNote(n, cell2, false)
+                        for (let n = 1; n <= cell.value; n++) this.setNote({ withValue: n, of: cell2, to: false, checkingAutoSolution: false, causedByUser: false })
                     }
                 }
 
                 // Remove higher values from cells before this one
                 for (let j = i - 1; j >= 0; j--) {
                     const cell2 = members[j]
-                    for (let n = cell.value; n <= this.nSquares; n++) cell2.possibleValues.delete(n)
+                    for (let n = cell.value; n <= this._nSquares; n++) cell2.possibleValues.delete(n)
                     if (this._settings.showPossibleValues) {
-                        for (let n = cell.value; n <= this.nSquares; n++) this.setNote(n, cell2, false)
+                        for (let n = cell.value; n <= this._nSquares; n++) this.setNote({ withValue: n, of: cell2, to: false, checkingAutoSolution: false, causedByUser: false })
                     }
                 }
             }

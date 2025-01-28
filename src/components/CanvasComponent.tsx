@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react"
-import { AnyCanvas } from '../game/gameModes/createCanvas'
-
+import { Canvas } from '../utils/Canvas'
+import Board from '../utils/Board'
 
 type Props = {
-	canvasHandler: AnyCanvas
+	canvasHandler: Canvas<Board>
 	paused: boolean
 }
 

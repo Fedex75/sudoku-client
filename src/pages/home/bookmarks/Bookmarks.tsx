@@ -13,8 +13,8 @@ import { Bookmark, MissionsData, RawGameData } from '../../../utils/DataTypes'
 import Canvas from '../../../components/CanvasComponent'
 import { AccentColor } from '../../../utils/Colors'
 import { ThemeName } from '../../../game/Themes'
-import { createBoard } from '../../../game/gameModes/createBoard'
-import { createCanvas } from '../../../game/gameModes/createCanvas'
+import { BoardFactory } from '../../../game/gameModes/BoardFactory'
+import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
 
 type Props = {
 	theme: ThemeName
@@ -94,14 +94,14 @@ function Bookmarks({ theme, accentColor }: Props) {
 									solved = false
 								} else {
 									const mission = missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData
-									board = createBoard(mode, {
+									board = BoardFactory(mode, {
 										id: bm.id,
 										mission: mission.m
 									})
 									solved = GameHandler.solved.includes(bm.id)
 								}
 
-								const canvasHandlerRef = createCanvas(mode, accentColor, true, 0.01)
+								const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
 
 								return (
 									<div key={i} className="bookmarks__item">

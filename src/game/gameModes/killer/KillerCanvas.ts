@@ -39,7 +39,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
     }
 
     protected renderCagesAndCageValues() {
-        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.canvasRef || !this._game) return
+        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.canvasRef || !this.game) return
         const ctx = this.canvasRef.getContext('2d')
         if (!ctx) return
 
@@ -47,7 +47,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         this.cagesTempCanvasCtx.drawImage(this.cagesOffscreenCanvas, 0, 0)
 
         let selectedCages: KillerCage[] = []
-        for (const cell of this._game.selectedCells) {
+        for (const cell of this.game.selectedCells) {
             if (cell.cage && !selectedCages.includes(cell.cage)) selectedCages.push(cell.cage)
         }
 
@@ -66,9 +66,9 @@ export class KillerCanvas extends Canvas<KillerBoard> {
 
         // Paint cages that are on colored cells black to improve contrast
         this.applyColorWithMask(() => {
-            if (!this.cagesTempCanvasCtx || !this._game) return
+            if (!this.cagesTempCanvasCtx || !this.game) return
 
-            for (const cell of this._game.allCells) {
+            for (const cell of this.game.allCells) {
                 if (cell.color !== 'default') {
                     this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
                 }
@@ -76,11 +76,11 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         }, themes[this._theme].canvasKillerCageOnColoredCellColor)
 
         // Paint cages with error red or yellow
-        if (this._game.settings.checkErrors) {
+        if (this.game.settings.checkErrors) {
             this.applyColorWithMask(() => {
-                if (!this.cagesTempCanvasCtx || !this._game) return
+                if (!this.cagesTempCanvasCtx || !this.game) return
 
-                for (const cage of this._game.cages) {
+                for (const cage of this.game.cages) {
                     if (cage.error) {
                         for (const cell of cage.members) {
                             this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
@@ -96,13 +96,13 @@ export class KillerCanvas extends Canvas<KillerBoard> {
     }
 
     protected renderCagesToOffscreenCanvas() {
-        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this._game) return
+        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.game) return
 
         this.cagePadding = Math.floor(this.squareSize * 0.08)
-        let cageLinePositions = Array(this._game.nSquares * 2).fill(0)
+        let cageLinePositions = Array(this.game.nSquares * 2).fill(0)
 
-        for (let i = 0; i < this._game.nSquares; i++) {
-            const cell = this._game.get({ x: i, y: 0 })
+        for (let i = 0; i < this.game.nSquares; i++) {
+            const cell = this.game.get({ x: i, y: 0 })
             if (!cell) continue
             cageLinePositions[i * 2] = cell.screenPosition.x + this.cagePadding
             cageLinePositions[i * 2 + 1] = cell.screenPosition.x + this.squareSize - this.cagePadding - Canvas.CAGE_LINE_WIDTH
@@ -126,12 +126,12 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         }
 
         //Horizontal
-        for (let y = 0; y < this._game.nSquares; y++) {
+        for (let y = 0; y < this.game.nSquares; y++) {
             const top = cageLinePositions[y * 2]
             const bottom = cageLinePositions[y * 2 + 1]
 
-            for (let x = 0; x < this._game.nSquares; x++) {
-                const cell = this._game.get({ x, y })
+            for (let x = 0; x < this.game.nSquares; x++) {
+                const cell = this.game.get({ x, y })
                 if (!cell || !cell.cage) continue
 
                 const hShift = cell.cageSum > 9 ? Math.ceil(this.squareSize * 0.28) : (cell.cageSum > 0 ? Math.ceil(this.squareSize * 0.15) : 0)
@@ -139,11 +139,11 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                 const left = cageLinePositions[x * 2]
                 const right = cageLinePositions[x * 2 + 1]
 
-                const topCell = this._game.get({ x, y: y - 1 })
-                const bottomCell = this._game.get({ x, y: y + 1 })
-                const rightCell = this._game.get({ x: x + 1, y })
-                const topRightCell = this._game.get({ x: x + 1, y: y - 1 })
-                const bottomRightCell = this._game.get({ x: x + 1, y: y + 1 })
+                const topCell = this.game.get({ x, y: y - 1 })
+                const bottomCell = this.game.get({ x, y: y + 1 })
+                const rightCell = this.game.get({ x: x + 1, y })
+                const topRightCell = this.game.get({ x: x + 1, y: y - 1 })
+                const bottomRightCell = this.game.get({ x: x + 1, y: y + 1 })
 
                 //Top line
                 if (!topCell || topCell.cage !== cell.cage) {
@@ -200,12 +200,12 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         }
 
         //Vertical
-        for (let x = 0; x < this._game.nSquares; x++) {
+        for (let x = 0; x < this.game.nSquares; x++) {
             const left = cageLinePositions[x * 2]
             const right = cageLinePositions[x * 2 + 1]
 
-            for (let y = 0; y < this._game.nSquares; y++) {
-                const cell = this._game.get({ x, y })
+            for (let y = 0; y < this.game.nSquares; y++) {
+                const cell = this.game.get({ x, y })
                 if (!cell || !cell.cage) continue
 
                 const vShift = cell.cageSum! > 0 ? Math.ceil(this.squareSize * 0.20) : 0
@@ -213,11 +213,11 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                 const top = cageLinePositions[y * 2]
                 const bottom = cageLinePositions[y * 2 + 1]
 
-                const leftCell = this._game.get({ x: x - 1, y })
-                const bottomCell = this._game.get({ x, y: y + 1 })
-                const bottomLeftCell = this._game.get({ x: x - 1, y: y + 1 })
-                const rightCell = this._game.get({ x: x + 1, y })
-                const bottomRightCell = this._game.get({ x: x + 1, y: y + 1 })
+                const leftCell = this.game.get({ x: x - 1, y })
+                const bottomCell = this.game.get({ x, y: y + 1 })
+                const bottomLeftCell = this.game.get({ x: x - 1, y: y + 1 })
+                const rightCell = this.game.get({ x: x + 1, y })
+                const bottomRightCell = this.game.get({ x: x + 1, y: y + 1 })
 
                 //Left line
                 if (!leftCell || leftCell.cage !== cell.cage) {
@@ -287,7 +287,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
             KillerCanvas.dashedLine(this.cagesOffscreenCanvasCtx, vector.start, vector.end, vector.ratio, Canvas.CAGE_LINE_WIDTH)
         })
 
-        for (const cell of this._game.allCells) {
+        for (const cell of this.game.allCells) {
             if (cell.cage && cell.cageSum > 0) KillerCanvas.drawSVGNumber(this.cagesOffscreenCanvasCtx, cell.cageSum, cell.screenPosition.x + this.cagePadding, cell.screenPosition.y + this.cagePadding + this.squareSize * 0.08, this.squareSize * 0.15, 'right', 'center', null)
         }
     }

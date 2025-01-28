@@ -1,5 +1,6 @@
 import { DifficultyName, GameModeName } from "./Difficulties"
 import { ThemeName } from '../game/Themes'
+import Board from './Board'
 
 export type DigitChar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
@@ -36,3 +37,30 @@ export type RawGameData = {
 }
 
 export type MissionsData = Record<GameModeName, Record<DifficultyName, RawGameData[]>>
+
+interface MethodParams {
+    causedByUser: boolean; // This property is mandatory
+    [key: string]: any   // Allow additional properties if needed
+}
+
+export function UseHistory(
+    target: Object,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+): void {
+    const originalMethod = descriptor.value!
+
+    descriptor.value = function (this: Board, args: MethodParams): unknown {
+        if (args.causedByUser) {
+            this.stashBoard()
+        }
+
+        const result = originalMethod.apply(this, [args])
+
+        if (args.causedByUser) {
+            this.triggerValuesChanged(true)
+        }
+
+        return result
+    }
+}

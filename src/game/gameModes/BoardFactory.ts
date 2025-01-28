@@ -1,3 +1,4 @@
+import Board from '../../utils/Board'
 import { GameData } from '../../utils/DataTypes'
 import { GameModeName } from '../../utils/Difficulties'
 import { defaultSettings } from '../../utils/SettingsHandler'
@@ -7,31 +8,30 @@ import { SandwichBoard } from './sandwich/SandwichBoard'
 import { SudokuXBoard } from './sudokuX/SudokuXBoard'
 import { ThermoBoard } from './thermo/ThermoBoard'
 
-export type AnyBoard = ClassicBoard | KillerBoard | SudokuXBoard | SandwichBoard | ThermoBoard
-
-export function createBoard(gameMode: GameModeName, data: GameData, settings = defaultSettings): AnyBoard {
+export function BoardFactory(gameMode: GameModeName, data: GameData, settings = defaultSettings): Board {
     let newGame
 
     switch (gameMode) {
         case 'classic':
-            newGame = new ClassicBoard(data, settings)
+            newGame = new ClassicBoard(data.id, data.mission, settings)
             break
         case 'killer':
-            newGame = new KillerBoard(data, settings)
+            newGame = new KillerBoard(data.id, data.mission, settings)
             break
         case 'sudokuX':
-            newGame = new SudokuXBoard(data, settings)
+            newGame = new SudokuXBoard(data.id, data.mission, settings)
             break
         case 'sandwich':
-            newGame = new SandwichBoard(data, settings)
+            newGame = new SandwichBoard(data.id, data.mission, settings)
             break
         case 'thermo':
-            newGame = new ThermoBoard(data, settings)
+            newGame = new ThermoBoard(data.id, data.mission, settings)
             break
         default:
             throw new Error(`Unknown game mode: ${gameMode}`)
     }
 
-    newGame.triggerValuesChanged()
+    newGame.init(data)
+
     return newGame
 }

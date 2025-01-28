@@ -1,7 +1,5 @@
 import { Cell } from '../../../utils/Cell'
-import { GameData } from '../../../utils/DataTypes'
 import { ClassicBoard } from '../classic/ClassicBoard'
-import { defaultSettings } from '../../../utils/SettingsHandler'
 
 export type SandwichClue = {
     value: number
@@ -10,24 +8,13 @@ export type SandwichClue = {
 }
 
 export class SandwichBoard extends ClassicBoard {
-    public horizontalClues: SandwichClue[]
-    public verticalClues: SandwichClue[]
+    public horizontalClues: SandwichClue[] = []
+    public verticalClues: SandwichClue[] = []
 
-    constructor(data: GameData, settings = defaultSettings) {
-        super(data, settings)
-
-        this.horizontalClues = []
-        this.verticalClues = []
-        this.initializeSandwichClues()
-    }
-
-    protected findSolution(): string {
-        const [, , solution] = this.mission.split(' ')
-        return solution
-    }
-
-    protected initializeSandwichClues() {
-        const [, , , hClues, vClues] = this._mission.split(' ')
+    protected getDataFromMission(): void {
+        const [nSquares, , solution, hClues, vClues] = this.mission.split(' ')
+        this._nSquares = Number.parseInt(nSquares)
+        this._solution = solution
 
         this.horizontalClues = hClues.split(',').map(clue => ({
             value: Number.parseInt(clue),
@@ -71,31 +58,31 @@ export class SandwichBoard extends ClassicBoard {
         return -1
     }
 
-    protected checkAdditionalErrors(): void {
-        for (let x = 0; x < this.nSquares; x++) {
+    protected checkErrors(): void {
+        super.checkErrors()
+
+        for (let x = 0; x < this._nSquares; x++) {
             const sum = this.getSumBetween1And9(-1, x)
             this.verticalClues[x].visible = true
             this.verticalClues[x].error = false
             if (sum !== -1 && sum !== this.verticalClues[x].value) {
                 this.verticalClues[x].error = true
+                this._hasErrors = true
             } else if (sum === this.verticalClues[x].value) {
                 this.verticalClues[x].visible = false
             }
         }
 
-        for (let y = 0; y < this.nSquares; y++) {
+        for (let y = 0; y < this._nSquares; y++) {
             const sum = this.getSumBetween1And9(y, -1)
             this.horizontalClues[y].visible = true
             this.horizontalClues[y].error = false
             if (sum !== -1 && sum !== this.horizontalClues[y].value) {
                 this.horizontalClues[y].error = true
+                this._hasErrors = true
             } else if (sum === this.horizontalClues[y].value) {
                 this.horizontalClues[y].visible = false
             }
         }
-    }
-
-    protected hasAdditionalErrors(): boolean {
-        return this.horizontalClues.some(clue => clue.error) || this.verticalClues.some(clue => clue.error)
     }
 }

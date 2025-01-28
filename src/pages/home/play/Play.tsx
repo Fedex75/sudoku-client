@@ -12,12 +12,8 @@ import { AccentColor } from "../../../utils/Colors"
 import Canvas from "../../../components/CanvasComponent"
 import SVGSettings from "../../../svg/settings"
 import { ThemeName } from '../../../game/Themes'
-import { ClassicBoard } from '../../../game/gameModes/classic/ClassicBoard'
-import { KillerBoard } from '../../../game/gameModes/killer/KillerBoard'
-import { SandwichBoard } from '../../../game/gameModes/sandwich/SandwichBoard'
-import { ThermoBoard } from '../../../game/gameModes/thermo/ThermoBoard'
-import { SudokuXBoard } from '../../../game/gameModes/sudokuX/SudokuXBoard'
-import { createCanvas } from '../../../game/gameModes/createCanvas'
+import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
+import { BoardFactory } from '../../../game/gameModes/BoardFactory'
 
 type Props = {
     theme: ThemeName
@@ -28,11 +24,11 @@ export default function Play({ theme, accentColor }: Props) {
     const [newGameMode, setNewGameMode] = useState<GameModeName>()
     const [snappedIndex, setSnappedIndex] = useState(2)
 
-    const classicCanvasRef = useRef(createCanvas('classic', accentColor, true, 0))
-    const killerCanvasRef = useRef(createCanvas('killer', accentColor, true, 0))
-    const sudokuXCanvasRef = useRef(createCanvas('sudokuX', accentColor, true, 0))
-    const sandwichCanvasRef = useRef(createCanvas('sandwich', accentColor, true, 0))
-    const thermoCanvasRef = useRef(createCanvas('thermo', accentColor, true, 0))
+    const classicCanvasRef = useRef(CanvasFactory('classic', accentColor, true, 0))
+    const killerCanvasRef = useRef(CanvasFactory('killer', accentColor, true, 0))
+    const sudokuXCanvasRef = useRef(CanvasFactory('sudokuX', accentColor, true, 0))
+    const sandwichCanvasRef = useRef(CanvasFactory('sandwich', accentColor, true, 0))
+    const thermoCanvasRef = useRef(CanvasFactory('thermo', accentColor, true, 0))
 
     const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
 
@@ -42,7 +38,7 @@ export default function Play({ theme, accentColor }: Props) {
     const { t } = useTranslation()
 
     const classicBoard = useMemo(() => {
-        const newClassicBoard = new ClassicBoard({ id: 'cu0', mission: '3 1.3:4.8.' })
+        const newClassicBoard = BoardFactory('classic', { id: 'cu0', mission: '3 1.3:4.8.' })
         newClassicBoard.get({ x: 1, y: 0 })!.value = 2
         newClassicBoard.get({ x: 0, y: 1 })!.value = 6
         newClassicBoard.get({ x: 0, y: 2 })!.value = 7
@@ -51,7 +47,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const killerBoard = useMemo(() => {
-        const newKillerBoard = new KillerBoard({ id: 'ku0', mission: '3 1.3:4.8. 123654789 0010,2021,0102,11,1222' })
+        const newKillerBoard = BoardFactory('killer', { id: 'ku0', mission: '3 1.3:4.8. 123654789 0010,2021,0102,11,1222' })
         newKillerBoard.get({ x: 1, y: 0 })!.value = 2
         newKillerBoard.get({ x: 0, y: 1 })!.value = 6
         newKillerBoard.get({ x: 0, y: 2 })!.value = 7
@@ -60,7 +56,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const sudokuXBoard = useMemo(() => {
-        const newSudokuXBoard = new SudokuXBoard({ id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
+        const newSudokuXBoard = BoardFactory('sudokuX', { id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
         newSudokuXBoard.get({ x: 1, y: 0 })!.value = 2
         newSudokuXBoard.get({ x: 0, y: 1 })!.value = 6
         newSudokuXBoard.get({ x: 0, y: 2 })!.value = 7
@@ -69,7 +65,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const sandwichBoard = useMemo(() => {
-        const newSandwichBoard = new SandwichBoard({ id: 'wu0', mission: '3 1.3:4.8. 123456789 35,9,3 13,30,11' })
+        const newSandwichBoard = BoardFactory('sandwich', { id: 'wu0', mission: '3 1.3:4.8. 123456789 35,9,3 13,30,11' })
         newSandwichBoard.get({ x: 1, y: 0 })!.value = 2
         newSandwichBoard.get({ x: 0, y: 1 })!.value = 6
         newSandwichBoard.get({ x: 0, y: 2 })!.value = 7
@@ -78,7 +74,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const thermoBoard = useMemo(() => {
-        const newThermoBoard = new ThermoBoard({ id: 'tu0', mission: '3 1.3:4.8. 0,1,2,5;3,6,7,8' })
+        const newThermoBoard = BoardFactory('thermo', { id: 'tu0', mission: '3 1.3:4.8. 0,1,2,5;3,6,7,8' })
         newThermoBoard.get({ x: 1, y: 0 })!.value = 2
         newThermoBoard.get({ x: 0, y: 1 })!.value = 6
         newThermoBoard.get({ x: 0, y: 2 })!.value = 7

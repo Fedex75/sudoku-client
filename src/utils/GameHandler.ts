@@ -2,10 +2,11 @@ import missionsData from '../data/missions.json'
 import { difficulties, DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties'
 import { defaultStatistics, Statistics, update } from './Statistics'
 import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes'
-import { createBoard, AnyBoard } from '../game/gameModes/createBoard'
+import { BoardFactory } from '../game/gameModes/BoardFactory'
 import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION, RECOMMENDATIONS_API_VERSION, BOOKMARKS_API_VERSION, SOLVED_API_VERSION, STATISTICS_API_VERSION } from './Constants'
 import { getStoredData, saveData } from './LocalStorageHandler'
 import { getCurrentSettings } from './SettingsHandler'
+import Board from './Board'
 
 const missions: MissionsData = missionsData as MissionsData
 
@@ -44,7 +45,7 @@ const SOLVED_KEY = 'solved'
 const STATISTICS_KEY = 'statistics'
 
 class GameHandler {
-	game: AnyBoard | null
+	game: Board | null
 	complete: boolean
 	bookmarks: Bookmark[]
 	solved: string[]
@@ -70,7 +71,7 @@ class GameHandler {
 
 		this.recommendations = getStoredData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, defaultRecommendations)
 
-		this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? createBoard(getMode(gameData.id[0] as GameModeIdentifier), gameData, getCurrentSettings()) : null)
+		this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? BoardFactory(getMode(gameData.id[0] as GameModeIdentifier), gameData, getCurrentSettings()) : null)
 
 		this.bookmarks = getStoredData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, [])
 
@@ -79,7 +80,7 @@ class GameHandler {
 		this.statistics = getStoredData(STATISTICS_KEY, STATISTICS_API_VERSION, defaultStatistics)
 	}
 
-	setCurrentGame(board: AnyBoard) {
+	setCurrentGame(board: Board) {
 		this.game = board
 		this.complete = false
 		this.saveGame()
@@ -113,7 +114,7 @@ class GameHandler {
 			}
 			if (candidates.length > 0) {
 				const rawData = candidates[Math.floor(Math.random() * candidates.length)]
-				this.setCurrentGame(createBoard(mode, {
+				this.setCurrentGame(BoardFactory(mode, {
 					id: rawData.id,
 					mission: rawData.m
 				}, getCurrentSettings()))
@@ -122,7 +123,7 @@ class GameHandler {
 	}
 
 	boardFromCustomMission(mode: GameModeName, mission: string) {
-		return createBoard(mode, {
+		return BoardFactory(mode, {
 			id: '',
 			mission: mission
 		})
@@ -165,7 +166,7 @@ class GameHandler {
 
 	saveGame() {
 		if (!this.game) return
-		saveData(GAME_KEY, BOARD_API_VERSION, this.game.getDataToSave())
+		saveData(GAME_KEY, BOARD_API_VERSION, this.game.dataToSave)
 	}
 
 	setComplete() {
@@ -222,7 +223,7 @@ class GameHandler {
 			this.setCurrentGame(this.boardFromCustomMission(getMode(bm.id[0] as GameModeIdentifier), bm.m))
 		} else {
 			const rawData = this.findMissionFromID(bm.id)
-			this.setCurrentGame(createBoard(getMode(rawData.id[0] as GameModeIdentifier), {
+			this.setCurrentGame(BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
 				id: rawData.id,
 				mission: rawData.m
 			}))

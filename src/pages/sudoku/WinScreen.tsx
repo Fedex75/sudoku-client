@@ -5,12 +5,12 @@ import { AccentColor } from "../../utils/Colors"
 import { DifficultyName, difficulties } from "../../utils/Difficulties"
 import GameHandler from "../../utils/GameHandler"
 import { convertMillisecondsToHMS } from "../../utils/Statistics"
-import { AnyBoard } from '../../game/gameModes/createBoard'
+import Board from '../../utils/Board'
 
 interface WinScreenProps {
     handleNewGameClick: () => void
     handleNewGame: (diff: DifficultyName) => void
-    game: AnyBoard
+    game: Board
     accentColor: AccentColor
 }
 
