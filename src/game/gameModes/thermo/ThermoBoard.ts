@@ -44,7 +44,9 @@ export class ThermoBoard extends ClassicBoard {
         }
     }
 
-    protected checkAdditionalErrors(): void {
+    protected checkErrors(): void {
+        super.checkErrors()
+
         for (const thermo of this.thermometers) {
             let currentMaxValue = 0
             thermo.error = false
