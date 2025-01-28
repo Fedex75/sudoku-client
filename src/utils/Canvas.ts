@@ -724,5 +724,9 @@ export abstract class Canvas<BoardType extends Board> {
         this.noteDeltas = newNoteDeltas
     }
 
-    abstract renderActiveGame(): void
+    protected abstract renderActiveGame(): void
+
+    public createOffscreenCanvases(): void { }
+
+    public destroyOffscreenCanvases(): void { }
 }

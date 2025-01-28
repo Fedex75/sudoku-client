@@ -3,13 +3,27 @@ import { Thermometer } from '../../../utils/Cell'
 import { ThermoBoard } from './ThermoBoard'
 
 export class ThermoCanvas extends Canvas<ThermoBoard> {
-    protected readonly thermometersOffscreenCanvas = document.createElement('canvas')
-    protected readonly thermometersOffscreenCanvasCtx = this.thermometersOffscreenCanvas.getContext('2d')
-    protected readonly thermometersTempCanvas = document.createElement('canvas')
-    protected readonly thermometersTempCanvasCtx = this.thermometersTempCanvas.getContext('2d')
+    protected thermometersOffscreenCanvas: HTMLCanvasElement | null = null
+    protected thermometersOffscreenCanvasCtx: CanvasRenderingContext2D | null = null
+    protected thermometersTempCanvas: HTMLCanvasElement | null = null
+    protected thermometersTempCanvasCtx: CanvasRenderingContext2D | null = null
+
+    public createOffscreenCanvases(): void {
+        this.thermometersOffscreenCanvas = document.createElement('canvas')
+        this.thermometersOffscreenCanvasCtx = this.thermometersOffscreenCanvas.getContext('2d')
+        this.thermometersTempCanvas = document.createElement('canvas')
+        this.thermometersTempCanvasCtx = this.thermometersTempCanvas.getContext('2d')
+    }
+
+    public destroyOffscreenCanvases(): void {
+        this.thermometersOffscreenCanvas = null
+        this.thermometersOffscreenCanvasCtx = null
+        this.thermometersTempCanvas = null
+        this.thermometersTempCanvasCtx = null
+    }
 
     protected renderThermometersToOffscreenCanvas() {
-        if (!this.thermometersOffscreenCanvas || !this.thermometersOffscreenCanvasCtx || !this._game) return
+        if (!this.thermometersOffscreenCanvas || !this.thermometersTempCanvas || !this.thermometersOffscreenCanvas || !this.thermometersOffscreenCanvasCtx || !this._game) return
 
         this.thermometersOffscreenCanvas.width = this.logicalSize
         this.thermometersOffscreenCanvas.height = this.logicalSize
@@ -55,7 +69,7 @@ export class ThermoCanvas extends Canvas<ThermoBoard> {
     }
 
     protected renderThermometers() {
-        if (!this.thermometersTempCanvasCtx || !this.canvasRef || !this._game) return
+        if (!this.thermometersOffscreenCanvas || !this.thermometersTempCanvas || !this.thermometersTempCanvasCtx || !this.canvasRef || !this._game) return
         const ctx = this.canvasRef.getContext('2d')
         if (!ctx) return
 

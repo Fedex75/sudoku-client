@@ -12,6 +12,7 @@ export default function CanvasComponent({ canvasHandler, paused }: Props) {
 
 	useEffect(() => {
 		if (canvasRef.current) {
+			canvasHandler.createOffscreenCanvases()
 			canvasHandler.resizeCanvas()
 
 			const resizeObserver = new ResizeObserver((entries) => {
@@ -23,6 +24,8 @@ export default function CanvasComponent({ canvasHandler, paused }: Props) {
 			resizeObserver.observe(canvasRef.current)
 
 			return () => {
+				canvasHandler.canvasRef = null
+				canvasHandler.destroyOffscreenCanvases()
 				resizeObserver.disconnect()
 			}
 		}

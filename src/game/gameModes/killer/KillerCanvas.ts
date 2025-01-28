@@ -12,10 +12,10 @@ export type CageVector = {
 }
 
 export class KillerCanvas extends Canvas<KillerBoard> {
-    protected readonly cagesOffscreenCanvas = document.createElement('canvas')
-    protected readonly cagesOffscreenCanvasCtx = this.cagesOffscreenCanvas.getContext('2d')
-    protected readonly cagesTempCanvas = document.createElement('canvas')
-    protected readonly cagesTempCanvasCtx = this.cagesTempCanvas.getContext('2d')
+    protected cagesOffscreenCanvas: HTMLCanvasElement | null = null
+    protected cagesOffscreenCanvasCtx: CanvasRenderingContext2D | null = null
+    protected cagesTempCanvas: HTMLCanvasElement | null = null
+    protected cagesTempCanvasCtx: CanvasRenderingContext2D | null = null
 
     protected cagePadding = 0
 
@@ -39,7 +39,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
     }
 
     protected renderCagesAndCageValues() {
-        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.canvasRef || !this.game) return
+        if (!this.cagesOffscreenCanvas || !this.cagesOffscreenCanvasCtx || !this.cagesTempCanvas || !this.cagesTempCanvasCtx || !this.canvasRef || !this.game) return
         const ctx = this.canvasRef.getContext('2d')
         if (!ctx) return
 
@@ -96,7 +96,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
     }
 
     protected renderCagesToOffscreenCanvas() {
-        if (!this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.game) return
+        if (!this.cagesOffscreenCanvas || !this.cagesTempCanvas || !this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.game) return
 
         this.cagePadding = Math.floor(this.squareSize * 0.08)
         let cageLinePositions = Array(this.game.nSquares * 2).fill(0)
@@ -297,12 +297,26 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         this.renderCagesToOffscreenCanvas()
     }
 
-    renderActiveGame(): void {
+    protected renderActiveGame(): void {
         this.renderCellBackground()
         this.renderCellValueAndCandidates()
         this.renderCagesAndCageValues()
         this.renderSelection()
         this.renderLinks()
         this.renderFadeAnimations()
+    }
+
+    public createOffscreenCanvases(): void {
+        this.cagesOffscreenCanvas = document.createElement('canvas')
+        this.cagesTempCanvas = document.createElement('canvas')
+        this.cagesOffscreenCanvasCtx = this.cagesOffscreenCanvas.getContext('2d')
+        this.cagesTempCanvasCtx = this.cagesTempCanvas.getContext('2d')
+    }
+
+    public destroyOffscreenCanvases(): void {
+        this.cagesOffscreenCanvas = null
+        this.cagesOffscreenCanvasCtx = null
+        this.cagesTempCanvas = null
+        this.cagesTempCanvasCtx = null
     }
 }
