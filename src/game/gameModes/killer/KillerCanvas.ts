@@ -16,8 +16,8 @@ export class KillerCanvas extends Canvas<KillerBoard> {
 
     protected cagePadding = 0
 
-    constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
-        super(accentColor, notPlayable, boxBorderWidthFactor)
+    constructor(accentColor: AccentColor, notPlayable: boolean) {
+        super(accentColor, notPlayable)
         this.notePaddingLeftFactor = 0.28
         this.notePaddingTopFactor = 0.34
         this.notePaddingBottomFactor = 0.22

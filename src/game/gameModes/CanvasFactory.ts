@@ -8,18 +8,18 @@ import { SandwichCanvas } from './sandwich/SandwichCanvas'
 import { SudokuXCanvas } from './sudokuX/SudokuXCanvas'
 import { ThermoCanvas } from './thermo/ThermoCanvas'
 
-export function CanvasFactory(gameMode: GameModeName, accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number): Canvas<Board> {
+export function CanvasFactory(gameMode: GameModeName, accentColor: AccentColor, notPlayable: boolean): Canvas<Board> {
     switch (gameMode) {
         case 'classic':
-            return new ClassicCanvas(accentColor, notPlayable, boxBorderWidthFactor)
+            return new ClassicCanvas(accentColor, notPlayable)
         case 'killer':
-            return new KillerCanvas(accentColor, notPlayable, boxBorderWidthFactor)
+            return new KillerCanvas(accentColor, notPlayable)
         case 'sudokuX':
-            return new SudokuXCanvas(accentColor, notPlayable, boxBorderWidthFactor)
+            return new SudokuXCanvas(accentColor, notPlayable)
         case 'sandwich':
-            return new SandwichCanvas(accentColor, notPlayable, boxBorderWidthFactor)
+            return new SandwichCanvas(accentColor, notPlayable)
         case 'thermo':
-            return new ThermoCanvas(accentColor, notPlayable, boxBorderWidthFactor)
+            return new ThermoCanvas(accentColor, notPlayable)
         default:
             throw new Error(`Unknown game mode: ${gameMode}`)
     }

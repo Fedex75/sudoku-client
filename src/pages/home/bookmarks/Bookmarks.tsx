@@ -98,8 +98,9 @@ function Bookmarks({ theme, accentColor }: Props) {
 								solved = GameHandler.solved.includes(bm.id)
 
 
-								const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
+								const canvasHandlerRef = CanvasFactory(mode, accentColor, true)
 								canvasHandlerRef.game = board
+								canvasHandlerRef.game.settings.highContrastGrid = false
 								canvasHandlerRef.theme = theme
 
 								return (
@@ -107,11 +108,10 @@ function Bookmarks({ theme, accentColor }: Props) {
 										<div className="bookmarks_item__top">
 											<p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
 											{solved ? <FontAwesomeIcon style={{ color: 'var(--green)' }} icon={faCheck} /> : null}
-											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
+											<FontAwesomeIcon color='var(--primaryIconColor)' icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
-										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											<Canvas canvasHandler={canvasHandlerRef} paused={false} />
-										</div>
+
+										<Canvas canvasHandler={canvasHandlerRef} paused={false} onWrapperClick={() => { handlePlayBookmark(bm) }} />
 									</div>
 								)
 							})

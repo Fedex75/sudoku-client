@@ -35,11 +35,11 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
     classicMiniature.get({ x: 0, y: 2 })!.value = 7
     classicMiniature.get({ x: 2, y: 2 })!.value = 9
 
-    const newCanvasHandlerLight = CanvasFactory('classic', accentColor, true, 0)
+    const newCanvasHandlerLight = CanvasFactory('classic', accentColor, true)
     newCanvasHandlerLight.game = classicMiniature
     newCanvasHandlerLight.theme = 'light'
 
-    const newCanvasHandlerDark = CanvasFactory('classic', accentColor, true, 0)
+    const newCanvasHandlerDark = CanvasFactory('classic', accentColor, true)
     newCanvasHandlerDark.game = classicMiniature
     newCanvasHandlerDark.theme = 'dark'
 

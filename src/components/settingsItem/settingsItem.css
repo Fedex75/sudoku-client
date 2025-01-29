@@ -23,7 +23,6 @@
 
 .settings__item__title {
   flex-grow: 1;
-  font-size: 18px;
   margin-right: 40px;
   color: var(--settingsItemTitleColor);
 }

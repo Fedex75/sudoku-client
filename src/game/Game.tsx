@@ -49,7 +49,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 
 	const { settings } = useSettings()
 
-	const canvasHandlerRef = useRef(CanvasFactory(game.mode, accentColor, false, 0.01))
+	const canvasHandlerRef = useRef(CanvasFactory(game.mode, accentColor, false))
 
 	const updateCalculatorValue = useCallback(() => {
 		if (!game) return
@@ -449,7 +449,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	return (
 		<div className="game">
 			<div className="sudoku">
-				<CanvasComponent canvasHandler={canvasHandlerRef.current} paused={paused} />
+				<CanvasComponent canvasHandler={canvasHandlerRef.current} paused={paused} wrapperClass='play__canvas-wrapper' />
 			</div>
 			<Numpad
 				onUndo={() => { handleUserInteraction(onUndo, null) }}

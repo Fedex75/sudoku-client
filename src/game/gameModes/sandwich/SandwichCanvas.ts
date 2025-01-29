@@ -4,8 +4,8 @@ import { themes } from '../../Themes'
 import { SandwichBoard } from './SandwichBoard'
 
 export class SandwichCanvas extends Canvas<SandwichBoard> {
-    constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
-        super(accentColor, notPlayable, boxBorderWidthFactor)
+    constructor(accentColor: AccentColor, notPlayable: boolean) {
+        super(accentColor, notPlayable)
         this.topAndLeftMarginFactor = 0.8
     }
 

@@ -61,10 +61,17 @@
   transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
 
+.home__play__canvas-wrapper {
+  display: grid;
+	place-items: center;
+  background-color: #344861;
+  border-radius: 6%;
+  padding: 1%;
+}
+
 .home__gameMode canvas {
   width: 70px;
-  border: solid 1px black;
-  border-radius: 8%;
+  border-radius: 5%;
   transition: width 0.5s ease;
 }
 

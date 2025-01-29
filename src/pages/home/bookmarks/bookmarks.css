@@ -9,13 +9,14 @@
 	display: flex;
 	flex-flow: column;
 	gap: 20px;
+	padding: 0 15px;
 	overflow-y: auto;
 }
 
 .bookmarks__item {
 	display: flex;
 	flex-flow: column;
-	background-color: var(--homeGridBackground);
+	background-color: var(--darkBackground);
 	padding: 15px;
 	border-radius: 20px;
 }
@@ -33,13 +34,9 @@
 	color: var(--primaryTextColor);
 }
 
-.bookmarks__item__canvas-wrapper {
-	display: grid;
-	place-items: center;
-}
-
 .bookmarks__item__canvas-wrapper canvas {
 	width: 100%;
+	border-radius: 5%;
 }
 
 .bookmarks__empty {

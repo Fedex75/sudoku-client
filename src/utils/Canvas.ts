@@ -194,7 +194,6 @@ export abstract class Canvas<BoardType extends Board> {
 
     protected _accentColor: AccentColor = 'darkBlue'
     protected _notPlayable: boolean
-    protected boxBorderWidthFactor: number
 
     protected squareSize: number = 0
     protected currentAnimations: BoardAnimation[] = []
@@ -213,15 +212,15 @@ export abstract class Canvas<BoardType extends Board> {
 
     protected hasResizedCanvas = false
 
+    protected boxBorderWidthFactor = 0.01
     protected notePaddingLeftFactor = 0.2
     protected notePaddingTopFactor = 0.17
     protected notePaddingBottomFactor = 0.17
     protected topAndLeftMarginFactor = 0 // How much space to leave around the board for clues, expressed as a fraction of a board square
 
-    constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
+    constructor(accentColor: AccentColor, notPlayable: boolean) {
         this.accentColor = accentColor
         this._notPlayable = notPlayable
-        this.boxBorderWidthFactor = boxBorderWidthFactor
         this.theme = 'dark'
 
         this.onMouseDown = this.onMouseDown.bind(this)
@@ -704,8 +703,6 @@ export abstract class Canvas<BoardType extends Board> {
 
         if (this.theme === 'light') {
             this.ctx.fillStyle = themes[this.theme].boxBorderColor
-            this.ctx.fillRect(lateralMargin, lateralMargin, boxBorderWidth, this.ctx.canvas.height - lateralMargin)
-            this.ctx.fillRect(lateralMargin, lateralMargin, this.ctx.canvas.width - lateralMargin, boxBorderWidth)
             for (let i = 2; i < this.game.nSquares; i += 3) {
                 const cell = this.game.get({ x: i, y: i })
                 if (cell) {
@@ -718,8 +715,8 @@ export abstract class Canvas<BoardType extends Board> {
             for (let i = 2; i < this.game.nSquares - 1; i += 3) {
                 const cell = this.game.get({ x: i, y: i })
                 if (cell) {
-                    this.ctx.fillRect(cell.screenPosition.x + this.squareSize, boxBorderWidth + lateralMargin, boxBorderWidth, this.ctx.canvas.height - boxBorderWidth * 2 - lateralMargin)
-                    this.ctx.fillRect(boxBorderWidth + lateralMargin, cell.screenPosition.y + this.squareSize, this.ctx.canvas.width - boxBorderWidth * 2 - lateralMargin, boxBorderWidth)
+                    this.ctx.fillRect(cell.screenPosition.x + this.squareSize, lateralMargin, boxBorderWidth, this.ctx.canvas.height - lateralMargin)
+                    this.ctx.fillRect(lateralMargin, cell.screenPosition.y + this.squareSize, this.ctx.canvas.width - lateralMargin, boxBorderWidth)
                 }
             }
         }
@@ -761,8 +758,8 @@ export abstract class Canvas<BoardType extends Board> {
         if (!this.ctx || !this.game) return
 
         const boxBorderWidth = this.ctx.canvas.width * this.boxBorderWidthFactor
-        const numberOfBoxBorders = (Math.floor(this.game.nSquares / 3) + 1)
-        const numberOfCellBorders = this.game.nSquares + 1 - numberOfBoxBorders
+        const numberOfBoxBorders = Math.floor(this.game.nSquares / 3 - 1)
+        const numberOfCellBorders = Math.floor(this.game.nSquares / 3 * 2)
         const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * Canvas.CELL_BORDER_WIDTH
         this.squareSize = Math.floor((this.ctx.canvas.width - totalBorderThickness) / (this.game.nSquares + this.topAndLeftMarginFactor))
 
@@ -773,7 +770,7 @@ export abstract class Canvas<BoardType extends Board> {
         let newCellPositions = []
         let newValuePositions = []
 
-        let pos = Math.floor(boxBorderWidth + this.squareSize * this.topAndLeftMarginFactor)
+        let pos = Math.floor(this.squareSize * this.topAndLeftMarginFactor)
         for (let i = 0; i < this.game.nSquares; i++) {
             newCellPositions.push(pos)
             newValuePositions.push(pos + this.squareSize / 2)
