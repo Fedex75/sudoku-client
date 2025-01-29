@@ -49,7 +49,7 @@ export default function Statistics({ theme, accentColor }: Props) {
 
     return (
         <div className='home__statistics'>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: 10, alignItems: 'center' }}>
+            <div className='home__section__title-wrapper'>
                 <p className='home__section-title'>{t('home.statistics')}</p>
                 <FontAwesomeIcon icon={faTrash} style={{ color: 'var(--red)' }} fontSize={20} onClick={() => { setResetStatisticsActionSheetIsOpen(true) }} />
             </div>

@@ -222,6 +222,7 @@ export abstract class Canvas<BoardType extends Board> {
         this.accentColor = accentColor
         this._notPlayable = notPlayable
         this.boxBorderWidthFactor = boxBorderWidthFactor
+        this.theme = 'dark'
 
         this.onMouseDown = this.onMouseDown.bind(this)
         this.onMouseMove = this.onMouseMove.bind(this)

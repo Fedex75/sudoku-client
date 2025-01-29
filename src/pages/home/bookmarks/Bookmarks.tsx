@@ -68,14 +68,18 @@ function Bookmarks({ theme, accentColor }: Props) {
 		if (GameHandler.game === null || GameHandler.complete) {
 			playBookmark(bm)
 		} else {
-			setPlayBookmarkData(bm)
-			setPlayBookmarkActionSheetIsOpen(true)
+			if (GameHandler.game.id === bm.id) {
+				navigate('/sudoku')
+			} else {
+				setPlayBookmarkData(bm)
+				setPlayBookmarkActionSheetIsOpen(true)
+			}
 		}
-	}, [playBookmark])
+	}, [playBookmark, navigate])
 
 	return (
 		<div className='home__bookmarks'>
-			<div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)' }}>
+			<div className='home__section__title-wrapper'>
 				<p className='home__section-title'>{t('home.bookmarks')}</p>
 				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20} /> : null}
 			</div>
@@ -88,20 +92,17 @@ function Bookmarks({ theme, accentColor }: Props) {
 								let solved
 
 								const mode = getMode(bm.id[0] as GameModeIdentifier)
+								const mission = missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData
+								board = BoardFactory(mode, {
+									id: bm.id,
+									mission: mission.m
+								})
+								solved = GameHandler.solved.includes(bm.id)
 
-								if (bm.m) {
-									board = GameHandler.boardFromCustomMission(mode, bm.m)
-									solved = false
-								} else {
-									const mission = missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData
-									board = BoardFactory(mode, {
-										id: bm.id,
-										mission: mission.m
-									})
-									solved = GameHandler.solved.includes(bm.id)
-								}
 
 								const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
+								canvasHandlerRef.game = board
+								canvasHandlerRef.theme = theme
 
 								return (
 									<div key={i} className="bookmarks__item">

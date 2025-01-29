@@ -219,15 +219,11 @@ class GameHandler {
 	}
 
 	loadGameFromBookmark(bm: Bookmark) {
-		if (bm.m) {
-			this.setCurrentGame(this.boardFromCustomMission(getMode(bm.id[0] as GameModeIdentifier), bm.m))
-		} else {
-			const rawData = this.findMissionFromID(bm.id)
-			this.setCurrentGame(BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
-				id: rawData.id,
-				mission: rawData.m
-			}))
-		}
+		const rawData = this.findMissionFromID(bm.id)
+		this.setCurrentGame(BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
+			id: rawData.id,
+			mission: rawData.m
+		}))
 	}
 
 	resetStatistics() {

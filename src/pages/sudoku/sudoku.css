@@ -102,10 +102,6 @@
   color: var(--bookmarkOffColor);
 }
 
-.bookmark-on {
-  color: var(--themeColor);
-}
-
 .numpad-wrapper {
   display: flex;
   flex-flow: column;

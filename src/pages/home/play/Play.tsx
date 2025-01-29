@@ -165,7 +165,7 @@ export default function Play({ theme, accentColor }: Props) {
 
     return (
         <div className='home__play'>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto fit-content(0)', paddingRight: '10px' }}>
+            <div className='home__section__title-wrapper'>
                 <p className='home__section-title'>{t('home.play')}</p>
                 <Link to='/settings'><SVGSettings className='home__play__settings' /></Link>
             </div>
