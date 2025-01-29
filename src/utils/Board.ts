@@ -146,7 +146,8 @@ export default abstract class Board {
 		this.history = data.history || []
 		this.getDataFromMission()
 		this.createBoardGeometry()
-		this.loadHistoryState(data.boardString)
+		if (data.boardString) this.loadHistoryState(data.boardString)
+		else this.recreatePossibleValuesCache()
 	}
 
 	protected abstract getDataFromMission(): void
@@ -202,11 +203,9 @@ export default abstract class Board {
 		}
 	}
 
-	public loadHistoryState(boardString: string | undefined) {
-		if (boardString) {
-			this.updateBoardMatrixFromSavedString(boardString)
-			this.recreatePossibleValuesCache()
-		}
+	public loadHistoryState(boardString: string) {
+		this.updateBoardMatrixFromSavedString(boardString)
+		this.recreatePossibleValuesCache()
 	}
 
 	public popBoard() {
