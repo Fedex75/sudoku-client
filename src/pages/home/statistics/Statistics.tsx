@@ -56,7 +56,7 @@ export default function Statistics({ theme, accentColor }: Props) {
 
             <div className='home__statistics-list'>
                 {
-                    Object.entries(GameHandler.statistics).map(([gameMode, difficulties]) => {
+                    Object.entries(GameHandler.statistics).map(([gameMode]) => {
                         const [selectedDifficultyName, data] = Object.entries(GameHandler.statistics[gameMode as GameModeName])[selectedDifficulties[gameMode]]
                         return (
                             <div key={gameMode} className='home__statistics-list__item' >

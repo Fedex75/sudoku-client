@@ -5,11 +5,10 @@ import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
 import { Link } from "react-router-dom"
 import { ActionSheet, ActionSheetButton } from '../../../components'
-import { getDifficulty, getMode, GameModeIdentifier, DifficultyIdentifier } from "../../../utils/Difficulties"
+import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
-import missionsData from '../../../data/missions.json'
 import { useTranslation } from 'react-i18next'
-import { Bookmark, MissionsData, RawGameData } from '../../../utils/DataTypes'
+import { Bookmark } from '../../../utils/DataTypes'
 import Canvas from '../../../components/CanvasComponent'
 import { AccentColor } from '../../../utils/Colors'
 import { ThemeName } from '../../../game/Themes'
@@ -20,8 +19,6 @@ type Props = {
 	theme: ThemeName
 	accentColor: AccentColor
 }
-
-const missions: MissionsData = missionsData as MissionsData
 
 function Bookmarks({ theme, accentColor }: Props) {
 	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
@@ -92,7 +89,8 @@ function Bookmarks({ theme, accentColor }: Props) {
 								let solved
 
 								const mode = getMode(bm.id[0] as GameModeIdentifier)
-								const mission = missions[mode][getDifficulty(bm.id[1] as DifficultyIdentifier)].find(mission => mission.id === bm.id) as RawGameData
+								const mission = GameHandler.findMissionFromID(bm.id)
+								if (!mission) return null
 								board = BoardFactory(mode, {
 									id: bm.id,
 									mission: mission.m

@@ -1,4 +1,3 @@
-import { DifficultyName, GameModeName } from "./Difficulties"
 import { ThemeName } from '../game/Themes'
 import Board from './Board'
 
@@ -35,7 +34,11 @@ export type RawGameData = {
     m: string
 }
 
-export type MissionsData = Record<GameModeName, Record<DifficultyName, RawGameData[]>>
+export type GameModeMissions<Difficulties extends string> = Partial<Record<Difficulties, RawGameData[]>>
+
+export type MissionsData<GameModes extends string, Difficulties extends string> = {
+    [GameMode in GameModes]: GameModeMissions<Difficulties>
+}
 
 interface MethodParams {
     causedByUser: boolean; // This property is mandatory

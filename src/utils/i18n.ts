@@ -49,6 +49,7 @@ export function initI18n() {
             sectionAppearance: 'Appearance',
             sectionGame: 'Game',
             sectionAdvanced: 'Advanced',
+            sectionGeneral: 'General',
             sectionLanguage: 'Language',
             sectionAbout: 'About Sudoku',
             automatic: 'Automatic',
@@ -90,7 +91,9 @@ export function initI18n() {
             languageAuto: 'Automatic',
             languageEnglish: 'English',
             languageSpanish: 'Spanish',
-            update: 'Update'
+            update: 'Update',
+            build: 'Build',
+            missionsTitle: 'MISSIONS'
           },
           sudoku: {
             saved: 'Bookmarked',
@@ -192,6 +195,7 @@ export function initI18n() {
             sectionAppearance: 'Apariencia',
             sectionGame: 'Juego',
             sectionAdvanced: 'Avanzado',
+            sectionGeneral: 'General',
             sectionLanguage: 'Idioma',
             sectionAbout: 'Acerca de Sudoku',
             automatic: 'Automático',
@@ -233,7 +237,9 @@ export function initI18n() {
             languageAuto: 'Automático',
             languageEnglish: 'Inglés',
             languageSpanish: 'Español',
-            update: 'Actualizar'
+            update: 'Actualizar',
+            build: 'Compilación',
+            missionsTitle: 'MISIONES'
           },
           sudoku: {
             saved: 'Guardado',

@@ -45,10 +45,11 @@
     "typescript": "^5.7.3"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject"
+    "git-info": "node src/gitInfo.js",
+    "start": "npm run git-info && react-app-rewired start",
+    "build": "npm run git-info -- --prod && react-app-rewired build",
+    "test": "npm run git-info && react-app-rewired test",
+    "eject": "npm run git-info && react-app-rewired eject"
   },
   "eslintConfig": {
     "extends": [

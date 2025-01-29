@@ -1,14 +1,15 @@
 import axios from "axios"
+import buildInfo from '../generatedGitInfo.json'
 
 class API {
 	host: string
 	clientVersion: string
-	clientVersionIsBeta: boolean
+	buildHash: string
 
 	constructor() {
 		this.host = 'https://sudoku.zaifo.com.ar'
-		this.clientVersion = '3.0.1'
-		this.clientVersionIsBeta = false
+		this.clientVersion = buildInfo.version
+		this.buildHash = buildInfo.gitCommitHash
 	}
 
 	log(error: any) {

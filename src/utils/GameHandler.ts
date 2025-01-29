@@ -8,8 +8,6 @@ import { getStoredData, saveData } from './LocalStorageHandler'
 import { getCurrentSettings } from './SettingsHandler'
 import Board from './Board'
 
-const missions: MissionsData = missionsData as MissionsData
-
 type Recommendations = {
 	newGame: {
 		mode: GameModeName
@@ -51,6 +49,7 @@ class GameHandler {
 	solved: string[]
 	recommendations: Recommendations
 	statistics: Statistics<GameModeName, DifficultyName>
+	missions: MissionsData<GameModeName, DifficultyName> = missionsData as MissionsData<GameModeName, DifficultyName>
 
 	constructor() {
 		this.game = null
@@ -99,17 +98,18 @@ class GameHandler {
 				this.complete = false
 			}
 		} else {
-			let candidates = missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
+			if (!this.missions[mode] || !this.missions[mode][difficulty]) return
+			let candidates = this.missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
 			if (candidates.length === 0) {
-				if (missions[mode][difficulty].length === 0) {
+				if (this.missions[mode][difficulty].length === 0) {
 					for (let diff of difficulties[mode]) {
-						if (missions[mode][diff].length > 0) {
-							candidates = missions[mode][diff]
+						if (this.missions[mode] && this.missions[mode][diff] && this.missions[mode][diff].length > 0) {
+							candidates = this.missions[mode][diff]
 							break
 						}
 					}
 				} else {
-					candidates = missions[mode][difficulty]
+					candidates = this.missions[mode][difficulty]
 				}
 			}
 			if (candidates.length > 0) {
@@ -154,7 +154,10 @@ class GameHandler {
 	}*/
 
 	findMissionFromID(id: string) {
-		return missions[getMode(id[0] as GameModeIdentifier)][getDifficulty(id[1] as DifficultyIdentifier)].find(mission => mission.id === id) as RawGameData
+		const mode = getMode(id[0] as GameModeIdentifier)
+		const diff = getDifficulty(id[1] as DifficultyIdentifier)
+		if (!this.missions[mode] || !this.missions[mode][diff]) return undefined
+		return this.missions[mode][diff].find(mission => mission.id === id) as RawGameData
 	}
 
 	exportMission() {
@@ -220,6 +223,7 @@ class GameHandler {
 
 	loadGameFromBookmark(bm: Bookmark) {
 		const rawData = this.findMissionFromID(bm.id)
+		if (!rawData) return
 		this.setCurrentGame(BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
 			id: rawData.id,
 			mission: rawData.m

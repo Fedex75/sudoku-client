@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPalette, faChevronRight, faBorderAll, faGear, faInfo, faHeart, faGlobe } from '@fortawesome/free-solid-svg-icons'
+import { faPalette, faChevronRight, faBorderAll, faGear, faHeart, faToolbox } from '@fortawesome/free-solid-svg-icons'
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
@@ -16,20 +16,22 @@ import FlagSpainSVG from '../../svg/flag_spain'
 import { useServiceWorker } from '../../components/serviceWorker/useServiceWorker'
 import { ThemeName } from '../../game/Themes'
 import { Language, useSettings } from '../../utils/SettingsHandler'
+import GameHandler from '../../utils/GameHandler'
 
 type SectionLinkProps = {
 	color: string
-	icon: IconDefinition
+	icon?: IconDefinition
+	iconColor?: string
 	title: string
 	link: string
 }
 
-function SectionLink({ color, icon, title, link }: SectionLinkProps) {
+function SectionLink({ color, iconColor, icon, title, link }: SectionLinkProps) {
 	return (
 		<Link to={link} className='settings__section-link'>
-			<div className='settings__section-link__icon' style={{ backgroundColor: color }}><FontAwesomeIcon icon={icon} color={link === 'advanced' ? 'gray' : 'white'} /></div>
+			{icon && <div className='settings__section-link__icon' style={{ backgroundColor: color }}><FontAwesomeIcon icon={icon} color={iconColor} /></div>}
 			<div className='settings__section-link__right-wrapper'>
-				<p>{title}</p>
+				<p className='settings__section-link__title'>{title}</p>
 				<FontAwesomeIcon icon={faChevronRight} color='gray' />
 			</div>
 		</Link>
@@ -45,11 +47,10 @@ function Main() {
 			<Topbar title={t('sectionNames.settings')} backURL="/" />
 			<SectionContent id="settings">
 				<div className="settings__section__list">
-					<SectionLink color='var(--darkBlue)' icon={faPalette} title={t('settings.sectionAppearance')} link='appearance' />
-					<SectionLink color='var(--red)' icon={faBorderAll} title={t('settings.sectionGame')} link='game' />
-					<SectionLink color='var(--lightGray)' icon={faGear} title={t('settings.sectionAdvanced')} link='advanced' />
-					<SectionLink color='var(--darkBlue)' icon={faGlobe} title={t('settings.sectionLanguage')} link='language' />
-					<SectionLink color='var(--darkBlue)' icon={faInfo} title={t('settings.sectionAbout')} link='about' />
+					<SectionLink color='var(--darkBlue)' icon={faPalette} iconColor='white' title={t('settings.sectionAppearance')} link='appearance' />
+					<SectionLink color='var(--red)' icon={faBorderAll} iconColor='white' title={t('settings.sectionGame')} link='game' />
+					<SectionLink color='var(--lightGray)' icon={faToolbox} iconColor='darkGray' title={t('settings.sectionAdvanced')} link='advanced' />
+					<SectionLink color='var(--lightGray)' icon={faGear} iconColor='darkGray' title={t('settings.sectionGeneral')} link='general' />
 				</div>
 
 				{
@@ -191,6 +192,22 @@ function AdvancedSettings({ accentColorHex }: AdvancedProps) {
 	)
 }
 
+function GeneralSection() {
+	const { t } = useTranslation()
+
+	return (
+		<Section>
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGeneral')} backURL="/settings" />
+			<SectionContent id="settings">
+				<div className="settings__section__list">
+					<SectionLink color='var(--darkBlue)' title={t('settings.sectionLanguage')} link='language' />
+					<SectionLink color='var(--darkBlue)' title={t('settings.sectionAbout')} link='about' />
+				</div>
+			</SectionContent>
+		</Section>
+	)
+}
+
 function LanguageSettings({ accentColorHex }: AdvancedProps) {
 	const { t, i18n } = useTranslation()
 	const { settings, updateSettings } = useSettings()
@@ -206,7 +223,7 @@ function LanguageSettings({ accentColorHex }: AdvancedProps) {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionLanguage')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionLanguage')} backURL="/settings/general" />
 			<SectionContent id="settings">
 				<div className='settings__label'>{t('settings.language')}</div>
 
@@ -225,10 +242,21 @@ function AboutSection() {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAbout')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAbout')} backURL="/settings/general" />
 			<SectionContent id="settings">
 				<div className="settings__list">
 					<SettingsItem type='info' title={t('settings.version')} info={API.clientVersion} />
+					<SettingsItem type='info' title={t('settings.build')} info={API.buildHash} />
+				</div>
+
+				<div className='settings__label'>{t('settings.missionsTitle')}</div>
+
+				<div className="settings__list">
+					{
+						Object.entries(GameHandler.missions).map(([gameMode, difficulties]) => (
+							<SettingsItem type='info' title={t(`gameModes.${gameMode}`)} info={Object.entries(difficulties).map(([, missions]) => missions.length).reduce((a, b) => a + b, 0).toString()} />
+						))
+					}
 				</div>
 
 				<p style={{ display: 'flex', flexFlow: 'row', justifyContent: 'center', gap: 7, alignItems: 'center', color: 'var(--primaryTextColor)', textAlign: 'center' }}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} <FlagArg className='about__flag-argentina' /> </p>
@@ -253,8 +281,9 @@ export default function Settings({ theme, setTheme, accentColor, setAccentColor 
 			<Route path='/appearance' element={<AppearanceSettings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} accentColorHex={accentColorHex} />} />
 			<Route path='/game' element={<Game accentColorHex={accentColorHex} />} />
 			<Route path='/advanced' element={<AdvancedSettings accentColorHex={accentColorHex} />} />
-			<Route path='/language' element={<LanguageSettings accentColorHex={accentColorHex} />} />
-			<Route path='/about' element={<AboutSection />} />
+			<Route path='/general' element={<GeneralSection />} />
+			<Route path='/general/about' element={<AboutSection />} />
+			<Route path='/general/language' element={<LanguageSettings accentColorHex={accentColorHex} />} />
 		</Routes>
 	)
 }

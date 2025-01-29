@@ -1,6 +1,7 @@
 #settings {
   overflow-y: auto;
   margin-top: 30px;
+  padding: 0 10px;
 }
 
 .settings__label {
@@ -28,8 +29,8 @@
 }
 
 .settings__section-link {
-  display: grid;
-  grid-template-columns: 30px auto;
+  display: flex;
+  flex-flow: row;
   align-items: center;
   gap: 10px;
   background-color: var(--darkBackground);
@@ -61,10 +62,21 @@
   border: none;
 }
 
+.settings__section-link__right-wrapper {
+  flex-grow: 1;
+  display: flex;
+  gap: 10px;
+}
+
+.settings__section-link__title {
+  flex-grow: 1;
+}
+
 .settings__section-link__icon {
   display: grid;
   place-items: center;
   height: 30px;
+  width: 30px;
   border-radius: 5px;
   color: white;
   font-size: 20px;
