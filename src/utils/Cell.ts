@@ -1,4 +1,4 @@
-import { ColorName } from './Colors'
+import { ColorName, colorNames, colorNamesShortened } from './Colors'
 
 export type ScreenCoordinates = {
     x: number,
@@ -64,9 +64,9 @@ export class Cell {
     // Primary properties
     private _value: number = 0
     private _notes: Set<number> = new Set()
-    private readonly _clue: boolean = false
     private _hint: boolean = false
     private _color: ColorName = 'default'
+    private readonly _clue: boolean = false
     private readonly _solution: number
 
     // Additional properties
@@ -74,6 +74,7 @@ export class Cell {
     public logicError: boolean = false
     public highlighted: boolean = false
     public possibleValues: Set<number> = new Set()
+    public locked: boolean = false
 
     // Board geometry
     public visibleCells: Set<Cell> = new Set()
@@ -131,5 +132,16 @@ export class Cell {
 
     get solution() {
         return this._solution
+    }
+
+    get dataToSave(): string {
+        let result = this.value.toString()
+
+        if (this.notes.size > 0) result += 'N' + [...this.notes].join('')
+        if (this.color !== 'default') result += 'C' + colorNamesShortened[colorNames.indexOf(this.color)]
+        if (this.hint) result += 'H'
+        if (this.locked) result += 'L'
+
+        return result
     }
 }

@@ -1,4 +1,5 @@
 export const colorNames = ['default', 'red', 'orange', 'yellow', 'green', 'blueGreen', 'lightBlue', 'darkBlue', 'purple'] as const
+export const colorNamesShortened = ['d', 'r', 'o', 'y', 'g', 'b', 'l', 'd', 'p']
 export type AccentColor = 'red' | 'orange' | 'yellow' | 'green' | 'blueGreen' | 'lightBlue' | 'darkBlue' | 'purple'
 
 export type ColorName = typeof colorNames[number]

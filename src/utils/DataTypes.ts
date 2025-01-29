@@ -25,7 +25,6 @@ export type GameData = {
     mission: string
 
     boardString?: string
-    colorGroupsString?: string
     timer?: number
     history?: BoardHistory
     version?: number

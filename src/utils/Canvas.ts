@@ -530,8 +530,6 @@ export abstract class Canvas<BoardType extends Board> {
     protected renderCellValueAndCandidates() {
         if (!this.ctx || !this.game) return
 
-        console.log(this.game.settings.checkSolutionErrors)
-
         for (const cell of this.game.allCells) {
             if (cell.value > 0) {
                 //Value

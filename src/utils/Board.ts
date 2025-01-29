@@ -1,6 +1,6 @@
 import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from "./Difficulties"
 import { BoardAnimation, BoardHistory, GameData, UseHistory } from "./DataTypes"
-import { ColorName } from "./Colors"
+import { ColorName, colorNames, colorNamesShortened } from "./Colors"
 import { Cell, CellCoordinates, ColorGroup } from './Cell'
 import { BOARD_API_VERSION } from './Constants'
 import { defaultSettings, Settings } from './SettingsHandler'
@@ -130,7 +130,6 @@ export default abstract class Board {
 			id: this._id,
 			mission: this._mission,
 			boardString: this.boardToSave,
-			colorGroupsString: this.colorGroupsToSave,
 			timer: this.timer,
 			version: BOARD_API_VERSION,
 			history: this.history
@@ -147,7 +146,7 @@ export default abstract class Board {
 		this.history = data.history || []
 		this.getDataFromMission()
 		this.createBoardGeometry()
-		this.loadHistoryState(data.boardString, data.colorGroupsString)
+		this.loadHistoryState(data.boardString)
 	}
 
 	protected abstract getDataFromMission(): void
@@ -192,7 +191,7 @@ export default abstract class Board {
 	}
 
 	public stashBoard() {
-		this.stash = `${this.boardToSave};${this.colorGroupsToSave}`
+		this.stash = `${this.boardToSave}`
 		this._hasChanged = false
 	}
 
@@ -203,18 +202,16 @@ export default abstract class Board {
 		}
 	}
 
-	public loadHistoryState(boardString: string | undefined, colorGroupsString: string | undefined) {
-		if (boardString) this.updateBoardMatrixFromSavedString(boardString)
-		if (colorGroupsString) this.updateColorGroupsFromSavedString(colorGroupsString)
-		this.recreatePossibleValuesCache()
+	public loadHistoryState(boardString: string | undefined) {
+		if (boardString) {
+			this.updateBoardMatrixFromSavedString(boardString)
+			this.recreatePossibleValuesCache()
+		}
 	}
 
 	public popBoard() {
 		const historyItem = this.history.pop()
-		if (!historyItem) return
-
-		const [boardString, colorGroupsString] = historyItem.split(';')
-		this.loadHistoryState(boardString, colorGroupsString)
+		if (historyItem) this.loadHistoryState(historyItem)
 	}
 
 	public get(coords: CellCoordinates): Cell | undefined {
@@ -240,27 +237,6 @@ export default abstract class Board {
 		}
 
 		return null
-	}
-
-	private updateBoardMatrixFromSavedString(data: string) {
-		let x = 0
-		let y = 0
-		const cells = data.split(' ')
-		for (const cellString of cells) {
-			const [valueString, notesString, colorString] = cellString.split(',')
-			const cell = this.get({ x, y })
-			if (cell) {
-				cell.value = Number.parseInt(valueString)
-				cell.notes = notesString !== undefined ? new Set(notesString.split('').map(n => Number.parseInt(n))) : new Set()
-				cell.color = (colorString === undefined || colorString === '') ? 'default' : (colorString as ColorName)
-			}
-
-			y++
-			if (y === this._nSquares) {
-				y = 0
-				x++
-			}
-		}
 	}
 
 	public selectBox(from: Cell, to: Cell) {
@@ -297,11 +273,7 @@ export default abstract class Board {
 			} else {
 				to = cells.some(cell => (
 					cell.value === 0 &&
-					!cell.notes.has(withValue) &&
-					(
-						cell.color === 'default' ||
-						!this._settings.lockCellsWithColor
-					)
+					!cell.notes.has(withValue) && !cell.locked
 				))
 			}
 		}
@@ -325,7 +297,7 @@ export default abstract class Board {
 						finalNoteState = false
 						if (
 							cell.notes.size === 1 && (
-								(this._settings.autoSolveCellsWithColor && cell.color !== 'default') ||
+								(this._settings.autoSolveCellsWithColor && cell.locked) ||
 								(this._settings.autoSolveCellsFullNotation && this._fullNotation && !ignoreFullNotation)
 							)
 						) {
@@ -333,7 +305,7 @@ export default abstract class Board {
 							this.setValue({ of: cell, to: [...cell.notes][0], causedByUser: false })
 						}
 					}
-				} else if (to !== false && (!this._settings.lockCellsWithColor || (cell.color === 'default'))) {
+				} else if (to !== false && !cell.locked) {
 					//Add note
 					if (!this._settings.showPossibleValues || cell.possibleValues.has(withValue)) {
 						cell.notes.add(withValue)
@@ -443,6 +415,7 @@ export default abstract class Board {
 	public setColor({ of, to, causedByUser }: { of: Cell, to: ColorName, causedByUser: boolean }) {
 		if (of.color !== to) {
 			of.color = to
+			if (to !== 'default' && of.notes.size > 1 && this._settings.lockCellsWithColor) of.locked = true
 			this._hasChanged = true
 			if (to === 'default') {
 				if (causedByUser) this.recreatePossibleValuesCache()
@@ -507,30 +480,8 @@ export default abstract class Board {
 	}
 
 	private get boardToSave() {
-		let boardToSave = ''
-		for (let x = 0; x < this._nSquares; x++) {
-			for (let y = 0; y < this._nSquares; y++) {
-				const cell = this.get({ x, y })
-				if (!cell) continue
-
-				let notes = ''
-				for (const note of cell.notes) notes += note.toString()
-				const color = cell.color === 'default' ? '' : cell.color
-				if (color !== '') {
-					boardToSave += `${cell.value},${notes},${color} `
-				} else if (notes !== '') {
-					boardToSave += `${cell.value},${notes} `
-				} else {
-					boardToSave += `${cell.value} `
-				}
-			}
-		}
-
-		return boardToSave.trimEnd()
-	}
-
-	private get colorGroupsToSave(): string {
-		return [...this.colorGroups].map(cg => ([...cg.members].map(m => `${m.coords.x}${m.coords.y}`).join(','))).join(' ')
+		const colorGroups = [...this.colorGroups]
+		return [...this.allCells].map(cell => cell.dataToSave + [...cell.colorGroups].map(cg => `G${colorGroups.indexOf(cg)}`).join('')).join(' ')
 	}
 
 	private removeCellFromColorGroup(cell: Cell, cg: ColorGroup) {
@@ -538,21 +489,53 @@ export default abstract class Board {
 		if (cg.members.size === 0) this.colorGroups.delete(cg)
 	}
 
-	private updateColorGroupsFromSavedString(data: string) {
-		if (data === '') return
+	private updateBoardMatrixFromSavedString(data: string) {
+		let x = 0
+		let y = 0
+		const cells = data.split(' ')
+		const regex = new RegExp(`(?=[NCGHL])`, 'g')
+		let colorGroups: Set<Cell>[] = []
+		for (const cellString of cells) {
+			const cell = this.get({ x, y })
+			if (cell) {
+				const infoArr = cellString.split(regex).filter(Boolean)
+				if (infoArr.length > 0) {
+					cell.value = Number.parseInt(infoArr.shift() || '0')
+					for (const info of infoArr) {
+						const rest = info.slice(1)
+						switch (info[0]) {
+							case 'N':
+								cell.notes = new Set(rest.split('').map(n => Number.parseInt(n)))
+								break
+							case 'C':
+								cell.color = colorNames[colorNamesShortened.indexOf(info[1])]
+								break
+							case 'G':
+								const index = Number.parseInt(rest)
+								if (!colorGroups[index]) colorGroups[index] = new Set()
+								colorGroups[index].add(cell)
+								break
+							case 'H':
+								cell.hint = true
+								break
+							case 'L':
+								if (this._settings.lockCellsWithColor) cell.locked = true
+								break
+						}
+					}
+				}
+			}
 
-		this.colorGroups.clear()
-		for (const cell of this.allCells) cell.colorGroups.clear()
+			y++
+			if (y === this._nSquares) {
+				y = 0
+				x++
+			}
+		}
 
-		data
-			.split(' ')
-			.forEach(colorGroupsString => {
-				const members = new Set(colorGroupsString.split(',').map(coordPair => {
-					const [x, y] = coordPair.split('').map(n => Number.parseInt(n))
-					return this.get({ x, y })
-				}).filter(c => c !== undefined))
-				if (members.size > 0) this.createColorGroup({ withCells: members, painted: [...members][0].color, causedByUser: false })
-			})
+		for (const cg of colorGroups) {
+			this.createColorGroup({ withCells: cg, painted: [...cg][0].color, causedByUser: false })
+		}
 	}
 
 	private testFullNotation(except: Set<Cell> = new Set(), withValue: number | null = null): boolean {
@@ -641,8 +624,8 @@ export default abstract class Board {
 
 	protected updatePossibleValuesByColor(cell: Cell) {
 		if (cell.color !== 'default') {
-			if (this._settings.autoSolveCellsWithColor && cell.notes.size === 1) this.setValue({ of: cell, to: [...cell.notes][0], causedByUser: false })
-			else if (this._settings.lockCellsWithColor) cell.possibleValues = new Set(cell.notes)
+			if (this._settings.autoSolveCellsWithColor && cell.locked && cell.notes.size === 1) this.setValue({ of: cell, to: [...cell.notes][0], causedByUser: false })
+			else if (cell.locked) cell.possibleValues = new Set(cell.notes)
 		}
 	}
 
