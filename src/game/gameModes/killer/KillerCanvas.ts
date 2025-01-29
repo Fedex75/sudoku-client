@@ -64,7 +64,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
             }
         }, themes[this._theme].killerCageOnColoredCellColor)
 
-        if (this.game.settings.checkLogicErrors) {
+        if (this.game.settings.showLogicErrors) {
             // Paint cages with error
             Canvas.applyColorWithMask(this.tempCtx, ctx => {
                 if (!this.game) return
