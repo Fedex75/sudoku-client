@@ -104,7 +104,7 @@ export class ClassicBoard extends Board {
                 duration: 750,
                 func: ({ theme, progress }) => {
                     center.row.forEach(cell => {
-                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })
@@ -117,7 +117,7 @@ export class ClassicBoard extends Board {
                 duration: 750,
                 func: ({ theme, progress }) => {
                     center.column.forEach(cell => {
-                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.y - cell.coords.y), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.abs(center.coords.y - cell.coords.y), progress, 8, 4)})`
                     })
                 }
             })
@@ -130,7 +130,7 @@ export class ClassicBoard extends Board {
                 duration: 750,
                 func: ({ theme, progress }) => {
                     for (const cell of center.box) {
-                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(cell.coords.y % 3 * 3 + cell.coords.x % 3, progress, 8, 8)})`
+                        cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(cell.coords.y % 3 * 3 + cell.coords.x % 3, progress, 8, 8)})`
                     }
                 }
             })

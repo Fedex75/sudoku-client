@@ -1,5 +1,5 @@
 import { Canvas } from '../../../utils/Canvas'
-import { AccentColor } from '../../../utils/Colors'
+import { AccentColor, ColorDefinitions } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { SandwichBoard } from './SandwichBoard'
 
@@ -10,9 +10,7 @@ export class SandwichCanvas extends Canvas<SandwichBoard> {
     }
 
     renderLateralClues() {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game) return
 
         const x = Math.floor(this.squareSize * this.topAndLeftMarginFactor * 0.8)
         const y = x
@@ -21,10 +19,10 @@ export class SandwichCanvas extends Canvas<SandwichBoard> {
         for (let i = 0; i < this.game.nSquares; i++) {
             const cell = this.game.get({ x: i, y: i })
             if (!cell) continue
-            ctx.fillStyle = ctx.strokeStyle = (this.game.settings.checkErrors && this.game.horizontalClues[i].error) ? '#ff5252' : ([...this.game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
-            if (this.game.horizontalClues[i].visible) Canvas.drawSVGNumber(ctx, this.game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
-            ctx.fillStyle = ctx.strokeStyle = (this.game.settings.checkErrors && this.game.verticalClues[i].error) ? '#ff5252' : ([...this.game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].canvasNoteHighlightColor : themes[this._theme].canvasClueColor)
-            if (this.game.verticalClues[i].visible) Canvas.drawSVGNumber(ctx, this.game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
+            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.checkLogicErrors && this.game.horizontalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
+            if (this.game.horizontalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
+            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.checkLogicErrors && this.game.verticalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
+            if (this.game.verticalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
         }
     }
 

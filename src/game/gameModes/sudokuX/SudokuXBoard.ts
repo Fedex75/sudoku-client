@@ -57,9 +57,29 @@ export class SudokuXBoard extends ClassicBoard {
 
     protected checkErrors(): void {
         super.checkErrors()
-        this.mainDiagonal.error = [...this.mainDiagonal.members].some(cell => cell.error)
-        this.secondaryDiagonal.error = [...this.secondaryDiagonal.members].some(cell => cell.error)
-        if (this.mainDiagonal.error || this.secondaryDiagonal.error) this._hasErrors = true
+
+        const mainDiagonal = [...this.mainDiagonal.members]
+        const secondaryDiagonal = [...this.secondaryDiagonal.members]
+
+        this.mainDiagonal.error = false
+        for (let i = 0; i < this.nSquares - 1; i++) {
+            if (mainDiagonal[i].value === 0) continue
+            for (let j = i + 1; j < this.nSquares; j++) {
+                if (mainDiagonal[i].value === mainDiagonal[j].value) {
+                    this.mainDiagonal.error = true
+                }
+            }
+        }
+
+        this.secondaryDiagonal.error = false
+        for (let i = 0; i < this.nSquares - 1; i++) {
+            if (secondaryDiagonal[i].value === 0) continue
+            for (let j = i + 1; j < this.nSquares; j++) {
+                if (secondaryDiagonal[i].value === secondaryDiagonal[j].value) {
+                    this.secondaryDiagonal.error = true
+                }
+            }
+        }
     }
 
     protected checkAnimations(center: Cell): void {
@@ -72,7 +92,7 @@ export class SudokuXBoard extends ClassicBoard {
                 duration: 750,
                 func: ({ theme, progress }) => {
                     this.mainDiagonal.members.forEach(cell => {
-                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })
@@ -85,7 +105,7 @@ export class SudokuXBoard extends ClassicBoard {
                 duration: 750,
                 func: ({ theme, progress }) => {
                     this.secondaryDiagonal.members.forEach(cell => {
-                        cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
+                        cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.abs(center.coords.x - cell.coords.x), progress, 8, 4)})`
                     })
                 }
             })

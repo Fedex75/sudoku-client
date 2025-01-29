@@ -1,121 +1,94 @@
 import { Canvas } from '../../../utils/Canvas'
 import { Thermometer } from '../../../utils/Cell'
+import { ColorDefinitions } from '../../../utils/Colors'
+import { themes } from '../../Themes'
 import { ThermoBoard } from './ThermoBoard'
 
 export class ThermoCanvas extends Canvas<ThermoBoard> {
-    protected thermometersOffscreenCanvas: HTMLCanvasElement | null = null
-    protected thermometersOffscreenCanvasCtx: CanvasRenderingContext2D | null = null
-    protected thermometersTempCanvas: HTMLCanvasElement | null = null
-    protected thermometersTempCanvasCtx: CanvasRenderingContext2D | null = null
+    protected thermometersCtx: CanvasRenderingContext2D | null = null
 
     public createOffscreenCanvases(): void {
-        this.thermometersOffscreenCanvas = document.createElement('canvas')
-        this.thermometersOffscreenCanvasCtx = this.thermometersOffscreenCanvas.getContext('2d')
-        this.thermometersTempCanvas = document.createElement('canvas')
-        this.thermometersTempCanvasCtx = this.thermometersTempCanvas.getContext('2d')
+        super.createOffscreenCanvases()
+        const canvas = document.createElement('canvas')
+        this.thermometersCtx = canvas.getContext('2d')
     }
 
     public destroyOffscreenCanvases(): void {
-        this.thermometersOffscreenCanvas = null
-        this.thermometersOffscreenCanvasCtx = null
-        this.thermometersTempCanvas = null
-        this.thermometersTempCanvasCtx = null
+        super.destroyOffscreenCanvases()
+        this.thermometersCtx = null
     }
 
     protected renderThermometersToOffscreenCanvas() {
-        if (!this.thermometersOffscreenCanvas || !this.thermometersTempCanvas || !this.thermometersOffscreenCanvas || !this.thermometersOffscreenCanvasCtx || !this._game) return
-
-        this.thermometersOffscreenCanvas.width = this.logicalSize
-        this.thermometersOffscreenCanvas.height = this.logicalSize
-        this.thermometersTempCanvas.width = this.logicalSize
-        this.thermometersTempCanvas.height = this.logicalSize
+        if (!this.thermometersCtx || !this._game) return
 
         const THERMOMETER_WIDTH_FACTOR = 0.3
 
-        this.thermometersOffscreenCanvasCtx.clearRect(0, 0, this.logicalSize, this.logicalSize)
+        this.thermometersCtx.clearRect(0, 0, this.thermometersCtx.canvas.width, this.thermometersCtx.canvas.height)
 
-        this.thermometersOffscreenCanvasCtx.globalAlpha = 1
-        this.thermometersOffscreenCanvasCtx.fillStyle = this.thermometersOffscreenCanvasCtx.strokeStyle = this._theme === 'dark' ? '#555' : '#aaa'
-        this.thermometersOffscreenCanvasCtx.lineWidth = this.squareSize * THERMOMETER_WIDTH_FACTOR
+        this.thermometersCtx.globalAlpha = 1
+        this.thermometersCtx.fillStyle = this.thermometersCtx.strokeStyle = themes[this._theme].thermometerColor
+        this.thermometersCtx.lineWidth = this.squareSize * THERMOMETER_WIDTH_FACTOR
         for (const thermo of this._game.thermometers) {
             const members = [...thermo.members]
-            this.thermometersOffscreenCanvasCtx.beginPath()
-            this.thermometersOffscreenCanvasCtx.arc(members[0].screenPosition.x + this.squareSize / 2, members[0].screenPosition.y + this.squareSize / 2, this.squareSize * THERMOMETER_WIDTH_FACTOR, 0, Math.PI * 2)
-            this.thermometersOffscreenCanvasCtx.fill()
+            this.thermometersCtx.beginPath()
+            this.thermometersCtx.arc(members[0].screenPosition.x + this.squareSize / 2, members[0].screenPosition.y + this.squareSize / 2, this.squareSize * THERMOMETER_WIDTH_FACTOR, 0, Math.PI * 2)
+            this.thermometersCtx.fill()
 
             for (let i = 1; i < thermo.members.size; i++) {
-                this.thermometersOffscreenCanvasCtx.beginPath()
-                this.thermometersOffscreenCanvasCtx.moveTo(members[i - 1].screenPosition.x + this.squareSize / 2, members[i - 1].screenPosition.y + this.squareSize / 2)
-                this.thermometersOffscreenCanvasCtx.lineTo(members[i].screenPosition.x + this.squareSize / 2, members[i].screenPosition.y + this.squareSize / 2)
-                this.thermometersOffscreenCanvasCtx.stroke()
+                this.thermometersCtx.beginPath()
+                this.thermometersCtx.moveTo(members[i - 1].screenPosition.x + this.squareSize / 2, members[i - 1].screenPosition.y + this.squareSize / 2)
+                this.thermometersCtx.lineTo(members[i].screenPosition.x + this.squareSize / 2, members[i].screenPosition.y + this.squareSize / 2)
+                this.thermometersCtx.stroke()
 
-                this.thermometersOffscreenCanvasCtx.beginPath()
-                this.thermometersOffscreenCanvasCtx.arc(members[i].screenPosition.x + this.squareSize / 2, members[i].screenPosition.y + this.squareSize / 2, this.squareSize * THERMOMETER_WIDTH_FACTOR / 2, 0, Math.PI * 2)
-                this.thermometersOffscreenCanvasCtx.fill()
+                this.thermometersCtx.beginPath()
+                this.thermometersCtx.arc(members[i].screenPosition.x + this.squareSize / 2, members[i].screenPosition.y + this.squareSize / 2, this.squareSize * THERMOMETER_WIDTH_FACTOR / 2, 0, Math.PI * 2)
+                this.thermometersCtx.fill()
             }
         }
     }
 
-    private applyColorWithMask(createMask: () => void, color: string) {
-        if (!this.thermometersTempCanvasCtx) return
-
-        this.thermometersTempCanvasCtx.save()
-        this.thermometersTempCanvasCtx.beginPath()
-        createMask()
-        this.thermometersTempCanvasCtx.clip()
-        this.thermometersTempCanvasCtx.fillStyle = color
-        this.thermometersTempCanvasCtx.fillRect(0, 0, this.logicalSize, this.logicalSize)
-        this.thermometersTempCanvasCtx.restore()
-    }
-
     protected renderThermometers() {
-        if (!this.thermometersOffscreenCanvas || !this.thermometersTempCanvas || !this.thermometersTempCanvasCtx || !this.canvasRef || !this._game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.tempCtx || !this.thermometersCtx || !this.canvasRef || !this._game) return
 
-        this.thermometersTempCanvasCtx.clearRect(0, 0, this.logicalSize, this.logicalSize)
-        this.thermometersTempCanvasCtx.drawImage(this.thermometersOffscreenCanvas, 0, 0)
+        this.tempCtx.clearRect(0, 0, this.tempCtx.canvas.width, this.tempCtx.canvas.height)
+        this.tempCtx.drawImage(this.thermometersCtx.canvas, 0, 0)
 
         let selectedThermometers: Set<Thermometer> = new Set()
         for (const cell of this._game.selectedCells) {
             if (cell.thermometer) selectedThermometers.add(cell.thermometer)
         }
 
-        this.thermometersTempCanvasCtx.globalCompositeOperation = 'source-in'
-
-        // Paint selected thermometers white
-        this.applyColorWithMask(() => {
-            if (!this.thermometersTempCanvasCtx) return
+        // Highlight selected thermometers
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
             for (const thermo of selectedThermometers) {
                 for (const c of thermo.members) {
-                    this.thermometersTempCanvasCtx.rect(c.screenPosition.x - Canvas.CELL_BORDER_WIDTH, c.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                    ctx.rect(c.screenPosition.x - Canvas.CELL_BORDER_WIDTH, c.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
                 }
             }
-        }, this._theme === 'dark' ? '#777' : '#888')
+        }, themes[this._theme].highlightedThermometerColor)
 
-        // Paint thermometers with errors red
-        if (this._game.settings.checkErrors) {
-            this.applyColorWithMask(() => {
-                if (!this.thermometersTempCanvasCtx || !this._game) return
+        // Paint thermometers with errors
+        if (this._game.settings.checkLogicErrors) {
+            Canvas.applyColorWithMask(this.tempCtx, ctx => {
+                if (!this._game) return
                 for (const thermo of this._game.thermometers) {
                     if (thermo.error) {
                         for (const c of thermo.members) {
-                            this.thermometersTempCanvasCtx.rect(c.screenPosition.x - Canvas.CELL_BORDER_WIDTH, c.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                            ctx.rect(c.screenPosition.x - Canvas.CELL_BORDER_WIDTH, c.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
                         }
                     }
                 }
-            }, this.accentColor === 'red' ? '#ffe173' : '#ff5252')
+            }, ColorDefinitions[this.additionalColors.errorColor])
         }
 
-        this.thermometersTempCanvasCtx.globalCompositeOperation = 'source-over'
-
-        ctx.globalAlpha = 0.5
-        ctx.drawImage(this.thermometersTempCanvas, 0, 0)
-        ctx.globalAlpha = 1
+        this.ctx.globalAlpha = 0.5
+        this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
+        this.ctx.globalAlpha = 1
     }
 
     afterCanvasChangedSize(): void {
         super.afterCanvasChangedSize()
+        if (this.ctx && this.thermometersCtx) this.thermometersCtx.canvas.width = this.thermometersCtx.canvas.height = this.ctx.canvas.width
         this.renderThermometersToOffscreenCanvas()
     }
 

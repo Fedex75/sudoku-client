@@ -2,7 +2,7 @@ import React from 'react'
 import { ThemeName, themes } from '../game/Themes'
 import Board from './Board'
 import { Cell, ScreenCoordinates } from './Cell'
-import { AccentColor, ColorName } from './Colors'
+import { AccentColor, ColorDefinitions, ColorName } from './Colors'
 import { BoardAnimation, DigitChar, MouseButtonType } from './DataTypes'
 import { isTouchDevice } from "../utils/isTouchDevice"
 
@@ -56,6 +56,64 @@ const solutionColors: Record<AccentColor, string> = {
     lightBlue: '#79c0f2',
     darkBlue: '#6f90c3',
     purple: '#c298eb'
+}
+
+type AdditionalColorsItem = {
+    errorColor: ColorName
+    spareErrorColor: ColorName // Used when a cell has the same color as the main error color
+    linksColor: ColorName
+    spareLinksColor: ColorName // Used when a cell has the same color as the main link color
+}
+
+const additionalColors: Record<AccentColor, AdditionalColorsItem> = {
+    red: {
+        errorColor: 'yellow',
+        spareErrorColor: 'purple',
+        linksColor: 'purple',
+        spareLinksColor: 'yellow'
+    },
+    orange: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'red',
+        spareLinksColor: 'yellow'
+    },
+    yellow: {
+        errorColor: 'red',
+        spareErrorColor: 'purple',
+        linksColor: 'red',
+        spareLinksColor: 'purple'
+    },
+    green: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'red',
+        spareLinksColor: 'purple'
+    },
+    blueGreen: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'red',
+        spareLinksColor: 'purple'
+    },
+    lightBlue: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'red',
+        spareLinksColor: 'purple'
+    },
+    darkBlue: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'red',
+        spareLinksColor: 'purple'
+    },
+    purple: {
+        errorColor: 'red',
+        spareErrorColor: 'yellow',
+        linksColor: 'green',
+        spareLinksColor: 'lightBlue'
+    }
 }
 
 export abstract class Canvas<BoardType extends Board> {
@@ -117,19 +175,33 @@ export abstract class Canvas<BoardType extends Board> {
         else for (let i = 0; i < segmentCount; i += 2) ctx.fillRect(c1.x + ratio * i, c1.y, ratio, cageLineWidth)
     }
 
-    public canvasRef: HTMLCanvasElement | null = null
+    static applyColorWithMask(ctx: CanvasRenderingContext2D, createMask: (ctx: CanvasRenderingContext2D) => void, color: string) {
+        ctx.save()
+        ctx.globalCompositeOperation = 'source-in'
+        ctx.beginPath()
+        createMask(ctx)
+        ctx.clip()
+        ctx.fillStyle = color
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.restore()
+    }
+
+    protected _canvasRef: HTMLCanvasElement | null = null
+    protected ctx: CanvasRenderingContext2D | null = null
+    protected tempCtx: CanvasRenderingContext2D | null = null
     protected _game: BoardType | null = null
 
-    protected _accentColor: AccentColor
+    protected _accentColor: AccentColor = 'darkBlue'
     protected _notPlayable: boolean
     protected boxBorderWidthFactor: number
 
-    protected logicalSize: number = 0
     protected squareSize: number = 0
     protected currentAnimations: BoardAnimation[] = []
     protected noteDeltas: ScreenCoordinates[] = []
     protected colors: Record<ColorName, string> = { ...defaultColors }
     protected darkColors: Record<ColorName, string> = { ...defaultDarkColors }
+    protected additionalColors: AdditionalColorsItem = additionalColors.darkBlue
     protected lastMouseCell: Cell | null = null
     protected lastMouseButton: MouseButtonType | null = null
 
@@ -147,7 +219,7 @@ export abstract class Canvas<BoardType extends Board> {
     protected topAndLeftMarginFactor = 0 // How much space to leave around the board for clues, expressed as a fraction of a board square
 
     constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
-        this._accentColor = accentColor
+        this.accentColor = accentColor
         this._notPlayable = notPlayable
         this.boxBorderWidthFactor = boxBorderWidthFactor
 
@@ -173,13 +245,23 @@ export abstract class Canvas<BoardType extends Board> {
                         for (let x = 0; x < this.game.nSquares; x++) {
                             const cell = this.game.get({ x, y })
                             if (!cell) continue
-                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
                             cell.animationGamma = gamma
                         }
                     }
                 }
             }])
         }
+    }
+
+    get canvasRef() {
+        return this._canvasRef
+    }
+
+    set canvasRef(value) {
+        this._canvasRef = value
+        if (this._canvasRef) this.ctx = this._canvasRef.getContext('2d')
+        else this.ctx = null
     }
 
     set game(val: BoardType) {
@@ -225,7 +307,7 @@ export abstract class Canvas<BoardType extends Board> {
                         for (let x = 0; x < this.game.nSquares; x++) {
                             const cell = this.game.get({ x, y })
                             if (!cell) continue
-                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
                             cell.animationGamma = gamma
                         }
                     }
@@ -243,7 +325,7 @@ export abstract class Canvas<BoardType extends Board> {
                         for (let x = 0; x < this.game.nSquares; x++) {
                             const cell = this.game.get({ x, y })
                             if (!cell) continue
-                            cell.animationColor = `rgba(${themes[this._theme].canvasAnimationFadeBaseColor}, ${gamma})`
+                            cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
                             cell.animationGamma = gamma
                         }
                     }
@@ -258,6 +340,7 @@ export abstract class Canvas<BoardType extends Board> {
 
     set accentColor(value: AccentColor) {
         this._accentColor = value
+        this.additionalColors = additionalColors[value]
         this.renderFrame()
     }
 
@@ -284,8 +367,8 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     protected updateColors() {
-        this.colors.default = themes[this.theme].canvasLightDefaultCellColor
-        this.darkColors.default = themes[this.theme].canvasDarkDefaultCellColor
+        this.colors.default = themes[this.theme].lightDefaultCellColor
+        this.darkColors.default = themes[this.theme].darkDefaultCellColor
         this.renderFrame()
     }
 
@@ -342,9 +425,9 @@ export abstract class Canvas<BoardType extends Board> {
 
         if (this.canvasRef.offsetWidth === 0 || this.canvasRef.offsetHeight === 0) return
 
-        this.logicalSize = this.canvasRef.offsetWidth * Canvas.ROUNDED_RATIO
-        this.canvasRef.width = this.logicalSize
-        this.canvasRef.height = this.logicalSize
+        const logicalSize = this.canvasRef.offsetWidth * Canvas.ROUNDED_RATIO
+        this.canvasRef.width = this.canvasRef.height = logicalSize
+        if (this.tempCtx) this.tempCtx.canvas.width = this.tempCtx.canvas.height = logicalSize
 
         this.afterCanvasChangedSize()
 
@@ -357,8 +440,8 @@ export abstract class Canvas<BoardType extends Board> {
         if (!this.canvasRef || !this.game) return
 
         const rect = this.canvasRef.getBoundingClientRect()
-        const clickX = (clientX - rect.left) / this.canvasRef.offsetWidth * this.logicalSize
-        const clickY = (clientY - rect.top) / this.canvasRef.offsetHeight * this.logicalSize
+        const clickX = (clientX - rect.left) / this.canvasRef.offsetWidth * this.canvasRef.width
+        const clickY = (clientY - rect.top) / this.canvasRef.offsetHeight * this.canvasRef.height
 
         for (let x = 0; x < this.game.nSquares; x++) {
             const cell = this.game.get({ x, y: 0 })
@@ -445,49 +528,36 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     protected renderCellValueAndCandidates() {
-        if (!this.canvasRef || !this.game) return
+        if (!this.ctx || !this.game) return
 
-        const ctx = this.canvasRef.getContext('2d')
-
-        if (!ctx) return
+        console.log(this.game.settings.checkSolutionErrors)
 
         for (const cell of this.game.allCells) {
             if (cell.value > 0) {
                 //Value
                 const highlightValue = (this._lockedInput === 0 && this.game.selectedCellsValues.has(cell.value)) || this._lockedInput === cell.value
-
-                if (this.game.settings.checkErrors && cell.error) {
-                    if (cell.color === 'default') {
-                        ctx.strokeStyle = ctx.fillStyle = (this.accentColor === 'red' ? '#ffe173' : '#fc5c65')
+                if ((this.game.settings.checkLogicErrors && cell.logicError) || (this.game.settings.checkSolutionErrors && cell.solutionError)) {
+                    if (cell.color === this.additionalColors.errorColor) {
+                        this.ctx.strokeStyle = this.ctx.fillStyle = ColorDefinitions[this.additionalColors.spareErrorColor]
                     } else {
-                        if (cell.color === 'red' && this.accentColor === 'yellow') { // Errors are red and cell is red, but yellow is the accent color
-                            ctx.strokeStyle = ctx.fillStyle = '#a55eea' // Paint it purple
-                        } else if (cell.color === 'yellow' && this.accentColor === 'red') { // Errors are yellow and cell is yellow, but red is the accent color
-                            ctx.strokeStyle = ctx.fillStyle = '#a55eea' // Paint it purple
-                        } else if (cell.color === 'red' && this.accentColor !== 'red') { // Errors are red and cell is red
-                            ctx.strokeStyle = ctx.fillStyle = '#ffe173' // Paint it yellow
-                        } else if (this.accentColor === 'red') {
-                            ctx.strokeStyle = ctx.fillStyle = '#ffe173' // Paint it yellow
-                        } else {
-                            ctx.strokeStyle = ctx.fillStyle = '#fc5c65' // Paint it red
-                        }
+                        this.ctx.strokeStyle = this.ctx.fillStyle = ColorDefinitions[this.additionalColors.errorColor]
                     }
                 } else {
-                    ctx.strokeStyle = ctx.fillStyle =
-                        highlightValue ? (cell.color === 'default' ? themes[this.theme].canvasValueHighlightColor : 'white') :
+                    this.ctx.strokeStyle = this.ctx.fillStyle =
+                        highlightValue ? (cell.color === 'default' ? themes[this.theme].valueHighlightColor : 'white') :
                             cell.color !== 'default' ? 'black' :
-                                cell.clue ? themes[this.theme].canvasClueColor :
+                                cell.clue ? themes[this.theme].clueColor :
                                     solutionColors[this.accentColor]
                 }
 
-                Canvas.drawSVGNumber(ctx, cell.value, cell.valuePosition.x, cell.valuePosition.y, this.squareSize * 0.55, 'center', 'center', null)
+                Canvas.drawSVGNumber(this.ctx, cell.value, cell.valuePosition.x, cell.valuePosition.y, this.squareSize * 0.55, 'center', 'center', null)
             } else {
                 //Candidates
                 for (const n of cell.notes) {
                     const highlightCandidate = (this._lockedInput === 0 && this.game.selectedCellsValues.has(n)) || this._lockedInput === n
 
-                    ctx.strokeStyle = ctx.fillStyle = highlightCandidate ? (this.game.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[this.theme].canvasNoteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
-                    Canvas.drawSVGNumber(ctx, n, cell.screenPosition.x + this.noteDeltas[n - 1].x, cell.screenPosition.y + this.noteDeltas[n - 1].y, this.squareSize * (this.game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && this.game.settings.highlightCandidatesWithColor && cell.color === 'default' ? this.colors[this.accentColor] : null)
+                    this.ctx.strokeStyle = this.ctx.fillStyle = highlightCandidate ? (this.game.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[this.theme].noteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
+                    Canvas.drawSVGNumber(this.ctx, n, cell.screenPosition.x + this.noteDeltas[n - 1].x, cell.screenPosition.y + this.noteDeltas[n - 1].y, this.squareSize * (this.game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && this.game.settings.highlightCandidatesWithColor && cell.color === 'default' ? this.colors[this.accentColor] : null)
                 }
             }
         }
@@ -495,11 +565,10 @@ export abstract class Canvas<BoardType extends Board> {
 
     protected renderSelection() {
         if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx) return
 
         for (const cell of this.game.selectedCells) {
-            ctx.fillStyle = ctx.strokeStyle = this.colors[this.accentColor]
+            this.ctx.fillStyle = this.ctx.strokeStyle = this.colors[this.accentColor]
 
             const left = cell.screenPosition.x
             const right = left + this.squareSize - Canvas.COLOR_BORDER_LINE_WIDTH
@@ -528,167 +597,179 @@ export abstract class Canvas<BoardType extends Board> {
             const bottomCellTop = bottomCell ? bottomCell.screenPosition.y : 0
 
             //Top
-            if (!topCellIsSelected) ctx.fillRect(left, top, lineLength, Canvas.COLOR_BORDER_LINE_WIDTH)
+            if (!topCellIsSelected) this.ctx.fillRect(left, top, lineLength, Canvas.COLOR_BORDER_LINE_WIDTH)
 
             //Right
-            if (!rightCellIsSelected) ctx.fillRect(right, top, Canvas.COLOR_BORDER_LINE_WIDTH, lineLength)
+            if (!rightCellIsSelected) this.ctx.fillRect(right, top, Canvas.COLOR_BORDER_LINE_WIDTH, lineLength)
             else {
                 //Right bridges
-                if (!topCellIsSelected || !topRightCellIsSelected) ctx.fillRect(right, top, rightCellLeft - right + Canvas.COLOR_BORDER_LINE_WIDTH, Canvas.COLOR_BORDER_LINE_WIDTH)
-                if (!bottomRightCellIsSelected || !bottomCellIsSelected) ctx.fillRect(right, bottom, rightCellLeft - right + Canvas.COLOR_BORDER_LINE_WIDTH, Canvas.COLOR_BORDER_LINE_WIDTH)
+                if (!topCellIsSelected || !topRightCellIsSelected) this.ctx.fillRect(right, top, rightCellLeft - right + Canvas.COLOR_BORDER_LINE_WIDTH, Canvas.COLOR_BORDER_LINE_WIDTH)
+                if (!bottomRightCellIsSelected || !bottomCellIsSelected) this.ctx.fillRect(right, bottom, rightCellLeft - right + Canvas.COLOR_BORDER_LINE_WIDTH, Canvas.COLOR_BORDER_LINE_WIDTH)
             }
 
             //Bottom
-            if (!bottomCellIsSelected) ctx.fillRect(left, bottom, lineLength, Canvas.COLOR_BORDER_LINE_WIDTH)
+            if (!bottomCellIsSelected) this.ctx.fillRect(left, bottom, lineLength, Canvas.COLOR_BORDER_LINE_WIDTH)
             else {
                 //Bottom bridges
-                if (!leftCellIsSelected || !bottomLeftCellIsSelected) ctx.fillRect(left, bottom, Canvas.COLOR_BORDER_LINE_WIDTH, bottomCellTop - bottom + Canvas.COLOR_BORDER_LINE_WIDTH)
-                if (!rightCellIsSelected || !bottomRightCellIsSelected) ctx.fillRect(right, bottom, Canvas.COLOR_BORDER_LINE_WIDTH, bottomCellTop - bottom + Canvas.COLOR_BORDER_LINE_WIDTH)
+                if (!leftCellIsSelected || !bottomLeftCellIsSelected) this.ctx.fillRect(left, bottom, Canvas.COLOR_BORDER_LINE_WIDTH, bottomCellTop - bottom + Canvas.COLOR_BORDER_LINE_WIDTH)
+                if (!rightCellIsSelected || !bottomRightCellIsSelected) this.ctx.fillRect(right, bottom, Canvas.COLOR_BORDER_LINE_WIDTH, bottomCellTop - bottom + Canvas.COLOR_BORDER_LINE_WIDTH)
             }
 
             //Left
-            if (!leftCellIsSelected) ctx.fillRect(left, top, Canvas.COLOR_BORDER_LINE_WIDTH, lineLength)
+            if (!leftCellIsSelected) this.ctx.fillRect(left, top, Canvas.COLOR_BORDER_LINE_WIDTH, lineLength)
         }
     }
 
     protected renderLinks() {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
-
+        if (!this.ctx || !this.tempCtx || !this.game) return
         const selectedCellsValues = this.game.selectedCellsValues
-        if (this._showLinks && (this._lockedInput > 0 || selectedCellsValues.size === 1)) {
-            const target = this._lockedInput > 0 ? this._lockedInput : [...selectedCellsValues][0]
-            let links = this.game.getLinks(target)
-            ctx.fillStyle = ctx.strokeStyle = this.accentColor === 'red' ? '#c298eb' : '#ff5252'
-            ctx.lineWidth = Canvas.LINKS_LINE_WIDTH
-            links.forEach(link => {
-                const noteDelta = this.noteDeltas[target - 1]
-                link.forEach(cell => {
-                    ctx.beginPath()
-                    ctx.arc(cell.screenPosition.x + noteDelta.x, cell.screenPosition.y + noteDelta.y, this.squareSize / 8, 0, 2 * Math.PI, false)
-                    ctx.fill()
-                })
-                if (link.length === 2) {
-                    ctx.beginPath()
-                    ctx.moveTo(link[0].screenPosition.x + noteDelta.x, link[0].screenPosition.y + noteDelta.y)
-                    ctx.lineTo(link[1].screenPosition.x + noteDelta.x, link[1].screenPosition.y + noteDelta.y)
-                    ctx.stroke()
-                }
+        if (!this._showLinks || (this._lockedInput === 0 && selectedCellsValues.size > 1)) return
+
+        this.tempCtx.clearRect(0, 0, this.tempCtx.canvas.width, this.tempCtx.canvas.height)
+
+        const target = this._lockedInput > 0 ? this._lockedInput : [...selectedCellsValues][0]
+        let links = this.game.getLinks(target)
+        this.tempCtx.fillStyle = this.tempCtx.strokeStyle = ColorDefinitions[this.additionalColors.linksColor]
+        this.tempCtx.lineWidth = Canvas.LINKS_LINE_WIDTH
+        links.forEach(link => {
+            const noteDelta = this.noteDeltas[target - 1]
+            link.forEach(cell => {
+                if (!this.tempCtx) return
+                this.tempCtx.beginPath()
+                this.tempCtx.arc(cell.screenPosition.x + noteDelta.x, cell.screenPosition.y + noteDelta.y, this.squareSize / 8, 0, 2 * Math.PI, false)
+                this.tempCtx.fill()
             })
-        }
+            if (link.length === 2) {
+                if (!this.tempCtx) return
+                this.tempCtx.beginPath()
+                this.tempCtx.moveTo(link[0].screenPosition.x + noteDelta.x, link[0].screenPosition.y + noteDelta.y)
+                this.tempCtx.lineTo(link[1].screenPosition.x + noteDelta.x, link[1].screenPosition.y + noteDelta.y)
+                this.tempCtx.stroke()
+            }
+        })
+
+        // Paint over cells with same color as links
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
+            if (!this.game) return
+
+            for (const cell of this.game.allCells) {
+                if (cell.color === this.additionalColors.linksColor) {
+                    ctx.rect(
+                        cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                        cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                    )
+                }
+            }
+        }, ColorDefinitions[this.additionalColors.spareLinksColor])
+
+        this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
     }
 
     protected renderFadeAnimations() {
-        if (!this.canvasRef || !this.game || this.currentAnimations.length === 0) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game || this.currentAnimations.length === 0) return
 
         if (['fadein', 'fadein', 'fadeout'].includes(this.currentAnimations[0]?.type)) {
-            const boxBorderWidth = this.logicalSize * this.boxBorderWidthFactor
+            const boxBorderWidth = this.ctx.canvas.width * this.boxBorderWidthFactor
             for (const cell of this.game.allCells) {
                 const { x, y } = cell.coords
-                ctx.fillStyle = cell.animationColor
-                ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
+                this.ctx.fillStyle = cell.animationColor
+                this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
 
                 //Right border
-                ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${cell.animationGamma})`
-                ctx.fillRect(cell.screenPosition.x + this.squareSize, cell.screenPosition.y, x % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH, this.squareSize)
+                this.ctx.fillStyle = `rgba(${x % 3 === 2 ? themes[this.theme].boxBorderColorRGBA : themes[this.theme].cellBorderColorRGBA}, ${cell.animationGamma})`
+                this.ctx.fillRect(cell.screenPosition.x + this.squareSize, cell.screenPosition.y, x % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH, this.squareSize)
 
                 //Bottom border
-                ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[this.theme].canvasBoxBorderColorRGBA : themes[this.theme].canvasCellBorderColorRGBA}, ${cell.animationGamma})`
-                ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y + this.squareSize, this.squareSize, y % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH)
+                this.ctx.fillStyle = `rgba(${y % 3 === 2 ? themes[this.theme].boxBorderColorRGBA : themes[this.theme].cellBorderColorRGBA}, ${cell.animationGamma})`
+                this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y + this.squareSize, this.squareSize, y % 3 === 2 ? boxBorderWidth : Canvas.CELL_BORDER_WIDTH)
             }
         }
     }
 
     protected renderPausedOverlay() {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game) return
 
         for (const cell of this.game.allCells) {
-            ctx.strokeStyle = ctx.fillStyle = this.darkColors.default
-            ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
+            this.ctx.strokeStyle = this.ctx.fillStyle = this.darkColors.default
+            this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
         }
     }
 
     protected renderBorders() {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game) return
 
-        const boxBorderWidth = this.logicalSize * this.boxBorderWidthFactor
+        const boxBorderWidth = this.ctx.canvas.width * this.boxBorderWidthFactor
         const lateralMargin = Math.floor(this.squareSize * this.topAndLeftMarginFactor)
 
         if (this.theme === 'light') {
-            ctx.fillStyle = themes[this.theme].canvasBoxBorderColor
-            ctx.fillRect(lateralMargin, lateralMargin, boxBorderWidth, this.logicalSize - lateralMargin)
-            ctx.fillRect(lateralMargin, lateralMargin, this.logicalSize - lateralMargin, boxBorderWidth)
+            this.ctx.fillStyle = themes[this.theme].boxBorderColor
+            this.ctx.fillRect(lateralMargin, lateralMargin, boxBorderWidth, this.ctx.canvas.height - lateralMargin)
+            this.ctx.fillRect(lateralMargin, lateralMargin, this.ctx.canvas.width - lateralMargin, boxBorderWidth)
             for (let i = 2; i < this.game.nSquares; i += 3) {
                 const cell = this.game.get({ x: i, y: i })
                 if (cell) {
-                    ctx.fillRect(cell.screenPosition.x + this.squareSize, lateralMargin, boxBorderWidth, this.logicalSize - lateralMargin)
-                    ctx.fillRect(lateralMargin, cell.screenPosition.y + this.squareSize, this.logicalSize - lateralMargin, boxBorderWidth)
+                    this.ctx.fillRect(cell.screenPosition.x + this.squareSize, lateralMargin, boxBorderWidth, this.ctx.canvas.height - lateralMargin)
+                    this.ctx.fillRect(lateralMargin, cell.screenPosition.y + this.squareSize, this.ctx.canvas.width - lateralMargin, boxBorderWidth)
                 }
             }
         } else if (this.game.settings.highContrastGrid) {
-            ctx.fillStyle = 'white'
+            this.ctx.fillStyle = 'white'
             for (let i = 2; i < this.game.nSquares - 1; i += 3) {
                 const cell = this.game.get({ x: i, y: i })
                 if (cell) {
-                    ctx.fillRect(cell.screenPosition.x + this.squareSize, boxBorderWidth + lateralMargin, boxBorderWidth, this.logicalSize - boxBorderWidth * 2 - lateralMargin)
-                    ctx.fillRect(boxBorderWidth + lateralMargin, cell.screenPosition.y + this.squareSize, this.logicalSize - boxBorderWidth * 2 - lateralMargin, boxBorderWidth)
+                    this.ctx.fillRect(cell.screenPosition.x + this.squareSize, boxBorderWidth + lateralMargin, boxBorderWidth, this.ctx.canvas.height - boxBorderWidth * 2 - lateralMargin)
+                    this.ctx.fillRect(boxBorderWidth + lateralMargin, cell.screenPosition.y + this.squareSize, this.ctx.canvas.width - boxBorderWidth * 2 - lateralMargin, boxBorderWidth)
                 }
             }
         }
     }
 
     protected renderBackground(): void {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game) return
 
-        ctx.fillStyle = themes[this._theme].background
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = themes[this._theme].canvasCellBorderColor
+        this.ctx.fillStyle = themes[this._theme].background
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        this.ctx.fillStyle = themes[this._theme].cellBorderColor
         const lateralMargin = Math.floor(this.squareSize * this.topAndLeftMarginFactor)
-        ctx.fillRect(lateralMargin, lateralMargin, this.logicalSize - lateralMargin, this.logicalSize - lateralMargin)
+        this.ctx.fillRect(lateralMargin, lateralMargin, this.ctx.canvas.width - lateralMargin, this.ctx.canvas.height - lateralMargin)
     }
 
     protected renderCellBackground() {
-        if (!this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.game) return
 
         for (const cell of this.game.allCells) {
             const selectedCellsValues = this.game.selectedCellsValues
             const hasSameValueAsSelected = ((this._lockedInput > 0 && this._lockedInput === cell.value) || (this._lockedInput === 0 && selectedCellsValues.size > 0 && selectedCellsValues.has(cell.value)))
 
             //Background
-            ctx.fillStyle =
+            this.ctx.fillStyle =
                 this._notPlayable ? this.colors.default :
                     (hasSameValueAsSelected || cell.highlighted) ? this.darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
                         (this.colors[cell.color]) //Cell color
 
-            ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
+            this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
 
             if (cell.animationColor !== '' && this.currentAnimations.length > 0 && this.currentAnimations[0].type !== 'fadein' && this.currentAnimations[0].type !== 'fadeout' && this.currentAnimations[0].type !== 'fadein') {
-                ctx.fillStyle = cell.animationColor
-                ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
+                this.ctx.fillStyle = cell.animationColor
+                this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
             }
         }
     }
 
     protected afterCanvasChangedSize(): void {
-        if (!this.game) return
+        if (!this.ctx || !this.game) return
 
-        const boxBorderWidth = this.logicalSize * this.boxBorderWidthFactor
+        const boxBorderWidth = this.ctx.canvas.width * this.boxBorderWidthFactor
         const numberOfBoxBorders = (Math.floor(this.game.nSquares / 3) + 1)
         const numberOfCellBorders = this.game.nSquares + 1 - numberOfBoxBorders
         const totalBorderThickness = numberOfBoxBorders * boxBorderWidth + numberOfCellBorders * Canvas.CELL_BORDER_WIDTH
-        this.squareSize = Math.floor((this.logicalSize - totalBorderThickness) / (this.game.nSquares + this.topAndLeftMarginFactor))
-        this.logicalSize = this.squareSize * (this.game.nSquares + this.topAndLeftMarginFactor) + totalBorderThickness
+        this.squareSize = Math.floor((this.ctx.canvas.width - totalBorderThickness) / (this.game.nSquares + this.topAndLeftMarginFactor))
+
+        const logicalSize = this.squareSize * (this.game.nSquares + this.topAndLeftMarginFactor) + totalBorderThickness
+        this.ctx.canvas.width = this.ctx.canvas.height = logicalSize
+        if (this.tempCtx) this.tempCtx.canvas.width = this.tempCtx.canvas.height = logicalSize
 
         let newCellPositions = []
         let newValuePositions = []
@@ -726,7 +807,12 @@ export abstract class Canvas<BoardType extends Board> {
 
     protected abstract renderActiveGame(): void
 
-    public createOffscreenCanvases(): void { }
+    public createOffscreenCanvases(): void {
+        const canvas = document.createElement('canvas')
+        this.tempCtx = canvas.getContext('2d')
+    }
 
-    public destroyOffscreenCanvases(): void { }
+    public destroyOffscreenCanvases(): void {
+        this.tempCtx = null
+    }
 }

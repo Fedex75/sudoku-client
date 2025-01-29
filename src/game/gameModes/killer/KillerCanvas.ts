@@ -1,6 +1,6 @@
 import { Canvas } from '../../../utils/Canvas'
 import { ScreenCoordinates, KillerCage } from '../../../utils/Cell'
-import { AccentColor } from '../../../utils/Colors'
+import { AccentColor, ColorDefinitions } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { KillerBoard } from './KillerBoard'
 
@@ -12,10 +12,7 @@ export type CageVector = {
 }
 
 export class KillerCanvas extends Canvas<KillerBoard> {
-    protected cagesOffscreenCanvas: HTMLCanvasElement | null = null
-    protected cagesOffscreenCanvasCtx: CanvasRenderingContext2D | null = null
-    protected cagesTempCanvas: HTMLCanvasElement | null = null
-    protected cagesTempCanvasCtx: CanvasRenderingContext2D | null = null
+    protected cagesCtx: CanvasRenderingContext2D | null = null
 
     protected cagePadding = 0
 
@@ -26,77 +23,92 @@ export class KillerCanvas extends Canvas<KillerBoard> {
         this.notePaddingBottomFactor = 0.22
     }
 
-    protected applyColorWithMask(createMask: () => void, color: string) {
-        if (!this.cagesTempCanvasCtx) return
-
-        this.cagesTempCanvasCtx.save()
-        this.cagesTempCanvasCtx.beginPath()
-        createMask()
-        this.cagesTempCanvasCtx.clip()
-        this.cagesTempCanvasCtx.fillStyle = color
-        this.cagesTempCanvasCtx.fillRect(0, 0, this.logicalSize, this.logicalSize)
-        this.cagesTempCanvasCtx.restore()
-    }
-
     protected renderCagesAndCageValues() {
-        if (!this.cagesOffscreenCanvas || !this.cagesOffscreenCanvasCtx || !this.cagesTempCanvas || !this.cagesTempCanvasCtx || !this.canvasRef || !this.game) return
-        const ctx = this.canvasRef.getContext('2d')
-        if (!ctx) return
+        if (!this.ctx || !this.cagesCtx || !this.tempCtx || !this.canvasRef || !this.game) return
 
-        this.cagesTempCanvasCtx.clearRect(0, 0, this.logicalSize, this.logicalSize)
-        this.cagesTempCanvasCtx.drawImage(this.cagesOffscreenCanvas, 0, 0)
+        this.tempCtx.clearRect(0, 0, this.tempCtx.canvas.width, this.tempCtx.canvas.height)
+        this.tempCtx.drawImage(this.cagesCtx.canvas, 0, 0)
 
         let selectedCages: KillerCage[] = []
         for (const cell of this.game.selectedCells) {
             if (cell.cage && !selectedCages.includes(cell.cage)) selectedCages.push(cell.cage)
         }
 
-        this.cagesTempCanvasCtx.globalCompositeOperation = 'source-in'
-
         // Paint selected cages
-        this.applyColorWithMask(() => {
-            if (!this.cagesTempCanvasCtx) return
-
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
             for (const cage of selectedCages) {
                 for (const cell of cage.members) {
-                    this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                    ctx.rect(
+                        cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                        cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                    )
                 }
             }
-        }, themes[this._theme].canvasKillerHighlightedCageColor)
+        }, themes[this._theme].killerHighlightedCageColor)
 
         // Paint cages that are on colored cells black to improve contrast
-        this.applyColorWithMask(() => {
-            if (!this.cagesTempCanvasCtx || !this.game) return
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
+            if (!this.game) return
 
             for (const cell of this.game.allCells) {
                 if (cell.color !== 'default') {
-                    this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                    ctx.rect(
+                        cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                        cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                        this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                    )
                 }
             }
-        }, themes[this._theme].canvasKillerCageOnColoredCellColor)
+        }, themes[this._theme].killerCageOnColoredCellColor)
 
-        // Paint cages with error red or yellow
-        if (this.game.settings.checkErrors) {
-            this.applyColorWithMask(() => {
-                if (!this.cagesTempCanvasCtx || !this.game) return
+        if (this.game.settings.checkLogicErrors) {
+            // Paint cages with error
+            Canvas.applyColorWithMask(this.tempCtx, ctx => {
+                if (!this.game) return
 
                 for (const cage of this.game.cages) {
                     if (cage.error) {
                         for (const cell of cage.members) {
-                            this.cagesTempCanvasCtx.rect(cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH, cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2, this.squareSize + Canvas.CELL_BORDER_WIDTH * 2)
+                            ctx.rect(
+                                cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                                cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                                this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                                this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                            )
                         }
                     }
                 }
-            }, this.accentColor === 'red' ? '#ffe173' : '#ff5252')
+            }, ColorDefinitions[this.additionalColors.errorColor])
+
+            // Apply spare error color to corresponding cages
+            Canvas.applyColorWithMask(this.tempCtx, ctx => {
+                if (!this.game) return
+
+                for (const cage of this.game.cages) {
+                    if (cage.error) {
+                        for (const cell of cage.members) {
+                            if (cell.color === this.additionalColors.errorColor) {
+                                ctx.rect(
+                                    cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                                    cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                                    this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                                    this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                                )
+                            }
+                        }
+                    }
+                }
+            }, ColorDefinitions[this.additionalColors.spareErrorColor])
         }
 
-        this.cagesTempCanvasCtx.globalCompositeOperation = 'source-over'
-
-        ctx.drawImage(this.cagesTempCanvas, 0, 0)
+        this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
     }
 
     protected renderCagesToOffscreenCanvas() {
-        if (!this.cagesOffscreenCanvas || !this.cagesTempCanvas || !this.cagesOffscreenCanvasCtx || !this.cagesTempCanvasCtx || !this.game) return
+        if (!this.cagesCtx || !this.tempCtx || !this.game) return
 
         this.cagePadding = Math.floor(this.squareSize * 0.08)
         let cageLinePositions = Array(this.game.nSquares * 2).fill(0)
@@ -273,27 +285,23 @@ export class KillerCanvas extends Canvas<KillerBoard> {
             }
         }
 
-        this.cagesOffscreenCanvas.width = this.logicalSize
-        this.cagesOffscreenCanvas.height = this.logicalSize
-        this.cagesTempCanvas.width = this.logicalSize
-        this.cagesTempCanvas.height = this.logicalSize
-
-        this.cagesOffscreenCanvasCtx.clearRect(0, 0, this.logicalSize, this.logicalSize)
-        this.cagesOffscreenCanvasCtx.fillStyle = this.cagesOffscreenCanvasCtx.strokeStyle = themes[this.theme].canvasKillerCageColor
+        this.cagesCtx.clearRect(0, 0, this.cagesCtx.canvas.width, this.cagesCtx.canvas.height)
+        this.cagesCtx.fillStyle = this.cagesCtx.strokeStyle = themes[this.theme].killerCageColor
 
         //Border
         newCageVectors.forEach((vector: CageVector) => {
-            if (!this.cagesOffscreenCanvasCtx) return
-            KillerCanvas.dashedLine(this.cagesOffscreenCanvasCtx, vector.start, vector.end, vector.ratio, Canvas.CAGE_LINE_WIDTH)
+            if (!this.cagesCtx) return
+            KillerCanvas.dashedLine(this.cagesCtx, vector.start, vector.end, vector.ratio, Canvas.CAGE_LINE_WIDTH)
         })
 
         for (const cell of this.game.allCells) {
-            if (cell.cage && cell.cageSum > 0) KillerCanvas.drawSVGNumber(this.cagesOffscreenCanvasCtx, cell.cageSum, cell.screenPosition.x + this.cagePadding, cell.screenPosition.y + this.cagePadding + this.squareSize * 0.08, this.squareSize * 0.15, 'right', 'center', null)
+            if (cell.cage && cell.cageSum > 0) KillerCanvas.drawSVGNumber(this.cagesCtx, cell.cageSum, cell.screenPosition.x + this.cagePadding, cell.screenPosition.y + this.cagePadding + this.squareSize * 0.08, this.squareSize * 0.15, 'right', 'center', null)
         }
     }
 
     afterCanvasChangedSize() {
         super.afterCanvasChangedSize()
+        if (this.ctx && this.cagesCtx) this.cagesCtx.canvas.width = this.cagesCtx.canvas.height = this.ctx.canvas.width
         this.renderCagesToOffscreenCanvas()
     }
 
@@ -307,16 +315,13 @@ export class KillerCanvas extends Canvas<KillerBoard> {
     }
 
     public createOffscreenCanvases(): void {
-        this.cagesOffscreenCanvas = document.createElement('canvas')
-        this.cagesTempCanvas = document.createElement('canvas')
-        this.cagesOffscreenCanvasCtx = this.cagesOffscreenCanvas.getContext('2d')
-        this.cagesTempCanvasCtx = this.cagesTempCanvas.getContext('2d')
+        super.createOffscreenCanvases()
+        const canvas = document.createElement('canvas')
+        this.cagesCtx = canvas.getContext('2d')
     }
 
     public destroyOffscreenCanvases(): void {
-        this.cagesOffscreenCanvas = null
-        this.cagesOffscreenCanvasCtx = null
-        this.cagesTempCanvas = null
-        this.cagesTempCanvasCtx = null
+        super.destroyOffscreenCanvases()
+        this.cagesCtx = null
     }
 }

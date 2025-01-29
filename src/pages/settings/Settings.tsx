@@ -113,7 +113,8 @@ function Game({ accentColorHex }: GameProps) {
 			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGame')} backURL="/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.showErrors')} onChange={v => { updateSettings({ checkErrors: v }) }} value={settings.checkErrors} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.showLogicErrors')} onChange={v => { updateSettings({ checkLogicErrors: v }) }} value={settings.checkLogicErrors} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.showSolutionErrors')} onChange={v => { updateSettings({ checkSolutionErrors: v }) }} value={settings.checkSolutionErrors} accentColorHex={accentColorHex} />
 					<SettingsItem title={t('settings.advancedHighlight')} onChange={v => { updateSettings({ advancedHighlight: v }) }} value={settings.advancedHighlight} accentColorHex={accentColorHex} />
 				</div>
 

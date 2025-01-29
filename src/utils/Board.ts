@@ -604,25 +604,23 @@ export default abstract class Board {
 	}
 
 	protected checkErrors() {
-		if (this._nSquares < 9) return // TODO: This is a hack. When it's implemented, we should use the per-game settings system to override checkMistakes for the 3x3 canvases. Then we won't need this guard
+		if (this._nSquares < 9) return // TODO: This is a hack. When it's implemented, we should use the per-game settings system to override checkErrors for the 3x3 canvases. Then we won't need this guard
 
 		this._hasErrors = false
 
 		for (const cell of this.allCells) {
-			if (
-				cell.value > 0 &&
-				(
-					!cell.possibleValues.has(cell.value) ||
-					(
-						cell.solution !== 0 &&
-						cell.value !== cell.solution
-					)
-				)
-			) {
-				cell.error = true
+			if (cell.value > 0 && !cell.possibleValues.has(cell.value)) {
+				cell.logicError = true
 				this._hasErrors = true
 			} else {
-				cell.error = false
+				cell.logicError = false
+			}
+
+			if (cell.value > 0 && cell.solution !== 0 && cell.value !== cell.solution) {
+				cell.solutionError = true
+				this._hasErrors = true
+			} else {
+				cell.solutionError = false
 			}
 		}
 	}

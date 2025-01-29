@@ -2,7 +2,7 @@ import { Canvas } from '../../../utils/Canvas'
 import { ClassicBoard } from './ClassicBoard'
 
 export class ClassicCanvas extends Canvas<ClassicBoard> {
-    renderActiveGame(): void {
+    protected renderActiveGame(): void {
         this.renderCellBackground()
         this.renderCellValueAndCandidates()
         this.renderSelection()

@@ -160,7 +160,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 					duration: boardAnimationDuration,
 					func: ({ theme, progress }) => {
 						if (!game) return
-						for (const cell of game.allCells) { cell.animationColor = `rgba(${themes[theme].canvasAnimationBaseColor}, ${brightness(Math.max(Math.abs(center.x - cell.coords.x), Math.abs(center.y - cell.coords.y)), progress, 8, 8)})` }
+						for (const cell of game.allCells) { cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.max(Math.abs(center.x - cell.coords.x), Math.abs(center.y - cell.coords.y)), progress, 8, 8)})` }
 					}
 				}]
 				GameHandler.setComplete()

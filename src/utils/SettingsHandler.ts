@@ -1,13 +1,14 @@
 import { getStoredData, useLocalStorage } from './LocalStorageHandler'
 
 const SETTINGS_KEY = 'settings'
-const SETTINGS_SCHEMA_VERSION = 1
+const SETTINGS_SCHEMA_VERSION = 2
 
 export type Language = 'auto' | 'es' | 'en'
 
 export type Settings = {
 	autoTheme: boolean
-	checkErrors: boolean
+	checkSolutionErrors: boolean
+	checkLogicErrors: boolean
 	advancedHighlight: boolean
 	showPossibleValues: boolean
 	autoRemoveCandidates: boolean
@@ -27,7 +28,8 @@ export type Settings = {
 
 export const defaultSettings: Settings = {
 	autoTheme: true,
-	checkErrors: true,
+	checkSolutionErrors: true,
+	checkLogicErrors: true,
 	advancedHighlight: false,
 	showPossibleValues: false,
 	autoRemoveCandidates: true,
