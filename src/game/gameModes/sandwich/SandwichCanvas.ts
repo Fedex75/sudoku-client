@@ -20,9 +20,9 @@ export class SandwichCanvas extends Canvas<SandwichBoard> {
             const cell = this.game.get({ x: i, y: i })
             if (!cell) continue
             this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.horizontalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
-            if (this.game.horizontalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
+            if (!this.game.settings.sandwichHideSolvedClues || this.game.horizontalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
             this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.verticalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
-            if (this.game.verticalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
+            if (!this.game.settings.sandwichHideSolvedClues || this.game.verticalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
         }
     }
 

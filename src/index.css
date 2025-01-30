@@ -47,6 +47,7 @@
   --carouselDotColor: #c8c8c8;
   --settingsBorderColor: #dddddd;
   --canvasBoxBorderColor: #344861;
+  --disabledFilter: brightness(1.4);
 }
 
 [data-theme='dark'] {
@@ -83,6 +84,7 @@
   --carouselDotColor: #949494;
   --settingsBorderColor: #333333;
   --canvasBoxBorderColor: black;
+  --disabledFilter: brightness(0.6);
 }
 
 [data-accent-color='red'] {

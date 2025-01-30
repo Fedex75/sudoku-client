@@ -534,7 +534,7 @@ export abstract class Canvas<BoardType extends Board> {
             if (cell.value > 0) {
                 //Value
                 const highlightValue = (this._lockedInput === 0 && this.game.selectedCellsValues.has(cell.value)) || this._lockedInput === cell.value
-                if ((this.game.settings.showLogicErrors && cell.logicError) || (this.game.settings.showSolutionErrors && cell.solutionError)) {
+                if (cell.hasVisibleError) {
                     if (cell.color === this.additionalColors.errorColor) {
                         this.ctx.strokeStyle = this.ctx.fillStyle = ColorDefinitions[this.additionalColors.spareErrorColor]
                     } else {

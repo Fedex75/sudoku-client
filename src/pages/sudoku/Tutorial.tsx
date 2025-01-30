@@ -181,8 +181,8 @@ export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: Tutoria
         game = newTutorialGames.killer[3].game
         game.setValue({ of: game.get({ x: 3, y: 3 })!, to: 7, causedByUser: true })
         game.selectedCells = game.get({ x: 2, y: 1 })!.cage!.members
-        game.get({ x: 2, y: 1 })!.logicError = true
-        game.get({ x: 3, y: 3 })!.logicError = true
+        game.get({ x: 2, y: 1 })!.hasVisibleError = true
+        game.get({ x: 3, y: 3 })!.hasVisibleError = true
 
         game = newTutorialGames.killer[4].game
         game.setValue({ of: game.get({ x: 7, y: 7 })!, to: 2, causedByUser: true })

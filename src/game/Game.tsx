@@ -258,7 +258,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 						} else {
 							game.selectedCells = cellSet
 
-							if (cells[0].value > 0 && game.settings.autoChangeInputLock) setLockedInput(cells[0].value)
+							if (cells[0].value > 0 && game.settings.inputLock) setLockedInput(cells[0].value)
 						}
 					} else {
 						if (hold) {

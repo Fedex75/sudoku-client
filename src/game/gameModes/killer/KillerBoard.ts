@@ -37,7 +37,7 @@ export class KillerBoard extends ClassicBoard {
     public setValue(params: { of: Cell | Set<Cell>, to: number, causedByUser: boolean }): void {
         super.setValue({ of: params.of, to: params.to, causedByUser: false })
 
-        let cells = (params.of instanceof Cell) ? [params.of] : [...params.of]
+        const cells = (params.of instanceof Cell) ? [params.of] : [...params.of]
         for (const cage of cells.map(cell => cell.cage)) {
             if (!cage) continue
             this.solveLastInCage(cage)
@@ -52,7 +52,7 @@ export class KillerBoard extends ClassicBoard {
     }
 
     private solveLastInCage(cage: KillerCage) {
-        if (!this._settings.killerAutoSolveLastInCage || this._nSquares <= 3) return
+        if (!this._settings.killerAutoSolveLastInCage || this._nSquares <= 3) return // TODO: replace the this._nSquares <= 3 check with settings override
 
         let remaining = cage.members.size
         let sum = 0
@@ -104,6 +104,7 @@ export class KillerBoard extends ClassicBoard {
         super.checkErrors()
 
         for (const cage of this.cages) {
+            cage.error = false
             let sum = 0
             for (const cell of cage.members) {
                 if (cell.value > 0) sum += cell.value
@@ -114,10 +115,8 @@ export class KillerBoard extends ClassicBoard {
             }
 
             if (sum !== -1 && sum !== cage.sum) {
-                cage.error = true
+                if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.killerShowCageErrors) cage.error = true
                 this._hasErrors = true
-            } else {
-                cage.error = false
             }
         }
     }

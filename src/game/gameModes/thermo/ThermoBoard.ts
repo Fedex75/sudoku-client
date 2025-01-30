@@ -53,7 +53,7 @@ export class ThermoBoard extends ClassicBoard {
             for (const cell of thermo.members) {
                 if (cell.value > 0) {
                     if (cell.value < currentMaxValue) {
-                        thermo.error = true
+                        if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.thermoShowThermometerErrors) thermo.error = true
                         this._hasErrors = true
                     } else {
                         currentMaxValue = cell.value

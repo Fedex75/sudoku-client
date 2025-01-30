@@ -104,6 +104,7 @@ export default abstract class Board {
 
 	set settings(v: Settings) {
 		this._settings = v
+		this.triggerValuesChanged(false)
 	}
 
 	get settings() {
@@ -562,7 +563,7 @@ export default abstract class Board {
 	protected checkIsComplete(): boolean {
 		this.checkErrors()
 
-		return [...this.allCells].every(cell => cell.value > 0) && !this._hasErrors
+		return !this._hasErrors && [...this.allCells].every(cell => cell.value > 0)
 	}
 
 	protected checkFullNotation() {
@@ -588,21 +589,18 @@ export default abstract class Board {
 	protected checkErrors() {
 		if (this._nSquares < 9) return // TODO: This is a hack. When it's implemented, we should use the per-game settings system to override checkErrors for the 3x3 canvases. Then we won't need this guard
 
+		for (const cell of this.allCells) cell.hasVisibleError = false
 		this._hasErrors = false
 
 		for (const cell of this.allCells) {
 			if (cell.value > 0 && !cell.possibleValues.has(cell.value)) {
-				cell.logicError = true
+				if (this.settings.showErrors && this.settings.showLogicErrors) cell.hasVisibleError = true
 				this._hasErrors = true
-			} else {
-				cell.logicError = false
 			}
 
 			if (cell.value > 0 && cell.solution !== 0 && cell.value !== cell.solution) {
-				cell.solutionError = true
+				if (this.settings.showErrors && this.settings.showSolutionErrors) cell.hasVisibleError = true
 				this._hasErrors = true
-			} else {
-				cell.solutionError = false
 			}
 		}
 	}
