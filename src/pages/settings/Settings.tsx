@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPalette, faChevronRight, faGear, faHeart, faToolbox, faPencilAlt, faDisplay, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faPalette, faChevronRight, faGear, faHeart, faToolbox, faPencilAlt, faXmark, faMoon } from '@fortawesome/free-solid-svg-icons'
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
@@ -52,8 +52,8 @@ function Main() {
 				<p className='home__section-title' style={{ marginTop: 0, marginBottom: 20 }}>{t('sectionNames.settings')}</p>
 
 				<div className="settings__list">
-					<SectionLink color='var(--darkBlue)' icon={faDisplay} iconColor='white' title={t('settings.sectionAppearance')} link='appearance' />
-					<SectionLink color='var(--yellow)' icon={faPencilAlt} iconColor='white' title={t('settings.sectionAnnotations')} link='annotations' />
+					<SectionLink color='var(--purple)' icon={faMoon} iconColor='white' title={t('settings.sectionAppearance')} link='appearance' />
+					<SectionLink color='var(--darkBlue)' icon={faPencilAlt} iconColor='white' title={t('settings.sectionAnnotations')} link='annotations' />
 					<SectionLink color='var(--green)' icon={faPalette} iconColor='white' title={t('settings.sectionColor')} link='color' />
 					<SectionLink color='var(--red)' icon={faXmark} iconColor='white' title={t('settings.sectionErrors')} link='errors' additionalInfo={settings.showErrors ? t('settings.errorsOn') : t('settings.errorsOff')} />
 				</div>
