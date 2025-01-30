@@ -46,7 +46,6 @@
   --tabSwitcherSelectedTabBackground: black;
   --carouselDotColor: #c8c8c8;
   --settingsBorderColor: #dddddd;
-  --canvasBoxBorderColor: #344861;
   --disabledFilter: brightness(1.4);
 }
 
@@ -70,6 +69,16 @@
   --numpadButtonBackground: var(--darkBackground);
   --disabledButtonBackground: transparent;
   --disabledButtonBorderColor: #25242c;
+  --canvasLightDefaultCellColor: #25242c;
+  --canvasDarkDefaultCellColor: #161620;
+  --canvasCellBorderColor: black;
+  --canvasBoxBorderColor: black;
+  --canvasClueColor: #75747c;
+  --canvasSolutionColor: #6f90c3;
+  --canvasSelectedCellBackground: #153b79;
+  --canvasSameValueCellBackground: #0f0e12;
+  --canvasNoteHighlightColor: white;
+  --canvasAnimationBaseColor: 255, 255, 255;
   --settingsItemBackground: #25242c;
   --settingsItemBorder: black;
   --settingsItemTitleColor: white;
@@ -83,7 +92,6 @@
   --tabSwitcherSelectedTabBackground: white;
   --carouselDotColor: #949494;
   --settingsBorderColor: #333333;
-  --canvasBoxBorderColor: black;
   --disabledFilter: brightness(0.6);
 }
 
@@ -128,7 +136,6 @@ html, body, #root, .app {
   touch-action: manipulation;
   scroll-behavior: smooth;
   font-family: 'Inter';
-  font-size: 14px;
 }
 
 .app {

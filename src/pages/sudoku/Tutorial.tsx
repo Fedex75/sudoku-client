@@ -26,7 +26,7 @@ interface TutorialProps {
 
 export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: TutorialProps) {
     const [step, setStep] = useState(0)
-    const canvasHandlerRef = useRef(CanvasFactory(gameMode, accentColor, true))
+    const canvasHandlerRef = useRef(CanvasFactory(gameMode, accentColor, true, 0.01))
 
     const { t } = useTranslation()
 

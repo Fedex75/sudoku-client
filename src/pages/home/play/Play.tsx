@@ -24,11 +24,11 @@ export default function Play({ theme, accentColor }: Props) {
     const [newGameMode, setNewGameMode] = useState<GameModeName>()
     const [snappedIndex, setSnappedIndex] = useState(2)
 
-    const classicCanvasRef = useRef(CanvasFactory('classic', accentColor, true))
-    const killerCanvasRef = useRef(CanvasFactory('killer', accentColor, true))
-    const sudokuXCanvasRef = useRef(CanvasFactory('sudokuX', accentColor, true))
-    const sandwichCanvasRef = useRef(CanvasFactory('sandwich', accentColor, true))
-    const thermoCanvasRef = useRef(CanvasFactory('thermo', accentColor, true))
+    const classicCanvasRef = useRef(CanvasFactory('classic', accentColor, true, 0))
+    const killerCanvasRef = useRef(CanvasFactory('killer', accentColor, true, 0))
+    const sudokuXCanvasRef = useRef(CanvasFactory('sudokuX', accentColor, true, 0))
+    const sandwichCanvasRef = useRef(CanvasFactory('sandwich', accentColor, true, 0))
+    const thermoCanvasRef = useRef(CanvasFactory('thermo', accentColor, true, 0))
 
     const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
 
@@ -173,31 +173,31 @@ export default function Play({ theme, accentColor }: Props) {
                 <div ref={carouselRef} className='home__carousel'>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 0 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sandwich', 0) }}>
-                            <Canvas paused={false} canvasHandler={sandwichCanvasRef.current} wrapperClass='home__play__canvas-wrapper' />
+                            <Canvas paused={false} canvasHandler={sandwichCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.sandwich')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 1 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('sudokuX', 1) }}>
-                            <Canvas paused={false} canvasHandler={sudokuXCanvasRef.current} wrapperClass='home__play__canvas-wrapper' />
+                            <Canvas paused={false} canvasHandler={sudokuXCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.sudokuX')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 2 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('classic', 2) }}>
-                            <Canvas paused={false} canvasHandler={classicCanvasRef.current} wrapperClass='home__play__canvas-wrapper' />
+                            <Canvas paused={false} canvasHandler={classicCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.classic')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 3 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('killer', 3) }}>
-                            <Canvas paused={false} canvasHandler={killerCanvasRef.current} wrapperClass='home__play__canvas-wrapper' />
+                            <Canvas paused={false} canvasHandler={killerCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.killer')}</div>
                         </div>
                     </div>
                     <div className='home__carousel__item-wrapper'>
                         <div className={`home__gameMode ${snappedIndex === 4 ? 'snapped' : ''}`} onClick={() => { handleGameModeClick('thermo', 4) }}>
-                            <Canvas paused={false} canvasHandler={thermoCanvasRef.current} wrapperClass='home__play__canvas-wrapper' />
+                            <Canvas paused={false} canvasHandler={thermoCanvasRef.current} />
                             <div className='home__gameMode__name'>{t('gameModes.thermo')}</div>
                         </div>
                     </div>

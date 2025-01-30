@@ -307,7 +307,7 @@ function AboutSection() {
 				<div className="settings__list">
 					{
 						Object.entries(GameHandler.missions).map(([gameMode, difficulties]) => (
-							<SettingsItem key={gameMode} type='info' title={t(`gameModes.${gameMode}`)} info={Object.entries(difficulties).map(([, missions]) => missions.length).reduce((a, b) => a + b, 0).toString()} />
+							<SettingsItem type='info' title={t(`gameModes.${gameMode}`)} info={Object.entries(difficulties).map(([, missions]) => missions.length).reduce((a, b) => a + b, 0).toString()} />
 						))
 					}
 				</div>
