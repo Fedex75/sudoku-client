@@ -68,7 +68,7 @@ export class ThermoCanvas extends Canvas<ThermoBoard> {
         }, themes[this._theme].highlightedThermometerColor)
 
         // Paint thermometers with errors
-        if (this._game.settings.checkLogicErrors) {
+        if (this._game.settings.showLogicErrors) {
             Canvas.applyColorWithMask(this.tempCtx, ctx => {
                 if (!this._game) return
                 for (const thermo of this._game.thermometers) {

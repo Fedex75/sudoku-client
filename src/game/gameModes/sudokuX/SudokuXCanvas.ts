@@ -6,6 +6,7 @@ import { SudokuXBoard } from './SudokuXBoard'
 export class SudokuXCanvas extends Canvas<SudokuXBoard> {
     private renderDiagonals() {
         if (!this.ctx || !this.game) return
+        if (!this.game.settings.sudokuXShowDiagonals) return
 
         const topLeftCornerCell = this.game.get({ x: 0, y: 0 })
         const bottomRightCornerCell = this.game.get({ x: this.game.nSquares - 1, y: this.game.nSquares - 1 })

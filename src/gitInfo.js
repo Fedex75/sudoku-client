@@ -46,7 +46,6 @@ const main = async () => {
     const fileContents = JSON.stringify(obj, null, 2)
 
     fs.writeFileSync(filePath, fileContents)
-    console.log(`Wrote the following contents to ${filePath}\n${fileContents}`)
 }
 
 main()

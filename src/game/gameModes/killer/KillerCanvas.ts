@@ -16,8 +16,8 @@ export class KillerCanvas extends Canvas<KillerBoard> {
 
     protected cagePadding = 0
 
-    constructor(accentColor: AccentColor, notPlayable: boolean) {
-        super(accentColor, notPlayable)
+    constructor(accentColor: AccentColor, notPlayable: boolean, boxBorderWidthFactor: number) {
+        super(accentColor, notPlayable, boxBorderWidthFactor)
         this.notePaddingLeftFactor = 0.28
         this.notePaddingTopFactor = 0.34
         this.notePaddingBottomFactor = 0.22
@@ -64,14 +64,33 @@ export class KillerCanvas extends Canvas<KillerBoard> {
             }
         }, themes[this._theme].killerCageOnColoredCellColor)
 
-        if (this.game.settings.checkLogicErrors) {
-            // Paint cages with error
-            Canvas.applyColorWithMask(this.tempCtx, ctx => {
-                if (!this.game) return
 
-                for (const cage of this.game.cages) {
-                    if (cage.error) {
-                        for (const cell of cage.members) {
+        // Paint cages with error
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
+            if (!this.game) return
+
+            for (const cage of this.game.cages) {
+                if (cage.error) {
+                    for (const cell of cage.members) {
+                        ctx.rect(
+                            cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
+                            cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
+                            this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
+                            this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
+                        )
+                    }
+                }
+            }
+        }, ColorDefinitions[this.additionalColors.errorColor])
+
+        // Apply spare error color to corresponding cages
+        Canvas.applyColorWithMask(this.tempCtx, ctx => {
+            if (!this.game) return
+
+            for (const cage of this.game.cages) {
+                if (cage.error) {
+                    for (const cell of cage.members) {
+                        if (cell.color === this.additionalColors.errorColor) {
                             ctx.rect(
                                 cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
                                 cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
@@ -81,28 +100,8 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                         }
                     }
                 }
-            }, ColorDefinitions[this.additionalColors.errorColor])
-
-            // Apply spare error color to corresponding cages
-            Canvas.applyColorWithMask(this.tempCtx, ctx => {
-                if (!this.game) return
-
-                for (const cage of this.game.cages) {
-                    if (cage.error) {
-                        for (const cell of cage.members) {
-                            if (cell.color === this.additionalColors.errorColor) {
-                                ctx.rect(
-                                    cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
-                                    cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
-                                    this.squareSize + Canvas.CELL_BORDER_WIDTH * 2,
-                                    this.squareSize + Canvas.CELL_BORDER_WIDTH * 2
-                                )
-                            }
-                        }
-                    }
-                }
-            }, ColorDefinitions[this.additionalColors.spareErrorColor])
-        }
+            }
+        }, ColorDefinitions[this.additionalColors.spareErrorColor])
 
         this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
     }

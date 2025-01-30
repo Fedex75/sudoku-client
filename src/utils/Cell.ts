@@ -70,8 +70,7 @@ export class Cell {
     private readonly _solution: number
 
     // Additional properties
-    public solutionError: boolean = false
-    public logicError: boolean = false
+    public hasVisibleError: boolean = false
     public highlighted: boolean = false
     public possibleValues: Set<number> = new Set()
     public locked: boolean = false

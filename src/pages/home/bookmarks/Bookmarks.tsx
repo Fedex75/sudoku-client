@@ -1,9 +1,8 @@
 import './bookmarks.css'
-import { faBookmark, faCheck, faPlay, faChartSimple, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
-import { Link } from "react-router-dom"
 import { ActionSheet, ActionSheetButton } from '../../../components'
 import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
@@ -14,6 +13,7 @@ import { AccentColor } from '../../../utils/Colors'
 import { ThemeName } from '../../../game/Themes'
 import { BoardFactory } from '../../../game/gameModes/BoardFactory'
 import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
+import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
 
 type Props = {
 	theme: ThemeName
@@ -98,9 +98,8 @@ function Bookmarks({ theme, accentColor }: Props) {
 								solved = GameHandler.solved.includes(bm.id)
 
 
-								const canvasHandlerRef = CanvasFactory(mode, accentColor, true)
+								const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
 								canvasHandlerRef.game = board
-								canvasHandlerRef.game.settings.highContrastGrid = false
 								canvasHandlerRef.theme = theme
 
 								return (
@@ -108,10 +107,11 @@ function Bookmarks({ theme, accentColor }: Props) {
 										<div className="bookmarks_item__top">
 											<p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
 											{solved ? <FontAwesomeIcon style={{ color: 'var(--green)' }} icon={faCheck} /> : null}
-											<FontAwesomeIcon color='var(--primaryIconColor)' icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
+											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
 										</div>
-
-										<Canvas canvasHandler={canvasHandlerRef} paused={false} onWrapperClick={() => { handlePlayBookmark(bm) }} />
+										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
+											<Canvas canvasHandler={canvasHandlerRef} paused={false} />
+										</div>
 									</div>
 								)
 							})
@@ -123,25 +123,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 					</div>
 			}
 
-			<div className='home__tabSwitcher-wrapper'>
-				<div className='home__tabSwitcher'>
-					<Link to="/home">
-						<div className='home__tabSwitcher__tab'>
-							<FontAwesomeIcon className='home__tabSwitcher__icon' icon={faPlay} />
-						</div>
-					</Link>
-					<Link to="/home/bookmarks">
-						<div className='home__tabSwitcher__tab selected'>
-							<FontAwesomeIcon className='home__tabSwitcher__icon' icon={faBookmark} />
-						</div>
-					</Link>
-					<Link to="/home/statistics">
-						<div className='home__tabSwitcher__tab'>
-							<FontAwesomeIcon className='home__tabSwitcher__icon' icon={faChartSimple} />
-						</div>
-					</Link>
-				</div>
-			</div>
+			<TabSwitcher selected='bookmarks' theme={theme} accentColor={accentColor} />
 
 			<ActionSheet
 				isOpen={clearBookmarksActionSheetIsOpen}

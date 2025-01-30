@@ -10,6 +10,16 @@
   border-color: var(--settingsItemBorder);
 }
 
+.settings__item.disabled {
+  .settings__item__icon, .react-switch {
+    filter: var(--disabledFilter);
+  }
+
+  .settings__item__title {
+    color: var(--secondaryTextColor);
+  }
+}
+
 .settings__item:first-child {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -23,6 +33,7 @@
 
 .settings__item__title {
   flex-grow: 1;
+  font-size: 14px;
   margin-right: 40px;
   color: var(--settingsItemTitleColor);
 }
@@ -31,7 +42,6 @@
   display: flex;
   flex-flow: row;
   justify-content: center;
-  gap: 50px;
 }
 
 .settings__item__theme-wrapper {

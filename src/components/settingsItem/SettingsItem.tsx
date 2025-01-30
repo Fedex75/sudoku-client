@@ -21,10 +21,15 @@ type Props = {
   info?: string
   icon?: React.ReactNode
   language?: string
+  disabled?: boolean
 }
 
-export default function SettingsItem({ title = '', type = 'boolean', theme, accentColor = 'darkBlue', accentColorHex = '', info = '', icon, language, value = null, onChange = () => { } }: Props) {
+export default function SettingsItem({ title = '', type = 'boolean', theme, accentColor = 'darkBlue', accentColorHex = '', info = '', icon, language, value = null, onChange = () => { }, disabled = false }: Props) {
   const { t } = useTranslation()
+
+  const className = useMemo(() => {
+    return `settings__item ${disabled ? 'disabled' : ''} ${type === 'theme' ? 'theme' : ''}`
+  }, [disabled, type])
 
   const [canvasHandlerLight, canvasHandlerDark] = useMemo(() => {
     if (type !== 'theme') return [null, null]
@@ -35,11 +40,11 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
     classicMiniature.get({ x: 0, y: 2 })!.value = 7
     classicMiniature.get({ x: 2, y: 2 })!.value = 9
 
-    const newCanvasHandlerLight = CanvasFactory('classic', accentColor, true)
+    const newCanvasHandlerLight = CanvasFactory('classic', accentColor, true, 0)
     newCanvasHandlerLight.game = classicMiniature
     newCanvasHandlerLight.theme = 'light'
 
-    const newCanvasHandlerDark = CanvasFactory('classic', accentColor, true)
+    const newCanvasHandlerDark = CanvasFactory('classic', accentColor, true, 0)
     newCanvasHandlerDark.game = classicMiniature
     newCanvasHandlerDark.theme = 'dark'
 
@@ -47,7 +52,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
   }, [type, accentColor])
 
   if (type === 'boolean') return (
-    <div className="settings__item">
+    <div className={className}>
       <p className="settings__item__title">{title}</p>
       <ReactSwitch
         className="react-switch"
@@ -57,7 +62,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
         uncheckedIcon={false}
         handleDiameter={24}
         activeBoxShadow={undefined}
-        onChange={onChange}
+        onChange={value => { if (!disabled) onChange(value) }}
         checked={value}
       />
     </div>
@@ -65,24 +70,31 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
 
   if (type === 'theme' && canvasHandlerLight) {
     return (
-      <div className='settings__item theme'>
-        <div className='settings__item__theme-wrapper' onClick={() => { onChange('light') }}>
+      <div className={className}>
+        <div style={{ flexGrow: 1 }}></div>
+
+        <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('light') }}>
           <Canvas canvasHandler={canvasHandlerLight} paused={false} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
-        <div className='settings__item__theme-wrapper' onClick={() => { onChange('dark') }}>
+
+        <div style={{ flexGrow: 1 }}></div>
+
+        <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('dark') }}>
           <Canvas canvasHandler={canvasHandlerDark} paused={false} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>
+
+        <div style={{ flexGrow: 1 }}></div>
       </div>
     )
   }
 
   if (type === 'info') {
     return (
-      <div className="settings__item">
+      <div className={className}>
         <p className="settings__item__title">{title}</p>
         <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>
       </div>
@@ -91,7 +103,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
 
   if (type === 'language') {
     return (
-      <div className="settings__item" onClick={() => { onChange(language) }}>
+      <div className={className} onClick={() => { if (!disabled) onChange(language) }}>
         {icon}
         <p className="settings__item__title">{title}</p>
         <p style={{ color: 'var(--secondaryTextColor)', whiteSpace: 'nowrap' }}>{info}</p>

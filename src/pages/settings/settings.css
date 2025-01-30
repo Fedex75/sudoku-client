@@ -1,6 +1,6 @@
 #settings {
   overflow-y: auto;
-  margin-top: 30px;
+  margin-top: 20px;
   padding: 0 10px;
 }
 
@@ -70,6 +70,10 @@
 
 .settings__section-link__title {
   flex-grow: 1;
+}
+
+.settings__section-link__info {
+  color: gray;
 }
 
 .settings__section-link__icon {
