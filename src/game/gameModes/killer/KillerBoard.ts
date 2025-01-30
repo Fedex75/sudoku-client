@@ -115,7 +115,7 @@ export class KillerBoard extends ClassicBoard {
             }
 
             if (sum !== -1 && sum !== cage.sum) {
-                if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.killerShowCageErrors) cage.error = true
+                if (this._settings.showErrors && this._settings.showLogicErrors && this._settings.killerShowCageErrors) cage.error = true
                 this._hasErrors = true
             }
         }

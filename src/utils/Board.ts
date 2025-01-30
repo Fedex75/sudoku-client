@@ -285,7 +285,7 @@ export default abstract class Board {
 		for (const cell of cells) {
 			if (cell.value === 0) {
 				//Check if only available place in any unit
-				if (this._settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(cell, withValue)) {
+				if (this._settings.showPossibleValues && this._settings.autoSolveOnlyInBox && checkingAutoSolution && this.onlyAvailableInAnyUnit(cell, withValue)) {
 					finalNoteState = true
 					this.setValue({ of: cell, to: withValue, causedByUser: false })
 					this._hasChanged = true
@@ -594,12 +594,12 @@ export default abstract class Board {
 
 		for (const cell of this.allCells) {
 			if (cell.value > 0 && !cell.possibleValues.has(cell.value)) {
-				if (this.settings.showErrors && this.settings.showLogicErrors) cell.hasVisibleError = true
+				if (this._settings.showErrors && this._settings.showLogicErrors) cell.hasVisibleError = true
 				this._hasErrors = true
 			}
 
 			if (cell.value > 0 && cell.solution !== 0 && cell.value !== cell.solution) {
-				if (this.settings.showErrors && this.settings.showSolutionErrors) cell.hasVisibleError = true
+				if (this._settings.showErrors && this._settings.showSolutionErrors) cell.hasVisibleError = true
 				this._hasErrors = true
 			}
 		}

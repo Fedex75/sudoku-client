@@ -33,7 +33,7 @@
 
 .settings__item__title {
   flex-grow: 1;
-  font-size: 18px;
+  font-size: 14px;
   margin-right: 40px;
   color: var(--settingsItemTitleColor);
 }
@@ -42,7 +42,6 @@
   display: flex;
   flex-flow: row;
   justify-content: center;
-  gap: 50px;
 }
 
 .settings__item__theme-wrapper {

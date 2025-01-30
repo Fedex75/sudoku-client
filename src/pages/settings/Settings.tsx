@@ -103,7 +103,7 @@ function AppearanceSettings({ theme, setTheme, accentColor, setAccentColor, acce
 				<div className='settings__label'>{t('settings.highContrast')}</div>
 
 				<div className="settings__list">
-					<SettingsItem title={t('settings.candidates')} onChange={v => { updateSettings({ highlightCandidatesWithColor: v }) }} value={settings.highlightCandidatesWithColor} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.highContrastCandidates')} onChange={v => { updateSettings({ highlightCandidatesWithColor: v }) }} value={settings.highlightCandidatesWithColor} accentColorHex={accentColorHex} />
 					<SettingsItem title={t('settings.grid')} onChange={v => { updateSettings({ highContrastGrid: v }) }} value={settings.highContrastGrid} accentColorHex={accentColorHex} />
 				</div>
 
@@ -133,22 +133,22 @@ function AnnotationsSettings({ accentColorHex }: { accentColorHex: string }) {
 				<div className='settings__label'>{t('settings.numpad')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.showOnlyPossibleValues')} onChange={v => { updateSettings({ showPossibleValues: v }) }} value={settings.showPossibleValues} accentColorHex={accentColorHex} />
-				</div>
-
-				<p className='settings__explanation'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
-
-				<div className="settings__list" style={{ marginBottom: 0 }}>
 					<SettingsItem title={t('settings.inputLock')} onChange={v => { updateSettings({ inputLock: v }) }} value={settings.inputLock} accentColorHex={accentColorHex} />
 				</div>
 
 				<p className='settings__explanation'>{t('settings.autoChangeInputLockExplanation')}</p>
 
+				<div className="settings__list" style={{ marginBottom: 0 }}>
+					<SettingsItem title={t('settings.showOnlyPossibleValues')} onChange={v => { updateSettings({ showPossibleValues: v }) }} value={settings.showPossibleValues} accentColorHex={accentColorHex} />
+				</div>
+
+				<p className='settings__explanation'>{t('settings.showOnlyPossibleValuesExplanation')}</p>
+
 				<div className='settings__label'>{t('settings.autoSolveTitle')}</div>
 
 				<div className="settings__list" style={{ marginBottom: 0 }}>
-					<SettingsItem title={t('settings.nakedSingle')} onChange={v => { updateSettings({ autoSolveNakedSingles: v }) }} value={settings.autoSolveNakedSingles} accentColorHex={accentColorHex} />
-					<SettingsItem title={t('settings.onlyInBox')} onChange={v => { updateSettings({ autoSolveOnlyInBox: v }) }} value={settings.autoSolveOnlyInBox} accentColorHex={accentColorHex} />
+					<SettingsItem title={t('settings.nakedSingle')} onChange={v => { updateSettings({ autoSolveNakedSingles: v }) }} value={settings.showPossibleValues && settings.autoSolveNakedSingles} accentColorHex={accentColorHex} disabled={!settings.showPossibleValues} />
+					<SettingsItem title={t('settings.onlyInBox')} onChange={v => { updateSettings({ autoSolveOnlyInBox: v }) }} value={settings.showPossibleValues && settings.autoSolveOnlyInBox} accentColorHex={accentColorHex} disabled={!settings.showPossibleValues} />
 				</div>
 			</SectionContent>
 		</Section>

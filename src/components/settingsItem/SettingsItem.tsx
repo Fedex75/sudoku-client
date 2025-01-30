@@ -28,8 +28,8 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
   const { t } = useTranslation()
 
   const className = useMemo(() => {
-    return `settings__item ${disabled ? 'disabled' : ''}`
-  }, [disabled])
+    return `settings__item ${disabled ? 'disabled' : ''} ${type === 'theme' ? 'theme' : ''}`
+  }, [disabled, type])
 
   const [canvasHandlerLight, canvasHandlerDark] = useMemo(() => {
     if (type !== 'theme') return [null, null]
@@ -71,16 +71,23 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
   if (type === 'theme' && canvasHandlerLight) {
     return (
       <div className={className}>
+        <div style={{ flexGrow: 1 }}></div>
+
         <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('light') }}>
           <Canvas canvasHandler={canvasHandlerLight} paused={false} />
           <p>{t('common.lightTheme')}</p>
           <Check checked={theme === 'light'} />
         </div>
+
+        <div style={{ flexGrow: 1 }}></div>
+
         <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('dark') }}>
           <Canvas canvasHandler={canvasHandlerDark} paused={false} />
           <p>{t('common.darkTheme')}</p>
           <Check checked={theme === 'dark'} />
         </div>
+
+        <div style={{ flexGrow: 1 }}></div>
       </div>
     )
   }

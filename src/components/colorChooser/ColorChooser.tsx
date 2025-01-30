@@ -1,4 +1,4 @@
-import { faCircle, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { faCircle, faCircleCheck, faCircleDot } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './colorChooser.css'
 import { HTMLAttributes } from 'react'
@@ -11,7 +11,7 @@ type ColorButtonProps = {
 
 function ColorButton({ selected, color, onClick = () => { } }: ColorButtonProps) {
   return (
-    <FontAwesomeIcon icon={selected ? faCircleCheck : faCircle} style={{ fontSize: 25, color: `var(--${color})` }} onClick={() => { onClick(color) }} />
+    <FontAwesomeIcon icon={selected ? faCircleDot : faCircle} style={{ fontSize: 25, color: `var(--${color})` }} onClick={() => { onClick(color) }} />
   )
 }
 

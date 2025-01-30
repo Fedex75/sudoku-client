@@ -66,7 +66,7 @@ export class SudokuXBoard extends ClassicBoard {
             if (mainDiagonal[i].value === 0) continue
             for (let j = i + 1; j < this.nSquares; j++) {
                 if (mainDiagonal[i].value === mainDiagonal[j].value) {
-                    if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.sudokuXShowDiagonalErrors) this.mainDiagonal.error = true
+                    if (this._settings.showErrors && this._settings.showLogicErrors && this._settings.sudokuXShowDiagonalErrors) this.mainDiagonal.error = true
                 }
             }
         }
@@ -76,7 +76,7 @@ export class SudokuXBoard extends ClassicBoard {
             if (secondaryDiagonal[i].value === 0) continue
             for (let j = i + 1; j < this.nSquares; j++) {
                 if (secondaryDiagonal[i].value === secondaryDiagonal[j].value) {
-                    if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.sudokuXShowDiagonalErrors) this.secondaryDiagonal.error = true
+                    if (this._settings.showErrors && this._settings.showLogicErrors && this._settings.sudokuXShowDiagonalErrors) this.secondaryDiagonal.error = true
                 }
             }
         }

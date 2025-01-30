@@ -76,6 +76,7 @@ export function initI18n() {
             showOnlyPossibleValuesExplanation: 'Sudoku will only highlight the buttons of the candidates that can be placed on the selected cell.',
             killer: 'KILLER',
             killerAutoSolveLastInCage: 'Killer cages',
+            sandwichAutoSolveLastInSum: 'Sandwich',
             autoRemove: 'Auto remove',
             inputLock: 'Input lock',
             autoChangeInputLockExplanation: 'Select a number from the numpad and tap any cell to insert it as a note or value.',
@@ -104,6 +105,7 @@ export function initI18n() {
             errorsOn: 'On',
             errorsOff: 'Off',
             numpad: 'NUMPAD',
+            highContrastCandidates: 'Candidates',
           },
           sudoku: {
             saved: 'Bookmarked',
@@ -261,6 +263,7 @@ export function initI18n() {
             errorsOn: 'Activado',
             errorsOff: 'Desactivado',
             numpad: 'TECLADO',
+            highContrastCandidates: 'Candidatos',
           },
           sudoku: {
             saved: 'Guardado',

@@ -47,7 +47,7 @@ export class SandwichBoard extends ClassicBoard {
     }
 
     private solveLastInUnitSum(unit: Set<Cell>, sum: number) {
-        if (!this.settings.sandwichAutoSolveLastInSum) return
+        if (!this._settings.sandwichAutoSolveLastInSum) return
 
         let found1or9 = false
         let actualSum = 0
@@ -116,7 +116,7 @@ export class SandwichBoard extends ClassicBoard {
             this.verticalClues[x].visible = true
             this.verticalClues[x].error = false
             if (sum !== -1 && sum !== this.verticalClues[x].value) {
-                if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.sandwichShowSumErrors) this.verticalClues[x].error = true
+                if (this._settings.showErrors && this._settings.showLogicErrors && this._settings.sandwichShowSumErrors) this.verticalClues[x].error = true
                 this._hasErrors = true
             } else if (sum === this.verticalClues[x].value) {
                 this.verticalClues[x].visible = false
@@ -130,7 +130,7 @@ export class SandwichBoard extends ClassicBoard {
             this.horizontalClues[y].visible = true
             this.horizontalClues[y].error = false
             if (sum !== -1 && sum !== this.horizontalClues[y].value) {
-                if (this.settings.showErrors && this.settings.showLogicErrors && this.settings.sandwichShowSumErrors) this.horizontalClues[y].error = true
+                if (this._settings.showErrors && this._settings.showLogicErrors && this._settings.sandwichShowSumErrors) this.horizontalClues[y].error = true
                 this._hasErrors = true
             } else if (sum === this.horizontalClues[y].value) {
                 this.horizontalClues[y].visible = false

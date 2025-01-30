@@ -264,7 +264,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 						if (hold) {
 							// If the user is dragging the cursor...
 							if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
-								if ((noteMode || type === 'secondary') && (cellPossibleValues.size > 1 || !game.settings.autoSolveNakedSingles)) {
+								if ((noteMode || type === 'secondary') && (cellPossibleValues.size > 1)) {
 									// If we're in note mode and the cell has more than one possible value or the user doesn't want to auto solve single possibility cells, set a note
 									if (game.onlyAvailableInAnyUnit(cells[0], lockedInput)) {
 										game.setNote({ withValue: lockedInput, of: cellSet, to: true, checkingAutoSolution: true, causedByUser: true })
@@ -286,7 +286,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 								setLockedInput(li => cells[0].value === li ? 0 : cells[0].value)
 							} else {
 								if ((noteMode || type === 'secondary')) {
-									if (game.settings.autoSolveNakedSingles && cellPossibleValues.size === 1) {
+									if (game.settings.showPossibleValues && game.settings.autoSolveNakedSingles && cellPossibleValues.size === 1) {
 										if (!game.settings.showPossibleValues || cellPossibleValues.has(lockedInput)) {
 											game.setValue({ of: cellSet, to: lockedInput, causedByUser: true })
 										}

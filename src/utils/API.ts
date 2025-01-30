@@ -1,5 +1,11 @@
 import axios from "axios"
-import buildInfo from '../generatedGitInfo.json'
+import buildInfoJSON from '../generatedGitInfo.json'
+
+const buildInfo = buildInfoJSON as {
+	gitBranch: string
+	version: string
+	gitCommitHash: string
+}
 
 class API {
 	host: string
