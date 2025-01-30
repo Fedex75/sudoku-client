@@ -5,6 +5,7 @@ import { Home, Sudoku, Settings } from './pages'
 import { AccentColor } from './utils/Colors'
 import { ThemeName } from './game/Themes'
 import { useLocalStorage } from './utils/LocalStorageHandler'
+import Statistics from './pages/statistics/Statistics'
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -40,6 +41,7 @@ function App() {
 				<Route path="/" element={<Navigate to="/home" replace />} />
 				<Route path="/home/*" element={<Home theme={theme} accentColor={accentColor} />} />
 				<Route path="/sudoku" element={<Sudoku theme={theme} accentColor={accentColor} />} />
+				<Route path="/statistics" element={<Statistics />} />
 				<Route path="/settings/*" element={<Settings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} />} />
 			</Routes>
 		</div>

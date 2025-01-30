@@ -1,14 +1,15 @@
 .home__play {
-  display: grid;
-  grid-template-rows: fit-content(0) auto fit-content(0) fit-content(0);
+  display: flex;
+  flex-flow: column;
   height: 100%;
-  align-items: center;
 }
 
 .home__carousel-wrapper {
+  flex-grow: 1;
   display: flex;
   flex-flow: column;
   overflow: hidden;
+  justify-content: center;
   gap: 8px;
 }
 

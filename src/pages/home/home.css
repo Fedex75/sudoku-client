@@ -21,6 +21,7 @@
   flex-flow: row;
   align-items: center;
   padding: 0 15px;
+  margin-bottom: 15px;
 }
 
 .home__section-title {

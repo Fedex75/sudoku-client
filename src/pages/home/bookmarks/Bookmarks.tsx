@@ -77,7 +77,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 	return (
 		<div className='home__bookmarks'>
 			<div className='home__section__title-wrapper'>
-				<p className='home__section-title'>{t('home.bookmarks')}</p>
+				<p className='home__section-title'>{t('sectionNames.bookmarks')}</p>
 				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20} /> : null}
 			</div>
 			{
@@ -123,7 +123,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 					</div>
 			}
 
-			<TabSwitcher selected='bookmarks' theme={theme} accentColor={accentColor} />
+			<TabSwitcher selected='bookmarks' />
 
 			<ActionSheet
 				isOpen={clearBookmarksActionSheetIsOpen}

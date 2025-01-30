@@ -24,17 +24,16 @@ export function initI18n() {
             reset: 'Reset'
           },
           sectionNames: {
+            play: 'New game',
             bookmarks: 'Bookmarks',
-            settings: 'Settings'
+            statistics: 'Statistics',
+            settings: 'Settings',
           },
           home: {
             import: 'Import',
             importPrompt: 'Enter the board:',
             incompatibleData: 'Incompatible data',
             continue: 'Continue',
-            play: 'New game',
-            bookmarks: 'Bookmarks',
-            statistics: 'Statistics'
           },
           bookmarks: {
             deleteAll: 'Delete all',

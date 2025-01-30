@@ -1,19 +1,15 @@
-import { faPlus, faBookmark, faChartSimple, faGear, faPlay } from '@fortawesome/free-solid-svg-icons'
+import { faBookmark, faChartSimple, faGear, faPlay, faHome } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link, useNavigate } from 'react-router-dom'
 import './tabSwitcher.css'
 import { useCallback, useState } from 'react'
 import GameHandler from '../../utils/GameHandler'
-import { ThemeName } from '../../game/Themes'
-import { AccentColor } from '../../utils/Colors'
 
 type Props = {
     selected: 'newGame' | 'bookmarks' | 'statistics' | 'settings'
-    theme: ThemeName
-    accentColor: AccentColor
 }
 
-export default function TabSwitcher({ selected, theme, accentColor }: Props) {
+export default function TabSwitcher({ selected }: Props) {
     const [playButtonClicked, setPlayButtonClicked] = useState(false)
 
     let navigate = useNavigate()
@@ -34,7 +30,7 @@ export default function TabSwitcher({ selected, theme, accentColor }: Props) {
                 <div style={{ flexGrow: 0.8 }}></div>
 
                 <Link to="/home" className={`tabSwitcher__tab ${selected === 'newGame' ? 'selected' : ''}`}>
-                    <FontAwesomeIcon className='tabSwitcher__icon' icon={faPlus} />
+                    <FontAwesomeIcon className='tabSwitcher__icon' icon={faHome} />
                 </Link>
 
                 <div style={{ flexGrow: 1 }}></div>
@@ -57,11 +53,13 @@ export default function TabSwitcher({ selected, theme, accentColor }: Props) {
 
                 <div style={{ flexGrow: 1 }}></div>
 
-                <Link to="/settings" className={`tabSwitcher__tab ${selected === 'settings' ? 'selected' : ''}`}>
+                <Link to="/home/settings" className={`tabSwitcher__tab ${selected === 'settings' ? 'selected' : ''}`}>
                     <FontAwesomeIcon className='tabSwitcher__icon' icon={faGear} />
                 </Link>
 
                 <div style={{ flexGrow: 0.8 }}></div>
+
+                <div className='tabSwitcher__hole'></div>
 
                 <div id='playButton' className={`tabSwitcher__play-button ${playButtonClicked ? 'activated' : ''}`} onClick={handlePlayButtonClicked}>
                     <FontAwesomeIcon className='tabSwitcher__play-button__icon' icon={faPlay} />

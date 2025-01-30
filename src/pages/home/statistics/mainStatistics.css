@@ -1,0 +1,15 @@
+.home__statistics {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.home__statistics-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
+    padding: 0 15px;
+    margin-top: 10px;
+    overflow-y: auto;
+}

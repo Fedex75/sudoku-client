@@ -8,70 +8,14 @@ import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
 import { colorNames } from '../../utils/Colors'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { AccentColor } from '../../utils/Colors'
 import FlagArg from '../../svg/flag_arg'
 import FlagUKSVG from '../../svg/flag_uk'
 import FlagSpainSVG from '../../svg/flag_spain'
-import { useServiceWorker } from '../../components/serviceWorker/useServiceWorker'
 import { ThemeName } from '../../game/Themes'
 import { Language, useSettings } from '../../utils/SettingsHandler'
 import GameHandler from '../../utils/GameHandler'
-
-type SectionLinkProps = {
-	color: string
-	icon?: IconDefinition
-	iconColor?: string
-	title: string
-	link: string
-	additionalInfo?: string
-}
-
-function SectionLink({ color, iconColor, icon, title, link, additionalInfo }: SectionLinkProps) {
-	return (
-		<Link to={link} className='settings__section-link'>
-			{icon && <div className='settings__section-link__icon' style={{ backgroundColor: color }}><FontAwesomeIcon icon={icon} color={iconColor} /></div>}
-			<div className='settings__section-link__right-wrapper'>
-				<p className='settings__section-link__title'>{title}</p>
-				{additionalInfo && <p className='settings__section-link__info'>{additionalInfo}</p>}
-				<FontAwesomeIcon icon={faChevronRight} color='gray' fontSize={12} />
-			</div>
-		</Link>
-	)
-}
-
-function Main() {
-	const { t } = useTranslation()
-	const { isUpdateAvailable, updateAssets } = useServiceWorker()
-	const { settings } = useSettings()
-
-	return (
-		<Section>
-			<Topbar backURL="/" />
-			<SectionContent id="settings">
-				<p className='home__section-title' style={{ marginTop: 0, marginBottom: 20 }}>{t('sectionNames.settings')}</p>
-
-				<div className="settings__list">
-					<SectionLink color='var(--purple)' icon={faMoon} iconColor='white' title={t('settings.sectionAppearance')} link='appearance' />
-					<SectionLink color='var(--darkBlue)' icon={faPencilAlt} iconColor='white' title={t('settings.sectionAnnotations')} link='annotations' />
-					<SectionLink color='var(--green)' icon={faPalette} iconColor='white' title={t('settings.sectionColor')} link='color' />
-					<SectionLink color='var(--red)' icon={faXmark} iconColor='white' title={t('settings.sectionErrors')} link='errors' additionalInfo={settings.showErrors ? t('settings.errorsOn') : t('settings.errorsOff')} />
-				</div>
-
-				<div className="settings__list">
-					<SectionLink color='var(--lightGray)' icon={faToolbox} iconColor='darkGray' title={t('settings.sectionAdvanced')} link='advanced' />
-					<SectionLink color='var(--lightGray)' icon={faGear} iconColor='darkGray' title={t('settings.sectionGeneral')} link='general' />
-				</div>
-
-				{
-					isUpdateAvailable && (
-						<Button title={t('settings.update')} backgroundColor='var(--green)' onClick={updateAssets} />
-					)
-				}
-			</SectionContent>
-		</Section>
-	)
-}
+import SectionLink from '../../components/sectionLink/SectionLink'
 
 type AppearanceSettingsProps = {
 	theme: ThemeName
@@ -87,7 +31,7 @@ function AppearanceSettings({ theme, setTheme, accentColor, setAccentColor, acce
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAppearance')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list" >
 					<SettingsItem type='theme' theme={theme} onChange={t => { setTheme(t) }} value='' accentColor={accentColor} />
@@ -122,7 +66,7 @@ function AnnotationsSettings({ accentColorHex }: { accentColorHex: string }) {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAnnotations')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAnnotations')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className='settings__label'>{t('settings.candidates')}</div>
 
@@ -161,7 +105,7 @@ function ColorSettings({ accentColorHex }: { accentColorHex: string }) {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionColor')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionColor')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className='settings__label'>{t('settings.coloredCells')}</div>
 
@@ -188,7 +132,7 @@ function ErrorsSettings({ accentColorHex }: { accentColorHex: string }) {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionErrors')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionErrors')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list">
 					<SettingsItem title={t('settings.showErrors')} onChange={v => { updateSettings({ showErrors: v }) }} value={settings.showErrors} accentColorHex={accentColorHex} />
@@ -213,7 +157,7 @@ function AdvancedSettings({ accentColorHex }: { accentColorHex: string }) {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionAdvanced')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className="settings__list" style={{ marginBottom: 0 }}>
 					<SettingsItem title={t('settings.advancedHighlight')} onChange={v => { updateSettings({ advancedHighlight: v }) }} value={settings.advancedHighlight} accentColorHex={accentColorHex} />
@@ -249,7 +193,7 @@ function GeneralSection() {
 
 	return (
 		<Section>
-			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGeneral')} backURL="/settings" />
+			<Topbar title={t('sectionNames.settings')} subtitle={t('settings.sectionGeneral')} backURL="/home/settings" />
 			<SectionContent id="settings">
 				<div className="settings__section__list">
 					<SectionLink color='var(--darkBlue)' title={t('settings.sectionLanguage')} link='language' />
@@ -329,7 +273,6 @@ export default function Settings({ theme, setTheme, accentColor, setAccentColor 
 
 	return (
 		<Routes>
-			<Route path="/" element={<Main />} />
 			<Route path='/appearance' element={<AppearanceSettings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} accentColorHex={accentColorHex} />} />
 			<Route path='/annotations' element={<AnnotationsSettings accentColorHex={accentColorHex} />} />
 			<Route path='/color' element={<ColorSettings accentColorHex={accentColorHex} />} />

@@ -1,11 +1,11 @@
 .home__bookmarks {
-	display: grid;
-	grid-template-rows: fit-content(0) auto fit-content(0);
+	display: flex;
+	flex-flow: column;
 	height: 100%;
-	gap: 15px;
 }
 
 .bookmarks__wrapper {
+	flex-grow: 1;
 	display: flex;
 	flex-flow: column;
 	gap: 20px;

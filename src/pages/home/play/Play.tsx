@@ -163,7 +163,7 @@ export default function Play({ theme, accentColor }: Props) {
     return (
         <div className='home__play'>
             <div className='home__section__title-wrapper'>
-                <p className='home__section-title'>{t('home.play')}</p>
+                <p className='home__section-title'>{t('sectionNames.play')}</p>
             </div>
             <div className='home__carousel-wrapper'>
                 <div ref={carouselRef} className='home__carousel'>
@@ -208,7 +208,7 @@ export default function Play({ theme, accentColor }: Props) {
                 </div>
             </div>
 
-            <TabSwitcher selected='newGame' theme={theme} accentColor={accentColor} />
+            <TabSwitcher selected='newGame' />
 
             <ActionSheet isOpen={discardGameActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} cancelColor='var(--darkBlue)' onClose={() => setDiscardGameActionSheetIsOpen(false)} buttonsMode>
                 <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (newGameMode) handleNewGame(newGameMode) }} />
