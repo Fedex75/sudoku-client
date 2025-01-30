@@ -32,7 +32,7 @@ export function initI18n() {
             importPrompt: 'Enter the board:',
             incompatibleData: 'Incompatible data',
             continue: 'Continue',
-            play: 'Play',
+            play: 'New game',
             bookmarks: 'Bookmarks',
             statistics: 'Statistics'
           },
@@ -156,7 +156,7 @@ export function initI18n() {
               diagonals: "Numbers can't be repeated in the two shown diagonals."
             },
             sandwich: {
-              sum: "In every row and column, the numbers between 1 and 9 must add up to the indicated number.\n8 + 2 + 6 = 16."
+              sum: "In every row and column, the numbers between 1 and 9 must add up to the indicated number.\n2 + 6 + 8 = 16."
             },
             thermo: {
               thermometers1: "The board has thermometers, drawn as connected sequences of cells, with a bulb (start) and a tip (end).",
@@ -190,7 +190,7 @@ export function initI18n() {
             importPrompt: 'Ingrese el tablero:',
             incompatibleData: 'Datos incompatibles',
             continue: 'Continuar',
-            play: 'Jugar',
+            play: 'Nuevo juego',
             bookmarks: 'Marcadores',
             statistics: 'Estadísticas'
           },
@@ -314,7 +314,7 @@ export function initI18n() {
               diagonals: "Los números no pueden repetirse en las dos diagonales señaladas."
             },
             sandwich: {
-              sum: "En cada fila y columna, los números entre el 1 y el 9 deben sumar la cantidad indicada.\n8 + 2 + 6 = 16."
+              sum: "En cada fila y columna, los números entre el 1 y el 9 deben sumar la cantidad indicada.\n2 + 6 + 8 = 16."
             },
             thermo: {
               thermometers1: "El tablero tiene termómetros, dibujados como secuencias de celdas conectadas, con un bulbo (inicio) y una punta (final).",

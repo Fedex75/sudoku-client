@@ -3,7 +3,6 @@
   grid-template-rows: fit-content(0) auto fit-content(0) fit-content(0);
   height: 100%;
   align-items: center;
-  gap: 15px;
 }
 
 .home__carousel-wrapper {

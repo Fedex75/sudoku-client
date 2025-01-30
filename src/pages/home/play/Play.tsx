@@ -1,19 +1,16 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router"
-import { Link } from "react-router-dom"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faChevronRight, faBookmark, faChartSimple, faPlay } from "@fortawesome/free-solid-svg-icons"
 import GameHandler from "../../../utils/GameHandler"
 import { ActionSheet, ActionSheetButton } from "../../../components"
 import './play.css'
 import { GameModeName } from "../../../utils/Difficulties"
 import { AccentColor } from "../../../utils/Colors"
 import Canvas from "../../../components/CanvasComponent"
-import SVGSettings from "../../../svg/settings"
 import { ThemeName } from '../../../game/Themes'
 import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
 import { BoardFactory } from '../../../game/gameModes/BoardFactory'
+import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
 
 type Props = {
     theme: ThemeName
@@ -56,7 +53,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const sudokuXBoard = useMemo(() => {
-        const newSudokuXBoard = BoardFactory('sudokuX', { id: 'wu0', mission: '3 1.3:4.8. 35,9,3 13,30,11' })
+        const newSudokuXBoard = BoardFactory('sudokuX', { id: 'wu0', mission: '3 1.3:4.8. 123654789' })
         newSudokuXBoard.get({ x: 1, y: 0 })!.value = 2
         newSudokuXBoard.get({ x: 0, y: 1 })!.value = 6
         newSudokuXBoard.get({ x: 0, y: 2 })!.value = 7
@@ -167,7 +164,6 @@ export default function Play({ theme, accentColor }: Props) {
         <div className='home__play'>
             <div className='home__section__title-wrapper'>
                 <p className='home__section-title'>{t('home.play')}</p>
-                <Link to='/settings'><SVGSettings className='home__play__settings' /></Link>
             </div>
             <div className='home__carousel-wrapper'>
                 <div ref={carouselRef} className='home__carousel'>
@@ -212,38 +208,7 @@ export default function Play({ theme, accentColor }: Props) {
                 </div>
             </div>
 
-
-            {
-                GameHandler.game && !GameHandler.complete ?
-                    <>
-                        <Link to="/sudoku">
-                            <div className='home__continue'>
-                                <p>{t('home.continue')}</p>
-                                <FontAwesomeIcon className='home__continue__icon' icon={faChevronRight} />
-                            </div>
-                        </Link>
-                    </> : <div></div>
-            }
-
-            <div className='home__tabSwitcher-wrapper'>
-                <div className='home__tabSwitcher'>
-                    <Link to="/home">
-                        <div className='home__tabSwitcher__tab selected'>
-                            <FontAwesomeIcon className='home__tabSwitcher__icon' icon={faPlay} />
-                        </div>
-                    </Link>
-                    <Link to="/home/bookmarks">
-                        <div className='home__tabSwitcher__tab'>
-                            <FontAwesomeIcon className='home__tabSwitcher__icon' icon={faBookmark} />
-                        </div>
-                    </Link>
-                    <Link to="/home/statistics">
-                        <div className='home__tabSwitcher__tab'>
-                            <FontAwesomeIcon className='home__tabSwitcher__icon' icon={faChartSimple} />
-                        </div>
-                    </Link>
-                </div>
-            </div>
+            <TabSwitcher selected='newGame' theme={theme} accentColor={accentColor} />
 
             <ActionSheet isOpen={discardGameActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} cancelColor='var(--darkBlue)' onClose={() => setDiscardGameActionSheetIsOpen(false)} buttonsMode>
                 <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (newGameMode) handleNewGame(newGameMode) }} />

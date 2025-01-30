@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
 import { Link, Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPalette, faChevronRight, faBorderAll, faGear, faHeart, faToolbox, faPencil, faPencilAlt, faDisplay, faCircleExclamation, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faPalette, faChevronRight, faGear, faHeart, faToolbox, faPencilAlt, faDisplay, faXmark } from '@fortawesome/free-solid-svg-icons'
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
@@ -183,7 +183,7 @@ function ColorSettings({ accentColorHex }: { accentColorHex: string }) {
 }
 
 function ErrorsSettings({ accentColorHex }: { accentColorHex: string }) {
-	const { t, i18n } = useTranslation()
+	const { t } = useTranslation()
 	const { settings, updateSettings } = useSettings()
 
 	return (
@@ -208,7 +208,7 @@ function ErrorsSettings({ accentColorHex }: { accentColorHex: string }) {
 }
 
 function AdvancedSettings({ accentColorHex }: { accentColorHex: string }) {
-	const { t, i18n } = useTranslation()
+	const { t } = useTranslation()
 	const { settings, updateSettings } = useSettings()
 
 	return (
@@ -291,7 +291,6 @@ function LanguageSettings({ accentColorHex }: { accentColorHex: string }) {
 
 function AboutSection() {
 	const { t } = useTranslation()
-	const { settings, updateSettings } = useSettings()
 
 	return (
 		<Section>

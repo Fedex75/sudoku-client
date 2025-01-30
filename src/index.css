@@ -40,10 +40,8 @@
   --cancelButtonFontWeight: regular;
   --bookmarksEmptyColor: #444444;
   --checkIconColor: white;
-  --tabSwitcherBackground: white;
   --tabSwitcherIconColor: #c7c7c7;
   --tabSwitcherSelectedTabIconColor: white;
-  --tabSwitcherSelectedTabBackground: black;
   --carouselDotColor: #c8c8c8;
   --settingsBorderColor: #dddddd;
   --disabledFilter: brightness(1.4);
@@ -86,10 +84,8 @@
   --cancelButtonFontWeight: bold;
   --bookmarksEmptyColor: #616161;
   --checkIconColor: black;
-  --tabSwitcherBackground: #343434;
-  --tabSwitcherIconColor: #dfdfdf;
-  --tabSwitcherSelectedTabIconColor: black;
-  --tabSwitcherSelectedTabBackground: white;
+  --tabSwitcherIconColor: #616161;
+  --tabSwitcherSelectedTabIconColor: white;
   --carouselDotColor: #949494;
   --settingsBorderColor: #333333;
   --disabledFilter: brightness(0.6);

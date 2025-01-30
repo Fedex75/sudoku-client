@@ -1,4 +1,4 @@
-import { faCircle, faCircleCheck, faCircleDot } from '@fortawesome/free-solid-svg-icons'
+import { faCircle, faCircleDot } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './colorChooser.css'
 import { HTMLAttributes } from 'react'
