@@ -14,18 +14,18 @@ import Check from './check/Check'
 import ColorChooser from './colorChooser/ColorChooser'
 
 export {
-  ActionSheet,
-  ActionSheetButton,
-  Button,
-  ColorButton,
-  EditButton,
-  Numpad,
-  NumpadButton,
-  Section,
-  SectionContent,
-  Topbar,
-  TopbarButtons,
-  SettingsItem,
-  Check,
-  ColorChooser
+    ActionSheet,
+    ActionSheetButton,
+    Button,
+    ColorButton,
+    EditButton,
+    Numpad,
+    NumpadButton,
+    Section,
+    SectionContent,
+    Topbar,
+    TopbarButtons,
+    SettingsItem,
+    Check,
+    ColorChooser
 }

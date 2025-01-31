@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 
 export default function SVGLogo({ stroke = '#000', fill = '#000', className = 'icon' }): React.JSX.Element {
     return (
@@ -57,5 +57,5 @@ export default function SVGLogo({ stroke = '#000', fill = '#000', className = 'i
                 ></path>
             </g>
         </svg>
-    );
+    )
 }

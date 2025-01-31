@@ -7,13 +7,13 @@ async function askQuestion(question) {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
-    });
+    })
 
     try {
-        const answer = await rl.question(question);
+        const answer = await rl.question(question)
         return answer
     } finally {
-        rl.close();
+        rl.close()
     }
 }
 
@@ -29,7 +29,7 @@ const execSyncWrapper = (command) => {
 
 const main = async () => {
     let version = 'Development'
-    if (process.argv.includes('--prod')){
+    if (process.argv.includes('--prod')) {
         version = await askQuestion('Version number:')
     }
 

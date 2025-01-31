@@ -16,134 +16,134 @@ import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
 import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
 
 type Props = {
-	theme: ThemeName
-	accentColor: AccentColor
+    theme: ThemeName
+    accentColor: AccentColor
 }
 
 function Bookmarks({ theme, accentColor }: Props) {
-	const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
-	const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
-	const [playBookmarkData, setPlayBookmarkData] = useState<Bookmark>()
-	const [clearBookmarksActionSheetIsOpen, setClearBookmarksActionSheetIsOpen] = useState(false)
-	const [removeBookmarkActionSheetIsOpen, setRemoveBookmarkActionSheetIsOpen] = useState(false)
-	const [playBookmarkActionSheetIsOpen, setPlayBookmarkActionSheetIsOpen] = useState(false)
+    const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
+    const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
+    const [playBookmarkData, setPlayBookmarkData] = useState<Bookmark>()
+    const [clearBookmarksActionSheetIsOpen, setClearBookmarksActionSheetIsOpen] = useState(false)
+    const [removeBookmarkActionSheetIsOpen, setRemoveBookmarkActionSheetIsOpen] = useState(false)
+    const [playBookmarkActionSheetIsOpen, setPlayBookmarkActionSheetIsOpen] = useState(false)
 
-	const navigate = useNavigate()
-	const { t } = useTranslation()
+    const navigate = useNavigate()
+    const { t } = useTranslation()
 
-	const handleRemoveBookmark = useCallback((bm: Bookmark) => {
-		setRemoveBookmarkData(bm)
-		setRemoveBookmarkActionSheetIsOpen(true)
-	}, [])
+    const handleRemoveBookmark = useCallback((bm: Bookmark) => {
+        setRemoveBookmarkData(bm)
+        setRemoveBookmarkActionSheetIsOpen(true)
+    }, [])
 
-	const clearBookmarks = useCallback(() => {
-		GameHandler.clearBookmarks()
-		setClearBookmarksActionSheetIsOpen(false)
-		setBookmarks([])
-	}, [])
+    const clearBookmarks = useCallback(() => {
+        GameHandler.clearBookmarks()
+        setClearBookmarksActionSheetIsOpen(false)
+        setBookmarks([])
+    }, [])
 
-	const handleClearBookmarksClick = useCallback(() => {
-		setClearBookmarksActionSheetIsOpen(true)
-	}, [])
+    const handleClearBookmarksClick = useCallback(() => {
+        setClearBookmarksActionSheetIsOpen(true)
+    }, [])
 
-	const removeBookmark = useCallback(() => {
-		if (removeBookmarkData) {
-			GameHandler.removeBookmark(removeBookmarkData)
-			setBookmarks(GameHandler.bookmarks)
-			setRemoveBookmarkActionSheetIsOpen(false)
-		}
-	}, [removeBookmarkData])
+    const removeBookmark = useCallback(() => {
+        if (removeBookmarkData) {
+            GameHandler.removeBookmark(removeBookmarkData)
+            setBookmarks(GameHandler.bookmarks)
+            setRemoveBookmarkActionSheetIsOpen(false)
+        }
+    }, [removeBookmarkData])
 
-	const playBookmark = useCallback((bm: Bookmark) => {
-		if (bm) {
-			GameHandler.loadGameFromBookmark(bm)
-			navigate('/sudoku')
-		}
-	}, [navigate])
+    const playBookmark = useCallback((bm: Bookmark) => {
+        if (bm) {
+            GameHandler.loadGameFromBookmark(bm)
+            navigate('/sudoku')
+        }
+    }, [navigate])
 
-	const handlePlayBookmark = useCallback((bm: Bookmark) => {
-		if (GameHandler.game === null || GameHandler.game.complete) {
-			playBookmark(bm)
-		} else {
-			if (GameHandler.game.id === bm.id) {
-				navigate('/sudoku')
-			} else {
-				setPlayBookmarkData(bm)
-				setPlayBookmarkActionSheetIsOpen(true)
-			}
-		}
-	}, [playBookmark, navigate])
+    const handlePlayBookmark = useCallback((bm: Bookmark) => {
+        if (GameHandler.game === null || GameHandler.game.complete) {
+            playBookmark(bm)
+        } else {
+            if (GameHandler.game.id === bm.id) {
+                navigate('/sudoku')
+            } else {
+                setPlayBookmarkData(bm)
+                setPlayBookmarkActionSheetIsOpen(true)
+            }
+        }
+    }, [playBookmark, navigate])
 
-	return (
-		<div className='home__bookmarks'>
-			<div className='home__section__title-wrapper'>
-				<p className='home__section-title'>{t('sectionNames.bookmarks')}</p>
-				{bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20} /> : null}
-			</div>
-			{
-				bookmarks.length > 0 ?
-					<div className="bookmarks__wrapper">
-						{
-							bookmarks.map((bm, i) => {
-								let board
-								let solved
+    return (
+        <div className='home__bookmarks'>
+            <div className='home__section__title-wrapper'>
+                <p className='home__section-title'>{t('sectionNames.bookmarks')}</p>
+                {bookmarks.length > 0 ? <FontAwesomeIcon icon={faTrash} color='var(--red)' onClick={handleClearBookmarksClick} fontSize={20} /> : null}
+            </div>
+            {
+                bookmarks.length > 0 ?
+                    <div className="bookmarks__wrapper">
+                        {
+                            bookmarks.map((bm, i) => {
+                                let board
+                                let solved
 
-								const mode = getMode(bm.id[0] as GameModeIdentifier)
-								const mission = GameHandler.findMissionFromID(bm.id)
-								if (!mission) return null
-								board = BoardFactory(mode, {
-									id: bm.id,
-									mission: mission.m
-								})
-								solved = GameHandler.solved.includes(bm.id)
+                                const mode = getMode(bm.id[0] as GameModeIdentifier)
+                                const mission = GameHandler.findMissionFromID(bm.id)
+                                if (!mission) return null
+                                board = BoardFactory(mode, {
+                                    id: bm.id,
+                                    mission: mission.m
+                                })
+                                solved = GameHandler.solved.includes(bm.id)
 
 
-								const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
-								canvasHandlerRef.game = board
-								canvasHandlerRef.theme = theme
+                                const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
+                                canvasHandlerRef.game = board
+                                canvasHandlerRef.theme = theme
 
-								return (
-									<div key={i} className="bookmarks__item">
-										<div className="bookmarks_item__top">
-											<p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
-											{solved ? <FontAwesomeIcon style={{ color: 'var(--green)' }} icon={faCheck} /> : null}
-											<FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
-										</div>
-										<div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
-											<Canvas canvasHandler={canvasHandlerRef} paused={false} />
-										</div>
-									</div>
-								)
-							})
-						}
-					</div> :
-					<div className="bookmarks__empty">
-						<FontAwesomeIcon icon={faBookmark} style={{ fontSize: 70, marginBottom: 10 }} />
-						<p style={{ fontSize: 20 }}>{t('bookmarks.empty')}</p>
-					</div>
-			}
+                                return (
+                                    <div key={i} className="bookmarks__item">
+                                        <div className="bookmarks_item__top">
+                                            <p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
+                                            {solved ? <FontAwesomeIcon style={{ color: 'var(--green)' }} icon={faCheck} /> : null}
+                                            <FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
+                                        </div>
+                                        <div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
+                                            <Canvas canvasHandler={canvasHandlerRef} paused={false} />
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div> :
+                    <div className="bookmarks__empty">
+                        <FontAwesomeIcon icon={faBookmark} style={{ fontSize: 70, marginBottom: 10 }} />
+                        <p style={{ fontSize: 20 }}>{t('bookmarks.empty')}</p>
+                    </div>
+            }
 
-			<TabSwitcher selected='bookmarks' />
+            <TabSwitcher selected='bookmarks' />
 
-			<ActionSheet
-				isOpen={clearBookmarksActionSheetIsOpen}
-				title={t('bookmarks.promptDeleteAll')}
-				cancelTitle={t('common.cancel')}
-				buttonsMode
-				onClose={() => { setClearBookmarksActionSheetIsOpen(false) }}
-			>
-				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
-			</ActionSheet>
+            <ActionSheet
+                isOpen={clearBookmarksActionSheetIsOpen}
+                title={t('bookmarks.promptDeleteAll')}
+                cancelTitle={t('common.cancel')}
+                buttonsMode
+                onClose={() => { setClearBookmarksActionSheetIsOpen(false) }}
+            >
+                <ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
+            </ActionSheet>
 
-			<ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setRemoveBookmarkActionSheetIsOpen(false) }}>
-				<ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
-			</ActionSheet>
+            <ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setRemoveBookmarkActionSheetIsOpen(false) }}>
+                <ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
+            </ActionSheet>
 
-			<ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setPlayBookmarkActionSheetIsOpen(false) }}>
-				<ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
-			</ActionSheet>
-		</div>
-	)
+            <ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setPlayBookmarkActionSheetIsOpen(false) }}>
+                <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
+            </ActionSheet>
+        </div>
+    )
 }
 
 export default Bookmarks

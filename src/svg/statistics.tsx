@@ -1,6 +1,6 @@
-import React from "react";
+import React from "react"
 
-export default function StatisticsSVG({className = 'icon'}): React.JSX.Element {
+export default function StatisticsSVG({ className = 'icon' }): React.JSX.Element {
     return (
         <svg
             className={className}
@@ -30,5 +30,5 @@ export default function StatisticsSVG({className = 'icon'}): React.JSX.Element {
                 </g>
             </g>
         </svg>
-    );
+    )
 }

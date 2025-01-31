@@ -16,11 +16,11 @@ initI18n()
 const root = createRoot(document.getElementById('root') as HTMLElement)
 
 root.render(
-  <StrictMode>
-    <BrowserRouter>
-      <ServiceWorkerProvider>
-        <App />
-      </ServiceWorkerProvider>
-    </BrowserRouter>
-  </StrictMode>,
+    <StrictMode>
+        <BrowserRouter>
+            <ServiceWorkerProvider>
+                <App />
+            </ServiceWorkerProvider>
+        </BrowserRouter>
+    </StrictMode>,
 )

@@ -8,46 +8,46 @@ import { MouseButtonType } from '../../utils/DataTypes'
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
 type Props = {
-	onClick: (number: number, type: MouseButtonType) => void
-	number: number
-	disabled: boolean
-	hidden: boolean
-	locked: boolean
+    onClick: (number: number, type: MouseButtonType) => void
+    number: number
+    disabled: boolean
+    hidden: boolean
+    locked: boolean
 }
 
 export default function NunmpadButton({ onClick, number, disabled, hidden, locked }: Props): React.JSX.Element {
-	const [onTouchStart, onTouchEnd] = useLongPress((type: MouseButtonType) => {
-		if (type === 'secondary' || !disabled) onClick(number, type)
-	}, 300)
+    const [onTouchStart, onTouchEnd] = useLongPress((type: MouseButtonType) => {
+        if (type === 'secondary' || !disabled) onClick(number, type)
+    }, 300)
 
-	return (
-		<div
-			className={`numpad__button fade_in number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
-			onTouchStart={(e) => {
-				e.stopPropagation()
-				if (hidden) return
-				onTouchStart()
-			}}
-			onTouchEnd={(e) => {
-				e.stopPropagation()
-				if (hidden) return
-				onTouchEnd()
-			}}
-			onClick={(e) => {
-				e.stopPropagation()
-				if (hidden || isTouchDevice) return
-				onClick(number, 'primary')
-			}}
-			onContextMenu={(e) => {
-				e.stopPropagation()
-				e.preventDefault()
-				if (hidden || isTouchDevice) return
-				onClick(number, 'secondary')
-			}}
-		>
-			{/*<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--themeColor)'} />*/}
-			{number}
-			{locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
-		</div>
-	)
+    return (
+        <div
+            className={`numpad__button fade_in number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
+            onTouchStart={(e) => {
+                e.stopPropagation()
+                if (hidden) return
+                onTouchStart()
+            }}
+            onTouchEnd={(e) => {
+                e.stopPropagation()
+                if (hidden) return
+                onTouchEnd()
+            }}
+            onClick={(e) => {
+                e.stopPropagation()
+                if (hidden || isTouchDevice) return
+                onClick(number, 'primary')
+            }}
+            onContextMenu={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                if (hidden || isTouchDevice) return
+                onClick(number, 'secondary')
+            }}
+        >
+            {/*<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--themeColor)'} />*/}
+            {number}
+            {locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
+        </div>
+    )
 }
