@@ -32,7 +32,10 @@ function App() {
         document.body.addEventListener('scroll', handleScroll, { passive: false })
 
         if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
-        if (settings.language === 'auto') i18n.changeLanguage(navigator.language.split('-')[0])
+        if (settings.language === 'auto') {
+            const detectedLanguage = navigator.language.split('-')[0]
+            if (detectedLanguage !== i18n.language) i18n.changeLanguage(detectedLanguage)
+        }
 
         return () => {
             document.body.removeEventListener('scroll', handleScroll)
