@@ -28,8 +28,7 @@ export function WinScreen({ handleNewGameClick, handleNewGame, game, accentColor
         }
     }, [game])
 
-    if (!game) return null
-    if (!GameHandler.complete) return null
+    if (!game || game.complete) return null
 
     return (
         <div className='sudoku__win-screen-wrapper'>

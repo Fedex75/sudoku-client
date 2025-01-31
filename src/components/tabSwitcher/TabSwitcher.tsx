@@ -19,7 +19,7 @@ export default function TabSwitcher({ selected }: Props) {
 
         setPlayButtonClicked(true)
         setTimeout(() => {
-            if (!GameHandler.game || GameHandler.complete) GameHandler.newGame(GameHandler.recommendations.newGame.mode, GameHandler.recommendations.newGame.difficulty)
+            if (!GameHandler.game || GameHandler.game.complete) GameHandler.newGame(GameHandler.recommendations.newGame.mode, GameHandler.recommendations.newGame.difficulty)
             navigate('/sudoku')
         }, 500)
     }, [playButtonClicked, navigate])

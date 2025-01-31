@@ -86,7 +86,7 @@ export default function Play({ theme, accentColor }: Props) {
 
     const openNewGameActionSheet = useCallback((mode: GameModeName) => {
         setNewGameMode(mode)
-        if (GameHandler.game === null || GameHandler.complete) handleNewGame(mode)
+        if (GameHandler.game === null || GameHandler.game.complete) handleNewGame(mode)
         else setDiscardGameActionSheetIsOpen(true)
     }, [handleNewGame])
 

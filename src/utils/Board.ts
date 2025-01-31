@@ -286,7 +286,7 @@ export default abstract class Board {
 				} else if (cell.notes.has(withValue)) {
 					if (to !== true) {
 						//Remove note
-						cell.notes.delete(withValue)
+						cell.deleteNote(withValue)
 						this._hasChanged = true
 						finalNoteState = false
 						if (
@@ -302,7 +302,7 @@ export default abstract class Board {
 				} else if (to !== false && !cell.locked) {
 					//Add note
 					if (!this._settings.showPossibleValues || cell.possibleValues.has(withValue)) {
-						cell.notes.add(withValue)
+						cell.addNote(withValue)
 						finalNoteState = true
 						this._hasChanged = true
 					}
@@ -323,7 +323,7 @@ export default abstract class Board {
 		for (const cell of cells) {
 			if (!cell.clue && cell.value !== to) {
 				cell.value = to
-				cell.notes.clear()
+				cell.clearNotes()
 				this._hasChanged = true
 				for (const visibleCell of cell.visibleCells) {
 					if (this._settings.autoRemoveCandidates) this.setNote({ withValue: to, of: visibleCell, to: false, checkingAutoSolution: false, causedByUser: false })
@@ -363,7 +363,7 @@ export default abstract class Board {
 		for (const cell of cells) {
 			if (!cell.clue && (cell.value > 0 || cell.notes.size > 0 || cell.color !== 'default')) {
 				cell.value = 0
-				cell.notes.clear()
+				cell.clearNotes()
 				cell.color = 'default'
 				this._hasChanged = true
 
@@ -456,7 +456,7 @@ export default abstract class Board {
 		for (const group of from) {
 			// Remove the reference to the group from its members
 			for (const cell of group.members) {
-				cell.colorGroups.delete(group)
+				cell.deleteColorGroup(group)
 				cell.color = 'default'
 				this._hasChanged = true
 			}
@@ -558,7 +558,6 @@ export default abstract class Board {
 
 	protected checkIsComplete(): boolean {
 		this.checkErrors()
-
 		return !this._hasErrors && [...this.allCells].every(cell => cell.value > 0)
 	}
 

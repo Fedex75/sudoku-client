@@ -44,7 +44,6 @@ const STATISTICS_KEY = 'statistics'
 
 class GameHandler {
 	game: Board | null
-	complete: boolean
 	bookmarks: Bookmark[]
 	solved: string[]
 	recommendations: Recommendations
@@ -53,7 +52,6 @@ class GameHandler {
 
 	constructor() {
 		this.game = null
-		this.complete = false
 		this.bookmarks = []
 		this.solved = []
 		this.recommendations = defaultRecommendations
@@ -81,7 +79,6 @@ class GameHandler {
 
 	setCurrentGame(board: Board) {
 		this.game = board
-		this.complete = false
 		this.saveGame()
 		this.recommendations.newGame = {
 			mode: this.game.mode,
@@ -95,7 +92,6 @@ class GameHandler {
 		if (difficulty === 'restart') {
 			if (this.game) {
 				this.game.restart()
-				this.complete = false
 			}
 		} else {
 			if (!this.missions[mode] || !this.missions[mode][difficulty]) return
@@ -174,7 +170,6 @@ class GameHandler {
 
 	setComplete() {
 		if (this.game) {
-			this.complete = true
 			saveData(GAME_KEY, BOARD_API_VERSION, null)
 			if (this.game.difficulty !== 'unrated' && !this.solved.includes(this.game.id)) this.solved.push(this.game.id)
 			saveData(SOLVED_KEY, SOLVED_API_VERSION, this.solved)

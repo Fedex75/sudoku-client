@@ -144,12 +144,12 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [colorMode, lockedInput, updateCalculatorValue, shuffleMagicWandColor, game])
 
 	const handleUserInteraction = useCallback((func: () => void, lastInteractedCell: Cell | null) => {
-		if (GameHandler.complete || !game) return
+		if (!game || game.complete) return
 
 		func()
 
 		if (game.hasChanged) {
-			if (process.env.NODE_ENV === 'development') GameHandler.saveGame()
+			//if (process.env.NODE_ENV === 'development') GameHandler.saveGame()
 
 			if (game.complete) {
 				const center: CellCoordinates = lastInteractedCell?.coords || { x: Math.floor(game.nSquares / 2), y: Math.floor(game.nSquares / 2) }
@@ -197,7 +197,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode, game, updatePossibleValues])
 
 	const handleSetColor = useCallback((selectedCells: Set<Cell>, color: ColorName = accentColor) => {
-		if (!game || GameHandler.complete || selectedCells.size === 0) return
+		if (!game || game.complete || selectedCells.size === 0) return
 
 		let selectedGroups = [...selectedCells].map(cell => cell.colorGroups).reduce((a, b) => a.union(b), new Set())
 
@@ -213,7 +213,7 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [accentColor, handleSelect, game])
 
 	const onCanvasClick = useCallback((cellSet: Set<Cell>, type: MouseButtonType, hold: boolean) => {
-		if (!game || GameHandler.complete) return
+		if (!game || GameHandler.game?.complete) return
 
 		const cells = [...cellSet]
 
@@ -313,19 +313,19 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [])
 
 	const onHint = useCallback(() => {
-		if (GameHandler.complete || !game) return
+		if (GameHandler.game?.complete || !game) return
 		game.giveHint({ forCells: game.selectedCells, causedByUser: true })
 	}, [game])
 
 	const onMagicWand = useCallback(() => {
-		if (GameHandler.complete || !game) return
+		if (GameHandler.game?.complete || !game) return
 		switch (magicWandMode) {
 			case 'links':
 				setShowLinks(l => !l)
 				break
 			case 'clearColors':
 				handleUserInteraction(() => {
-					if (game && !GameHandler.complete) game.clearColors({ causedByUser: true })
+					if (game && !GameHandler.game?.complete) game.clearColors({ causedByUser: true })
 				}, null)
 				break
 			case 'setColor':
@@ -356,21 +356,21 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 	}, [handleSetColor, handleUserInteraction, game])
 
 	const onUndo = useCallback(() => {
-		if (GameHandler.complete || !game) return
+		if (!game || game.complete) return
 
 		game.popBoard()
 		canvasHandlerRef.current.stopAnimations()
 	}, [game])
 
 	const onErase = useCallback(() => {
-		if (GameHandler.complete || !game) return
+		if (!game || game.complete) return
 
 		game.erase({ cells: game.selectedCells, causedByUser: true })
 		canvasHandlerRef.current.stopAnimations()
 	}, [game])
 
 	const onNumpadButtonClick = useCallback((number: number, type: MouseButtonType) => {
-		if (GameHandler.complete || !game) return
+		if (!game || game.complete) return
 
 		if (type === 'primary') {
 			if (possibleValues.has(number)) {
@@ -468,9 +468,9 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
 				magicWandDisabled={magicWandMode === 'disabled'}
 				selectHighlighted={selectMode}
 
-				undoDisabled={GameHandler.complete || !game.hasHistory}
-				eraseDisabled={GameHandler.complete || !game.canErase}
-				hintDisabled={GameHandler.complete || !game.canGiveHint}
+				undoDisabled={!game || game.complete || !game.hasHistory}
+				eraseDisabled={!game || game.complete || !game.canErase}
+				hintDisabled={!game || game.complete || !game.canGiveHint}
 				colorDisabled={false}
 
 				colorMode={colorMode}

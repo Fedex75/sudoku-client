@@ -28,7 +28,7 @@ export class ColorGroup {
     constructor(members: Set<Cell>, color: ColorName | null) {
         this.members = members
         for (const cell of this.members) {
-            cell.colorGroups.add(this)
+            cell.addColorGroup(this)
         }
     }
 
@@ -38,7 +38,7 @@ export class ColorGroup {
     }
 
     remove(cell: Cell) {
-        cell.colorGroups.delete(this)
+        cell.deleteColorGroup(this)
         this.members.delete(cell)
     }
 
@@ -72,7 +72,7 @@ export class Cell {
     public hasVisibleError: boolean = false
     public highlighted: boolean = false
     public possibleValues: Set<number> = new Set()
-    public locked: boolean = false
+    private _locked: boolean = false
 
     // Board geometry
     public visibleCells: Set<Cell> = new Set()
@@ -81,7 +81,7 @@ export class Cell {
     public column: Set<Cell> = new Set()
     public orthogonalCells: Set<Cell> = new Set()
     public units: Set<Cell>[] = []
-    public colorGroups: Set<ColorGroup> = new Set()
+    private _colorGroups: Set<ColorGroup> = new Set()
 
     // Render properties
     public screenPosition: ScreenCoordinates = { x: 0, y: 0 }
@@ -96,23 +96,36 @@ export class Cell {
     // Thermo
     public thermometer: Thermometer | null = null
 
+    // Cache
+    private stringRepresentation: string = ''
+
     constructor(coords: CellCoordinates, clue: boolean, solution: number, value: number) {
         this._coords = coords
         this._solution = solution
         this._clue = clue
         this._value = value
+        this.updateStringRepresentation()
     }
 
     get coords() { return this._coords }
 
     get value() { return this._value }
-    set value(value) { this._value = value }
+    set value(value) {
+        this._value = value
+        this.updateStringRepresentation()
+    }
 
     get color() { return this._color }
-    set color(color) { this._color = color }
+    set color(color) {
+        this._color = color
+        this.updateStringRepresentation()
+    }
 
     get notes() { return this._notes }
-    set notes(notes) { this._notes = notes }
+    set notes(notes) {
+        this._notes = notes
+        this.updateStringRepresentation()
+    }
 
     get clue() { return this._clue || this._hint }
 
@@ -126,6 +139,7 @@ export class Cell {
         } else {
             this._hint = false
         }
+        this.updateStringRepresentation()
     }
 
     get solution() {
@@ -133,14 +147,16 @@ export class Cell {
     }
 
     get dataToSave(): string {
-        let result = this.value.toString()
+        return this.stringRepresentation
+    }
 
-        if (this.notes.size > 0) result += 'N' + [...this.notes].join('')
-        if (this.color !== 'default') result += 'C' + colorNamesShortened[colorNames.indexOf(this.color)]
-        if (this.hint) result += 'H'
-        if (this.locked) result += 'L'
+    get colorGroups() {
+        return this._colorGroups
+    }
 
-        return result
+    set colorGroups(value: Set<ColorGroup>) {
+        this._colorGroups = value
+        this.updateStringRepresentation()
     }
 
     public restart() {
@@ -149,6 +165,50 @@ export class Cell {
         this.hint = false
         this.locked = false
         this.color = 'default'
-        this.colorGroups = new Set()
+        this._colorGroups = new Set()
+        this.updateStringRepresentation()
+    }
+
+    get locked() {
+        return this._locked
+    }
+
+    set locked(value: boolean) {
+        this._locked = value
+        this.updateStringRepresentation()
+    }
+
+    public addNote(value: number) {
+        this.notes.add(value)
+        this.updateStringRepresentation()
+    }
+
+    public deleteNote(value: number) {
+        this.notes.delete(value)
+        this.updateStringRepresentation()
+    }
+
+    public clearNotes() {
+        this.notes.clear()
+        this.updateStringRepresentation()
+    }
+
+    public addColorGroup(value: ColorGroup) {
+        this._colorGroups.add(value)
+        this.updateStringRepresentation()
+    }
+
+    public deleteColorGroup(value: ColorGroup) {
+        this._colorGroups.delete(value)
+        this.updateStringRepresentation()
+    }
+
+    private updateStringRepresentation() {
+        this.stringRepresentation = this.value.toString()
+
+        if (this.notes.size > 0) this.stringRepresentation += 'N' + [...this.notes].join('')
+        if (this.color !== 'default') this.stringRepresentation += 'C' + colorNamesShortened[colorNames.indexOf(this.color)]
+        if (this.hint) this.stringRepresentation += 'H'
+        if (this.locked) this.stringRepresentation += 'L'
     }
 }

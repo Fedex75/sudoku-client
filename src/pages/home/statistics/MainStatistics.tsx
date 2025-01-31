@@ -1,6 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrash } from "@fortawesome/free-solid-svg-icons"
 import './mainStatistics.css'
 import GameHandler from "../../../utils/GameHandler"
 import { useCallback, useState } from "react"

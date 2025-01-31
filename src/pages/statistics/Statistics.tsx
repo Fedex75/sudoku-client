@@ -1,9 +1,6 @@
-import { faTrash, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActionSheet, ActionSheetButton, ColorChooser, Section, SectionContent, SettingsItem, Topbar } from '../../components'
-import TabSwitcher from '../../components/tabSwitcher/TabSwitcher'
+import { Section, SectionContent, Topbar } from '../../components'
 import { GameModeName } from '../../utils/Difficulties'
 import GameHandler from '../../utils/GameHandler'
 import { convertMillisecondsToHMS } from '../../utils/Statistics'
@@ -27,7 +24,7 @@ export default function Statistics() {
 
     useEffect(() => {
         if (difficulties.length === 0) navigate('/home/statistics')
-    }, [difficulties])
+    }, [difficulties, navigate])
 
     const { t } = useTranslation()
 

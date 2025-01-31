@@ -62,7 +62,7 @@ function Bookmarks({ theme, accentColor }: Props) {
 	}, [navigate])
 
 	const handlePlayBookmark = useCallback((bm: Bookmark) => {
-		if (GameHandler.game === null || GameHandler.complete) {
+		if (GameHandler.game === null || GameHandler.game.complete) {
 			playBookmark(bm)
 		} else {
 			if (GameHandler.game.id === bm.id) {

@@ -190,7 +190,7 @@ export default function Sudoku({ theme, accentColor }: Props) {
 		}
 
 		const windowVisibilityChangeEvent = () => {
-			if (!GameHandler.complete) GameHandler.saveGame()
+			if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
 			if (document.visibilityState === 'visible') {
 				if (!paused) setIsTimerRunning(true)
 			} else setIsTimerRunning(false)
