@@ -6,6 +6,8 @@ import { AccentColor } from './utils/Colors'
 import { ThemeName } from './game/Themes'
 import { useLocalStorage } from './utils/LocalStorageHandler'
 import Statistics from './pages/statistics/Statistics'
+import { useSettings } from './utils/SettingsHandler'
+import { useTranslation } from 'react-i18next'
 
 const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -17,7 +19,9 @@ const parser = (str: string) => {
 
 function App() {
     const [theme, setTheme] = useLocalStorage<ThemeName>('theme', 1, matchMediaColorScheme?.matches ? 'dark' : 'light', parser)
+    const { settings, updateSettings } = useSettings()
     const [accentColor, setAccentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
+    const { i18n } = useTranslation()
 
     useEffect(() => {
         const handleScroll = (e: Event) => {
@@ -28,6 +32,7 @@ function App() {
         document.body.addEventListener('scroll', handleScroll, { passive: false })
 
         if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
+        if (settings.language === 'auto') i18n.changeLanguage(navigator.language.split('-')[0])
 
         return () => {
             document.body.removeEventListener('scroll', handleScroll)
