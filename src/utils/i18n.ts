@@ -181,8 +181,10 @@ export function initI18n() {
                         reset: 'Reiniciar'
                     },
                     sectionNames: {
+                        play: 'Nuevo juego',
                         bookmarks: 'Marcadores',
-                        settings: 'Opciones'
+                        statistics: 'Estadísticas',
+                        settings: 'Configuración',
                     },
                     home: {
                         import: 'Importar',
