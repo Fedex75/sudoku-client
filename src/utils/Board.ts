@@ -180,14 +180,8 @@ export default abstract class Board {
 		this._hasChanged = false
 		this.animations = []
 		this._fullNotation = false
-		this.clearColors({ causedByUser: false })
-		for (const cell of this.allCells) {
-			if (!cell.clue || cell.hint) {
-				cell.hint = false
-				cell.notes.clear()
-				cell.value = 0
-			}
-		}
+		this.colorGroups = new Set()
+		for (const cell of this.allCells) cell.restart()
 
 		this.recreatePossibleValuesCache()
 	}
@@ -449,6 +443,7 @@ export default abstract class Board {
 
 		const newColorGroup = new ColorGroup(withCells, painted)
 		this.colorGroups.add(newColorGroup)
+		for (const cell of withCells) this.setColor({ of: cell, to: painted, causedByUser: false })
 		for (const cell of withCells) this.updatePossibleValuesByColor(cell)
 		this.updatePossibleValuesByColorGroups(newColorGroup)
 		this._hasChanged = true
@@ -498,6 +493,7 @@ export default abstract class Board {
 		for (const cellString of cells) {
 			const cell = this.get({ x, y })
 			if (cell) {
+				cell.restart()
 				const infoArr = cellString.split(regex).filter(Boolean)
 				if (infoArr.length > 0) {
 					cell.value = Number.parseInt(infoArr.shift() || '0')

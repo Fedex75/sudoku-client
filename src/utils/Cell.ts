@@ -29,7 +29,6 @@ export class ColorGroup {
         this.members = members
         for (const cell of this.members) {
             cell.colorGroups.add(this)
-            if (color) cell.color = color
         }
     }
 
@@ -142,5 +141,14 @@ export class Cell {
         if (this.locked) result += 'L'
 
         return result
+    }
+
+    public restart() {
+        if (!this._clue) this.value = 0
+        this.notes = new Set()
+        this.hint = false
+        this.locked = false
+        this.color = 'default'
+        this.colorGroups = new Set()
     }
 }
