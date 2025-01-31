@@ -1,9 +1,9 @@
 import './settings.css'
 import { useCallback } from 'react'
-import { Section, SectionContent, Topbar, ColorChooser, Button } from '../../components'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Section, SectionContent, Topbar, ColorChooser } from '../../components'
+import { Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPalette, faChevronRight, faGear, faHeart, faToolbox, faPencilAlt, faXmark, faMoon } from '@fortawesome/free-solid-svg-icons'
+import { faHeart } from '@fortawesome/free-solid-svg-icons'
 import SettingsItem from '../../components/settingsItem/SettingsItem'
 import API from '../../utils/API'
 import { useTranslation } from 'react-i18next'
@@ -250,7 +250,7 @@ function AboutSection() {
 				<div className="settings__list">
 					{
 						Object.entries(GameHandler.missions).map(([gameMode, difficulties]) => (
-							<SettingsItem type='info' title={t(`gameModes.${gameMode}`)} info={Object.entries(difficulties).map(([, missions]) => missions.length).reduce((a, b) => a + b, 0).toString()} />
+							<SettingsItem key={gameMode} type='info' title={t(`gameModes.${gameMode}`)} info={Object.entries(difficulties).map(([, missions]) => missions.length).reduce((a, b) => a + b, 0).toString()} />
 						))
 					}
 				</div>
