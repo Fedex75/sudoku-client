@@ -5,8 +5,9 @@ export class ThermoBoard extends ClassicBoard {
     public thermometers: Thermometer[] = []
 
     protected getDataFromMission(): void {
-        const [nSquares, ,] = this.mission.split(' ')
+        const [nSquares, , solution] = this.mission.split(' ')
         this._nSquares = Number.parseInt(nSquares)
+        this._solution = solution
     }
 
     public setValue(params: { of: Cell | Set<Cell>, to: number, causedByUser: boolean }): void {
@@ -19,7 +20,7 @@ export class ThermoBoard extends ClassicBoard {
     protected createBoardGeometry(): void {
         super.createBoardGeometry()
 
-        const [, , thermometersData] = this._mission.split(' ')
+        const [, , , thermometersData] = this._mission.split(' ')
 
         for (const thermometerString of thermometersData.split(';')) {
             const newThermometer: Thermometer = {

@@ -62,7 +62,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const sandwichBoard = useMemo(() => {
-        const newSandwichBoard = BoardFactory('sandwich', { id: 'wu0', mission: '3 1.3:4.8. 123456789 35,9,3 13,30,11' })
+        const newSandwichBoard = BoardFactory('sandwich', { id: 'wu0', mission: '3 1.3:4.8. 123654789 35,9,3 13,30,11' })
         newSandwichBoard.get({ x: 1, y: 0 })!.value = 2
         newSandwichBoard.get({ x: 0, y: 1 })!.value = 6
         newSandwichBoard.get({ x: 0, y: 2 })!.value = 7
@@ -71,7 +71,7 @@ export default function Play({ theme, accentColor }: Props) {
     }, [])
 
     const thermoBoard = useMemo(() => {
-        const newThermoBoard = BoardFactory('thermo', { id: 'tu0', mission: '3 1.3:4.8. 0,1,2,5;3,6,7,8' })
+        const newThermoBoard = BoardFactory('thermo', { id: 'tu0', mission: '3 1.3:4.8. 123654789 0,1,2,5;3,6,7,8' })
         newThermoBoard.get({ x: 1, y: 0 })!.value = 2
         newThermoBoard.get({ x: 0, y: 1 })!.value = 6
         newThermoBoard.get({ x: 0, y: 2 })!.value = 7
