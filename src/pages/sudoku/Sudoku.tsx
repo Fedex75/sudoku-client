@@ -279,6 +279,8 @@ export default function Sudoku({ theme, accentColor }: Props) {
 				isOpen={exportActionSheetIsOpen}
 				cancelTitle={t('common.cancel')}
 				onClose={() => setExportActionSheetIsOpen(false)}
+				buttonsMode
+				title={t('common.share')}
 			>
 				<ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
 					try {
