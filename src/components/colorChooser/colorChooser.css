@@ -1,7 +1,7 @@
 .color-chooser {
-  display: flex;
-  flex-flow: row;
-  justify-content: space-between;
-  padding: 0 10px;
-  margin-top: 15px;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    padding: 0 10px;
+    margin-top: 15px;
 }

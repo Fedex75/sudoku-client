@@ -1,176 +1,180 @@
 :root {
-  --themeColor: #2e69f2;
-  --red: #fc5c65;
-  --darkRed: #eb3b5a;
-  --orange: #fd9644;
-  --yellow: #fed330;
-  --green: #26de81;
-  --blueGreen: #2bcbba;
-  --lightBlue: #45aaf2;
-  --darkBlue: #2e69f2;
-  --purple: #a55eea;
-  --lightGray: #dce0e6 /*#e4e7ed*/;
-  --darkGrayBlue: #344861;
+    --themeColor: #2e69f2;
+    --red: #fc5c65;
+    --darkRed: #eb3b5a;
+    --orange: #fd9644;
+    --yellow: #fed330;
+    --green: #26de81;
+    --blueGreen: #2bcbba;
+    --lightBlue: #45aaf2;
+    --darkBlue: #2e69f2;
+    --purple: #a55eea;
+    --lightGray: #dce0e6;
+    --darkGrayBlue: #344861;
 }
 
 [data-theme='light'] {
-  --background: #e9e9e9;
-  --darkBackground: white;
-  --primaryTextColor: black;
-  --secondaryTextColor: #9e9e9e;
-  --primaryIconColor: black;
-  --secondaryIconColor: #848484;
-  --topbarFontColor: var(--darkGrayBlue);
-  --bookmarkOffColor: var(--darkGrayBlue);
-  --actionSheetBackground: #eeeef0;
-  --actionSheetCancelBackground: white;
-  --actionSheetButtonBorder: #d8d8db;
-  --contextMenuButtonColor: #505050;
-  --contextMenuButtonBackground: #e7e7e7;
-  --editButtonColor: var(--themeColor);
-  --editButtonBackground: var(--lightGray);
-  --editButtonDisabledFilter: brightness(0.7);
-  --numpadButtonBackground: var(--lightGray);
-  --disabledButtonBackground: transparent;
-  --disabledButtonBorderColor: transparent;
-  --settingsItemBackground: white;
-  --settingsItemBorder: var(--lightGray);
-  --settingsItemColor: var(--darkGrayBlue);
-  --cancelButtonBackround: white;
-  --cancelButtonFontWeight: regular;
-  --bookmarksEmptyColor: #444444;
-  --checkIconColor: white;
-  --tabSwitcherBackground: white;
-  --tabSwitcherIconColor: #c7c7c7;
-  --tabSwitcherSelectedTabIconColor: black;
-  --carouselDotColor: #c8c8c8;
-  --settingsBorderColor: #dddddd;
-  --disabledFilter: brightness(1.4);
+    --background: #e9e9e9;
+    --darkBackground: white;
+    --primaryTextColor: black;
+    --secondaryTextColor: #9e9e9e;
+    --primaryIconColor: black;
+    --secondaryIconColor: #848484;
+    --topbarFontColor: var(--darkGrayBlue);
+    --bookmarkOffColor: var(--darkGrayBlue);
+    --actionSheetBackground: #eeeef0;
+    --actionSheetCancelBackground: white;
+    --actionSheetButtonBorder: #d8d8db;
+    --contextMenuButtonColor: #505050;
+    --contextMenuButtonBackground: #e7e7e7;
+    --editButtonColor: var(--themeColor);
+    --editButtonBackground: var(--lightGray);
+    --editButtonDisabledFilter: brightness(0.7);
+    --numpadButtonBackground: var(--lightGray);
+    --disabledButtonBackground: transparent;
+    --disabledButtonBorderColor: transparent;
+    --settingsItemBackground: white;
+    --settingsItemBorder: var(--lightGray);
+    --settingsItemColor: var(--darkGrayBlue);
+    --cancelButtonBackround: white;
+    --cancelButtonFontWeight: regular;
+    --bookmarksEmptyColor: #444444;
+    --checkIconColor: white;
+    --tabSwitcherBackground: white;
+    --tabSwitcherIconColor: #c7c7c7;
+    --tabSwitcherSelectedTabIconColor: black;
+    --carouselDotColor: #c8c8c8;
+    --settingsBorderColor: #dddddd;
+    --disabledFilter: brightness(1.4);
 }
 
 [data-theme='dark'] {
-  --background: black;
-  --darkBackground: #1c1c1e;
-  --primaryTextColor: white;
-  --secondaryTextColor: gray;
-  --primaryIconColor: white;
-  --secondaryIconColor: #848484;
-  --topbarFontColor: white;
-  --bookmarkOffColor: darkgray;
-  --actionSheetBackground: #1f1e1e;
-  --actionSheetCancelBackground: #2c2c2e;
-  --actionSheetButtonBorder: #434344;
-  --contextMenuButtonColor: #959595;
-  --contextMenuButtonBackground: #2b2b2b;
-  --editButtonColor: #75747c;
-  --editButtonBackground: var(--darkBackground);
-  --editButtonDisabledFilter: brightness(0.4);
-  --numpadButtonBackground: var(--darkBackground);
-  --disabledButtonBackground: transparent;
-  --disabledButtonBorderColor: #25242c;
-  --canvasLightDefaultCellColor: #25242c;
-  --canvasDarkDefaultCellColor: #161620;
-  --canvasCellBorderColor: black;
-  --canvasBoxBorderColor: black;
-  --canvasClueColor: #75747c;
-  --canvasSolutionColor: #6f90c3;
-  --canvasSelectedCellBackground: #153b79;
-  --canvasSameValueCellBackground: #0f0e12;
-  --canvasNoteHighlightColor: white;
-  --canvasAnimationBaseColor: 255, 255, 255;
-  --settingsItemBackground: #25242c;
-  --settingsItemBorder: black;
-  --settingsItemTitleColor: white;
-  --cancelButtonBackround: #25242c;
-  --cancelButtonFontWeight: bold;
-  --bookmarksEmptyColor: #616161;
-  --checkIconColor: black;
-  --tabSwitcherBackground: #25242c;
-  --tabSwitcherIconColor: #616161;
-  --tabSwitcherSelectedTabIconColor: white;
-  --carouselDotColor: #949494;
-  --settingsBorderColor: #333333;
-  --disabledFilter: brightness(0.6);
+    --background: black;
+    --darkBackground: #1c1c1e;
+    --primaryTextColor: white;
+    --secondaryTextColor: gray;
+    --primaryIconColor: white;
+    --secondaryIconColor: #848484;
+    --topbarFontColor: white;
+    --bookmarkOffColor: darkgray;
+    --actionSheetBackground: #1f1e1e;
+    --actionSheetCancelBackground: #2c2c2e;
+    --actionSheetButtonBorder: #434344;
+    --contextMenuButtonColor: #959595;
+    --contextMenuButtonBackground: #2b2b2b;
+    --editButtonColor: #75747c;
+    --editButtonBackground: var(--darkBackground);
+    --editButtonDisabledFilter: brightness(0.4);
+    --numpadButtonBackground: var(--darkBackground);
+    --disabledButtonBackground: transparent;
+    --disabledButtonBorderColor: #25242c;
+    --canvasLightDefaultCellColor: #25242c;
+    --canvasDarkDefaultCellColor: #161620;
+    --canvasCellBorderColor: black;
+    --canvasBoxBorderColor: black;
+    --canvasClueColor: #75747c;
+    --canvasSolutionColor: #6f90c3;
+    --canvasSelectedCellBackground: #153b79;
+    --canvasSameValueCellBackground: #0f0e12;
+    --canvasNoteHighlightColor: white;
+    --canvasAnimationBaseColor: 255, 255, 255;
+    --settingsItemBackground: #25242c;
+    --settingsItemBorder: black;
+    --settingsItemTitleColor: white;
+    --cancelButtonBackround: #25242c;
+    --cancelButtonFontWeight: bold;
+    --bookmarksEmptyColor: #616161;
+    --checkIconColor: black;
+    --tabSwitcherBackground: #25242c;
+    --tabSwitcherIconColor: #616161;
+    --tabSwitcherSelectedTabIconColor: white;
+    --carouselDotColor: #949494;
+    --settingsBorderColor: #333333;
+    --disabledFilter: brightness(0.6);
 }
 
 [data-accent-color='red'] {
-  --themeColor: var(--red);
+    --themeColor: var(--red);
 }
 
 [data-accent-color='orange'] {
-  --themeColor: var(--orange);
+    --themeColor: var(--orange);
 }
 
 [data-accent-color='yellow'] {
-  --themeColor: var(--yellow);
+    --themeColor: var(--yellow);
 }
 
 [data-accent-color='green'] {
-  --themeColor: var(--green);
+    --themeColor: var(--green);
 }
 
 [data-accent-color='blueGreen'] {
-  --themeColor: var(--blueGreen);
+    --themeColor: var(--blueGreen);
 }
 
 [data-accent-color='lightBlue'] {
-  --themeColor: var(--lightBlue);
+    --themeColor: var(--lightBlue);
 }
 
 [data-accent-color='darkBlue'] {
-  --themeColor: var(--darkBlue);
+    --themeColor: var(--darkBlue);
 }
 
 [data-accent-color='purple'] {
-  --themeColor: var(--purple);
+    --themeColor: var(--purple);
 }
 
-html, body, #root, .app {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  font-size: 14px;
-  font-family: sans-serif;
-  user-select: none;
-  touch-action: manipulation;
-  scroll-behavior: smooth;
-  font-family: 'Inter';
+html,
+body,
+#root,
+.app {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    font-family: sans-serif;
+    user-select: none;
+    touch-action: manipulation;
+    scroll-behavior: smooth;
+    font-family: 'Inter';
 }
 
 .app {
-  background-color: var(--background);
+    background-color: var(--background);
 }
 
 body {
-  position: fixed;
+    position: fixed;
 }
 
 a {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 p {
-  margin: 0;
+    margin: 0;
 }
 
 @media (min-aspect-ratio: 21 / 20) {
-  .app {
-    display: grid;
-    place-content: center;
-  }
+    .app {
+        display: grid;
+        place-content: center;
+    }
 }
 
 .fade_in {
-  animation: fadeInAnimation ease 1.3s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+    animation: fadeInAnimation ease 1.3s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
 }
 
 @keyframes fadeInAnimation {
-  0% {
-      opacity: 0;
-  }
-  100% {
-      opacity: 1;
-  }
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

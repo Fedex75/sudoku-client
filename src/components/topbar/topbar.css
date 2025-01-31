@@ -1,83 +1,83 @@
 .topbar {
-  grid-area: topbar;
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: center;
+    grid-area: topbar;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .topbar__top {
-  display: grid;
-  align-items: center;
-  width: 100%;
-  min-height: 37px;
-  overflow-x: hidden;
+    display: grid;
+    align-items: center;
+    width: 100%;
+    min-height: 37px;
+    overflow-x: hidden;
 }
 
 .topbar__top__back {
-  grid-area: back;
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  margin-right: 10px;
+    grid-area: back;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    margin-right: 10px;
 }
 
 .topbar__top__back {
-  font-size: 20px;
-  padding: 6.5px 10px !important;
+    font-size: 20px;
+    padding: 6.5px 10px !important;
 }
 
 .topbar__bottom {
-  width: 100%;
+    width: 100%;
 }
 
 .topbar__title-wrapper {
-  grid-area: title;
-  color: var(--topbarFontColor);
-  white-space: nowrap;
-  margin-right: 10px;
-  width: fit-content;
+    grid-area: title;
+    color: var(--topbarFontColor);
+    white-space: nowrap;
+    margin-right: 10px;
+    width: fit-content;
 }
 
 .topbar__title {
-  font-size: 22px;
+    font-size: 22px;
 }
 
 .topbar__title-wrapper.subtitle {
-  display: flex;
-  flex-flow: column;
+    display: flex;
+    flex-flow: column;
 }
 
 .topbar__title-wrapper.subtitle .topbar__title {
-  font-size: 14px;
-  color: gray;
+    font-size: 14px;
+    color: gray;
 }
 
 .topbar__top__additional {
-  display: grid;
-  justify-content: center;
-  gap: 10px;
+    display: grid;
+    justify-content: center;
+    gap: 10px;
 }
 
 .topbar__button {
-  display: grid;
-  place-items: center;
-  color: var(--themeColor);
-  font-size: 20px;
-  margin-right: 10px;
-  white-space: nowrap;
+    display: grid;
+    place-items: center;
+    color: var(--themeColor);
+    font-size: 20px;
+    margin-right: 10px;
+    white-space: nowrap;
 }
 
 .topbar__button:last-child {
-  margin-right: 0;
+    margin-right: 0;
 }
 
 .topbar__logo {
-  height: 16px;
+    height: 16px;
 }
 
 @media (min-aspect-ratio: 21 / 20) {
-  .topbar__top {
-    width: 100%;
-  }
+    .topbar__top {
+        width: 100%;
+    }
 }

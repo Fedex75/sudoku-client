@@ -5,10 +5,10 @@
 
 .home__statistics-list {
     flex-grow: 1;
-	display: flex;
-	flex-flow: column;
-	gap: 20px;
-	padding: 0 5px;
+    display: flex;
+    flex-flow: column;
+    gap: 20px;
+    padding: 0 5px;
     margin-top: 20px;
     color: var(--primaryTextColor);
 }

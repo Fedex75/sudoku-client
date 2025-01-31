@@ -1,63 +1,65 @@
 .settings__item {
-  display: flex;
-  flex-flow: row;
-  gap: 10px;
-  padding: 10px 10px;
-  border-width: 1px 1px 0px 1px;
-  border-style: solid;
-  align-items: center;
-  background-color: var(--darkBackground);
-  border-color: var(--settingsItemBorder);
+    display: flex;
+    flex-flow: row;
+    gap: 10px;
+    padding: 10px 10px;
+    border-width: 1px 1px 0px 1px;
+    border-style: solid;
+    align-items: center;
+    background-color: var(--darkBackground);
+    border-color: var(--settingsItemBorder);
 }
 
 .settings__item.disabled {
-  .settings__item__icon, .react-switch {
-    filter: var(--disabledFilter);
-  }
 
-  .settings__item__title {
-    color: var(--secondaryTextColor);
-  }
+    .settings__item__icon,
+    .react-switch {
+        filter: var(--disabledFilter);
+    }
+
+    .settings__item__title {
+        color: var(--secondaryTextColor);
+    }
 }
 
 .settings__item:first-child {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .settings__item:last-child {
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  border-width: 1px 1px 1px 1px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-width: 1px 1px 1px 1px;
 }
 
 .settings__item__title {
-  flex-grow: 1;
-  font-size: 14px;
-  margin-right: 40px;
-  color: var(--settingsItemTitleColor);
+    flex-grow: 1;
+    font-size: 14px;
+    margin-right: 40px;
+    color: var(--settingsItemTitleColor);
 }
 
 .settings__item.theme {
-  display: flex;
-  flex-flow: row;
-  justify-content: center;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
 }
 
 .settings__item__theme-wrapper {
-  display: grid;
-  grid-template-rows: 100px fit-content(0) fit-content(0);
-  color: var(--primaryTextColor);
-  justify-items: center;
-  gap: 10px;
+    display: grid;
+    grid-template-rows: 100px fit-content(0) fit-content(0);
+    color: var(--primaryTextColor);
+    justify-items: center;
+    gap: 10px;
 }
 
 .settings__item__theme-wrapper canvas {
-  width: 100px;
-  border: solid 1px black;
-  border-radius: 8%;
+    width: 100px;
+    border: solid 1px black;
+    border-radius: 8%;
 }
 
 .settings__item__icon {
-  height: 20px;
+    height: 20px;
 }

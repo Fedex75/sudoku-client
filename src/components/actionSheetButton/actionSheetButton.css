@@ -1,22 +1,22 @@
 .action-sheet__button {
-  display: grid;
-  place-items: center;
-  font-size: 22px;
-  padding: 14px 0;
-  border-top: solid 1px var(--actionSheetButtonBorder);
-  color: var(--contextMenuButtonColor);
-  width: 100%;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    padding: 14px 0;
+    border-top: solid 1px var(--actionSheetButtonBorder);
+    color: var(--contextMenuButtonColor);
+    width: 100%;
 }
 
 .action-sheet__button.cancel {
-  border-top: none;
-  background-color: var(--actionSheetCancelBackground);
-  margin-bottom: 10px;
-  max-width: 450px;
-  border-radius: 15px;
-  color: var(--contextMenuButtonColor);
+    border-top: none;
+    background-color: var(--actionSheetCancelBackground);
+    margin-bottom: 10px;
+    max-width: 450px;
+    border-radius: 15px;
+    color: var(--contextMenuButtonColor);
 }
 
 .action-sheet__button:first-child {
-  border-top: none;
+    border-top: none;
 }

@@ -1,97 +1,96 @@
 #settings {
-  overflow-y: auto;
-  margin-top: 20px;
-  padding: 0 10px;
+    overflow-y: auto;
+    margin-top: 20px;
+    padding: 0 10px;
 }
 
 .settings__label {
-  color: var(--secondaryTextColor);
-  padding-left: 15px;
-  margin-bottom: 5px;
+    color: var(--secondaryTextColor);
+    padding-left: 15px;
+    margin-bottom: 5px;
 }
 
 .settings__explanation {
-  color: var(--secondaryTextColor);
-  padding: 10px;
-  margin-bottom: 30px;
+    color: var(--secondaryTextColor);
+    padding: 10px;
+    margin-bottom: 30px;
 }
 
 .settings__list {
-  display: flex;
-  flex-flow: column;
-  margin-bottom: 30px;
+    display: flex;
+    flex-flow: column;
+    margin-bottom: 30px;
 }
 
 .settings__section__list {
-  display: flex;
-  flex-flow: column;
-  /*gap: 20px;*/
+    display: flex;
+    flex-flow: column;
 }
 
 .settings__section-link {
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-  gap: 10px;
-  background-color: var(--darkBackground);
-  color: var(--primaryTextColor);
-  padding-left: 10px;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--darkBackground);
+    color: var(--primaryTextColor);
+    padding-left: 10px;
 }
 
 .settings__section-link:first-child {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .settings__section-link:last-child {
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .settings__section-link__right-wrapper {
-  display: grid;
-  grid-template-columns: auto fit-content(0);
-  align-items: center;
-  border-bottom: solid 1px var(--settingsBorderColor);
-  padding-right: 10px;
-  padding-top: 14px;
-  padding-bottom: 14px;
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    align-items: center;
+    border-bottom: solid 1px var(--settingsBorderColor);
+    padding-right: 10px;
+    padding-top: 14px;
+    padding-bottom: 14px;
 }
 
 .settings__section-link:last-child>.settings__section-link__right-wrapper {
-  border: none;
+    border: none;
 }
 
 .settings__section-link__right-wrapper {
-  flex-grow: 1;
-  display: flex;
-  gap: 10px;
+    flex-grow: 1;
+    display: flex;
+    gap: 10px;
 }
 
 .settings__section-link__title {
-  flex-grow: 1;
+    flex-grow: 1;
 }
 
 .settings__section-link__info {
-  color: gray;
+    color: gray;
 }
 
 .settings__section-link__icon {
-  display: grid;
-  place-items: center;
-  height: 30px;
-  width: 30px;
-  border-radius: 5px;
-  color: white;
-  font-size: 20px;
+    display: grid;
+    place-items: center;
+    height: 30px;
+    width: 30px;
+    border-radius: 5px;
+    color: white;
+    font-size: 20px;
 }
 
 .about__flag-argentina {
-  height: 20px;
+    height: 20px;
 }
 
 @media (min-aspect-ratio: 21 / 20) {
-  #settings {
-    width: 400px;
-  }
+    #settings {
+        width: 400px;
+    }
 }

@@ -1,196 +1,196 @@
 #sudoku {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: calc(100% - 6px);
-  padding-left: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: calc(100% - 6px);
+    padding-left: 3px;
 }
 
 .game {
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: fit-content(0) auto;
-  grid-template-areas:
-    "sudoku"
-    "numpad";
-  gap: 10px;
-  width: 100%;
-  height: 100%;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: fit-content(0) auto;
+    grid-template-areas:
+        "sudoku"
+        "numpad";
+    gap: 10px;
+    width: 100%;
+    height: 100%;
 }
 
 .sudoku {
-  grid-area: sudoku;
-  display: flex;
-  flex-flow: column;
-  justify-content: flex-end;
-  align-items: center;
+    grid-area: sudoku;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .sudoku__timer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: fit-content;
-  padding: 5px;
-  border-radius: 5px;
-  font-variant-numeric: tabular-nums;
-  transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 5px;
+    border-radius: 5px;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease;
 }
 
 .sudoku__timer__time {
-  font-weight: 500;
-  font-size: 16px;
+    font-weight: 500;
+    font-size: 16px;
 }
 
 .sudoku__timer__message {
-  font-weight: 500;
-  font-size: 16px;
+    font-weight: 500;
+    font-size: 16px;
 }
 
 .sudoku-canvas {
-  width: 100%;
-  max-height: calc(100vh - 79vw - 75px);
-  aspect-ratio: 1 / 1;
+    width: 100%;
+    max-height: calc(100vh - 79vw - 75px);
+    aspect-ratio: 1 / 1;
 }
 
 .sudoku__win-screen-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .sudoku__win-screen {
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 20px;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
 }
 
 .sudoku__win-screen .button {
-  width: 100%;
+    width: 100%;
 }
 
 .sudoku__win-screen__title {
-  grid-area: title;
-  font-size: 30px;
-  color: var(--primaryTextColor);
-  margin-bottom: 50px;
+    grid-area: title;
+    font-size: 30px;
+    color: var(--primaryTextColor);
+    margin-bottom: 50px;
 }
 
 .sudoku__win-screen__stats {
-  margin-bottom: 30px;
+    margin-bottom: 30px;
 }
 
 .sudoku__win-screen__stat {
-  display: grid;
-  grid-template-columns: auto fit-content(0);
-  color: var(--secondaryTextColor);
-  width: 300px;
-  margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: auto fit-content(0);
+    color: var(--secondaryTextColor);
+    width: 300px;
+    margin-bottom: 20px;
 }
 
 .sudoku__win-screen__stat__value {
-  color: var(--primaryTextColor);
+    color: var(--primaryTextColor);
 }
 
 .bookmark-off {
-  color: var(--bookmarkOffColor);
+    color: var(--bookmarkOffColor);
 }
 
 .numpad-wrapper {
-  display: flex;
-  flex-flow: column;
-  justify-content: flex-end;
-  max-height: calc(100vw - 14px);
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-end;
+    max-height: calc(100vw - 14px);
 }
 
 .sudoku__context-menu {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: fit-content(0) fit-content(0) auto;
-  grid-template-areas:
-    "save share"
-    "rules rules"
-    "buttons buttons";
-  width: 100%;
-  gap: 10px;
-  padding: 15px;
-  box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: fit-content(0) fit-content(0) auto;
+    grid-template-areas:
+        "save share"
+        "rules rules"
+        "buttons buttons";
+    width: 100%;
+    gap: 10px;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .sudoku__context-menu__buttons {
-  display: flex;
-  flex-flow: column;
-  gap: 10px;
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
 }
 
 .sudoku__open-menu-button {
-  width: 25px;
+    width: 25px;
 }
 
 .sudoku__restart-icon {
-  width: 24px;
+    width: 24px;
 }
 
 @media (min-aspect-ratio: 46/89) {
 
-  /*Tablets*/
-  .game {
-    grid-template-rows: auto 200px;
-  }
+    /*Tablets*/
+    .game {
+        grid-template-rows: auto 200px;
+    }
 
-  .sudoku-canvas {
-    max-width: calc(100vh - 280px);
-    max-height: calc(100vh - 280px);
-  }
+    .sudoku-canvas {
+        max-width: calc(100vh - 280px);
+        max-height: calc(100vh - 280px);
+    }
 }
 
 /*@media (min-width: 1050px) {*/
 @media (min-aspect-ratio: 2/1) or (min-width: 1050px) {
 
-  /*Desktop and landscape phones*/
-  .game {
-    grid-template-columns: 500px 500px;
-    grid-template-rows: 500px;
-    grid-template-areas: "sudoku numpad";
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-    max-height: 500px;
-  }
-
-  .sudoku-canvas {
-    height: 500px;
-    max-height: 500px;
-  }
-
-  .numpad-wrapper {
-    height: 500px;
-  }
-
-  .sudoku__win-screen-wrapper {
-    width: 1010px;
-    height: 500px;
-  }
-
-  .sudoku__win-screen .button {
-    max-width: 300px;
-  }
-
-  @media (max-height: 800px) {
+    /*Desktop and landscape phones*/
     .game {
-      grid-template-columns: 85vh 80vh;
-      grid-template-rows: 80vh;
+        grid-template-columns: 500px 500px;
+        grid-template-rows: 500px;
+        grid-template-areas: "sudoku numpad";
+        gap: 10px;
+        width: 100%;
+        height: 100%;
+        max-height: 500px;
     }
 
     .sudoku-canvas {
-      max-height: 100%;
-      max-width: 100%;
+        height: 500px;
+        max-height: 500px;
     }
-  }
+
+    .numpad-wrapper {
+        height: 500px;
+    }
+
+    .sudoku__win-screen-wrapper {
+        width: 1010px;
+        height: 500px;
+    }
+
+    .sudoku__win-screen .button {
+        max-width: 300px;
+    }
+
+    @media (max-height: 800px) {
+        .game {
+            grid-template-columns: 85vh 80vh;
+            grid-template-rows: 80vh;
+        }
+
+        .sudoku-canvas {
+            max-height: 100%;
+            max-width: 100%;
+        }
+    }
 }

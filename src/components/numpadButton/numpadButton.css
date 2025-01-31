@@ -1,50 +1,50 @@
 .numpad__button {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--themeColor);
-  font-size: 50px;
-  border-radius: 10px;
-  cursor: pointer;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--themeColor);
+    font-size: 50px;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
 .numpad__button:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
 }
 
 .numpad__button.number {
-  background-color: var(--numpadButtonBackground);
+    background-color: var(--numpadButtonBackground);
 }
 
 .numpad__button.disabled {
-  background-color: var(--disabledButtonBackground);
-  border-color: var(--disabledButtonBorderColor);
-  border-style: solid;
-  border-width: 1px;
-  cursor: default;
+    background-color: var(--disabledButtonBackground);
+    border-color: var(--disabledButtonBorderColor);
+    border-style: solid;
+    border-width: 1px;
+    cursor: default;
 }
 
 .numpad__button.disabled:hover {
-  background-image: none;
+    background-image: none;
 }
 
 .numpad__button.hidden {
-  visibility: hidden;
+    visibility: hidden;
 }
 
 .numpad__button.locked {
-  border-width: 1px;
-  border-style: solid;
-  color: white;
-  background-color: var(--themeColor);
-  border-color: var(--themeColor);
+    border-width: 1px;
+    border-style: solid;
+    color: white;
+    background-color: var(--themeColor);
+    border-color: var(--themeColor);
 }
 
 .numpad__button.color {
-  color: white;
+    color: white;
 }
 
 .numpad__button__digit {
-  height: 50%;
+    height: 50%;
 }

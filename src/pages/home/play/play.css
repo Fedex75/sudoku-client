@@ -1,121 +1,121 @@
 .home__play {
-  display: flex;
-  flex-flow: column;
-  height: 100%;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
 }
 
 .home__carousel-wrapper {
-  flex-grow: 1;
-  display: flex;
-  flex-flow: column;
-  overflow: hidden;
-  justify-content: center;
-  gap: 8px;
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+    justify-content: center;
+    gap: 8px;
 }
 
 .home__carousel {
-  display: flex;
-  align-items: center;
-  height: fit-content;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
+    display: flex;
+    align-items: center;
+    height: fit-content;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 .home__carousel::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .home__carousel__item-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 175px !important;
-  min-height: 175px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 175px !important;
+    min-height: 175px !important;
 }
 
 .home__carousel__item-wrapper:first-child {
-  padding-left: 200px;
+    padding-left: 200px;
 }
 
 .home__carousel__item-wrapper:last-child {
-  padding-right: 200px;
+    padding-right: 200px;
 }
 
 .home__gameMode {
-  scroll-snap-align: center;
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: 100px !important;
-  height: 100px;
-  aspect-ratio: 1 / 1 !important;
-  border-radius: 15%;
-  background-color: white;
-  color: black;
-  font-size: 18px;
-  padding: 10px;
-  transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease, height 0.5s ease;
+    scroll-snap-align: center;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100px !important;
+    height: 100px;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 15%;
+    background-color: white;
+    color: black;
+    font-size: 18px;
+    padding: 10px;
+    transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease, height 0.5s ease;
 }
 
 .home__gameMode canvas {
-  width: 70px;
-  border: solid 1px black;
-  border-radius: 8%;
-  transition: width 0.5s ease;
+    width: 70px;
+    border: solid 1px black;
+    border-radius: 8%;
+    transition: width 0.5s ease;
 }
 
 .home__gameMode.snapped {
-  width: 150px !important;
-  height: 150px;
-  background-color: var(--themeColor);
-  color: white;
+    width: 150px !important;
+    height: 150px;
+    background-color: var(--themeColor);
+    color: white;
 }
 
 .home__gameMode.snapped canvas {
-  width: 120px;
+    width: 120px;
 }
 
 .home__carousel-dots {
-  display: flex;
-  flex-flow: row;
-  justify-content: center;
-  gap: 10px;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    gap: 10px;
 }
 
 .home__carousel-dots__dot {
-  height: 5px;
-  width: 12px;
-  background-color: var(--carouselDotColor);
-  border-radius: 2.5px;
-  transition: background-color 0.5s ease, width 0.5s ease;
+    height: 5px;
+    width: 12px;
+    background-color: var(--carouselDotColor);
+    border-radius: 2.5px;
+    transition: background-color 0.5s ease, width 0.5s ease;
 }
 
 .home__carousel-dots__dot.selected {
-  width: 30px;
-  background-color: var(--themeColor);
+    width: 30px;
+    background-color: var(--themeColor);
 }
 
 .home__continue {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background-color: var(--themeColor);
-  border-radius: 20px;
-  width: fit-content;
-  padding: 10px 15px;
-  color: white;
-  float: right;
-  margin-right: 15px;
-  font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--themeColor);
+    border-radius: 20px;
+    width: fit-content;
+    padding: 10px 15px;
+    color: white;
+    float: right;
+    margin-right: 15px;
+    font-size: 18px;
 }
 
 .home__play__settings {
-  width: 25px;
+    width: 25px;
 }
 
 /*.home__continue-wrapper {

@@ -1,64 +1,64 @@
 .home__bookmarks {
-	display: flex;
-	flex-flow: column;
-	height: 100%;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
 }
 
 .bookmarks__wrapper {
-	flex-grow: 1;
-	display: flex;
-	flex-flow: column;
-	gap: 20px;
-	padding: 0 15px;
-	overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column;
+    gap: 20px;
+    padding: 0 15px;
+    overflow-y: auto;
 }
 
 .bookmarks__item {
-	display: flex;
-	flex-flow: column;
-	background-color: var(--darkBackground);
-	padding: 15px;
-	border-radius: 20px;
+    display: flex;
+    flex-flow: column;
+    background-color: var(--darkBackground);
+    padding: 15px;
+    border-radius: 20px;
 }
 
 .bookmarks_item__top {
-	display: flex;
-	flex-flow: row;
-	gap: 10px;
-	margin-bottom: 10px;
-	font-size: 20px;
+    display: flex;
+    flex-flow: row;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 20px;
 }
 
 .bookmarks__item__top__title {
-	flex-grow: 1;
-	color: var(--primaryTextColor);
+    flex-grow: 1;
+    color: var(--primaryTextColor);
 }
 
 .bookmarks__item__canvas-wrapper {
-	display: grid;
-	place-items: center;
+    display: grid;
+    place-items: center;
 }
 
 .bookmarks__item__canvas-wrapper canvas {
-	width: 100%;
+    width: 100%;
 }
 
 .bookmark-on {
-	color: var(--primaryIconColor);
+    color: var(--primaryIconColor);
 }
 
 .bookmarks__empty {
-	flex-grow: 1;
-	display: flex;
-	flex-flow: column;
-	justify-content: center;
-	align-items: center;
-	color: var(--bookmarksEmptyColor);
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--bookmarksEmptyColor);
 }
 
 @media (min-aspect-ratio: 1 / 1) {
-	.bookmarks__item {
-		max-width: 400px;
-		max-height: 400px;
-	}
+    .bookmarks__item {
+        max-width: 400px;
+        max-height: 400px;
+    }
 }
