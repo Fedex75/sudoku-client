@@ -117,7 +117,7 @@ export function initI18n() {
                         average: 'Average',
                         best: 'Best',
                         export: 'Export board',
-                        exortError: 'Error copying to clipboard',
+                        exportError: 'Error copying to clipboard',
                         copyClues: 'Copy clues',
                         copyFullBoard: 'Copy full board',
                         copyMission: 'Copy mission',
@@ -191,9 +191,6 @@ export function initI18n() {
                         importPrompt: 'Ingrese el tablero:',
                         incompatibleData: 'Datos incompatibles',
                         continue: 'Continuar',
-                        play: 'Nuevo juego',
-                        bookmarks: 'Marcadores',
-                        statistics: 'Estadísticas'
                     },
                     bookmarks: {
                         deleteAll: 'Eliminar todos',
@@ -277,7 +274,7 @@ export function initI18n() {
                         average: 'Promedio',
                         best: 'Mejor',
                         export: 'Exportar tablero',
-                        exortError: 'Error al copiar',
+                        exportError: 'Error al copiar',
                         copyClues: 'Copiar pistas',
                         copyFullBoard: 'Copiar tablero completo',
                         copyMission: 'Copiar misión',
