@@ -43,12 +43,16 @@
 	width: 100%;
 }
 
+.bookmark-on {
+	color: var(--primaryIconColor);
+}
+
 .bookmarks__empty {
+	flex-grow: 1;
 	display: flex;
 	flex-flow: column;
 	justify-content: center;
 	align-items: center;
-
 	color: var(--bookmarksEmptyColor);
 }
 
