@@ -10,6 +10,8 @@
 .tabSwitcher__tab {
     display: grid;
     place-items: center;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .tabSwitcher__tab.selected {
