@@ -19,7 +19,7 @@ const parser = (str: string) => {
 
 function App() {
     const [theme, setTheme] = useLocalStorage<ThemeName>('theme', 1, matchMediaColorScheme?.matches ? 'dark' : 'light', parser)
-    const { settings, updateSettings } = useSettings()
+    const { settings } = useSettings()
     const [accentColor, setAccentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
     const { i18n } = useTranslation()
 
@@ -38,7 +38,7 @@ function App() {
             document.body.removeEventListener('scroll', handleScroll)
             if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => { }
         }
-    }, [setTheme])
+    }, [setTheme, i18n, settings.language])
 
     return (
         <div id='app' className='app' data-theme={theme} data-accent-color={accentColor} onClick={() => { }}>
