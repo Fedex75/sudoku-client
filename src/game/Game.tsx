@@ -3,23 +3,23 @@ import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
 import { MouseButtonType } from "../utils/DataTypes"
 import { Navigate } from "react-router"
-import { AccentColor, ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
-import { isTouchDevice } from "../utils/isTouchDevice"
+import { ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
+import { isTouchDevice } from "../utils/hooks/isTouchDevice"
 import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faLink } from "@fortawesome/free-solid-svg-icons"
 import ColorCircleSVG from "../svg/color_circle"
 import brightness from "../utils/Utils"
-import { ThemeName, themes } from './Themes'
+import { themes } from './Themes'
 import { Cell, CellCoordinates } from '../utils/Cell'
 import CanvasComponent from '../components/CanvasComponent'
 import { CanvasFactory } from './gameModes/CanvasFactory'
-import { useSettings } from '../utils/SettingsHandler'
+import { useSettings } from '../utils/hooks/SettingsHandler'
 import Board from '../utils/Board'
+import useTheme from '../utils/hooks/useTheme'
+import useAccentColor from '../utils/hooks/useAccentColor'
 
 type Props = {
-    theme: ThemeName
-    accentColor: AccentColor
     paused: boolean
     handleComplete: () => void
     boardAnimationDuration: number
@@ -27,7 +27,10 @@ type Props = {
     handleFullNotation: () => void
 }
 
-function Game({ theme, accentColor, paused, handleComplete, boardAnimationDuration, game, handleFullNotation }: Props) {
+function Game({ paused, handleComplete, boardAnimationDuration, game, handleFullNotation }: Props) {
+    const [theme] = useTheme()
+    const [accentColor] = useAccentColor()
+
     const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
     const [showLinks, setShowLinks] = useState(false)
     const [lockedInput, setLockedInput] = useState(0)
@@ -427,10 +430,6 @@ function Game({ theme, accentColor, paused, handleComplete, boardAnimationDurati
     useEffect(() => {
         canvasHandlerRef.current.lockedInput = lockedInput
     }, [lockedInput])
-
-    useEffect(() => {
-        canvasHandlerRef.current.paused = paused
-    }, [paused])
 
     useEffect(() => {
         canvasHandlerRef.current.showLinks = showLinks

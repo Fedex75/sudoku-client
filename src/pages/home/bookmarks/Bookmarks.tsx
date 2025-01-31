@@ -2,33 +2,31 @@ import './bookmarks.css'
 import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useCallback, useState } from "react"
-import { useNavigate } from "react-router"
 import { ActionSheet, ActionSheetButton } from '../../../components'
 import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import { useTranslation } from 'react-i18next'
 import { Bookmark } from '../../../utils/DataTypes'
 import Canvas from '../../../components/CanvasComponent'
-import { AccentColor } from '../../../utils/Colors'
-import { ThemeName } from '../../../game/Themes'
 import { BoardFactory } from '../../../game/gameModes/BoardFactory'
 import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
-import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
+import Board from '../../../utils/Board'
+import useAccentColor from '../../../utils/hooks/useAccentColor'
+import useTheme from '../../../utils/hooks/useTheme'
 
 type Props = {
-    theme: ThemeName
-    accentColor: AccentColor
+    requestContinue: () => void
+    requestNewGame: (newGame: Board) => void
 }
 
-function Bookmarks({ theme, accentColor }: Props) {
+function Bookmarks({ requestContinue, requestNewGame }: Props) {
+    const [theme] = useTheme()
+    const [accentColor] = useAccentColor()
     const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
     const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
-    const [playBookmarkData, setPlayBookmarkData] = useState<Bookmark>()
     const [clearBookmarksActionSheetIsOpen, setClearBookmarksActionSheetIsOpen] = useState(false)
     const [removeBookmarkActionSheetIsOpen, setRemoveBookmarkActionSheetIsOpen] = useState(false)
-    const [playBookmarkActionSheetIsOpen, setPlayBookmarkActionSheetIsOpen] = useState(false)
 
-    const navigate = useNavigate()
     const { t } = useTranslation()
 
     const handleRemoveBookmark = useCallback((bm: Bookmark) => {
@@ -54,25 +52,14 @@ function Bookmarks({ theme, accentColor }: Props) {
         }
     }, [removeBookmarkData])
 
-    const playBookmark = useCallback((bm: Bookmark) => {
-        if (bm) {
-            GameHandler.loadGameFromBookmark(bm)
-            navigate('/sudoku')
-        }
-    }, [navigate])
-
     const handlePlayBookmark = useCallback((bm: Bookmark) => {
-        if (GameHandler.game === null || GameHandler.game.complete) {
-            playBookmark(bm)
+        if (GameHandler.game && !GameHandler.game.complete && GameHandler.game.id === bm.id) {
+            requestContinue()
         } else {
-            if (GameHandler.game.id === bm.id) {
-                navigate('/sudoku')
-            } else {
-                setPlayBookmarkData(bm)
-                setPlayBookmarkActionSheetIsOpen(true)
-            }
+            const newGame = GameHandler.createNewGameFromBookmark(bm)
+            if (newGame) requestNewGame(newGame)
         }
-    }, [playBookmark, navigate])
+    }, [requestContinue, requestNewGame])
 
     return (
         <div className='home__bookmarks'>
@@ -123,8 +110,6 @@ function Bookmarks({ theme, accentColor }: Props) {
                     </div>
             }
 
-            <TabSwitcher selected='bookmarks' />
-
             <ActionSheet
                 isOpen={clearBookmarksActionSheetIsOpen}
                 title={t('bookmarks.promptDeleteAll')}
@@ -137,10 +122,6 @@ function Bookmarks({ theme, accentColor }: Props) {
 
             <ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setRemoveBookmarkActionSheetIsOpen(false) }}>
                 <ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
-            </ActionSheet>
-
-            <ActionSheet isOpen={playBookmarkActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setPlayBookmarkActionSheetIsOpen(false) }}>
-                <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (playBookmarkData) playBookmark(playBookmarkData) }} />
             </ActionSheet>
         </div>
     )

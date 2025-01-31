@@ -1,6 +1,6 @@
 import React from 'react'
 import './numpadButton.css'
-import useLongPress from '../../utils/useLongPress'
+import useLongPress from '../../utils/hooks/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { MouseButtonType } from '../../utils/DataTypes'
@@ -45,9 +45,9 @@ export default function NunmpadButton({ onClick, number, disabled, hidden, locke
                 onClick(number, 'secondary')
             }}
         >
-            {/*<DigitSVG className='numpad__button__digit' digit={number.toString().trim()} fill={locked ? 'white' : 'var(--themeColor)'} />*/}
             {number}
             {locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
+            <div className='button-content-cover fade_out'></div>
         </div>
     )
 }

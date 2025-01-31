@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { AccentColor } from "../../utils/Colors"
 import { GameModeName } from "../../utils/Difficulties"
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import './tutorial.css'
 import { Button } from '../../components'
-import { ThemeName } from '../../game/Themes'
 import CanvasComponent from '../../components/CanvasComponent'
 import { CanvasFactory } from '../../game/gameModes/CanvasFactory'
 import Board from '../../utils/Board'
 import { BoardFactory } from '../../game/gameModes/BoardFactory'
-import { defaultSettings } from '../../utils/SettingsHandler'
+import { defaultSettings } from '../../utils/hooks/SettingsHandler'
+import useAccentColor from '../../utils/hooks/useAccentColor'
+import useTheme from '../../utils/hooks/useTheme'
 
 interface TutorialStep {
     board: Board,
@@ -20,12 +20,12 @@ interface TutorialStep {
 
 interface TutorialProps {
     gameMode: GameModeName
-    theme: ThemeName
-    accentColor: AccentColor
     quitTutorial: () => void
 }
 
-export function Tutorial({ gameMode, theme, accentColor, quitTutorial }: TutorialProps) {
+export function Tutorial({ gameMode, quitTutorial }: TutorialProps) {
+    const [theme] = useTheme()
+    const [accentColor] = useAccentColor()
     const [step, setStep] = useState(0)
     const canvasHandlerRef = useRef(CanvasFactory(gameMode, accentColor, true, 0.01))
 

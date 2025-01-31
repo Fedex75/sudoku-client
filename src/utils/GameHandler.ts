@@ -4,8 +4,8 @@ import { defaultStatistics, Statistics, update } from './Statistics'
 import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes'
 import { BoardFactory } from '../game/gameModes/BoardFactory'
 import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION, RECOMMENDATIONS_API_VERSION, BOOKMARKS_API_VERSION, SOLVED_API_VERSION, STATISTICS_API_VERSION } from './Constants'
-import { getStoredData, saveData } from './LocalStorageHandler'
-import { getCurrentSettings } from './SettingsHandler'
+import { getStoredData, saveData } from './hooks/LocalStorageHandler'
+import { getCurrentSettings } from './hooks/SettingsHandler'
 import Board from './Board'
 
 type Recommendations = {
@@ -88,33 +88,34 @@ class GameHandler {
         saveData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, this.recommendations)
     }
 
-    newGame(mode: GameModeName, difficulty: DifficultyName | 'restart') {
-        if (difficulty === 'restart') {
-            if (this.game) {
-                this.game.restart()
-            }
-        } else {
-            if (!this.missions[mode] || !this.missions[mode][difficulty]) return
-            let candidates = this.missions[mode][difficulty].filter(c => !this.solved.includes(c.id))
-            if (candidates.length === 0) {
-                if (this.missions[mode][difficulty].length === 0) {
-                    for (let diff of difficulties[mode]) {
-                        if (this.missions[mode] && this.missions[mode][diff] && this.missions[mode][diff].length > 0) {
-                            candidates = this.missions[mode][diff]
-                            break
-                        }
+    createNewGame(mode: GameModeName, difficulty?: DifficultyName): Board | undefined {
+        if (!difficulty) difficulty = this.recommendations.perMode[mode]
+        if (!difficulty) return
+
+        if (!this.missions[mode]) return
+
+        const allMissions = this.missions[mode][difficulty]
+        if (!allMissions) return
+
+        let candidates = allMissions.filter(c => !this.solved.includes(c.id))
+        if (candidates.length === 0) {
+            if (allMissions.length === 0) {
+                for (let diff of difficulties[mode]) {
+                    if (this.missions[mode] && this.missions[mode][diff] && this.missions[mode][diff].length > 0) {
+                        candidates = this.missions[mode][diff]
+                        break
                     }
-                } else {
-                    candidates = this.missions[mode][difficulty]
                 }
+            } else {
+                candidates = allMissions
             }
-            if (candidates.length > 0) {
-                const rawData = candidates[Math.floor(Math.random() * candidates.length)]
-                this.setCurrentGame(BoardFactory(mode, {
-                    id: rawData.id,
-                    mission: rawData.m
-                }, getCurrentSettings()))
-            }
+        }
+        if (candidates.length > 0) {
+            const rawData = candidates[Math.floor(Math.random() * candidates.length)]
+            return BoardFactory(mode, {
+                id: rawData.id,
+                mission: rawData.m
+            }, getCurrentSettings())
         }
     }
 
@@ -216,13 +217,13 @@ class GameHandler {
         saveData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, this.bookmarks)
     }
 
-    loadGameFromBookmark(bm: Bookmark) {
+    createNewGameFromBookmark(bm: Bookmark) {
         const rawData = this.findMissionFromID(bm.id)
         if (!rawData) return
-        this.setCurrentGame(BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
+        return BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
             id: rawData.id,
             mission: rawData.m
-        }))
+        })
     }
 
     resetStatistics() {

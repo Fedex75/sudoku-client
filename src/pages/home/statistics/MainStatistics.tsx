@@ -3,7 +3,6 @@ import './mainStatistics.css'
 import GameHandler from "../../../utils/GameHandler"
 import { useCallback, useState } from "react"
 import { ActionSheet, ActionSheetButton, Button } from "../../../components"
-import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
 import SectionLink from '../../../components/sectionLink/SectionLink'
 
 export default function MainStatistics() {
@@ -33,8 +32,6 @@ export default function MainStatistics() {
 
                 <Button title={t('common.reset')} backgroundColor='var(--red)' color='white' onClick={() => { setResetStatisticsActionSheetIsOpen(true) }} />
             </div>
-
-            <TabSwitcher selected='statistics' />
 
             <ActionSheet
                 isOpen={resetStatisticsActionSheetIsOpen}

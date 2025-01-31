@@ -2,8 +2,7 @@ import { faMoon, faPencilAlt, faPalette, faXmark, faToolbox, faGear } from '@for
 import { useTranslation } from 'react-i18next'
 import { Button } from '../../../components'
 import { useServiceWorker } from '../../../components/serviceWorker/useServiceWorker'
-import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
-import { useSettings } from '../../../utils/SettingsHandler'
+import { useSettings } from '../../../utils/hooks/SettingsHandler'
 import './mainSettings.css'
 import SectionLink from '../../../components/sectionLink/SectionLink'
 
@@ -37,8 +36,6 @@ export default function MainSettings() {
                     )
                 }
             </div>
-
-            <TabSwitcher selected='settings' />
         </div>
     )
 }

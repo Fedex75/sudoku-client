@@ -3,7 +3,7 @@ import { BoardAnimation, BoardHistory, GameData, UseHistory } from "./DataTypes"
 import { ColorName, colorNames, colorNamesShortened } from "./Colors"
 import { Cell, CellCoordinates, ColorGroup } from './Cell'
 import { BOARD_API_VERSION } from './Constants'
-import { defaultSettings, Settings } from './SettingsHandler'
+import { defaultSettings, Settings } from './hooks/SettingsHandler'
 
 export default abstract class Board {
     // Intrinsic constants

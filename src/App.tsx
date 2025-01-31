@@ -1,26 +1,18 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
-import './utils/SettingsHandler'
-import { Home, Sudoku, Settings } from './pages'
+import './utils/hooks/SettingsHandler'
+import { Home, Settings } from './pages'
 import { AccentColor } from './utils/Colors'
-import { ThemeName } from './game/Themes'
-import { useLocalStorage } from './utils/LocalStorageHandler'
+import { useLocalStorage } from './utils/hooks/LocalStorageHandler'
 import Statistics from './pages/statistics/Statistics'
-import { useSettings } from './utils/SettingsHandler'
+import { useSettings } from './utils/hooks/SettingsHandler'
 import { useTranslation } from 'react-i18next'
-
-const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
-
-const parser = (str: string) => {
-    let parsed = JSON.parse(str)
-    if (typeof parsed === 'string') return parsed as ThemeName
-    return 'dark'
-}
+import useTheme from './utils/hooks/useTheme'
 
 function App() {
-    const [theme, setTheme] = useLocalStorage<ThemeName>('theme', 1, matchMediaColorScheme?.matches ? 'dark' : 'light', parser)
+    const [theme] = useTheme()
     const { settings } = useSettings()
-    const [accentColor, setAccentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
+    const [accentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
     const { i18n } = useTranslation()
 
     useEffect(() => {
@@ -31,7 +23,6 @@ function App() {
 
         document.body.addEventListener('scroll', handleScroll, { passive: false })
 
-        if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
         if (settings.language === 'auto') {
             const detectedLanguage = navigator.language.split('-')[0]
             if (detectedLanguage !== i18n.language) i18n.changeLanguage(detectedLanguage)
@@ -39,18 +30,16 @@ function App() {
 
         return () => {
             document.body.removeEventListener('scroll', handleScroll)
-            if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => { }
         }
-    }, [setTheme, i18n, settings.language])
+    }, [i18n, settings.language])
 
     return (
         <div id='app' className='app' data-theme={theme} data-accent-color={accentColor} onClick={() => { }}>
             <Routes>
                 <Route path="/" element={<Navigate to="/home" replace />} />
-                <Route path="/home/*" element={<Home theme={theme} accentColor={accentColor} />} />
-                <Route path="/sudoku" element={<Sudoku theme={theme} accentColor={accentColor} />} />
+                <Route path="/home/*" element={<Home />} />
                 <Route path="/statistics" element={<Statistics />} />
-                <Route path="/settings/*" element={<Settings theme={theme} setTheme={setTheme} accentColor={accentColor} setAccentColor={setAccentColor} />} />
+                <Route path="/settings/*" element={<Settings />} />
             </Routes>
         </div>
     )

@@ -1,0 +1,30 @@
+.play-button {
+    position: absolute;
+    top: calc(100vh - 105px);
+    left: 50%;
+    transform: translate(-50%, 0);
+
+    display: grid;
+    place-items: center;
+    color: white;
+    font-size: 25px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--themeColor);
+    transition: top var(--gameSlideAnimationDuration) cubic-bezier(0.4, 0, 0.8, 1);
+    z-index: 2;
+}
+
+.play-button__icon {
+    transform: translate(2px) rotate(0);
+    transition: transform 0.1s ease-in-out;
+}
+
+.play-button.moveToTop {
+    top: -105px;
+
+    .play-button__icon {
+        transform: rotate(-90deg);
+    }
+}

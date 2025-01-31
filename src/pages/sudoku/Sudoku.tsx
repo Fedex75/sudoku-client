@@ -1,87 +1,24 @@
 import './sudoku.css'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components'
 import GameHandler from '../../utils/GameHandler'
 import { DifficultyName, difficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
+import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
 import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
 import { useTranslation } from 'react-i18next'
-import { convertMillisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
 import Game from '../../game/Game'
-import { AccentColor } from '../../utils/Colors'
 import { WinScreen } from './WinScreen'
 import { Tutorial } from './Tutorial'
-import { ThemeName } from '../../game/Themes'
+import Timer, { TimerRef } from '../../components/timer/Timer'
 
 const BOARD_ANIMATION_DURATION = 1350
 
-type TimerProps = {
-    isTimerRunning: boolean
-    paused: boolean
-    win: boolean
-    onClick: () => void
-}
-
-type TimerRef = {
-    resetTimer: () => void
-    showMessage: (text: string, duration: number) => void
-}
-
-const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, onClick }, ref) => {
-    const [time, setTime] = useState(GameHandler.game?.timer || 0)
-    const [showingMessage, setShowingMessage] = useState(false)
-    const [message, setMessage] = useState('')
-
-    useImperativeHandle(ref, () => ({
-        resetTimer() {
-            setTime(0)
-        },
-        showMessage(text, duration) {
-            setMessage(text)
-            setShowingMessage(true)
-            setTimeout(() => {
-                setShowingMessage(false)
-            }, duration)
-        },
-    }))
-
-    useEffect(() => {
-        let interval = null
-
-        if (isTimerRunning && !paused) {
-            interval = setInterval(() => {
-                setTime((time: number) => {
-                    if (GameHandler.game) GameHandler.game.timer = time + 100
-                    return time + 100
-                })
-            }, 100)
-        } else {
-            if (interval) clearInterval(interval)
-        }
-
-        return () => { if (interval) clearInterval(interval) }
-    }, [isTimerRunning, paused])
-
-    return (
-        <div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
-            {(!win && !showingMessage) ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
-            {!showingMessage ? <p className='sudoku__timer__time'>{convertMillisecondsToHMS(time)}</p> : null}
-            {showingMessage ? <p className='sudoku__timer__message'>{message}</p> : null}
-        </div>
-    )
-})
-
-type Props = {
-    theme: ThemeName
-    accentColor: AccentColor
-}
-
-export default function Sudoku({ theme, accentColor }: Props) {
+export default function Sudoku() {
     const [win, setWin] = useState(false)
     const [tutorialIsOpen, setTutorialIsOpen] = useState(false)
 
@@ -90,23 +27,19 @@ export default function Sudoku({ theme, accentColor }: Props) {
     const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false)
 
     const navigate = useNavigate()
-
-    const [isTimerRunning, setIsTimerRunning] = useState(true)
-    const [paused, setPaused] = useState(false)
+    const [paused, setPaused] = useState(true)
 
     const timerRef = useRef<TimerRef>(null)
 
     const { t } = useTranslation()
-
+    const hasDoneFadeInAnimation = useRef(false)
 
     const resetTimer = useCallback(() => {
-        setIsTimerRunning(true)
         setPaused(false)
         timerRef.current?.resetTimer()
     }, [])
 
     const handleComplete = useCallback(() => {
-        setIsTimerRunning(false)
         setTimeout(() => {
             setWin(true)
         }, BOARD_ANIMATION_DURATION)
@@ -114,7 +47,13 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
     const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
         if (!GameHandler.game) return
-        GameHandler.newGame(GameHandler.game.mode, difficulty)
+        if (difficulty === 'restart') {
+            GameHandler.game.restart()
+        } else {
+            const newGame = GameHandler.createNewGame(GameHandler.game.mode, difficulty)
+            if (!newGame) return
+            GameHandler.setCurrentGame(newGame)
+        }
 
         setWin(false)
         setBookmark(GameHandler.currentGameIsBookmarked())
@@ -192,8 +131,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
         const windowVisibilityChangeEvent = () => {
             if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
             if (document.visibilityState === 'visible') {
-                if (!paused) setIsTimerRunning(true)
-            } else setIsTimerRunning(false)
+                setPaused(true)
+            } else {
+                setPaused(false)
+            }
         }
 
         window.addEventListener('visibilitychange', windowVisibilityChangeEvent)
@@ -205,16 +146,17 @@ export default function Sudoku({ theme, accentColor }: Props) {
     }, [navigate, paused])
 
     useEffect(() => {
-        if (paused) {
-            setIsTimerRunning(false)
-        } else {
-            setIsTimerRunning(true)
-        }
-    }, [paused])
-
-    useEffect(() => {
         if (!menuActionSheetIsOpen) setPaused(false)
     }, [menuActionSheetIsOpen])
+
+    useEffect(() => {
+        setTimeout(() => {
+            if (!hasDoneFadeInAnimation.current) {
+                setPaused(false)
+                hasDoneFadeInAnimation.current = true
+            }
+        }, Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gameSlideAnimationDuration')) * 1000)
+    }, [])
 
     if (GameHandler.game === null) return null
 
@@ -229,15 +171,15 @@ export default function Sudoku({ theme, accentColor }: Props) {
                 ]}
                 onTitleClick={() => { if (!tutorialIsOpen) setMenuActionSheetIsOpen(true) }}
             >
-                {!tutorialIsOpen && <Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />}
+                {!tutorialIsOpen && <Timer ref={timerRef} paused={paused} win={win} onClick={handleTimerClick} />}
             </Topbar>
 
             <SectionContent>
                 {
                     win ?
-                        <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
-                        tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
-                            <Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} handleFullNotation={handleFullNotation} />
+                        <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} game={GameHandler.game} /> :
+                        tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} quitTutorial={handleQuitTutorial} /> :
+                            <Game paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} handleFullNotation={handleFullNotation} />
                 }
             </SectionContent>
 

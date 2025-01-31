@@ -37,6 +37,7 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
             {
                 number > 0 ? number : null
             }
+            <div className='button-content-cover fade_out'></div>
         </div>
     )
 }

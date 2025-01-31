@@ -11,6 +11,8 @@
     --purple: #a55eea;
     --lightGray: #dce0e6;
     --darkGrayBlue: #344861;
+
+    --gameSlideAnimationDuration: 10s;
 }
 
 [data-theme='light'] {
@@ -31,7 +33,7 @@
     --editButtonBackground: var(--lightGray);
     --editButtonDisabledFilter: brightness(0.7);
     --numpadButtonBackground: var(--lightGray);
-    --disabledButtonBackground: transparent;
+    --disabledButtonBackground: var(--background);
     --disabledButtonBorderColor: transparent;
     --settingsItemBackground: white;
     --settingsItemBorder: var(--lightGray);
@@ -66,7 +68,7 @@
     --editButtonBackground: var(--darkBackground);
     --editButtonDisabledFilter: brightness(0.4);
     --numpadButtonBackground: var(--darkBackground);
-    --disabledButtonBackground: transparent;
+    --disabledButtonBackground: var(--background);
     --disabledButtonBorderColor: #25242c;
     --canvasLightDefaultCellColor: #25242c;
     --canvasDarkDefaultCellColor: #161620;
@@ -163,18 +165,28 @@ p {
     }
 }
 
-.fade_in {
+.button-content-cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border-radius: inherit;
+}
+
+.fade_out {
+    opacity: 1;
     animation: fadeInAnimation ease 1.3s;
+    animation-delay: var(--gameSlideAnimationDuration);
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
 }
 
 @keyframes fadeInAnimation {
     0% {
-        opacity: 0;
+        opacity: 1;
     }
 
     100% {
-        opacity: 1;
+        opacity: 0;
     }
 }
