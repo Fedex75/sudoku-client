@@ -28,8 +28,8 @@
 .home__section-title {
     flex-grow: 1;
     color: var(--primaryTextColor);
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 34px;
+    font-weight: bold;
 }
 
 .home__sudoku-wrapper {

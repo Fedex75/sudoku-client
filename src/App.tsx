@@ -9,8 +9,10 @@ import { useSettings } from './utils/hooks/SettingsHandler'
 import { useTranslation } from 'react-i18next'
 import useTheme from './utils/hooks/useTheme'
 
+const matchMediaColorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+
 function App() {
-    const [theme] = useTheme()
+    const [theme, setTheme] = useTheme()
     const { settings } = useSettings()
     const [accentColor] = useLocalStorage<AccentColor>('accent_color', 1, 'darkBlue')
     const { i18n } = useTranslation()
@@ -23,6 +25,8 @@ function App() {
 
         document.body.addEventListener('scroll', handleScroll, { passive: false })
 
+        if (matchMediaColorScheme) matchMediaColorScheme.onchange = event => { setTheme(event.matches ? 'dark' : 'light') }
+
         if (settings.language === 'auto') {
             const detectedLanguage = navigator.language.split('-')[0]
             if (detectedLanguage !== i18n.language) i18n.changeLanguage(detectedLanguage)
@@ -30,8 +34,10 @@ function App() {
 
         return () => {
             document.body.removeEventListener('scroll', handleScroll)
+
+            if (matchMediaColorScheme) matchMediaColorScheme.onchange = () => { }
         }
-    }, [i18n, settings.language])
+    }, [i18n, settings.language, setTheme])
 
     return (
         <div id='app' className='app' data-theme={theme} data-accent-color={accentColor} onClick={() => { }}>

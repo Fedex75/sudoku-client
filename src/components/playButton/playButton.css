@@ -23,11 +23,13 @@
 }
 
 .play-button.confirmVariant {
+    border: none;
     background-color: var(--green);
     left: 75%;
 }
 
 .play-button.cancelVariant {
+    border: none;
     background-color: var(--red);
     left: 25%;
 }

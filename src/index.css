@@ -42,7 +42,7 @@
     --checkIconColor: white;
     --navbarBackground: white;
     --navbarIconColor: #c7c7c7;
-    --navbarSelectedTabIconColor: black;
+    --navbarSelectedTabIconColor: #444444;
     --carouselDotColor: #c8c8c8;
     --settingsBorderColor: #dddddd;
     --disabledFilter: brightness(1.4);
@@ -135,11 +135,10 @@ body,
     width: 100%;
     height: 100%;
     font-size: 14px;
-    font-family: sans-serif;
     user-select: none;
     touch-action: manipulation;
     scroll-behavior: smooth;
-    font-family: 'Inter';
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, Inter, sans-serif;
 }
 
 .app {
