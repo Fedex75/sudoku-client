@@ -88,23 +88,30 @@ class GameHandler {
         saveData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, this.recommendations)
     }
 
-    createNewGame(mode: GameModeName, difficulty?: DifficultyName): Board | undefined {
+    createNewGame(mode?: GameModeName, difficulty?: DifficultyName): Board | undefined {
+        if (!mode) {
+            mode = this.recommendations.newGame.mode
+            difficulty = this.recommendations.newGame.difficulty
+        }
+
+        if (!mode) return
+
         if (!difficulty) difficulty = this.recommendations.perMode[mode]
         if (!difficulty) return
 
         if (!this.missions[mode]) return
 
-        const allMissions = this.missions[mode][difficulty]
+        let allMissions = this.missions[mode][difficulty]
         if (!allMissions) return
 
         let candidates = allMissions.filter(c => !this.solved.includes(c.id))
         if (candidates.length === 0) {
             if (allMissions.length === 0) {
                 for (let diff of difficulties[mode]) {
-                    if (this.missions[mode] && this.missions[mode][diff] && this.missions[mode][diff].length > 0) {
-                        candidates = this.missions[mode][diff]
-                        break
-                    }
+                    allMissions = this.missions[mode][diff]
+                    if (!allMissions || allMissions.length > 0) continue
+                    candidates = allMissions
+                    break
                 }
             } else {
                 candidates = allMissions

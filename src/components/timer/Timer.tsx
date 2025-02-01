@@ -5,6 +5,7 @@ import GameHandler from '../../utils/GameHandler'
 import { convertMillisecondsToHMS } from '../../utils/Statistics'
 
 type TimerProps = {
+    isTimerRunning: boolean
     paused: boolean
     win: boolean
     onClick: () => void
@@ -15,7 +16,7 @@ export type TimerRef = {
     showMessage: (text: string, duration: number) => void
 }
 
-const Timer = forwardRef<TimerRef, TimerProps>(({ paused, win, onClick }, ref) => {
+const Timer = forwardRef<TimerRef, TimerProps>(({ paused, isTimerRunning, win, onClick }, ref) => {
     const [time, setTime] = useState(GameHandler.game?.timer || 0)
     const [showingMessage, setShowingMessage] = useState(false)
     const [message, setMessage] = useState('')
@@ -36,7 +37,7 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ paused, win, onClick }, ref) =
     useEffect(() => {
         let interval = null
 
-        if (!paused) {
+        if (isTimerRunning && !paused) {
             interval = setInterval(() => {
                 setTime((time: number) => {
                     if (GameHandler.game) GameHandler.game.timer = time + 100
@@ -48,7 +49,7 @@ const Timer = forwardRef<TimerRef, TimerProps>(({ paused, win, onClick }, ref) =
         }
 
         return () => { if (interval) clearInterval(interval) }
-    }, [paused])
+    }, [isTimerRunning, paused])
 
     return (
         <div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>

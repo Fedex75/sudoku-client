@@ -1,9 +1,6 @@
 .play-button {
     position: absolute;
-    top: calc(100vh - 105px);
-    left: 50%;
     transform: translate(-50%, 0);
-
     display: grid;
     place-items: center;
     color: white;
@@ -11,20 +8,26 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
+    transition: top 0s;
+    z-index: 3;
+    border: solid var(--background) 5px;
+}
+
+.play-button.defaultVariant {
     background-color: var(--themeColor);
-    transition: top var(--gameSlideAnimationDuration) cubic-bezier(0.4, 0, 0.8, 1);
-    z-index: 2;
-}
-
-.play-button__icon {
-    transform: translate(2px) rotate(0);
-    transition: transform 0.1s ease-in-out;
-}
-
-.play-button.moveToTop {
-    top: -105px;
+    left: 50%;
 
     .play-button__icon {
-        transform: rotate(-90deg);
+        transform: translate(2px);
     }
+}
+
+.play-button.confirmVariant {
+    background-color: var(--green);
+    left: 75%;
+}
+
+.play-button.cancelVariant {
+    background-color: var(--red);
+    left: 25%;
 }

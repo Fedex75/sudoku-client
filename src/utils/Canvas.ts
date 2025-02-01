@@ -5,6 +5,7 @@ import { Cell, ScreenCoordinates } from './Cell'
 import { AccentColor, ColorDefinitions, ColorName } from './Colors'
 import { BoardAnimation, DigitChar, MouseButtonType } from './DataTypes'
 import { isTouchDevice } from "./hooks/isTouchDevice"
+import { BOARD_FADEIN_ANIMATION_DURATION_MS } from './Constants'
 
 const SVGHeight = 30
 const SVGWidth = 20
@@ -273,46 +274,51 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     set paused(val: boolean) {
-        console.log('[+] Canvas setting paused', val)
         this._paused = val
 
-        if (val) {
-            this.addAnimations([{
-                type: 'fadeout',
-                startTime: null,
-                duration: (this.hasDoneFadeIn ? 750 : 1350),
-                func: ({ progress }) => {
-                    if (!this.game) return
-                    for (let y = 0; y < this.game.nSquares; y++) {
-                        const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (-this.game.nSquares + 1), 0), 1)
-                        for (let x = 0; x < this.game.nSquares; x++) {
-                            const cell = this.game.get({ x, y })
-                            if (!cell) continue
-                            cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
-                            cell.animationGamma = gamma
+        if (!this._notPlayable) {
+            this.stopAnimations()
+
+            if (val) {
+                if (this.hasDoneFadeIn) {
+                    this.addAnimations([{
+                        type: 'fadeout',
+                        startTime: null,
+                        duration: 750,
+                        func: ({ progress }) => {
+                            if (!this.game) return
+                            for (let y = 0; y < this.game.nSquares; y++) {
+                                const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (-this.game.nSquares + 1), 0), 1)
+                                for (let x = 0; x < this.game.nSquares; x++) {
+                                    const cell = this.game.get({ x, y })
+                                    if (!cell) continue
+                                    cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
+                                    cell.animationGamma = gamma
+                                }
+                            }
+                        }
+                    }])
+                }
+            } else {
+                this.addAnimations([{
+                    type: 'fadein',
+                    startTime: null,
+                    duration: (this.hasDoneFadeIn ? 750 : BOARD_FADEIN_ANIMATION_DURATION_MS),
+                    func: ({ progress }) => {
+                        if (!this.game) return
+                        for (let y = 0; y < this.game.nSquares; y++) {
+                            const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (this.game.nSquares - 1) + 1, 0), 1)
+                            for (let x = 0; x < this.game.nSquares; x++) {
+                                const cell = this.game.get({ x, y })
+                                if (!cell) continue
+                                cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
+                                cell.animationGamma = gamma
+                            }
                         }
                     }
-                }
-            }])
-            this.hasDoneFadeIn = true
-        } else {
-            this.addAnimations([{
-                type: 'fadein',
-                startTime: null,
-                duration: 750,
-                func: ({ progress }) => {
-                    if (!this.game) return
-                    for (let y = 0; y < this.game.nSquares; y++) {
-                        const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (this.game.nSquares - 1) + 1, 0), 1)
-                        for (let x = 0; x < this.game.nSquares; x++) {
-                            const cell = this.game.get({ x, y })
-                            if (!cell) continue
-                            cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
-                            cell.animationGamma = gamma
-                        }
-                    }
-                }
-            }])
+                }])
+                this.hasDoneFadeIn = true
+            }
         }
     }
 

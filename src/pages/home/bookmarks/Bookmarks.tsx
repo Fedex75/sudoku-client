@@ -2,7 +2,6 @@ import './bookmarks.css'
 import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useCallback, useState } from "react"
-import { ActionSheet, ActionSheetButton } from '../../../components'
 import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import { useTranslation } from 'react-i18next'
@@ -17,40 +16,37 @@ import useTheme from '../../../utils/hooks/useTheme'
 type Props = {
     requestContinue: () => void
     requestNewGame: (newGame: Board) => void
+    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void
 }
 
-function Bookmarks({ requestContinue, requestNewGame }: Props) {
+function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
     const [theme] = useTheme()
     const [accentColor] = useAccentColor()
     const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
-    const [removeBookmarkData, setRemoveBookmarkData] = useState<Bookmark>()
-    const [clearBookmarksActionSheetIsOpen, setClearBookmarksActionSheetIsOpen] = useState(false)
-    const [removeBookmarkActionSheetIsOpen, setRemoveBookmarkActionSheetIsOpen] = useState(false)
 
     const { t } = useTranslation()
 
     const handleRemoveBookmark = useCallback((bm: Bookmark) => {
-        setRemoveBookmarkData(bm)
-        setRemoveBookmarkActionSheetIsOpen(true)
-    }, [])
-
-    const clearBookmarks = useCallback(() => {
-        GameHandler.clearBookmarks()
-        setClearBookmarksActionSheetIsOpen(false)
-        setBookmarks([])
-    }, [])
+        requestPrompt(
+            t('bookmarks.promptDeleteOne'),
+            () => {
+                GameHandler.removeBookmark(bm)
+                setBookmarks(GameHandler.bookmarks)
+            },
+            () => { }
+        )
+    }, [t, requestPrompt])
 
     const handleClearBookmarksClick = useCallback(() => {
-        setClearBookmarksActionSheetIsOpen(true)
-    }, [])
-
-    const removeBookmark = useCallback(() => {
-        if (removeBookmarkData) {
-            GameHandler.removeBookmark(removeBookmarkData)
-            setBookmarks(GameHandler.bookmarks)
-            setRemoveBookmarkActionSheetIsOpen(false)
-        }
-    }, [removeBookmarkData])
+        requestPrompt(
+            t('bookmarks.promptDeleteAll'),
+            () => {
+                GameHandler.clearBookmarks()
+                setBookmarks([])
+            },
+            () => { }
+        )
+    }, [t, requestPrompt])
 
     const handlePlayBookmark = useCallback((bm: Bookmark) => {
         if (GameHandler.game && !GameHandler.game.complete && GameHandler.game.id === bm.id) {
@@ -109,20 +105,6 @@ function Bookmarks({ requestContinue, requestNewGame }: Props) {
                         <p style={{ fontSize: 20 }}>{t('bookmarks.empty')}</p>
                     </div>
             }
-
-            <ActionSheet
-                isOpen={clearBookmarksActionSheetIsOpen}
-                title={t('bookmarks.promptDeleteAll')}
-                cancelTitle={t('common.cancel')}
-                buttonsMode
-                onClose={() => { setClearBookmarksActionSheetIsOpen(false) }}
-            >
-                <ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={clearBookmarks} />
-            </ActionSheet>
-
-            <ActionSheet isOpen={removeBookmarkActionSheetIsOpen} title={t('bookmarks.promptDeleteOne')} cancelTitle={t('common.cancel')} buttonsMode onClose={() => { setRemoveBookmarkActionSheetIsOpen(false) }}>
-                <ActionSheetButton title={t('common.delete')} color="var(--red)" onClick={removeBookmark} />
-            </ActionSheet>
         </div>
     )
 }

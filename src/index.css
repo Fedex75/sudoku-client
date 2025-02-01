@@ -11,8 +11,6 @@
     --purple: #a55eea;
     --lightGray: #dce0e6;
     --darkGrayBlue: #344861;
-
-    --gameSlideAnimationDuration: 10s;
 }
 
 [data-theme='light'] {
@@ -42,12 +40,13 @@
     --cancelButtonFontWeight: regular;
     --bookmarksEmptyColor: #444444;
     --checkIconColor: white;
-    --tabSwitcherBackground: white;
-    --tabSwitcherIconColor: #c7c7c7;
-    --tabSwitcherSelectedTabIconColor: black;
+    --navbarBackground: white;
+    --navbarIconColor: #c7c7c7;
+    --navbarSelectedTabIconColor: black;
     --carouselDotColor: #c8c8c8;
     --settingsBorderColor: #dddddd;
     --disabledFilter: brightness(1.4);
+    --navbarBackdropColor: white;
 }
 
 [data-theme='dark'] {
@@ -87,12 +86,13 @@
     --cancelButtonFontWeight: bold;
     --bookmarksEmptyColor: #616161;
     --checkIconColor: black;
-    --tabSwitcherBackground: #25242c;
-    --tabSwitcherIconColor: #616161;
-    --tabSwitcherSelectedTabIconColor: white;
+    --navbarBackground: #25242c;
+    --navbarIconColor: #616161;
+    --navbarSelectedTabIconColor: white;
     --carouselDotColor: #949494;
     --settingsBorderColor: #333333;
     --disabledFilter: brightness(0.6);
+    --navbarBackdropColor: black;
 }
 
 [data-accent-color='red'] {
@@ -162,31 +162,5 @@ p {
     .app {
         display: grid;
         place-content: center;
-    }
-}
-
-.button-content-cover {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: inherit;
-    border-radius: inherit;
-}
-
-.fade_out {
-    opacity: 1;
-    animation: fadeInAnimation ease 1.3s;
-    animation-delay: var(--gameSlideAnimationDuration);
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-}
-
-@keyframes fadeInAnimation {
-    0% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
     }
 }

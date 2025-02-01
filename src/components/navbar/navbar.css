@@ -1,0 +1,43 @@
+.navbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    border-radius: 15px;
+    width: 90%;
+    height: 50px;
+    left: 5%;
+    z-index: 2;
+}
+
+.navbar__tab {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.navbar__tab.selected {
+    .navbar__icon {
+        color: var(--navbarSelectedTabIconColor);
+    }
+}
+
+.navbar__icon {
+    font-size: 22px;
+    color: var(--navbarIconColor);
+}
+
+.navbar__text {
+    text-align: center;
+    width: 100%;
+}
+
+.navbar-backdrop {
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    background-color: var(--navbarBackdropColor);
+    z-index: 1;
+}

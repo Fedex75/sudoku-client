@@ -1,67 +1,118 @@
 import './home.css'
 import { Route, Routes } from 'react-router'
-import { ActionSheet, ActionSheetButton, Section, SectionContent, Topbar } from "../../components"
+import { Section, SectionContent, Topbar } from "../../components"
 import Play from './play/Play'
 import Bookmarks from './bookmarks/Bookmarks'
 import MainStatistics from './statistics/MainStatistics'
 import MainSettings from './settings/MainSettings'
-import TabSwitcher from '../../components/tabSwitcher/TabSwitcher'
-import { t } from 'i18next'
-import { useState, useCallback, useEffect } from 'react'
+import Navbar, { NavbarAction } from '../../components/navbar/Navbar'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Board from '../../utils/Board'
 import GameHandler from '../../utils/GameHandler'
 import PlayButton, { PlayButtonAction } from '../../components/playButton/PlayButton'
 import Sudoku from '../sudoku/Sudoku'
+import { GAME_SLIDE_ANIMATION_DURATION_SECONDS } from '../../utils/Constants'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 function Home() {
     const [playingGame, setPlayingGame] = useState(false)
     const [shouldRenderHome, setShouldRenderHome] = useState(true)
     const [shouldRenderGame, setShouldRenderGame] = useState(false)
 
-    const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
-    const [pendingNewGame, setPendingNewGame] = useState<Board | null>()
+    const pendingNewGame = useRef<Board | null>()
 
     const [playButtonAction, setPlayButtonAction] = useState<PlayButtonAction>('default')
+    const [navbarAction, setNavbarAction] = useState<NavbarAction>('default')
+    const [navbarText, setNavbarText] = useState('')
+    const [navbarCallbacks, setNavbarCallbacks] = useState<{ onConfirm: () => void, onCancel: () => void }>({ onConfirm: () => { }, onCancel: () => { } })
+
+    const { t } = useTranslation()
+
+    const showGame = useCallback(() => {
+        setShouldRenderGame(true)
+        setTimeout(() => {
+            setPlayingGame(true)
+            setShouldRenderHome(false)
+        }, GAME_SLIDE_ANIMATION_DURATION_SECONDS * 1000)
+    }, [])
+
+    const hideGame = useCallback(() => {
+        setPlayingGame(false)
+        setPlayButtonAction('default')
+        setShouldRenderHome(true)
+    }, [])
+
+    useEffect(() => {
+        if (!playingGame) setShouldRenderGame(false)
+    }, [playingGame])
 
     const handleNewGame = useCallback((newGame: Board) => {
         GameHandler.setCurrentGame(newGame)
-        setPlayingGame(true)
-    }, [])
+        showGame()
+    }, [showGame])
 
     const handleNewGameRequest = useCallback((newGame: Board) => {
         if (GameHandler.game && !GameHandler.game.complete) {
-            setPendingNewGame(newGame)
-            setDiscardGameActionSheetIsOpen(true)
+            pendingNewGame.current = newGame
+            setNavbarAction('prompt')
+            setNavbarText(t('common.discardGame'))
+            setNavbarCallbacks({
+                onConfirm: () => {
+                    if (pendingNewGame.current) {
+                        GameHandler.setCurrentGame(pendingNewGame.current)
+                        showGame()
+                    }
+                },
+                onCancel: () => {
+                    setNavbarText('')
+                    pendingNewGame.current = null
+                }
+            })
         } else {
             handleNewGame(newGame)
         }
-    }, [handleNewGame])
+    }, [handleNewGame, t, showGame])
 
     const handleContinueRequest = useCallback(() => {
-        setPlayingGame(true)
-    }, [])
+        showGame()
+    }, [showGame])
 
     const handlePlayButtonClick = useCallback(() => {
-        switch (playButtonAction) {
-            case 'default':
-                handleContinueRequest()
-                break
-            case 'confirm':
-                break
-            case 'moveToTop':
-                break
+        if (!GameHandler.game || GameHandler.game.complete) {
+            const newGame = GameHandler.createNewGame()
+            if (!newGame) return
+            GameHandler.setCurrentGame(newGame)
         }
-    }, [handleContinueRequest, playButtonAction])
+        handleContinueRequest()
+    }, [handleContinueRequest])
+
+    const handleConfirmButtonClick = useCallback(() => {
+        setPlayButtonAction('default')
+        setNavbarAction('default')
+        navbarCallbacks.onConfirm()
+    }, [navbarCallbacks])
+
+    const handleCancelButtonClick = useCallback(() => {
+        setPlayButtonAction('default')
+        setNavbarAction('default')
+        navbarCallbacks.onCancel()
+    }, [navbarCallbacks])
+
+    const handleGoBack = useCallback(() => {
+        hideGame()
+    }, [hideGame])
+
+    const handlePromptRequest = useCallback((prompt: string, onConfirm: () => void, onCancel: () => void) => {
+        setNavbarText(prompt)
+        setNavbarAction('prompt')
+        setNavbarCallbacks({ onConfirm, onCancel })
+    }, [])
 
     useEffect(() => {
-        if (playingGame) {
-            setPlayButtonAction('moveToTop')
-            setShouldRenderGame(true)
-            setTimeout(() => {
-                setShouldRenderHome(false)
-            }, Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gameSlideAnimationDuration')) * 1000)
-        }
-    }, [playingGame])
+        if (navbarAction === 'prompt') setPlayButtonAction('hide')
+        else setPlayButtonAction('default')
+    }, [navbarAction])
 
     return (
         <>
@@ -73,27 +124,34 @@ function Home() {
                         <SectionContent id="home">
                             <Routes>
                                 <Route path="/" element={<Play requestNewGame={handleNewGameRequest} />} />
-                                <Route path="/bookmarks" element={<Bookmarks requestContinue={handleContinueRequest} requestNewGame={handleNewGameRequest} />} />
-                                <Route path="/statistics" element={<MainStatistics />} />
+                                <Route path="/bookmarks" element={<Bookmarks requestContinue={handleContinueRequest} requestNewGame={handleNewGameRequest} requestPrompt={handlePromptRequest} />} />
+                                <Route path="/statistics" element={<MainStatistics requestPrompt={handlePromptRequest} />} />
                                 <Route path="/settings" element={<MainSettings />} />
                             </Routes>
                         </SectionContent>
-
-                        <TabSwitcher />
                     </Section>
                     : null
             }
 
-            <PlayButton onPlayButtonClick={handlePlayButtonClick} action={playButtonAction} variant={playButtonAction === 'default' ? 'defaultVariant' : 'confirmVariant'} />
+            <Navbar action={navbarAction} onConfirm={handleConfirmButtonClick} onCancel={handleCancelButtonClick} text={navbarText} backgroundColor={navbarAction === 'prompt' ? 'var(--red)' : undefined} />
 
+            <PlayButton action={playButtonAction} onPlay={handlePlayButtonClick} />
 
-            <div className={`home__sudoku-wrapper ${playingGame ? 'show' : 'hidden'}`} >
-                {shouldRenderGame ? <Sudoku /> : null}
-            </div>
-
-            <ActionSheet isOpen={discardGameActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} cancelColor='var(--darkBlue)' onClose={() => setDiscardGameActionSheetIsOpen(false)} buttonsMode>
-                <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (pendingNewGame) handleNewGame(pendingNewGame) }} />
-            </ActionSheet>
+            <AnimatePresence>
+                {
+                    shouldRenderGame &&
+                    <motion.div
+                        key='sudoku-wrapper'
+                        initial={{ top: '100vh' }}
+                        animate={{ top: 0 }}
+                        exit={{ top: '100vh', transition: { duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' } }}
+                        transition={{ duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
+                        className='home__sudoku-wrapper'
+                    >
+                        <Sudoku requestGoBack={handleGoBack} playing={playingGame} />
+                    </motion.div>
+                }
+            </AnimatePresence>
         </>
     )
 }
