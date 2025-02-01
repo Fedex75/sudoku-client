@@ -1,7 +1,7 @@
 import Board from '../../utils/Board'
 import { GameData } from '../../utils/DataTypes'
 import { GameModeName } from '../../utils/Difficulties'
-import { defaultSettings } from '../../utils/SettingsHandler'
+import { defaultSettings } from '../../utils/hooks/SettingsHandler'
 import { ClassicBoard } from './classic/ClassicBoard'
 import { KillerBoard } from './killer/KillerBoard'
 import { SandwichBoard } from './sandwich/SandwichBoard'

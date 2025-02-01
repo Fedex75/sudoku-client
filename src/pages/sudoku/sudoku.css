@@ -32,7 +32,7 @@
     justify-content: center;
     gap: 8px;
     width: fit-content;
-    padding: 5px;
+    padding: 5px 7px;
     border-radius: 5px;
     font-variant-numeric: tabular-nums;
     transition: background-color 0.5s ease, color 0.5s ease, width 0.5s ease;

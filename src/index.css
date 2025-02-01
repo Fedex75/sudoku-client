@@ -31,7 +31,7 @@
     --editButtonBackground: var(--lightGray);
     --editButtonDisabledFilter: brightness(0.7);
     --numpadButtonBackground: var(--lightGray);
-    --disabledButtonBackground: transparent;
+    --disabledButtonBackground: var(--background);
     --disabledButtonBorderColor: transparent;
     --settingsItemBackground: white;
     --settingsItemBorder: var(--lightGray);
@@ -40,12 +40,13 @@
     --cancelButtonFontWeight: regular;
     --bookmarksEmptyColor: #444444;
     --checkIconColor: white;
-    --tabSwitcherBackground: white;
-    --tabSwitcherIconColor: #c7c7c7;
-    --tabSwitcherSelectedTabIconColor: black;
+    --navbarBackground: white;
+    --navbarIconColor: #c7c7c7;
+    --navbarSelectedTabIconColor: black;
     --carouselDotColor: #c8c8c8;
     --settingsBorderColor: #dddddd;
     --disabledFilter: brightness(1.4);
+    --navbarBackdropColor: white;
 }
 
 [data-theme='dark'] {
@@ -66,7 +67,7 @@
     --editButtonBackground: var(--darkBackground);
     --editButtonDisabledFilter: brightness(0.4);
     --numpadButtonBackground: var(--darkBackground);
-    --disabledButtonBackground: transparent;
+    --disabledButtonBackground: var(--background);
     --disabledButtonBorderColor: #25242c;
     --canvasLightDefaultCellColor: #25242c;
     --canvasDarkDefaultCellColor: #161620;
@@ -85,12 +86,13 @@
     --cancelButtonFontWeight: bold;
     --bookmarksEmptyColor: #616161;
     --checkIconColor: black;
-    --tabSwitcherBackground: #25242c;
-    --tabSwitcherIconColor: #616161;
-    --tabSwitcherSelectedTabIconColor: white;
+    --navbarBackground: #25242c;
+    --navbarIconColor: #616161;
+    --navbarSelectedTabIconColor: white;
     --carouselDotColor: #949494;
     --settingsBorderColor: #333333;
     --disabledFilter: brightness(0.6);
+    --navbarBackdropColor: black;
 }
 
 [data-accent-color='red'] {
@@ -160,21 +162,5 @@ p {
     .app {
         display: grid;
         place-content: center;
-    }
-}
-
-.fade_in {
-    animation: fadeInAnimation ease 1.3s;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-}
-
-@keyframes fadeInAnimation {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
     }
 }

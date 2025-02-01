@@ -12,6 +12,7 @@ import SelectSVG from '../../svg/select'
 import ColorCirclePaintedSVG from '../../svg/color_circle_painted'
 import { ColorName, colorNames } from '../../utils/Colors'
 import { MouseButtonType } from '../../utils/DataTypes'
+import { BOARD_FADEIN_ANIMATION_DURATION_MS } from '../../utils/Constants'
 
 type Props = {
     onUndo: () => void
@@ -43,6 +44,9 @@ type Props = {
     colorDisabled: boolean
 }
 
+const ROW_DELAY_DELTA = 0.1
+const CORRECTION = 0.3
+
 export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, onSelect, onColor, lockedInput, onColorButtonClick, onNumpadButtonClick, noteHighlighted, magicWandHighlighted, selectHighlighted, colorMode, possibleValues, completedNumbers, undoDisabled, eraseDisabled, hintDisabled, magicWandIcon, magicWandDisabled, lockedColor, calculatorValue }: Props): React.JSX.Element {
     const [hintState, setHintState] = useState(false)
 
@@ -57,16 +61,16 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
     }, [hintState, onHint])
 
     const editButtons = [
-        <EditButton key={0} icon={<UndoSVG />} onClick={onUndo} disabled={undoDisabled} />,
-        <EditButton key={1} icon={<EraserSVG />} onClick={onErase} disabled={eraseDisabled} />,
-        <EditButton key={2} icon={<PencilSVG />} highlight={noteHighlighted} onClick={onNote} />,
-        <EditButton key={3} icon={<BulbSVG />} yellow={hintState} onClick={handleHintClick} disabled={hintDisabled} />
+        <EditButton key={0} icon={<UndoSVG />} onClick={onUndo} disabled={undoDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
+        <EditButton key={1} icon={<EraserSVG />} onClick={onErase} disabled={eraseDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
+        <EditButton key={2} icon={<PencilSVG />} highlight={noteHighlighted} onClick={onNote} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
+        <EditButton key={3} icon={<BulbSVG />} yellow={hintState} onClick={handleHintClick} disabled={hintDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />
     ]
 
     const specialButtons = [
-        <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect} number={calculatorValue} />,
-        <EditButton key={4} icon={magicWandIcon} highlight={magicWandHighlighted} onClick={onMagicWand} disabled={magicWandDisabled} />,
-        <EditButton key={6} icon={<ColorCirclePaintedSVG />} highlight={colorMode} onClick={onColor} />
+        <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect} number={calculatorValue} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA - CORRECTION} />,
+        <EditButton key={4} icon={magicWandIcon} highlight={magicWandHighlighted} onClick={onMagicWand} disabled={magicWandDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * 2 - CORRECTION} />,
+        <EditButton key={6} icon={<ColorCirclePaintedSVG />} highlight={colorMode} onClick={onColor} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * 3 - CORRECTION} />
     ]
 
     const rows: React.JSX.Element[][] = [[], [], []]
@@ -90,6 +94,7 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
                         locked={!completedNumbers.has(buttonIndex + 1) && lockedInput === buttonIndex + 1
                         }
                         onClick={onNumpadButtonClick}
+                        animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * (i + 1) - CORRECTION}
                     />
             )
         }

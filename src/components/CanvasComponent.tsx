@@ -35,6 +35,10 @@ export default function CanvasComponent({ canvasHandler, paused }: Props) {
         if (canvasRef.current) canvasHandler.canvasRef = canvasRef.current
     }, [canvasHandler])
 
+    useEffect(() => {
+        if (canvasRef.current) canvasHandler.paused = paused
+    }, [paused, canvasHandler])
+
     return <canvas
         ref={canvasRef}
         className='sudoku-canvas'

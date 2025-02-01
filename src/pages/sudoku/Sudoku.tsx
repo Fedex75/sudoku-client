@@ -1,87 +1,28 @@
 import './sudoku.css'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components'
 import GameHandler from '../../utils/GameHandler'
 import { DifficultyName, difficulties } from '../../utils/Difficulties'
 import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPause, faPlay, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
+import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPlusSquare, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
 import { useTranslation } from 'react-i18next'
-import { convertMillisecondsToHMS } from '../../utils/Statistics'
 import SVGMenu from '../../svg/menu'
 import SVGRestart from '../../svg/restart'
 import Game from '../../game/Game'
-import { AccentColor } from '../../utils/Colors'
 import { WinScreen } from './WinScreen'
 import { Tutorial } from './Tutorial'
-import { ThemeName } from '../../game/Themes'
-
-const BOARD_ANIMATION_DURATION = 1350
-
-type TimerProps = {
-    isTimerRunning: boolean
-    paused: boolean
-    win: boolean
-    onClick: () => void
-}
-
-type TimerRef = {
-    resetTimer: () => void
-    showMessage: (text: string, duration: number) => void
-}
-
-const Timer = forwardRef<TimerRef, TimerProps>(({ isTimerRunning, paused, win, onClick }, ref) => {
-    const [time, setTime] = useState(GameHandler.game?.timer || 0)
-    const [showingMessage, setShowingMessage] = useState(false)
-    const [message, setMessage] = useState('')
-
-    useImperativeHandle(ref, () => ({
-        resetTimer() {
-            setTime(0)
-        },
-        showMessage(text, duration) {
-            setMessage(text)
-            setShowingMessage(true)
-            setTimeout(() => {
-                setShowingMessage(false)
-            }, duration)
-        },
-    }))
-
-    useEffect(() => {
-        let interval = null
-
-        if (isTimerRunning && !paused) {
-            interval = setInterval(() => {
-                setTime((time: number) => {
-                    if (GameHandler.game) GameHandler.game.timer = time + 100
-                    return time + 100
-                })
-            }, 100)
-        } else {
-            if (interval) clearInterval(interval)
-        }
-
-        return () => { if (interval) clearInterval(interval) }
-    }, [isTimerRunning, paused])
-
-    return (
-        <div className='sudoku__timer' style={{ color: paused ? 'white' : 'var(--topbarFontColor)', backgroundColor: paused ? 'var(--red)' : 'var(--darkBackground)' }} onClick={() => { onClick() }}>
-            {(!win && !showingMessage) ? <FontAwesomeIcon icon={paused ? faPlay : faPause} fontSize={18} /> : null}
-            {!showingMessage ? <p className='sudoku__timer__time'>{convertMillisecondsToHMS(time)}</p> : null}
-            {showingMessage ? <p className='sudoku__timer__message'>{message}</p> : null}
-        </div>
-    )
-})
+import Timer, { TimerRef } from '../../components/timer/Timer'
+import { BOARD_FADEIN_ANIMATION_DURATION_MS } from '../../utils/Constants'
 
 type Props = {
-    theme: ThemeName
-    accentColor: AccentColor
+    playing: boolean
+    requestGoBack: () => void
 }
 
-export default function Sudoku({ theme, accentColor }: Props) {
+export default function Sudoku({ requestGoBack, playing }: Props) {
     const [win, setWin] = useState(false)
     const [tutorialIsOpen, setTutorialIsOpen] = useState(false)
 
@@ -91,55 +32,77 @@ export default function Sudoku({ theme, accentColor }: Props) {
 
     const navigate = useNavigate()
 
-    const [isTimerRunning, setIsTimerRunning] = useState(true)
-    const [paused, setPaused] = useState(false)
+    const [isTimerRunning, setIsTimerRunning] = useState(false)
+    const [paused, setPaused] = useState(true)
 
     const timerRef = useRef<TimerRef>(null)
 
     const { t } = useTranslation()
 
+    const resumeGame = useCallback(() => {
+        setPaused(false)
+        setIsTimerRunning(true)
+    }, [])
+
+    const pauseGame = useCallback(() => {
+        setPaused(true)
+        setIsTimerRunning(false)
+    }, [])
 
     const resetTimer = useCallback(() => {
-        setIsTimerRunning(true)
-        setPaused(false)
+        resumeGame()
         timerRef.current?.resetTimer()
-    }, [])
+    }, [resumeGame])
 
     const handleComplete = useCallback(() => {
-        setIsTimerRunning(false)
         setTimeout(() => {
             setWin(true)
-        }, BOARD_ANIMATION_DURATION)
+        }, BOARD_FADEIN_ANIMATION_DURATION_MS)
     }, [])
+
+    const openMenuActionSheet = useCallback(() => {
+        setMenuActionSheetIsOpen(true)
+        pauseGame()
+    }, [pauseGame])
+
+    const closeMenuActionSheet = useCallback(() => {
+        setMenuActionSheetIsOpen(false)
+        resumeGame()
+    }, [resumeGame])
 
     const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
         if (!GameHandler.game) return
-        GameHandler.newGame(GameHandler.game.mode, difficulty)
+        if (difficulty === 'restart') {
+            GameHandler.game.restart()
+        } else {
+            const newGame = GameHandler.createNewGame(GameHandler.game.mode, difficulty)
+            if (!newGame) return
+            GameHandler.setCurrentGame(newGame)
+        }
 
         setWin(false)
+        resumeGame()
         setBookmark(GameHandler.currentGameIsBookmarked())
 
         resetTimer()
 
         setMenuActionSheetIsOpen(false)
         setExportActionSheetIsOpen(false)
-    }, [resetTimer])
+    }, [resetTimer, resumeGame])
 
     const handleNewGameClick = useCallback(() => {
         if (!GameHandler.game) return
 
         if (GameHandler.game.difficulty === 'unrated') {
-            setMenuActionSheetIsOpen(true)
+            openMenuActionSheet()
             setExportActionSheetIsOpen(false)
         }
         else handleNewGame(GameHandler.game.difficulty)
-    }, [handleNewGame])
+    }, [handleNewGame, openMenuActionSheet])
 
     const topbarMenuClick = useCallback(() => {
-        setMenuActionSheetIsOpen(true)
-        setExportActionSheetIsOpen(false)
-        setPaused(true)
-    }, [])
+        openMenuActionSheet()
+    }, [openMenuActionSheet])
 
     const menuShareClick = useCallback(() => {
         setMenuActionSheetIsOpen(false)
@@ -166,8 +129,9 @@ export default function Sudoku({ theme, accentColor }: Props) {
     const handleTimerClick = useCallback(() => {
         if (win) return
 
-        setPaused(p => !p)
-    }, [win])
+        if (paused) resumeGame()
+        else pauseGame()
+    }, [win, pauseGame, paused, resumeGame])
 
     const handleMenuTutorialClick = useCallback(() => {
         GameHandler.saveGame()
@@ -192,8 +156,10 @@ export default function Sudoku({ theme, accentColor }: Props) {
         const windowVisibilityChangeEvent = () => {
             if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
             if (document.visibilityState === 'visible') {
-                if (!paused) setIsTimerRunning(true)
-            } else setIsTimerRunning(false)
+                pauseGame()
+            } else {
+                resumeGame()
+            }
         }
 
         window.addEventListener('visibilitychange', windowVisibilityChangeEvent)
@@ -202,19 +168,15 @@ export default function Sudoku({ theme, accentColor }: Props) {
             window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
             GameHandler.saveGame()
         }
-    }, [navigate, paused])
+    }, [navigate, paused, pauseGame, resumeGame])
 
     useEffect(() => {
-        if (paused) {
-            setIsTimerRunning(false)
+        if (playing) {
+            resumeGame()
         } else {
-            setIsTimerRunning(true)
+            pauseGame()
         }
-    }, [paused])
-
-    useEffect(() => {
-        if (!menuActionSheetIsOpen) setPaused(false)
-    }, [menuActionSheetIsOpen])
+    }, [playing, pauseGame, resumeGame])
 
     if (GameHandler.game === null) return null
 
@@ -223,11 +185,12 @@ export default function Sudoku({ theme, accentColor }: Props) {
             <Topbar
                 title={t(`gameModes.${GameHandler.game.mode}`)}
                 subtitle={tutorialIsOpen ? t('tutorial.tutorial') : t(`gameDifficulties.${GameHandler.game.difficulty}`)}
-                backURL="/"
+                onBack={requestGoBack}
+                backIcon={<FontAwesomeIcon icon={faChevronDown} style={{ color: 'var(--themeColor)', fontSize: 24 }} />}
                 buttons={[
                     !tutorialIsOpen && <div key={0} style={{ display: 'grid', placeItems: 'center', width: 44, height: 44 }} onClick={topbarMenuClick}><SVGMenu className='sudoku__open-menu-button' strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
                 ]}
-                onTitleClick={() => { if (!tutorialIsOpen) setMenuActionSheetIsOpen(true) }}
+                onTitleClick={() => { if (!tutorialIsOpen) openMenuActionSheet() }}
             >
                 {!tutorialIsOpen && <Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />}
             </Topbar>
@@ -235,15 +198,15 @@ export default function Sudoku({ theme, accentColor }: Props) {
             <SectionContent>
                 {
                     win ?
-                        <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} accentColor={accentColor} game={GameHandler.game} /> :
-                        tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} theme={theme} accentColor={accentColor} quitTutorial={handleQuitTutorial} /> :
-                            <Game theme={theme} accentColor={accentColor} paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_ANIMATION_DURATION} game={GameHandler.game} handleFullNotation={handleFullNotation} />
+                        <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} game={GameHandler.game} /> :
+                        tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} quitTutorial={handleQuitTutorial} /> :
+                            <Game paused={paused} handleComplete={handleComplete} boardAnimationDuration={BOARD_FADEIN_ANIMATION_DURATION_MS} game={GameHandler.game} handleFullNotation={handleFullNotation} />
                 }
             </SectionContent>
 
             <ActionSheet
                 isOpen={menuActionSheetIsOpen}
-                onClose={() => setMenuActionSheetIsOpen(false)}
+                onClose={() => closeMenuActionSheet()}
             >
                 <div className='sudoku__context-menu'>
                     <div className='context-menu__button vertical' style={{ gridArea: 'save' }} onClick={menuBookmarkClick}>

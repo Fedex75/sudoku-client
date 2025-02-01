@@ -1,4 +1,4 @@
-import useLongPress from '../../utils/useLongPress'
+import useLongPress from '../../utils/hooks/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { ColorDefinitions, ColorName } from '../../utils/Colors'

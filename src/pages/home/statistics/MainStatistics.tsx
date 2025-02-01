@@ -1,20 +1,26 @@
 import { useTranslation } from "react-i18next"
 import './mainStatistics.css'
 import GameHandler from "../../../utils/GameHandler"
-import { useCallback, useState } from "react"
-import { ActionSheet, ActionSheetButton, Button } from "../../../components"
-import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
+import { useCallback } from "react"
+import { Button } from "../../../components"
 import SectionLink from '../../../components/sectionLink/SectionLink'
 
-export default function MainStatistics() {
-    const [resetStatisticsActionSheetIsOpen, setResetStatisticsActionSheetIsOpen] = useState(false)
+type Props = {
+    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void
+}
 
+export default function MainStatistics({ requestPrompt }: Props) {
     const { t } = useTranslation()
 
-    const resetStatistics = useCallback(() => {
-        GameHandler.resetStatistics()
-        setResetStatisticsActionSheetIsOpen(false)
-    }, [])
+    const handleResetStatistics = useCallback(() => {
+        requestPrompt(
+            t('statistics.promptReset'),
+            () => {
+                GameHandler.resetStatistics()
+            },
+            () => { }
+        )
+    }, [t, requestPrompt])
 
     return (
         <div className='home__statistics'>
@@ -31,20 +37,8 @@ export default function MainStatistics() {
                     }
                 </div>
 
-                <Button title={t('common.reset')} backgroundColor='var(--red)' color='white' onClick={() => { setResetStatisticsActionSheetIsOpen(true) }} />
+                <Button title={t('common.reset')} backgroundColor='var(--red)' color='white' onClick={() => { handleResetStatistics() }} />
             </div>
-
-            <TabSwitcher selected='statistics' />
-
-            <ActionSheet
-                isOpen={resetStatisticsActionSheetIsOpen}
-                title={t('statistics.promptReset')}
-                cancelTitle={t('common.cancel')}
-                buttonsMode
-                onClose={() => { setResetStatisticsActionSheetIsOpen(false) }}
-            >
-                <ActionSheetButton title={t('common.reset')} color="var(--red)" onClick={resetStatistics} />
-            </ActionSheet>
         </div>
     )
 }

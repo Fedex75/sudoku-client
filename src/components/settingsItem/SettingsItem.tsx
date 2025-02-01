@@ -3,29 +3,30 @@ import ReactSwitch from 'react-switch'
 import Check from '../check/Check'
 import './settingsItem.css'
 import Canvas from '../CanvasComponent'
-import { AccentColor } from '../../utils/Colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { CanvasFactory } from '../../game/gameModes/CanvasFactory'
 import { useMemo } from 'react'
 import { BoardFactory } from '../../game/gameModes/BoardFactory'
+import useAccentColor from '../../utils/hooks/useAccentColor'
+import useTheme from '../../utils/hooks/useTheme'
 
 type Props = {
     title?: string
     type?: 'boolean' | 'theme' | 'info' | 'language'
     value?: any
     onChange?: (value: any) => void
-    theme?: string
-    accentColor?: AccentColor
-    accentColorHex?: string
     info?: string
     icon?: React.ReactNode
     language?: string
     disabled?: boolean
 }
 
-export default function SettingsItem({ title = '', type = 'boolean', theme, accentColor = 'darkBlue', accentColorHex = '', info = '', icon, language, value = null, onChange = () => { }, disabled = false }: Props) {
+export default function SettingsItem({ title = '', type = 'boolean', info = '', icon, language, value = null, onChange = () => { }, disabled = false }: Props) {
     const { t } = useTranslation()
+    const [theme, setTheme] = useTheme()
+    const [accentColor] = useAccentColor()
+    const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue(`--${accentColor}`)
 
     const className = useMemo(() => {
         return `settings__item ${disabled ? 'disabled' : ''} ${type === 'theme' ? 'theme' : ''}`
@@ -73,7 +74,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
             <div className={className}>
                 <div style={{ flexGrow: 1 }}></div>
 
-                <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('light') }}>
+                <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) setTheme('light') }}>
                     <Canvas canvasHandler={canvasHandlerLight} paused={false} />
                     <p>{t('common.lightTheme')}</p>
                     <Check checked={theme === 'light'} />
@@ -81,7 +82,7 @@ export default function SettingsItem({ title = '', type = 'boolean', theme, acce
 
                 <div style={{ flexGrow: 1 }}></div>
 
-                <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) onChange('dark') }}>
+                <div className='settings__item__theme-wrapper' onClick={() => { if (!disabled) setTheme('dark') }}>
                     <Canvas canvasHandler={canvasHandlerDark} paused={false} />
                     <p>{t('common.darkTheme')}</p>
                     <Check checked={theme === 'dark'} />

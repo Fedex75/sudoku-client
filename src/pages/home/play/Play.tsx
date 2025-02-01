@@ -1,24 +1,20 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router"
 import GameHandler from "../../../utils/GameHandler"
-import { ActionSheet, ActionSheetButton } from "../../../components"
 import './play.css'
 import { GameModeName } from "../../../utils/Difficulties"
-import { AccentColor } from "../../../utils/Colors"
 import Canvas from "../../../components/CanvasComponent"
-import { ThemeName } from '../../../game/Themes'
 import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
 import { BoardFactory } from '../../../game/gameModes/BoardFactory'
-import TabSwitcher from '../../../components/tabSwitcher/TabSwitcher'
+import Board from '../../../utils/Board'
+import useAccentColor from '../../../utils/hooks/useAccentColor'
 
 type Props = {
-    theme: ThemeName
-    accentColor: AccentColor
+    requestNewGame: (newGame: Board) => void
 }
 
-export default function Play({ theme, accentColor }: Props) {
-    const [newGameMode, setNewGameMode] = useState<GameModeName>()
+export default function Play({ requestNewGame }: Props) {
+    const [accentColor] = useAccentColor()
     const [snappedIndex, setSnappedIndex] = useState(2)
 
     const classicCanvasRef = useRef(CanvasFactory('classic', accentColor, true, 0))
@@ -27,10 +23,7 @@ export default function Play({ theme, accentColor }: Props) {
     const sandwichCanvasRef = useRef(CanvasFactory('sandwich', accentColor, true, 0))
     const thermoCanvasRef = useRef(CanvasFactory('thermo', accentColor, true, 0))
 
-    const [discardGameActionSheetIsOpen, setDiscardGameActionSheetIsOpen] = useState(false)
-
     const carouselRef = useRef<HTMLDivElement>(null)
-    let navigate = useNavigate()
 
     const { t } = useTranslation()
 
@@ -79,17 +72,6 @@ export default function Play({ theme, accentColor }: Props) {
         return newThermoBoard
     }, [])
 
-    const handleNewGame = useCallback((mode: GameModeName) => {
-        GameHandler.newGame(mode, GameHandler.recommendations.perMode[mode])
-        navigate('/sudoku')
-    }, [navigate])
-
-    const openNewGameActionSheet = useCallback((mode: GameModeName) => {
-        setNewGameMode(mode)
-        if (GameHandler.game === null || GameHandler.game.complete) handleNewGame(mode)
-        else setDiscardGameActionSheetIsOpen(true)
-    }, [handleNewGame])
-
     const handleScroll = useCallback(() => {
         if (!carouselRef.current) return
         const carousel = carouselRef.current
@@ -127,9 +109,11 @@ export default function Play({ theme, accentColor }: Props) {
 
         carouselRef.current.scrollLeft += itemCenter - carouselCenter
 
-        openNewGameActionSheet(mode)
+        const newGame = GameHandler.createNewGame(mode)
+        if (newGame) requestNewGame(newGame)
+
         setSnappedIndex(index)
-    }, [openNewGameActionSheet])
+    }, [requestNewGame])
 
     useEffect(() => {
         classicCanvasRef.current.game = classicBoard
@@ -207,12 +191,6 @@ export default function Play({ theme, accentColor }: Props) {
                     <div className={`home__carousel-dots__dot ${snappedIndex === 4 ? 'selected' : ''}`}></div>
                 </div>
             </div>
-
-            <TabSwitcher selected='newGame' />
-
-            <ActionSheet isOpen={discardGameActionSheetIsOpen} title={t('common.discardGame')} cancelTitle={t('common.cancel')} cancelColor='var(--darkBlue)' onClose={() => setDiscardGameActionSheetIsOpen(false)} buttonsMode>
-                <ActionSheetButton title={t('common.discard')} color="var(--red)" onClick={() => { if (newGameMode) handleNewGame(newGameMode) }} />
-            </ActionSheet>
         </div>
     )
 }

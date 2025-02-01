@@ -1,0 +1,33 @@
+.play-button {
+    position: absolute;
+    transform: translate(-50%, 0);
+    display: grid;
+    place-items: center;
+    color: white;
+    font-size: 25px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: top 0s;
+    z-index: 3;
+    border: solid var(--background) 5px;
+}
+
+.play-button.defaultVariant {
+    background-color: var(--themeColor);
+    left: 50%;
+
+    .play-button__icon {
+        transform: translate(2px);
+    }
+}
+
+.play-button.confirmVariant {
+    background-color: var(--green);
+    left: 75%;
+}
+
+.play-button.cancelVariant {
+    background-color: var(--red);
+    left: 25%;
+}

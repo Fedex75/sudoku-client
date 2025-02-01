@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import API from './API'
+import API from '../API'
 
 export function getStoredData(key: string, version: number, defaultValue?: any, parser?: (value: any) => any): any {
     const storedData = localStorage.getItem(key)

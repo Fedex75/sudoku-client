@@ -11,11 +11,12 @@ type Props = {
     subtitle?: string | null
     backURL?: string | null
     onBack?: (() => void) | null
+    backIcon?: React.ReactNode
     buttons?: ReactNode[]
     onTitleClick?: () => void
 }
 
-export default function Topbar({ logo = false, title = null, subtitle = null, children = [], backURL = null, onBack = null, buttons = [], onTitleClick = () => { } }: PropsWithChildren<Props>) {
+export default function Topbar({ logo = false, title = null, subtitle = null, children = [], backURL = null, onBack = null, backIcon = <FontAwesomeIcon icon={faChevronLeft} style={{ color: 'var(--themeColor)', fontSize: 24 }} />, buttons = [], onTitleClick = () => { } }: PropsWithChildren<Props>) {
     return (
         <div className='topbar'>
             <div className='topbar__top' style={{ gridTemplateColumns: `${backURL || onBack ? 'fit-content(0)' : ''} fit-content(0) auto ${buttons.length > 0 ? `repeat(${buttons.length}, fit-content(0))` : ''}`, gridTemplateAreas: `"${backURL || onBack ? 'back' : ''} title additional ${buttons.map((_, i) => 'button' + i).join(' ')}"` }}>
@@ -23,12 +24,12 @@ export default function Topbar({ logo = false, title = null, subtitle = null, ch
                     backURL ?
                         <Link to={backURL}>
                             <div className='topbar__top__back'>
-                                <FontAwesomeIcon icon={faChevronLeft} style={{ color: 'var(--themeColor)', fontSize: 24 }} />
+                                {backIcon}
                             </div>
                         </Link> :
                         onBack ?
-                            <div className='topbar__top__back'>
-                                <FontAwesomeIcon icon={faChevronLeft} style={{ color: 'var(--themeColor)', fontSize: 24 }} onClick={onBack} />
+                            <div className='topbar__top__back' onClick={onBack}>
+                                {backIcon}
                             </div> : null
                 }
                 {

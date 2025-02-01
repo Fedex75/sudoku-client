@@ -66,7 +66,7 @@ export const themes: Record<ThemeName, Theme> = {
         valueHighlightColor: 'white',
         animationBaseColor: '255, 255, 255',
         animationDarkColor: '0, 0, 0',
-        animationFadeBaseColor: '22, 22, 32',
+        animationFadeBaseColor: '13, 17, 23',
         killerCageColor: '#75747c',
         killerHighlightedCageColor: 'white',
         killerCageOnColoredCellColor: 'black',
