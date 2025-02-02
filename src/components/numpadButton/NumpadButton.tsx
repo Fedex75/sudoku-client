@@ -27,13 +27,12 @@ export default function NunmpadButton({ onNumberClick, onColorClick, colorMode, 
     const { theme } = useContext(ThemeContext)
 
     const handleClick = useCallback((type: MouseButtonType) => {
-        if (disabled) return
         if (colorMode) {
             onColorClick(color, type)
         } else {
             onNumberClick(number, type)
         }
-    }, [color, colorMode, number, onColorClick, onNumberClick, disabled])
+    }, [color, colorMode, number, onColorClick, onNumberClick])
 
     const [onTouchStart, onTouchEnd] = useLongPress((type: MouseButtonType) => {
         handleClick(type)
