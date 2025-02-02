@@ -1,5 +1,5 @@
 import { Canvas } from '../../../utils/Canvas'
-import { AccentColor, ColorDefinitions } from '../../../utils/Colors'
+import { AccentColor, Colors } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { SandwichBoard } from './SandwichBoard'
 
@@ -19,9 +19,9 @@ export class SandwichCanvas extends Canvas<SandwichBoard> {
         for (let i = 0; i < this.game.nSquares; i++) {
             const cell = this.game.get({ x: i, y: i })
             if (!cell) continue
-            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.horizontalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
+            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.horizontalClues[i].error) ? Colors[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.y === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
             if (!this.game.settings.sandwichHideSolvedClues || this.game.horizontalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.horizontalClues[i].value, x, cell.screenPosition.y + halfSquareSize, size, 'left', 'center', null)
-            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.verticalClues[i].error) ? ColorDefinitions[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
+            this.ctx.fillStyle = this.ctx.strokeStyle = (this.game.settings.showLogicErrors && this.game.verticalClues[i].error) ? Colors[this.additionalColors.errorColor] : ([...this.game.selectedCells].some(cell => cell.coords.x === i) ? themes[this._theme].noteHighlightColor : themes[this._theme].clueColor)
             if (!this.game.settings.sandwichHideSolvedClues || this.game.verticalClues[i].visible) Canvas.drawSVGNumber(this.ctx, this.game.verticalClues[i].value, cell.screenPosition.x + halfSquareSize, y, size, 'center', 'top', null)
         }
     }

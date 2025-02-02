@@ -8,23 +8,28 @@
 
 .topbar__top {
     display: grid;
+    grid-template-columns: 1fr fit-content(0) 1fr;
     align-items: center;
     width: 100%;
     min-height: 37px;
     overflow-x: hidden;
 }
 
-.topbar__top__back {
-    grid-area: back;
-    display: grid;
-    place-items: center;
-    box-sizing: border-box;
-    margin-right: 10px;
+.topbar__top__left {
+    display: flex;
+    align-items: center;
+}
+
+.topbar__top__right {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .topbar__top__back {
-    font-size: 20px;
-    padding: 6.5px 10px !important;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    margin-right: 8px;
 }
 
 .topbar__bottom {
@@ -32,7 +37,6 @@
 }
 
 .topbar__title-wrapper {
-    grid-area: title;
     color: var(--topbarFontColor);
     white-space: nowrap;
     margin-right: 10px;

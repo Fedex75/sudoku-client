@@ -1,6 +1,6 @@
 import { Canvas } from '../../../utils/Canvas'
 import { ScreenCoordinates, KillerCage } from '../../../utils/Cell'
-import { AccentColor, ColorDefinitions } from '../../../utils/Colors'
+import { AccentColor, Colors } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { KillerBoard } from './KillerBoard'
 
@@ -53,7 +53,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
             if (!this.game) return
 
             for (const cell of this.game.allCells) {
-                if (cell.color !== 'default') {
+                if (cell.color) {
                     ctx.rect(
                         cell.screenPosition.x - Canvas.CELL_BORDER_WIDTH,
                         cell.screenPosition.y - Canvas.CELL_BORDER_WIDTH,
@@ -81,7 +81,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                     }
                 }
             }
-        }, ColorDefinitions[this.additionalColors.errorColor])
+        }, Colors[this.additionalColors.errorColor])
 
         // Apply spare error color to corresponding cages
         Canvas.applyColorWithMask(this.tempCtx, ctx => {
@@ -101,7 +101,7 @@ export class KillerCanvas extends Canvas<KillerBoard> {
                     }
                 }
             }
-        }, ColorDefinitions[this.additionalColors.spareErrorColor])
+        }, Colors[this.additionalColors.spareErrorColor])
 
         this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
     }

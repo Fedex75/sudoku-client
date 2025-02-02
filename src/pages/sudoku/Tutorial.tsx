@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useContext, useEffect, useMemo, useRef, useState } from "react"
 import { GameModeName } from "../../utils/Difficulties"
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,8 +10,8 @@ import { CanvasFactory } from '../../game/gameModes/CanvasFactory'
 import Board from '../../utils/Board'
 import { BoardFactory } from '../../game/gameModes/BoardFactory'
 import { defaultSettings } from '../../utils/hooks/SettingsHandler'
-import useAccentColor from '../../utils/hooks/useAccentColor'
-import useTheme from '../../utils/hooks/useTheme'
+import { AccentColorContext } from '../../utils/hooks/useAccentColor'
+import { ThemeContext } from '../../utils/hooks/useTheme'
 
 interface TutorialStep {
     board: Board,
@@ -24,8 +24,8 @@ interface TutorialProps {
 }
 
 export function Tutorial({ gameMode, quitTutorial }: TutorialProps) {
-    const [theme] = useTheme()
-    const [accentColor] = useAccentColor()
+    const { theme } = useContext(ThemeContext)
+    const { accentColor } = useContext(AccentColorContext)
     const [step, setStep] = useState(0)
     const canvasHandlerRef = useRef(CanvasFactory(gameMode, accentColor, true, 0.01))
 

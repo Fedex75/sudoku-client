@@ -6,7 +6,7 @@ import Bookmarks from './bookmarks/Bookmarks'
 import MainStatistics from './statistics/MainStatistics'
 import MainSettings from './settings/MainSettings'
 import Navbar, { NavbarAction } from '../../components/navbar/Navbar'
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import Board from '../../utils/Board'
 import GameHandler from '../../utils/GameHandler'
 import PlayButton, { PlayButtonAction } from '../../components/playButton/PlayButton'
@@ -19,8 +19,6 @@ function Home() {
     const [playingGame, setPlayingGame] = useState(false)
     const [shouldRenderHome, setShouldRenderHome] = useState(true)
     const [shouldRenderGame, setShouldRenderGame] = useState(false)
-
-    const pendingNewGame = useRef<Board | null>()
 
     const [playButtonAction, setPlayButtonAction] = useState<PlayButtonAction>('default')
     const [navbarAction, setNavbarAction] = useState<NavbarAction>('default')
@@ -39,40 +37,15 @@ function Home() {
 
     const hideGame = useCallback(() => {
         setPlayingGame(false)
+        setShouldRenderGame(false)
         setPlayButtonAction('default')
         setShouldRenderHome(true)
     }, [])
-
-    useEffect(() => {
-        if (!playingGame) setShouldRenderGame(false)
-    }, [playingGame])
 
     const handleNewGame = useCallback((newGame: Board) => {
         GameHandler.setCurrentGame(newGame)
         showGame()
     }, [showGame])
-
-    const handleNewGameRequest = useCallback((newGame: Board) => {
-        if (GameHandler.game && !GameHandler.game.complete) {
-            pendingNewGame.current = newGame
-            setNavbarAction('prompt')
-            setNavbarText(t('common.discardGame'))
-            setNavbarCallbacks({
-                onConfirm: () => {
-                    if (pendingNewGame.current) {
-                        GameHandler.setCurrentGame(pendingNewGame.current)
-                        showGame()
-                    }
-                },
-                onCancel: () => {
-                    setNavbarText('')
-                    pendingNewGame.current = null
-                }
-            })
-        } else {
-            handleNewGame(newGame)
-        }
-    }, [handleNewGame, t, showGame])
 
     const handleContinueRequest = useCallback(() => {
         showGame()
@@ -106,13 +79,25 @@ function Home() {
     const handlePromptRequest = useCallback((prompt: string, onConfirm: () => void, onCancel: () => void) => {
         setNavbarText(prompt)
         setNavbarAction('prompt')
+        setPlayButtonAction('hide')
+        console.log('setting action to hide')
         setNavbarCallbacks({ onConfirm, onCancel })
     }, [])
 
-    useEffect(() => {
-        if (navbarAction === 'prompt') setPlayButtonAction('hide')
-        else setPlayButtonAction('default')
-    }, [navbarAction])
+    const handleNewGameRequest = useCallback((newGame: Board) => {
+        if (GameHandler.game && !GameHandler.game.complete) {
+            handlePromptRequest(
+                t('common.discardGame'),
+                () => {
+                    GameHandler.setCurrentGame(newGame)
+                    showGame()
+                },
+                () => { }
+            )
+        } else {
+            handleNewGame(newGame)
+        }
+    }, [handleNewGame, t, showGame, handlePromptRequest])
 
     return (
         <>
@@ -133,7 +118,7 @@ function Home() {
                     : null
             }
 
-            <Navbar action={navbarAction} onConfirm={handleConfirmButtonClick} onCancel={handleCancelButtonClick} text={navbarText} backgroundColor={navbarAction === 'prompt' ? 'var(--red)' : undefined} />
+            <Navbar action={navbarAction} onConfirm={handleConfirmButtonClick} onCancel={handleCancelButtonClick} text={navbarText} color='var(--primaryTextColor)' />
 
             <PlayButton action={playButtonAction} onPlay={handlePlayButtonClick} />
 

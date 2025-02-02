@@ -64,7 +64,7 @@ export class Cell {
     private _value: number = 0
     private _notes: Set<number> = new Set()
     private _hint: boolean = false
-    private _color: ColorName = 'default'
+    private _color: ColorName | null = null
     private readonly _clue: boolean = false
     private readonly _solution: number
 
@@ -164,7 +164,7 @@ export class Cell {
         this.notes = new Set()
         this.hint = false
         this.locked = false
-        this.color = 'default'
+        this.color = null
         this._colorGroups = new Set()
         this.updateStringRepresentation()
     }
@@ -207,7 +207,7 @@ export class Cell {
         this.stringRepresentation = this.value.toString()
 
         if (this.notes.size > 0) this.stringRepresentation += 'N' + [...this.notes].join('')
-        if (this.color !== 'default') this.stringRepresentation += 'C' + colorNamesShortened[colorNames.indexOf(this.color)]
+        if (this.color) this.stringRepresentation += 'C' + colorNamesShortened[colorNames.indexOf(this.color)]
         if (this.hint) this.stringRepresentation += 'H'
         if (this.locked) this.stringRepresentation += 'L'
     }

@@ -2,14 +2,15 @@ import { faMoon, faPencilAlt, faPalette, faXmark, faToolbox, faGear } from '@for
 import { useTranslation } from 'react-i18next'
 import { Button } from '../../../components'
 import { useServiceWorker } from '../../../components/serviceWorker/useServiceWorker'
-import { useSettings } from '../../../utils/hooks/SettingsHandler'
+import { SettingsContext } from '../../../utils/hooks/SettingsHandler'
 import './mainSettings.css'
 import SectionLink from '../../../components/sectionLink/SectionLink'
+import { useContext } from 'react'
 
 export default function MainSettings() {
     const { t } = useTranslation()
     const { isUpdateAvailable, updateAssets } = useServiceWorker()
-    const { settings } = useSettings()
+    const { settings } = useContext(SettingsContext)
 
     return (
         <div className='home__settings'>

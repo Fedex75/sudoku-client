@@ -1,5 +1,5 @@
 import { Canvas } from '../../../utils/Canvas'
-import { ColorDefinitions } from '../../../utils/Colors'
+import { Colors } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { SudokuXBoard } from './SudokuXBoard'
 
@@ -18,8 +18,8 @@ export class SudokuXCanvas extends Canvas<SudokuXBoard> {
 
         this.ctx.globalAlpha = 0.66
 
-        const mainDiagonalColor = this.game.mainDiagonalError ? ColorDefinitions[this.additionalColors.errorColor] : themes[this._theme].sudokuXDiagonalColor
-        const secondaryDiagonalColor = this.game.secondaryDiagonalError ? ColorDefinitions[this.additionalColors.errorColor] : themes[this._theme].sudokuXDiagonalColor
+        const mainDiagonalColor = this.game.mainDiagonalError ? Colors[this.additionalColors.errorColor] : themes[this._theme].sudokuXDiagonalColor
+        const secondaryDiagonalColor = this.game.secondaryDiagonalError ? Colors[this.additionalColors.errorColor] : themes[this._theme].sudokuXDiagonalColor
 
         // Main diagonal
         this.ctx.fillStyle = this.ctx.strokeStyle = mainDiagonalColor

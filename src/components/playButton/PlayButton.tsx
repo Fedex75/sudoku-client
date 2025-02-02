@@ -12,6 +12,7 @@ type Props = {
 }
 
 export default function PlayButton({ action, onPlay }: Props) {
+    console.log(action)
     return (
         <motion.div
             initial={{ top: 'calc(100vh - 85px)' }}

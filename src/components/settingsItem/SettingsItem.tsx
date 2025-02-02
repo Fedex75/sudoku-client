@@ -6,10 +6,10 @@ import Canvas from '../CanvasComponent'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { CanvasFactory } from '../../game/gameModes/CanvasFactory'
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { BoardFactory } from '../../game/gameModes/BoardFactory'
-import useAccentColor from '../../utils/hooks/useAccentColor'
-import useTheme from '../../utils/hooks/useTheme'
+import { AccentColorContext } from '../../utils/hooks/useAccentColor'
+import { ThemeContext } from '../../utils/hooks/useTheme'
 
 type Props = {
     title?: string
@@ -24,9 +24,10 @@ type Props = {
 
 export default function SettingsItem({ title = '', type = 'boolean', info = '', icon, language, value = null, onChange = () => { }, disabled = false }: Props) {
     const { t } = useTranslation()
-    const [theme, setTheme] = useTheme()
-    const [accentColor] = useAccentColor()
-    const accentColorHex = getComputedStyle(document.documentElement).getPropertyValue(`--${accentColor}`)
+    const { theme, setTheme } = useContext(ThemeContext)
+    const { accentColor } = useContext(AccentColorContext)
+    const app = document.getElementById('app')
+    const accentColorHex = app ? getComputedStyle(app).getPropertyValue(`--green`) : '#34c759'
 
     const className = useMemo(() => {
         return `settings__item ${disabled ? 'disabled' : ''} ${type === 'theme' ? 'theme' : ''}`

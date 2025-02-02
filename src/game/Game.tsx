@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import GameHandler from "../utils/GameHandler"
 import Numpad from "../components/numpad/Numpad"
 import { MouseButtonType } from "../utils/DataTypes"
 import { Navigate } from "react-router"
-import { ColorDefinitions, ColorName, colorNames } from "../utils/Colors"
+import { Colors, ColorName, colorNames } from "../utils/Colors"
 import { isTouchDevice } from "../utils/hooks/isTouchDevice"
 import MagicWandSVG from "../svg/magic_wand"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -14,10 +14,10 @@ import { themes } from './Themes'
 import { Cell, CellCoordinates } from '../utils/Cell'
 import CanvasComponent from '../components/CanvasComponent'
 import { CanvasFactory } from './gameModes/CanvasFactory'
-import { useSettings } from '../utils/hooks/SettingsHandler'
+import { SettingsContext } from '../utils/hooks/SettingsHandler'
 import Board from '../utils/Board'
-import useTheme from '../utils/hooks/useTheme'
-import useAccentColor from '../utils/hooks/useAccentColor'
+import { ThemeContext } from '../utils/hooks/useTheme'
+import { AccentColorContext } from '../utils/hooks/useAccentColor'
 
 type Props = {
     paused: boolean
@@ -28,8 +28,9 @@ type Props = {
 }
 
 function Game({ paused, handleComplete, boardAnimationDuration, game, handleFullNotation }: Props) {
-    const [theme] = useTheme()
-    const [accentColor] = useAccentColor()
+    const { theme } = useContext(ThemeContext)
+    const { accentColor } = useContext(AccentColorContext)
+    const { settings } = useContext(SettingsContext)
 
     const [noteMode, setNoteMode] = useState(isTouchDevice) //If it's a touch device, start with notes on, otherwise off
     const [showLinks, setShowLinks] = useState(false)
@@ -47,10 +48,6 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
     const [selectedCellBeforeSelectMode, setSelectedCellBeforeSelectMode] = useState<Cell | null>(null)
 
     const [possibleValues, setPossibleValues] = useState<Set<number>>(new Set())
-
-    const [, setRender] = useState(0)
-
-    const { settings } = useSettings()
 
     const canvasHandlerRef = useRef(CanvasFactory(game.mode, accentColor, false, 0.01))
 
@@ -81,7 +78,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
 
         let selectedColors: ColorName[] = []
         for (const cell of game.selectedCells) {
-            if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
+            if (cell.color && !selectedColors.includes(cell.color)) {
                 selectedColors.push(cell.color)
             }
 
@@ -94,12 +91,12 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
             if (selectedColors.length === 1) {
                 setMagicWandColor(selectedColors[0])
             } else {
-                let possibleColorNames: ColorName[] = colorNames.filter(cn => cn !== 'default')
+                let possibleColorNames: ColorName[] = [...colorNames]
                 const orthogonalCells = [...game.selectedCells].map(cell => cell.orthogonalCells).reduce((a, b) => a.union(b), new Set())
 
                 let colorsAlreadyOnBoard: ColorName[] = []
                 for (const cell of game.allCells) {
-                    if (cell.color !== 'default' && !colorsAlreadyOnBoard.includes(cell.color)) colorsAlreadyOnBoard.push(cell.color)
+                    if (cell.color && !colorsAlreadyOnBoard.includes(cell.color)) colorsAlreadyOnBoard.push(cell.color)
                 }
 
                 const possibleColorNamesWithoutAlreadyOnBoard = possibleColorNames.filter(c => !colorsAlreadyOnBoard.includes(c))
@@ -107,7 +104,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
                     possibleColorNames = possibleColorNamesWithoutAlreadyOnBoard
                 } else {
                     for (const cell of orthogonalCells) {
-                        if (cell.color !== 'default') possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
+                        if (cell.color) possibleColorNames = possibleColorNames.filter(cn => cn !== cell.color)
                     }
                 }
 
@@ -129,13 +126,13 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         } else {
             let selectedColors: ColorName[] = []
             for (const cell of game.selectedCells) {
-                if (cell.color !== 'default' && !selectedColors.includes(cell.color)) {
+                if (cell.color && !selectedColors.includes(cell.color)) {
                     selectedColors.push(cell.color)
                 }
 
             }
             const length = game.selectedCells.size
-            if (length === 0 || (length === 1 && [...game.selectedCells][0].color !== 'default') || selectedColors.length > 1) {
+            if (length === 0 || (length === 1 && [...game.selectedCells][0].color) || selectedColors.length > 1) {
                 setMagicWandMode("disabled")
                 setMagicWandColor(null)
             } else {
@@ -179,7 +176,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         updatePossibleValues()
         updateMagicWandMode()
 
-        setRender(r => r === 100 ? 0 : r + 1)
+        canvasHandlerRef.current.renderFrame()
     }, [handleComplete, updateMagicWandMode, updatePossibleValues, boardAnimationDuration, game])
 
     const handleSelect = useCallback((withState: boolean | null) => {
@@ -208,7 +205,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         const groupsToRemove = new Set([...selectedGroups].filter(cg => [...cg.members].every(cell => !selectedCells.has(cell)) || (color !== [...cg.members][0].color)))
         game.removeColorGroups({ from: groupsToRemove, causedByUser: false })
 
-        if (color !== 'default' && selectedCells.size > 1) {
+        if (color && selectedCells.size > 1) {
             game.createColorGroup({ withCells: selectedCells, painted: color, causedByUser: true })
             handleSelect(false)
             setColorMode(false)
@@ -392,10 +389,6 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
     }, [magicWandMode])
 
     useEffect(() => {
-        updatePossibleValues()
-    }, [updatePossibleValues])
-
-    useEffect(() => {
         canvasHandlerRef.current.renderFrame()
     })
 
@@ -405,7 +398,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         } else if (magicWandMode === 'clearColors') {
             return <ColorCircleSVG />
         } else {
-            return <MagicWandSVG fill={magicWandMode === 'setColor' && !game.fullNotation ? ColorDefinitions[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
+            return <MagicWandSVG fill={magicWandMode === 'setColor' && !game.fullNotation ? Colors[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
         }
     }, [magicWandMode, magicWandColor, accentColor, game.fullNotation])
 

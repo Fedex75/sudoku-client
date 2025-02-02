@@ -37,5 +37,6 @@ export function useLocalStorage<T>(key: string, version: number, defaultValue: T
         saveData(key, version, value)
         setLocalStorageValue(value)
     }
+
     return [localStorageValue, setLocalStorageStateValue]
 }

@@ -1,7 +1,7 @@
 import useLongPress from '../../utils/hooks/useLongPress'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
-import { ColorDefinitions, ColorName } from '../../utils/Colors'
+import { Colors, ColorName } from '../../utils/Colors'
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || ((navigator as any).msMaxTouchPoints > 0)
 
@@ -19,7 +19,7 @@ export default function ColorButton({ onClick = () => { }, color, locked = false
     return (
         <div
             className={'numpad__button color fade_in'}
-            style={{ backgroundColor: ColorDefinitions[color] }}
+            style={{ backgroundColor: Colors[color] }}
             onTouchStart={(e) => {
                 e.stopPropagation()
                 onTouchStart()

@@ -2,7 +2,7 @@ import React from 'react'
 import { ThemeName, themes } from '../game/Themes'
 import Board from './Board'
 import { Cell, ScreenCoordinates } from './Cell'
-import { AccentColor, ColorDefinitions, ColorName } from './Colors'
+import { AccentColor, AdditionalColors, Colors, DarkColors, SolutionColors } from './Colors'
 import { BoardAnimation, DigitChar, MouseButtonType } from './DataTypes'
 import { isTouchDevice } from "./hooks/isTouchDevice"
 import { BOARD_FADEIN_ANIMATION_DURATION_MS } from './Constants'
@@ -22,99 +22,6 @@ const numberPaths: Record<DigitChar, string> = {
     '8': 'm 9.9953305,29.990269 c -5.9033649,0 -9.99471143457,-3.415504 -9.99471143457,-8.358741 A 7.2003886,7.3467402 0 0 1 6.1614813,14.265326 V 14.031787 A 6.3229902,6.4515083 0 0 1 1.1069039,7.6289329 C 1.097367,3.1722348 4.7881622,0 9.9857935,0 c 5.2071685,0 8.8979635,3.1527733 8.8979635,7.6289329 0,3.1333121 -1.974146,5.6438531 -5.04504,6.4028541 v 0.233539 a 7.2194624,7.3662018 0 0 1 6.160862,7.366202 C 19.999579,26.584496 15.917769,30 9.9857935,30 Z m 0,-2.354849 c 4.3297705,0 7.3148315,-2.530003 7.3148315,-6.179046 0,-3.571197 -2.965988,-6.003893 -7.3148315,-6.003893 -4.3202331,0 -7.2957579,2.452157 -7.2957579,6.003893 0,3.649043 2.9755248,6.188777 7.2957579,6.188777 z m 0,-14.547519 c 3.7194055,0 6.2657685,-2.111579 6.2657685,-5.2448909 0,-3.2500811 -2.546363,-5.4881609 -6.2657685,-5.4881609 -3.7194059,0 -6.2562316,2.2380798 -6.2562316,5.4881609 0,3.1138499 2.5463626,5.2546219 6.2562316,5.2546219 z',
     '9': 'M 9.442344,30 C 4.7258979,30 1.294896,27.099286 0.50094518,22.650876 H 3.2136106 c 0.6805293,2.929916 3.0434782,4.905905 6.2665406,4.905905 4.9432888,0 7.7504728,-4.652823 7.9395088,-12.712524 0.02836,-0.194679 -0.09452,-0.457495 -0.113422,-0.661908 H 17.192817 C 15.992439,17.355613 12.89225,19.477612 9.2249527,19.477612 3.8752363,19.477612 0,15.418559 0,9.9383517 0,4.2050616 4.026465,0 9.6408318,0 13.42155,0 16.398866,1.9565217 18.147448,5.5288774 19.376181,7.7676833 20,10.717067 20,14.386762 20,24.159637 16.124764,29.980532 9.442344,29.980532 Z M 9.6502836,17.102531 c 4.0170134,0 7.0793954,-3.114861 7.0793954,-7.086308 0,-4.2829329 -3.043479,-7.5924722 -7.0604919,-7.5924722 -3.9886578,0 -6.9943289,3.2121999 -6.9943289,7.4269955 0,4.1758597 2.873346,7.2517847 6.9754254,7.2517847 z',
     '0': 'M 9.78754,0 C 7.603465,0 5.787642,0.586939 4.34069,1.760883 2.907393,2.934822 1.822163,4.606987 1.08504,6.777411 0.36156,8.934184 0,11.787174 0,15.336295 c 0,5.637647 0.989626,9.705638 2.968944,12.203671 1.651709,2.074871 3.924699,3.112032 6.818596,3.112032 2.19773,0 4.013027,-0.58694 5.446324,-1.760881 1.446952,-1.18759 2.532174,-2.859755 3.25565,-5.016528 0.723472,-2.170424 1.08504,-5.016471 1.08504,-8.538294 0,-2.975802 -0.224826,-5.337448 -0.675313,-7.084707 C 18.448777,6.490674 17.827655,5.002766 17.035928,3.787873 16.244201,2.559333 15.240692,1.624183 14.025799,0.982609 12.81091,0.327388 11.3983,0 9.78754,0 Z M 9.7395,2.7588 c 2.015007,0 3.694312,0.831008 5.037652,2.492692 1.359334,1.661684 2.039135,5.019907 2.039135,10.074771 0,5.026943 -0.679801,8.378011 -2.039135,10.053655 -1.34334,1.675648 -3.006047,2.513807 -4.989076,2.513807 -1.983022,0 -3.654557,-0.831004 -5.013891,-2.492688 C 3.430845,23.725389 2.75881,20.36717 2.75881,15.326263 2.75881,10.285363 3.502869,6.82959 4.990137,4.958449 6.173553,3.492262 7.756471,2.7588 9.7395,2.7588 Z',
-}
-
-const defaultColors = {
-    default: '',
-    red: '#fc5c65',
-    orange: '#fd9644',
-    yellow: '#fed330',
-    green: '#26de81',
-    blueGreen: '#2bcbba',
-    lightBlue: '#45aaf2',
-    darkBlue: '#2e69f2',
-    purple: '#a55eea'
-}
-
-const defaultDarkColors = {
-    default: '',
-    red: '#99393d',
-    orange: '#995c29',
-    yellow: '#997e1d',
-    green: '#1a995a',
-    blueGreen: '#1d877d',
-    lightBlue: '#2c6c99',
-    darkBlue: '#315099',
-    purple: '#6b3d99'
-}
-
-const solutionColors: Record<AccentColor, string> = {
-    red: '#fc7e84',
-    orange: '#fcb77e',
-    yellow: '#ffe173',
-    green: '#6fdea7',
-    blueGreen: '#66ccc2',
-    lightBlue: '#79c0f2',
-    darkBlue: '#6f90c3',
-    purple: '#c298eb'
-}
-
-type AdditionalColorsItem = {
-    errorColor: ColorName
-    spareErrorColor: ColorName // Used when a cell has the same color as the main error color
-    linksColor: ColorName
-    spareLinksColor: ColorName // Used when a cell has the same color as the main link color
-}
-
-const additionalColors: Record<AccentColor, AdditionalColorsItem> = {
-    red: {
-        errorColor: 'yellow',
-        spareErrorColor: 'purple',
-        linksColor: 'purple',
-        spareLinksColor: 'yellow'
-    },
-    orange: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'red',
-        spareLinksColor: 'yellow'
-    },
-    yellow: {
-        errorColor: 'red',
-        spareErrorColor: 'purple',
-        linksColor: 'red',
-        spareLinksColor: 'purple'
-    },
-    green: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'red',
-        spareLinksColor: 'purple'
-    },
-    blueGreen: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'red',
-        spareLinksColor: 'purple'
-    },
-    lightBlue: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'red',
-        spareLinksColor: 'purple'
-    },
-    darkBlue: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'red',
-        spareLinksColor: 'purple'
-    },
-    purple: {
-        errorColor: 'red',
-        spareErrorColor: 'yellow',
-        linksColor: 'green',
-        spareLinksColor: 'lightBlue'
-    }
 }
 
 export abstract class Canvas<BoardType extends Board> {
@@ -200,9 +107,7 @@ export abstract class Canvas<BoardType extends Board> {
     protected squareSize: number = 0
     protected currentAnimations: BoardAnimation[] = []
     protected noteDeltas: ScreenCoordinates[] = []
-    protected colors: Record<ColorName, string> = { ...defaultColors }
-    protected darkColors: Record<ColorName, string> = { ...defaultDarkColors }
-    protected additionalColors: AdditionalColorsItem = additionalColors.darkBlue
+    protected additionalColors = AdditionalColors.darkBlue
     protected lastMouseCell: Cell | null = null
     protected lastMouseButton: MouseButtonType | null = null
 
@@ -266,7 +171,7 @@ export abstract class Canvas<BoardType extends Board> {
 
     set theme(val: ThemeName) {
         this._theme = val
-        this.updateColors()
+        this.renderFrame()
     }
 
     get theme() {
@@ -328,7 +233,7 @@ export abstract class Canvas<BoardType extends Board> {
 
     set accentColor(value: AccentColor) {
         this._accentColor = value
-        this.additionalColors = additionalColors[value]
+        this.additionalColors = AdditionalColors[value]
         this.renderFrame()
     }
 
@@ -355,8 +260,6 @@ export abstract class Canvas<BoardType extends Board> {
     }
 
     protected updateColors() {
-        this.colors.default = themes[this.theme].lightDefaultCellColor
-        this.darkColors.default = themes[this.theme].darkDefaultCellColor
         this.renderFrame()
     }
 
@@ -524,16 +427,16 @@ export abstract class Canvas<BoardType extends Board> {
                 const highlightValue = (this._lockedInput === 0 && this.game.selectedCellsValues.has(cell.value)) || this._lockedInput === cell.value
                 if (cell.hasVisibleError) {
                     if (cell.color === this.additionalColors.errorColor) {
-                        this.ctx.strokeStyle = this.ctx.fillStyle = ColorDefinitions[this.additionalColors.spareErrorColor]
+                        this.ctx.strokeStyle = this.ctx.fillStyle = Colors[this.additionalColors.spareErrorColor]
                     } else {
-                        this.ctx.strokeStyle = this.ctx.fillStyle = ColorDefinitions[this.additionalColors.errorColor]
+                        this.ctx.strokeStyle = this.ctx.fillStyle = Colors[this.additionalColors.errorColor]
                     }
                 } else {
                     this.ctx.strokeStyle = this.ctx.fillStyle =
-                        highlightValue ? (cell.color === 'default' ? themes[this.theme].valueHighlightColor : 'white') :
-                            cell.color !== 'default' ? 'black' :
+                        highlightValue ? (cell.color ? themes[this.theme].valueHighlightColor : themes[this._theme].valueHighlightColor) :
+                            cell.color ? 'black' :
                                 cell.clue ? themes[this.theme].clueColor :
-                                    solutionColors[this.accentColor]
+                                    SolutionColors[this.accentColor]
                 }
 
                 Canvas.drawSVGNumber(this.ctx, cell.value, cell.valuePosition.x, cell.valuePosition.y, this.squareSize * 0.55, 'center', 'center', null)
@@ -542,8 +445,21 @@ export abstract class Canvas<BoardType extends Board> {
                 for (const n of cell.notes) {
                     const highlightCandidate = (this._lockedInput === 0 && this.game.selectedCellsValues.has(n)) || this._lockedInput === n
 
-                    this.ctx.strokeStyle = this.ctx.fillStyle = highlightCandidate ? (this.game.settings.highlightCandidatesWithColor ? 'white' : (cell.color === 'default' ? themes[this.theme].noteHighlightColor : 'white')) : (cell.color === 'default' ? '#75747c' : 'black')
-                    Canvas.drawSVGNumber(this.ctx, n, cell.screenPosition.x + this.noteDeltas[n - 1].x, cell.screenPosition.y + this.noteDeltas[n - 1].y, this.squareSize * (this.game.mode === 'killer' ? 0.16 : 0.2), 'center', 'center', highlightCandidate && this.game.settings.highlightCandidatesWithColor && cell.color === 'default' ? this.colors[this.accentColor] : null)
+                    this.ctx.strokeStyle = this.ctx.fillStyle =
+                        highlightCandidate ?
+                            (this.game.settings.highlightCandidatesWithColor ? 'white' : (!cell.color ? themes[this.theme].noteHighlightColor : 'white')) :
+                            (!cell.color ? themes[this._theme].clueColor : 'black')
+
+                    Canvas.drawSVGNumber(
+                        this.ctx,
+                        n,
+                        cell.screenPosition.x + this.noteDeltas[n - 1].x,
+                        cell.screenPosition.y + this.noteDeltas[n - 1].y,
+                        this.squareSize * (this.game.mode === 'killer' ? 0.16 : 0.2),
+                        'center',
+                        'center',
+                        (highlightCandidate && this.game.settings.highlightCandidatesWithColor && !cell.color) ? Colors[this.accentColor] : null
+                    )
                 }
             }
         }
@@ -554,7 +470,7 @@ export abstract class Canvas<BoardType extends Board> {
         if (!this.ctx) return
 
         for (const cell of this.game.selectedCells) {
-            this.ctx.fillStyle = this.ctx.strokeStyle = this.colors[this.accentColor]
+            this.ctx.fillStyle = this.ctx.strokeStyle = Colors[this.accentColor]
 
             const left = cell.screenPosition.x
             const right = left + this.squareSize - Canvas.COLOR_BORDER_LINE_WIDTH
@@ -615,7 +531,7 @@ export abstract class Canvas<BoardType extends Board> {
 
         const target = this._lockedInput > 0 ? this._lockedInput : [...selectedCellsValues][0]
         let links = this.game.getLinks(target)
-        this.tempCtx.fillStyle = this.tempCtx.strokeStyle = ColorDefinitions[this.additionalColors.linksColor]
+        this.tempCtx.fillStyle = this.tempCtx.strokeStyle = Colors[this.additionalColors.linksColor]
         this.tempCtx.lineWidth = Canvas.LINKS_LINE_WIDTH
         links.forEach(link => {
             const noteDelta = this.noteDeltas[target - 1]
@@ -648,7 +564,7 @@ export abstract class Canvas<BoardType extends Board> {
                     )
                 }
             }
-        }, ColorDefinitions[this.additionalColors.spareLinksColor])
+        }, Colors[this.additionalColors.spareLinksColor])
 
         this.ctx.drawImage(this.tempCtx.canvas, 0, 0)
     }
@@ -678,7 +594,7 @@ export abstract class Canvas<BoardType extends Board> {
         if (!this.ctx || !this.game) return
 
         for (const cell of this.game.allCells) {
-            this.ctx.strokeStyle = this.ctx.fillStyle = this.darkColors.default
+            this.ctx.strokeStyle = this.ctx.fillStyle = themes[this._theme].darkDefaultCellColor
             this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
         }
     }
@@ -731,9 +647,9 @@ export abstract class Canvas<BoardType extends Board> {
 
             //Background
             this.ctx.fillStyle =
-                this._notPlayable ? this.colors.default :
-                    (hasSameValueAsSelected || cell.highlighted) ? this.darkColors[cell.color] : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
-                        (this.colors[cell.color]) //Cell color
+                this._notPlayable ? themes[this._theme].lightDefaultCellColor :
+                    (hasSameValueAsSelected || cell.highlighted) ? (cell.color ? DarkColors[cell.color] : themes[this._theme].darkDefaultCellColor) : //Cell has same value as selected cell or is in same row or column as any cell with the same value as the selected cell
+                        (cell.color ? Colors[cell.color] : themes[this._theme].lightDefaultCellColor) //Cell color
 
             this.ctx.fillRect(cell.screenPosition.x, cell.screenPosition.y, this.squareSize, this.squareSize)
 

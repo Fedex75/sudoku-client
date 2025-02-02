@@ -1,3 +1,4 @@
+import { createContext } from 'react'
 import { getStoredData, useLocalStorage } from './LocalStorageHandler'
 
 const SETTINGS_KEY = 'settings'
@@ -114,3 +115,13 @@ export function useSettings() {
 
     return { settings, updateSettings }
 }
+
+interface SettingsContextType {
+    settings: Settings
+    updateSettings: (settings: Partial<Settings>) => void
+}
+
+export const SettingsContext = createContext<SettingsContextType>({
+    settings: defaultSettings,
+    updateSettings: () => { }
+})

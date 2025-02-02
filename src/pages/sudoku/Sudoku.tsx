@@ -49,12 +49,21 @@ export default function Sudoku({ requestGoBack, playing }: Props) {
         setIsTimerRunning(false)
     }, [])
 
+    useEffect(() => {
+        if (playing) {
+            resumeGame()
+        } else {
+            pauseGame()
+        }
+    }, [playing, pauseGame, resumeGame])
+
     const resetTimer = useCallback(() => {
         resumeGame()
         timerRef.current?.resetTimer()
     }, [resumeGame])
 
     const handleComplete = useCallback(() => {
+        setIsTimerRunning(false)
         setTimeout(() => {
             setWin(true)
         }, BOARD_FADEIN_ANIMATION_DURATION_MS)
@@ -156,9 +165,9 @@ export default function Sudoku({ requestGoBack, playing }: Props) {
         const windowVisibilityChangeEvent = () => {
             if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
             if (document.visibilityState === 'visible') {
-                pauseGame()
+                setIsTimerRunning(false)
             } else {
-                resumeGame()
+                if (!paused) setIsTimerRunning(true)
             }
         }
 
@@ -169,14 +178,6 @@ export default function Sudoku({ requestGoBack, playing }: Props) {
             GameHandler.saveGame()
         }
     }, [navigate, paused, pauseGame, resumeGame])
-
-    useEffect(() => {
-        if (playing) {
-            resumeGame()
-        } else {
-            pauseGame()
-        }
-    }, [playing, pauseGame, resumeGame])
 
     if (GameHandler.game === null) return null
 

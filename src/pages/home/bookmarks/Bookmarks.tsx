@@ -1,7 +1,7 @@
 import './bookmarks.css'
 import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useCallback, useState } from "react"
+import { useCallback, useContext, useState } from "react"
 import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
 import GameHandler from "../../../utils/GameHandler"
 import { useTranslation } from 'react-i18next'
@@ -10,8 +10,8 @@ import Canvas from '../../../components/CanvasComponent'
 import { BoardFactory } from '../../../game/gameModes/BoardFactory'
 import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
 import Board from '../../../utils/Board'
-import useAccentColor from '../../../utils/hooks/useAccentColor'
-import useTheme from '../../../utils/hooks/useTheme'
+import { AccentColorContext } from '../../../utils/hooks/useAccentColor'
+import { ThemeContext } from '../../../utils/hooks/useTheme'
 
 type Props = {
     requestContinue: () => void
@@ -20,8 +20,8 @@ type Props = {
 }
 
 function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
-    const [theme] = useTheme()
-    const [accentColor] = useAccentColor()
+    const { theme } = useContext(ThemeContext)
+    const { accentColor } = useContext(AccentColorContext)
     const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
 
     const { t } = useTranslation()

@@ -1,6 +1,6 @@
 import { Canvas } from '../../../utils/Canvas'
 import { Thermometer } from '../../../utils/Cell'
-import { ColorDefinitions } from '../../../utils/Colors'
+import { Colors } from '../../../utils/Colors'
 import { themes } from '../../Themes'
 import { ThermoBoard } from './ThermoBoard'
 
@@ -78,7 +78,7 @@ export class ThermoCanvas extends Canvas<ThermoBoard> {
                         }
                     }
                 }
-            }, ColorDefinitions[this.additionalColors.errorColor])
+            }, Colors[this.additionalColors.errorColor])
         }
 
         this.ctx.globalAlpha = 0.5

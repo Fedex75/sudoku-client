@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Section, SectionContent, Topbar } from '../../components'
 import { GameModeName } from '../../utils/Difficulties'
@@ -11,20 +11,13 @@ export default function Statistics() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const gameMode = searchParams.get('mode')
-
-    useEffect(() => {
-        if (!gameMode) {
-            navigate('/home/statistics')
-        }
-    }, [navigate, gameMode])
+    if (!gameMode) navigate('/home/statistics')
 
     const difficulties = useMemo(() => {
-        return Object.entries(GameHandler.statistics[gameMode as GameModeName])
-    }, [gameMode])
-
-    useEffect(() => {
-        if (difficulties.length === 0) navigate('/home/statistics')
-    }, [difficulties, navigate])
+        const diffs = Object.entries(GameHandler.statistics[gameMode as GameModeName])
+        if (diffs.length === 0) navigate('/home/statistics')
+        return diffs
+    }, [gameMode, navigate])
 
     const { t } = useTranslation()
 

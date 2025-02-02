@@ -79,7 +79,7 @@ export default abstract class Board {
     }
 
     get canErase(): boolean {
-        return this._selectedCells.size > 0 && [...this._selectedCells].some(cell => !cell.clue && (cell.value !== 0 || cell.notes.size > 0 || cell.color !== 'default'))
+        return this._selectedCells.size > 0 && [...this._selectedCells].some(cell => !cell.clue && (cell.value !== 0 || cell.notes.size > 0 || cell.color))
     }
 
     get canGiveHint(): boolean {
@@ -330,7 +330,7 @@ export default abstract class Board {
                 }
 
                 if (this._settings.clearColorOnInput) {
-                    cell.color = 'default'
+                    cell.color = null
                     this._hasChanged = true
                     for (const cg of cell.colorGroups) this.removeCellFromColorGroup(cell, cg)
                 }
@@ -361,10 +361,10 @@ export default abstract class Board {
     @UseHistory
     public erase({ cells }: { cells: Set<Cell>, causedByUser: boolean }) {
         for (const cell of cells) {
-            if (!cell.clue && (cell.value > 0 || cell.notes.size > 0 || cell.color !== 'default')) {
+            if (!cell.clue && (cell.value > 0 || cell.notes.size > 0 || cell.color)) {
                 cell.value = 0
                 cell.clearNotes()
-                cell.color = 'default'
+                cell.color = null
                 this._hasChanged = true
 
                 for (const cg of cell.colorGroups) this.removeCellFromColorGroup(cell, cg)
@@ -409,9 +409,9 @@ export default abstract class Board {
     public setColor({ of, to, causedByUser }: { of: Cell, to: ColorName, causedByUser: boolean }) {
         if (of.color !== to) {
             of.color = to
-            if (to !== 'default' && of.notes.size > 1 && this._settings.lockCellsWithColor) of.locked = true
+            if (to && of.notes.size > 1 && this._settings.lockCellsWithColor) of.locked = true
             this._hasChanged = true
-            if (to === 'default') {
+            if (to === null) {
                 if (causedByUser) this.recreatePossibleValuesCache()
             }
             else this.updatePossibleValuesByColor(of)
@@ -421,8 +421,8 @@ export default abstract class Board {
     @UseHistory
     public clearColors({ causedByUser }: { causedByUser: boolean }) {
         for (const cell of this.allCells) {
-            if (cell.color !== 'default') {
-                cell.color = 'default'
+            if (cell.color) {
+                cell.color = null
                 this._hasChanged = true
             }
         }
@@ -438,8 +438,8 @@ export default abstract class Board {
     }
 
     @UseHistory
-    public createColorGroup({ withCells, painted }: { withCells: Set<Cell>, painted: ColorName, causedByUser: boolean }) {
-        if (withCells.size < 2 || painted === 'default') return
+    public createColorGroup({ withCells, painted }: { withCells: Set<Cell>, painted: ColorName | null, causedByUser: boolean }) {
+        if (withCells.size < 2 || painted === null) return
 
         const newColorGroup = new ColorGroup(withCells, painted)
         this.colorGroups.add(newColorGroup)
@@ -457,7 +457,7 @@ export default abstract class Board {
             // Remove the reference to the group from its members
             for (const cell of group.members) {
                 cell.deleteColorGroup(group)
-                cell.color = 'default'
+                cell.color = null
                 this._hasChanged = true
             }
 
@@ -615,7 +615,7 @@ export default abstract class Board {
     }
 
     protected updatePossibleValuesByColor(cell: Cell) {
-        if (cell.color !== 'default') {
+        if (cell.color) {
             if (this._settings.autoSolveCellsWithColor && cell.locked && cell.notes.size === 1) this.setValue({ of: cell, to: [...cell.notes][0], causedByUser: false })
             else if (cell.locked) cell.possibleValues = new Set(cell.notes)
         }

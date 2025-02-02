@@ -1,8 +1,8 @@
 import { faCircle, faCircleDot } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import './colorChooser.css'
-import { HTMLAttributes } from 'react'
-import useAccentColor from '../../utils/hooks/useAccentColor'
+import { HTMLAttributes, useContext } from 'react'
+import { AccentColorContext } from '../../utils/hooks/useAccentColor'
 import { AccentColor } from '../../utils/Colors'
 
 type ColorButtonProps = {
@@ -23,7 +23,7 @@ type ColorChooserProps = {
 }
 
 export default function ColorChooser({ style, colors }: ColorChooserProps) {
-    const [accentColor, setAccentColor] = useAccentColor()
+    const { accentColor, setAccentColor } = useContext(AccentColorContext)
 
     return (
         <div className="color-chooser" style={style}>

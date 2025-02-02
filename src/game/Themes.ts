@@ -9,6 +9,7 @@ export type Theme = {
     boxBorderColor: string
     boxBorderColorRGBA: string
     clueColor: string
+    noteColor: string
     selectedCellClueColor: string
     selectedCellCandidateColor: string
     sameValueCellBackground: string
@@ -35,6 +36,7 @@ export const themes: Record<ThemeName, Theme> = {
         boxBorderColor: '#344861',
         boxBorderColorRGBA: '52, 72, 97',
         clueColor: '#777',
+        noteColor: '#75747c',
         selectedCellClueColor: '#344861',
         selectedCellCandidateColor: '#75747c',
         sameValueCellBackground: '#c3d7ea',
@@ -59,6 +61,7 @@ export const themes: Record<ThemeName, Theme> = {
         boxBorderColor: 'black',
         boxBorderColorRGBA: '0, 0, 0',
         clueColor: '#75747c',
+        noteColor: '#75747c',
         selectedCellClueColor: 'black',
         selectedCellCandidateColor: 'black',
         sameValueCellBackground: '#0f0e12',

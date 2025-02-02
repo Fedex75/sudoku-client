@@ -10,7 +10,7 @@
     border-radius: 50%;
     transition: top 0s;
     z-index: 3;
-    border: solid var(--background) 5px;
+    border: solid var(--fill) 5px;
 }
 
 .play-button.defaultVariant {

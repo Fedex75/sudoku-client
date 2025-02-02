@@ -14,7 +14,7 @@
 
     .settings__item__icon,
     .react-switch {
-        filter: var(--disabledFilter);
+        filter: var(--settingsItemDisabledFilter);
     }
 
     .settings__item__title {

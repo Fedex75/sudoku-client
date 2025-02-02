@@ -1,11 +1,11 @@
-import { useMemo } from "react"
+import { useContext, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../../components"
 import { DifficultyName, difficulties } from "../../utils/Difficulties"
 import GameHandler from "../../utils/GameHandler"
 import { convertMillisecondsToHMS } from "../../utils/Statistics"
 import Board from '../../utils/Board'
-import useAccentColor from '../../utils/hooks/useAccentColor'
+import { AccentColorContext } from '../../utils/hooks/useAccentColor'
 
 interface WinScreenProps {
     handleNewGameClick: () => void
@@ -15,7 +15,7 @@ interface WinScreenProps {
 
 export function WinScreen({ handleNewGameClick, handleNewGame, game }: WinScreenProps) {
     const { t } = useTranslation()
-    const [accentColor] = useAccentColor()
+    const { accentColor } = useContext(AccentColorContext)
 
     const nextDifficulty = useMemo(() => {
         if (!game) return null
@@ -28,7 +28,7 @@ export function WinScreen({ handleNewGameClick, handleNewGame, game }: WinScreen
         }
     }, [game])
 
-    if (!game || game.complete) return null
+    if (!game) return null
 
     return (
         <div className='sudoku__win-screen-wrapper'>

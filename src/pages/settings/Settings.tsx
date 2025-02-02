@@ -1,5 +1,5 @@
 import './settings.css'
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 import { Section, SectionContent, Topbar, ColorChooser } from '../../components'
 import { Route, Routes } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,13 +11,13 @@ import { colorNames } from '../../utils/Colors'
 import FlagArg from '../../svg/flag_arg'
 import FlagUKSVG from '../../svg/flag_uk'
 import FlagSpainSVG from '../../svg/flag_spain'
-import { Language, useSettings } from '../../utils/hooks/SettingsHandler'
+import { Language, SettingsContext } from '../../utils/hooks/SettingsHandler'
 import GameHandler from '../../utils/GameHandler'
 import SectionLink from '../../components/sectionLink/SectionLink'
 
 function AppearanceSettings() {
     const { t } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     return (
         <Section>
@@ -31,7 +31,7 @@ function AppearanceSettings() {
                 <div className='settings__label'>{t('settings.accentColor')}</div>
 
                 <div style={{ marginBottom: 30 }}>
-                    <ColorChooser colors={colorNames.filter(cn => cn !== 'default')} />
+                    <ColorChooser colors={[...colorNames]} />
                 </div>
 
                 <div className='settings__label'>{t('settings.highContrast')}</div>
@@ -52,7 +52,7 @@ function AppearanceSettings() {
 
 function AnnotationsSettings() {
     const { t } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     return (
         <Section>
@@ -91,7 +91,7 @@ function AnnotationsSettings() {
 
 function ColorSettings() {
     const { t } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     return (
         <Section>
@@ -118,7 +118,7 @@ function ColorSettings() {
 
 function ErrorsSettings() {
     const { t } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     return (
         <Section>
@@ -143,7 +143,7 @@ function ErrorsSettings() {
 
 function AdvancedSettings() {
     const { t } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     return (
         <Section>
@@ -196,7 +196,7 @@ function GeneralSection() {
 
 function LanguageSettings() {
     const { t, i18n } = useTranslation()
-    const { settings, updateSettings } = useSettings()
+    const { settings, updateSettings } = useContext(SettingsContext)
 
     const handleChangeLanguage = useCallback((newLang: Language) => {
         updateSettings({ language: newLang })
@@ -245,7 +245,7 @@ function AboutSection() {
                     }
                 </div>
 
-                <p style={{ display: 'flex', flexFlow: 'row', justifyContent: 'center', gap: 7, alignItems: 'center', color: 'var(--primaryTextColor)', textAlign: 'center' }}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--darkRed)' /> {t('settings.inArgentina')} <FlagArg className='about__flag-argentina' /> </p>
+                <p style={{ display: 'flex', flexFlow: 'row', justifyContent: 'center', gap: 7, alignItems: 'center', color: 'var(--primaryTextColor)', textAlign: 'center' }}>{t('settings.madeWith')} <FontAwesomeIcon icon={faHeart} color='var(--red)' /> {t('settings.inArgentina')} <FlagArg className='about__flag-argentina' /> </p>
             </SectionContent>
         </Section>
     )
