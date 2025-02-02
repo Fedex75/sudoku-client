@@ -37,6 +37,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
     const [lockedInput, setLockedInput] = useState(0)
     const [colorMode, setColorMode] = useState(false)
     const [lockedColor, setLockedColor] = useState<ColorName | null>(null)
+    const [magicWandHighlighted, setMagicWandHighlighted] = useState(false)
 
     const [dragMode, setDragMode] = useState<boolean | null>(null)
 
@@ -196,7 +197,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         updateMagicWandMode()
     }, [selectMode, selectedCellBeforeSelectMode, updateMagicWandMode, game, updatePossibleValues])
 
-    const handleSetColor = useCallback((selectedCells: Set<Cell>, color: ColorName = accentColor) => {
+    const handleSetColor = useCallback((selectedCells: Set<Cell>, color: ColorName | null = accentColor) => {
         if (!game || game.complete || selectedCells.size === 0) return
 
         let selectedGroups = [...selectedCells].map(cell => cell.colorGroups).reduce((a, b) => a.union(b), new Set())
@@ -347,7 +348,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         }
     }, [colorMode])
 
-    const onColorButtonClick = useCallback((color: ColorName, type: "primary" | "secondary") => {
+    const onColorButtonClick = useCallback((color: ColorName | null, type: MouseButtonType) => {
         if (type === 'primary') {
             handleUserInteraction(() => { if (game) handleSetColor(game.selectedCells, color) }, (game ? (game.selectedCells.size > 0 ? [...game.selectedCells][0] : null) : null))
         } else {
@@ -394,13 +395,13 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
 
     const magicWandIcon = useMemo(() => {
         if (magicWandMode === 'links') {
-            return <FontAwesomeIcon icon={faLink} fontSize={30} color="var(--primaryIconColor)" />
+            return <FontAwesomeIcon icon={faLink} fontSize={30} color={magicWandHighlighted ? 'white' : 'var(--primaryIconColor)'} />
         } else if (magicWandMode === 'clearColors') {
             return <ColorCircleSVG />
         } else {
             return <MagicWandSVG fill={magicWandMode === 'setColor' && !game.fullNotation ? Colors[magicWandColor || accentColor] : 'var(--primaryIconColor)'} />
         }
-    }, [magicWandMode, magicWandColor, accentColor, game.fullNotation])
+    }, [magicWandMode, magicWandColor, accentColor, game.fullNotation, magicWandHighlighted])
 
     useEffect(() => {
         updateMagicWandMode()
@@ -435,6 +436,10 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
     useEffect(() => {
         if (game.fullNotation) handleFullNotation()
     }, [game.fullNotation, handleFullNotation])
+
+    useEffect(() => {
+        setMagicWandHighlighted(showLinks)
+    }, [showLinks])
 
     if (!game) return <Navigate to="/"></Navigate>
 

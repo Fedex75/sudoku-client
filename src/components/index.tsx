@@ -1,7 +1,6 @@
 import ActionSheet from './actionSheet/ActionSheet'
 import ActionSheetButton from './actionSheetButton/ActionSheetButton'
 import Button from './button/Button'
-import ColorButton from './colorButton/ColorButton'
 import EditButton from './editButton/EditButton'
 import NumpadButton from './numpadButton/NumpadButton'
 import Section from './section/Section'
@@ -17,7 +16,6 @@ export {
     ActionSheet,
     ActionSheetButton,
     Button,
-    ColorButton,
     EditButton,
     Numpad,
     NumpadButton,

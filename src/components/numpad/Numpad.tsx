@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import { useState } from 'react'
-import ColorButton from '../colorButton/ColorButton'
 import EditButton from '../editButton/EditButton'
 import NunmpadButton from '../numpadButton/NumpadButton'
 import UndoSVG from '../../svg/undo'
@@ -22,7 +21,7 @@ type Props = {
     onMagicWand: () => void
     onSelect: () => void
     onColor: () => void
-    onColorButtonClick: (color: ColorName, type: "primary" | "secondary") => void
+    onColorButtonClick: (color: ColorName | null, type: MouseButtonType) => void
     onNumpadButtonClick: (number: number, type: MouseButtonType) => void
 
     noteHighlighted: boolean
@@ -63,12 +62,12 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
     const editButtons = [
         <EditButton key={0} icon={<UndoSVG />} onClick={onUndo} disabled={undoDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
         <EditButton key={1} icon={<EraserSVG />} onClick={onErase} disabled={eraseDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
-        <EditButton key={2} icon={<PencilSVG />} highlight={noteHighlighted} onClick={onNote} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
+        <EditButton key={2} icon={<PencilSVG stroke={noteHighlighted ? 'none' : undefined} />} highlight={noteHighlighted} onClick={onNote} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />,
         <EditButton key={3} icon={<BulbSVG />} yellow={hintState} onClick={handleHintClick} disabled={hintDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 - CORRECTION} />
     ]
 
     const specialButtons = [
-        <EditButton key={5} icon={<SelectSVG />} highlight={selectHighlighted} onClick={onSelect} number={calculatorValue} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA - CORRECTION} />,
+        <EditButton key={5} icon={<SelectSVG fill={selectHighlighted ? 'white' : undefined} />} highlight={selectHighlighted} onClick={onSelect} number={calculatorValue} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA - CORRECTION} />,
         <EditButton key={4} icon={magicWandIcon} highlight={magicWandHighlighted} onClick={onMagicWand} disabled={magicWandDisabled} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * 2 - CORRECTION} />,
         <EditButton key={6} icon={<ColorCirclePaintedSVG />} highlight={colorMode} onClick={onColor} animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * 3 - CORRECTION} />
     ]
@@ -79,23 +78,19 @@ export default function Numpad({ onUndo, onErase, onNote, onHint, onMagicWand, o
         for (let j = 0; j < 3; j++) {
             const buttonIndex = 3 * i + j
             rows[i].push(
-                colorMode ?
-                    <ColorButton
-                        key={buttonIndex + 7}
-                        color={colorNames[buttonIndex]}
-                        onClick={onColorButtonClick}
-                        locked={lockedColor === colorNames[buttonIndex]}
-                    /> :
-                    <NunmpadButton
-                        key={buttonIndex + 7}
-                        number={buttonIndex + 1}
-                        disabled={possibleValues !== null && !possibleValues.has(buttonIndex + 1)}
-                        hidden={completedNumbers.has(buttonIndex + 1)}
-                        locked={!completedNumbers.has(buttonIndex + 1) && lockedInput === buttonIndex + 1
-                        }
-                        onClick={onNumpadButtonClick}
-                        animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * (i + 1) - CORRECTION}
-                    />
+                <NunmpadButton
+                    key={buttonIndex + 7}
+                    colorMode={colorMode}
+                    number={buttonIndex + 1}
+                    disabled={!colorMode && possibleValues !== null && !possibleValues.has(buttonIndex + 1)}
+                    hidden={completedNumbers.has(buttonIndex + 1)}
+                    locked={!completedNumbers.has(buttonIndex + 1) && lockedInput === buttonIndex + 1
+                    }
+                    onNumberClick={onNumpadButtonClick}
+                    onColorClick={onColorButtonClick}
+                    animationDelay={BOARD_FADEIN_ANIMATION_DURATION_MS / 1000 + ROW_DELAY_DELTA * (i + 1) - CORRECTION}
+                    color={[null, ...colorNames][buttonIndex]}
+                />
             )
         }
     }

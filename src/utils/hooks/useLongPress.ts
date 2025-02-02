@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { DependencyList, useCallback, useRef } from 'react'
 
 type CallbackType = (type: 'primary' | 'secondary') => void
 

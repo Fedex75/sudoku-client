@@ -80,7 +80,6 @@ function Home() {
         setNavbarText(prompt)
         setNavbarAction('prompt')
         setPlayButtonAction('hide')
-        console.log('setting action to hide')
         setNavbarCallbacks({ onConfirm, onCancel })
     }, [])
 

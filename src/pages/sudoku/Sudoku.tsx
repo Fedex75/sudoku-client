@@ -163,11 +163,11 @@ export default function Sudoku({ requestGoBack, playing }: Props) {
         }
 
         const windowVisibilityChangeEvent = () => {
-            if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
             if (document.visibilityState === 'visible') {
-                setIsTimerRunning(false)
-            } else {
                 if (!paused) setIsTimerRunning(true)
+            } else {
+                if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
+                setIsTimerRunning(false)
             }
         }
 

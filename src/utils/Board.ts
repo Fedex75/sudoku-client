@@ -406,7 +406,7 @@ export default abstract class Board {
     }
 
     @UseHistory
-    public setColor({ of, to, causedByUser }: { of: Cell, to: ColorName, causedByUser: boolean }) {
+    public setColor({ of, to, causedByUser }: { of: Cell, to: ColorName | null, causedByUser: boolean }) {
         if (of.color !== to) {
             of.color = to
             if (to && of.notes.size > 1 && this._settings.lockCellsWithColor) of.locked = true

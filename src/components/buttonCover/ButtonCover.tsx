@@ -10,7 +10,6 @@ export default function ButtonCover({ animationDelay }: { animationDelay: number
             transition={{ delay: GAME_SLIDE_ANIMATION_DURATION_SECONDS + animationDelay, duration: 0.5 }}
             className='button-cover'
         >
-
         </motion.div>
     )
 }

@@ -8,7 +8,7 @@
     cursor: pointer;
     color: var(--editButtonColor);
     background-color: var(--editButtonBackground);
-    transition: all 0.1s ease-in-out
+    transition: all 0.1s ease-in-out;
 }
 
 .edit-buttons__button.disabled {
@@ -23,10 +23,6 @@
 
 .edit-buttons__button.yellow {
     background-color: #fed330;
-}
-
-.edit-buttons__button:hover {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0 0);
 }
 
 .edit-buttons__button__digit {

@@ -1,6 +1,6 @@
 import React from "react"
 
-export default function PencilSVG({ className = 'icon' }): React.JSX.Element {
+export default function PencilSVG({ className = 'icon', stroke = 'var(--secondaryIconColor)' }): React.JSX.Element {
     return (
         <svg
             className={className}
@@ -12,7 +12,7 @@ export default function PencilSVG({ className = 'icon' }): React.JSX.Element {
             <g fill='white' fillOpacity="1" transform="translate(-222.55 -2.45)">
                 <path
                     fillRule="evenodd"
-                    stroke='none'
+                    stroke={stroke}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeOpacity="1"

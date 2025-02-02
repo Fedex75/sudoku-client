@@ -40,7 +40,7 @@
     --carouselDotColor: #c8c8c8;
     --settingsBorderColor: #dddddd;
 
-    --editButtonDisabledFilter: brightness(0.7);
+    --editButtonDisabledFilter: brightness(0.9);
 
     /* This color should be equal to the color of the container behind it */
     --checkIconColor: white;
