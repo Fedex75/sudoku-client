@@ -11,10 +11,11 @@ type Props = {
     icon: React.ReactNode
     disabled?: Boolean
     number?: number
+    shouldAnimate: boolean
     animationDelay: number
 }
 
-function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number = 0, animationDelay }: Props) {
+function EditButton({ onClick, highlight = false, yellow = false, icon, disabled = false, number = 0, shouldAnimate, animationDelay }: Props) {
     return (
         <div
             className={`edit-buttons__button fade_in ${highlight ? 'highlight' : ''} ${yellow ? 'yellow' : ''} ${disabled ? 'disabled' : ''} ${number > 0 ? 'number' : ''}`}
@@ -39,7 +40,7 @@ function EditButton({ onClick, highlight = false, yellow = false, icon, disabled
             {
                 number > 0 ? number : null
             }
-            <ButtonCover animationDelay={animationDelay} />
+            {shouldAnimate && <ButtonCover animationDelay={animationDelay} />}
         </div>
     )
 }

@@ -70,6 +70,7 @@
     align-items: center;
     width: 100%;
     padding: 20px;
+    padding-bottom: 0;
 }
 
 .sudoku__win-screen .button {
@@ -80,7 +81,7 @@
     grid-area: title;
     font-size: 30px;
     color: var(--primaryTextColor);
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
 .sudoku__win-screen__stats {

@@ -12,11 +12,10 @@ import GameHandler from '../../utils/GameHandler'
 import PlayButton, { PlayButtonAction } from '../../components/playButton/PlayButton'
 import Sudoku from '../sudoku/Sudoku'
 import { GAME_SLIDE_ANIMATION_DURATION_SECONDS } from '../../utils/Constants'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 function Home() {
-    const [playingGame, setPlayingGame] = useState(false)
     const [shouldRenderHome, setShouldRenderHome] = useState(true)
     const [shouldRenderGame, setShouldRenderGame] = useState(false)
 
@@ -30,13 +29,11 @@ function Home() {
     const showGame = useCallback(() => {
         setShouldRenderGame(true)
         setTimeout(() => {
-            setPlayingGame(true)
             setShouldRenderHome(false)
         }, GAME_SLIDE_ANIMATION_DURATION_SECONDS * 1000)
     }, [])
 
     const hideGame = useCallback(() => {
-        setPlayingGame(false)
         setShouldRenderGame(false)
         setPlayButtonAction('default')
         setShouldRenderHome(true)
@@ -122,19 +119,7 @@ function Home() {
             <PlayButton action={playButtonAction} onPlay={handlePlayButtonClick} />
 
             <AnimatePresence>
-                {
-                    shouldRenderGame &&
-                    <motion.div
-                        key='sudoku-wrapper'
-                        initial={{ top: '100vh' }}
-                        animate={{ top: 0 }}
-                        exit={{ top: '100vh', transition: { duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' } }}
-                        transition={{ duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
-                        className='home__sudoku-wrapper'
-                    >
-                        <Sudoku requestGoBack={handleGoBack} playing={playingGame} />
-                    </motion.div>
-                }
+                {shouldRenderGame && <Sudoku requestGoBack={handleGoBack} />}
             </AnimatePresence>
         </>
     )

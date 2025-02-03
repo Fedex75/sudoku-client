@@ -13,7 +13,23 @@
     width: 50px;
     height: 6px;
     border-radius: 3px;
-    margin: 10px 0;
+}
+
+.action-sheet__top {
+    display: grid;
+    grid-template-columns: 1fr fit-content(0) 1fr;
+    width: calc(100% - 20px);
+    padding: 0 10px;
+    align-items: center;
+}
+
+.action-sheet__top__back {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    gap: 5px;
+    color: var(--themeColor);
+    font-size: 18px;
 }
 
 .action-sheet__wrapper.buttonsMode {
@@ -30,7 +46,7 @@
     max-width: 450px;
     background-color: var(--actionSheetBackground);
     border-radius: 15px;
-    padding-bottom: 10px;
+    padding: 10px 0;
 }
 
 .action-sheet__list {

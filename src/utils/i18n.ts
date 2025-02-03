@@ -122,7 +122,8 @@ export function initI18n() {
                         copyFullBoard: 'Copy full board',
                         copyMission: 'Copy mission',
                         howToPlay: 'Tutorial',
-                        timerFullNotation: 'Full notation'
+                        timerFullNotation: 'Full notation',
+                        goHome: 'Home',
                     },
                     gameModes: {
                         classic: 'Classic',
@@ -279,7 +280,8 @@ export function initI18n() {
                         copyFullBoard: 'Copiar tablero completo',
                         copyMission: 'Copiar misión',
                         howToPlay: 'Tutorial',
-                        timerFullNotation: 'Notación completa'
+                        timerFullNotation: 'Notación completa',
+                        goHome: 'Inicio',
                     },
                     gameModes: {
                         classic: 'Clásico',

@@ -153,6 +153,7 @@ export abstract class Canvas<BoardType extends Board> {
     set game(val: BoardType) {
         this._game = val
         this.resizeCanvas()
+        if (!this.notPlayable && !this._paused) this.doFadeInAnimation()
     }
 
     get game(): BoardType | null {
@@ -205,24 +206,7 @@ export abstract class Canvas<BoardType extends Board> {
                     }])
                 }
             } else {
-                this.addAnimations([{
-                    type: 'fadein',
-                    startTime: null,
-                    duration: (this.hasDoneFadeIn ? 750 : BOARD_FADEIN_ANIMATION_DURATION_MS),
-                    func: ({ progress }) => {
-                        if (!this.game) return
-                        for (let y = 0; y < this.game.nSquares; y++) {
-                            const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (this.game.nSquares - 1) + 1, 0), 1)
-                            for (let x = 0; x < this.game.nSquares; x++) {
-                                const cell = this.game.get({ x, y })
-                                if (!cell) continue
-                                cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
-                                cell.animationGamma = gamma
-                            }
-                        }
-                    }
-                }])
-                this.hasDoneFadeIn = true
+                this.doFadeInAnimation()
             }
         }
     }
@@ -309,6 +293,27 @@ export abstract class Canvas<BoardType extends Board> {
             }
             this.renderFrame()
         }
+    }
+
+    public doFadeInAnimation() {
+        this.addAnimations([{
+            type: 'fadein',
+            startTime: null,
+            duration: (this.hasDoneFadeIn ? 750 : BOARD_FADEIN_ANIMATION_DURATION_MS),
+            func: ({ progress }) => {
+                if (!this.game) return
+                for (let y = 0; y < this.game.nSquares; y++) {
+                    const gamma = Math.min(Math.max((y - 2 * progress * (this.game.nSquares - 1)) / (this.game.nSquares - 1) + 1, 0), 1)
+                    for (let x = 0; x < this.game.nSquares; x++) {
+                        const cell = this.game.get({ x, y })
+                        if (!cell) continue
+                        cell.animationColor = `rgba(${themes[this._theme].animationFadeBaseColor}, ${gamma})`
+                        cell.animationGamma = gamma
+                    }
+                }
+            }
+        }])
+        this.hasDoneFadeIn = true
     }
 
     public resizeCanvas() {

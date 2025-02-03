@@ -18,16 +18,17 @@ import { SettingsContext } from '../utils/hooks/SettingsHandler'
 import Board from '../utils/Board'
 import { ThemeContext } from '../utils/hooks/useTheme'
 import { AccentColorContext } from '../utils/hooks/useAccentColor'
+import { BOARD_WIN_ANIMATION_DURATION_MS } from '../utils/Constants'
 
 type Props = {
     paused: boolean
     handleComplete: () => void
-    boardAnimationDuration: number
     game: Board
     handleFullNotation: () => void
+    shouldAnimateNumpad: boolean
 }
 
-function Game({ paused, handleComplete, boardAnimationDuration, game, handleFullNotation }: Props) {
+function Game({ paused, handleComplete, game, handleFullNotation, shouldAnimateNumpad }: Props) {
     const { theme } = useContext(ThemeContext)
     const { accentColor } = useContext(AccentColorContext)
     const { settings } = useContext(SettingsContext)
@@ -158,7 +159,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
                 game.animations = [{
                     type: 'board',
                     startTime: null,
-                    duration: boardAnimationDuration,
+                    duration: BOARD_WIN_ANIMATION_DURATION_MS,
                     func: ({ theme, progress }) => {
                         if (!game) return
                         for (const cell of game.allCells) { cell.animationColor = `rgba(${themes[theme].animationBaseColor}, ${brightness(Math.max(Math.abs(center.x - cell.coords.x), Math.abs(center.y - cell.coords.y)), progress, 8, 8)})` }
@@ -178,7 +179,7 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
         updateMagicWandMode()
 
         canvasHandlerRef.current.renderFrame()
-    }, [handleComplete, updateMagicWandMode, updatePossibleValues, boardAnimationDuration, game])
+    }, [handleComplete, updateMagicWandMode, updatePossibleValues, game])
 
     const handleSelect = useCallback((withState: boolean | null) => {
         if (!game) return
@@ -464,6 +465,8 @@ function Game({ paused, handleComplete, boardAnimationDuration, game, handleFull
                 magicWandIcon={magicWandIcon}
                 magicWandDisabled={magicWandMode === 'disabled'}
                 selectHighlighted={selectMode}
+
+                shouldAnimate={shouldAnimateNumpad}
 
                 undoDisabled={!game || game.complete || !game.hasHistory}
                 eraseDisabled={!game || game.complete || !game.canErase}
