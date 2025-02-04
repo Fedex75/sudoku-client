@@ -114,6 +114,7 @@ export default function Navbar({ action, onConfirm, onCancel, text = '', backgro
                         exit={{ opacity: 0 }}
                         transition={{ duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
                         className='navbar-backdrop'
+                        onClick={() => { onCancel() }}
                     />
                 }
             </AnimatePresence>
