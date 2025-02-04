@@ -19,12 +19,11 @@ type Props = {
     disabled: boolean
     hidden: boolean
     locked: boolean
-    shouldAnimate: boolean
     animationDelay: number
     color: ColorName | null
 }
 
-export default function NunmpadButton({ onNumberClick, onColorClick, colorMode, number, disabled, hidden, locked, shouldAnimate, animationDelay, color }: Props): React.JSX.Element {
+export default function NunmpadButton({ onNumberClick, onColorClick, colorMode, number, disabled, hidden, locked, animationDelay, color }: Props): React.JSX.Element {
     const { theme } = useContext(ThemeContext)
 
     const handleClick = useCallback((type: MouseButtonType) => {
@@ -41,7 +40,7 @@ export default function NunmpadButton({ onNumberClick, onColorClick, colorMode, 
 
     return (
         <div
-            className={`numpad__button fade_in number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${locked ? 'locked' : ''}`}
+            className={`numpad__button fade_in number ${disabled ? 'disabled' : ''} ${hidden ? 'hidden' : ''} ${!colorMode && locked ? 'locked' : ''}`}
             style={colorMode ? { backgroundColor: color ? Colors[color] : themes[theme].lightDefaultCellColor } : {}}
             onTouchStart={(e) => {
                 e.stopPropagation()
@@ -66,8 +65,8 @@ export default function NunmpadButton({ onNumberClick, onColorClick, colorMode, 
             }}
         >
             {colorMode ? '' : number}
-            {locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
-            {shouldAnimate && <ButtonCover animationDelay={animationDelay} />}
+            {!colorMode && locked ? <FontAwesomeIcon icon={faLock} style={{ position: 'absolute', right: 3, bottom: 3, fontSize: 16 }} /> : null}
+            <ButtonCover animationDelay={animationDelay} />
         </div>
     )
 }

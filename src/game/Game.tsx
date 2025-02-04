@@ -25,10 +25,9 @@ type Props = {
     handleComplete: () => void
     game: Board
     handleFullNotation: () => void
-    shouldAnimateNumpad: boolean
 }
 
-function Game({ paused, handleComplete, game, handleFullNotation, shouldAnimateNumpad }: Props) {
+function Game({ paused, handleComplete, game, handleFullNotation }: Props) {
     const { theme } = useContext(ThemeContext)
     const { accentColor } = useContext(AccentColorContext)
     const { settings } = useContext(SettingsContext)
@@ -465,8 +464,6 @@ function Game({ paused, handleComplete, game, handleFullNotation, shouldAnimateN
                 magicWandIcon={magicWandIcon}
                 magicWandDisabled={magicWandMode === 'disabled'}
                 selectHighlighted={selectMode}
-
-                shouldAnimate={shouldAnimateNumpad}
 
                 undoDisabled={!game || game.complete || !game.hasHistory}
                 eraseDisabled={!game || game.complete || !game.canErase}

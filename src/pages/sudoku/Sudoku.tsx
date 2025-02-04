@@ -38,8 +38,6 @@ export default function Sudoku({ requestGoBack }: Props) {
 
     const timerRef = useRef<TimerRef>(null)
 
-    const [shouldAnimateNumpad, setShouldAnimateNumpad] = useState(true)
-
     const { t } = useTranslation()
 
     const resumeGame = useCallback(() => {
@@ -155,13 +153,8 @@ export default function Sudoku({ requestGoBack }: Props) {
         timerRef.current?.showMessage(t('sudoku.timerFullNotation'), 2000)
     }, [t])
 
-    const handleAnimationStarted = useCallback(() => {
-        setShouldAnimateNumpad(true)
-    }, [])
-
     const handleAnimationFinished = useCallback(() => {
         resumeGame()
-        setShouldAnimateNumpad(false)
     }, [resumeGame])
 
     useEffect(() => {
@@ -198,7 +191,6 @@ export default function Sudoku({ requestGoBack }: Props) {
                 exit={{ top: '100vh', transition: { duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' } }}
                 transition={{ duration: GAME_SLIDE_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
                 className='home__sudoku-wrapper'
-                onAnimationStart={handleAnimationStarted}
                 onAnimationComplete={handleAnimationFinished}
             >
                 <Section>
@@ -218,7 +210,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                     <SectionContent id='sudoku'>
                         {
                             tutorialIsOpen ? <Tutorial gameMode={GameHandler.game.mode} quitTutorial={handleQuitTutorial} /> :
-                                <Game paused={paused} handleComplete={handleComplete} game={GameHandler.game} handleFullNotation={handleFullNotation} shouldAnimateNumpad={shouldAnimateNumpad} />
+                                <Game paused={paused} handleComplete={handleComplete} game={GameHandler.game} handleFullNotation={handleFullNotation} />
                         }
                     </SectionContent>
                 </Section>
