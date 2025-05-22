@@ -1,186 +1,187 @@
-import './sudoku.css'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components'
-import GameHandler from '../../utils/GameHandler'
-import { DifficultyName, difficulties } from '../../utils/Difficulties'
-import copy from 'copy-to-clipboard'
-import { useNavigate } from 'react-router'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPlusSquare, faChevronDown } from '@fortawesome/free-solid-svg-icons'
-import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons'
-import { useTranslation } from 'react-i18next'
-import SVGMenu from '../../svg/menu'
-import SVGRestart from '../../svg/restart'
-import Game from '../../game/Game'
-import { WinScreen } from './WinScreen'
-import { Tutorial } from './Tutorial'
-import Timer, { TimerRef } from '../../components/timer/Timer'
-import { BOARD_WIN_ANIMATION_DURATION_MS, GAME_SLIDE_ANIMATION_DURATION_SECONDS } from '../../utils/Constants'
-import { motion } from 'framer-motion'
+import './sudoku.css';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components';
+import GameHandler from '../../utils/GameHandler';
+import { DifficultyName, difficulties } from '../../utils/Difficulties';
+import copy from 'copy-to-clipboard';
+import { useNavigate } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpFromBracket, faBookmark as bookmarkSolid, faInfoCircle, faPlusSquare, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faBookmark as bookmarkRegular } from '@fortawesome/free-regular-svg-icons';
+import { useTranslation } from 'react-i18next';
+import SVGMenu from '../../svg/menu';
+import SVGRestart from '../../svg/restart';
+import Game from '../../game/Game';
+import { WinScreen } from './WinScreen';
+import { Tutorial } from './Tutorial';
+import Timer, { TimerRef } from '../../components/timer/Timer';
+import { BOARD_WIN_ANIMATION_DURATION_MS, GAME_SLIDE_ANIMATION_DURATION_SECONDS } from '../../utils/Constants';
+import { motion } from 'framer-motion';
 
 type Props = {
-    requestGoBack: () => void
-}
+    requestGoBack: () => void;
+};
 
 export default function Sudoku({ requestGoBack }: Props) {
-    const [win, setWin] = useState(false)
-    const [tutorialIsOpen, setTutorialIsOpen] = useState(false)
+    const [win, setWin] = useState(false);
+    const [tutorialIsOpen, setTutorialIsOpen] = useState(false);
 
-    const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked())
-    const [menuActionSheetIsOpen, setMenuActionSheetIsOpen] = useState(false)
-    const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false)
-    const [winActionSheetIsOpen, setWinActionSheetIsOpen] = useState(false)
+    const [bookmark, setBookmark] = useState(GameHandler.currentGameIsBookmarked());
+    const [menuActionSheetIsOpen, setMenuActionSheetIsOpen] = useState(false);
+    const [exportActionSheetIsOpen, setExportActionSheetIsOpen] = useState(false);
+    const [winActionSheetIsOpen, setWinActionSheetIsOpen] = useState(false);
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
-    const [isTimerRunning, setIsTimerRunning] = useState(false)
-    const [paused, setPaused] = useState(true)
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [paused, setPaused] = useState(true);
 
-    const timerRef = useRef<TimerRef>(null)
+    const timerRef = useRef<TimerRef>(null);
 
-    const { t } = useTranslation()
+    const { t } = useTranslation();
 
-    const resumeGame = useCallback(() => {
-        if (win) return
-        setPaused(false)
-        setIsTimerRunning(true)
-    }, [win])
+    const resumeGame = useCallback((force: boolean) => {
+        if (win && !force) return;
+        setPaused(false);
+        setIsTimerRunning(true);
+    }, [win]);
 
     const pauseGame = useCallback(() => {
-        if (win) return
-        setPaused(true)
-        setIsTimerRunning(false)
-    }, [win])
+        if (win) return;
+        setPaused(true);
+        setIsTimerRunning(false);
+    }, [win]);
 
     const resetTimer = useCallback(() => {
-        resumeGame()
-        timerRef.current?.resetTimer()
-    }, [resumeGame])
+        resumeGame(true);
+        timerRef.current?.resetTimer();
+    }, [resumeGame]);
 
     const handleComplete = useCallback(() => {
-        setIsTimerRunning(false)
+        setIsTimerRunning(false);
         setTimeout(() => {
-            setWin(true)
-            setWinActionSheetIsOpen(true)
-        }, BOARD_WIN_ANIMATION_DURATION_MS)
-    }, [])
+            setWin(true);
+            setWinActionSheetIsOpen(true);
+        }, BOARD_WIN_ANIMATION_DURATION_MS);
+    }, []);
 
     const openMenuActionSheet = useCallback(() => {
-        setMenuActionSheetIsOpen(true)
-        pauseGame()
-    }, [pauseGame])
+        setMenuActionSheetIsOpen(true);
+        pauseGame();
+    }, [pauseGame]);
 
     const closeMenuActionSheet = useCallback(() => {
-        setMenuActionSheetIsOpen(false)
-        resumeGame()
-    }, [resumeGame])
+        setMenuActionSheetIsOpen(false);
+        resumeGame(false);
+    }, [resumeGame]);
 
     const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
-        if (!GameHandler.game) return
+        if (!GameHandler.game) return;
+        setWin(false);
+
         if (difficulty === 'restart') {
-            GameHandler.game.restart()
+            GameHandler.game.restart();
         } else {
-            const newGame = GameHandler.createNewGame(GameHandler.game.mode, difficulty)
-            if (!newGame) return
-            GameHandler.setCurrentGame(newGame)
+            const newGame = GameHandler.createNewGame(GameHandler.game.mode, difficulty);
+            if (!newGame) return;
+            GameHandler.setCurrentGame(newGame);
         }
 
-        setWin(false)
-        resumeGame()
-        setBookmark(GameHandler.currentGameIsBookmarked())
+        setBookmark(GameHandler.currentGameIsBookmarked());
 
-        resetTimer()
+        resetTimer();
 
-        setMenuActionSheetIsOpen(false)
-        setExportActionSheetIsOpen(false)
-    }, [resetTimer, resumeGame])
+        setWinActionSheetIsOpen(false);
+        setMenuActionSheetIsOpen(false);
+        setExportActionSheetIsOpen(false);
+    }, [resetTimer, resumeGame]);
 
     const handleNewGameClick = useCallback(() => {
-        if (!GameHandler.game) return
+        if (!GameHandler.game) return;
 
         if (GameHandler.game.difficulty === 'unrated') {
-            openMenuActionSheet()
-            setExportActionSheetIsOpen(false)
+            openMenuActionSheet();
+            setExportActionSheetIsOpen(false);
         }
-        else handleNewGame(GameHandler.game.difficulty)
-    }, [handleNewGame, openMenuActionSheet])
+        else handleNewGame(GameHandler.game.difficulty);
+    }, [handleNewGame, openMenuActionSheet]);
 
     const topbarMenuClick = useCallback(() => {
-        openMenuActionSheet()
-    }, [openMenuActionSheet])
+        openMenuActionSheet();
+    }, [openMenuActionSheet]);
 
     const menuShareClick = useCallback(() => {
-        setMenuActionSheetIsOpen(false)
-        setExportActionSheetIsOpen(true)
-    }, [])
+        setMenuActionSheetIsOpen(false);
+        setExportActionSheetIsOpen(true);
+    }, []);
 
     const menuBookmarkClick = useCallback(() => {
-        if (!GameHandler.game) return
+        if (!GameHandler.game) return;
 
         if (bookmark) {
-            setBookmark(false)
+            setBookmark(false);
             GameHandler.removeBookmark({
                 id: GameHandler.game.id,
                 m: GameHandler.game.mission
-            })
+            });
         } else {
-            setBookmark(true)
-            GameHandler.bookmarkCurrentGame()
+            setBookmark(true);
+            GameHandler.bookmarkCurrentGame();
         }
 
-        setMenuActionSheetIsOpen(false)
-    }, [bookmark])
+        setMenuActionSheetIsOpen(false);
+    }, [bookmark]);
 
     const handleTimerClick = useCallback(() => {
-        if (win) return
+        if (win) return;
 
-        if (paused) resumeGame()
-        else pauseGame()
-    }, [win, pauseGame, paused, resumeGame])
+        if (paused) resumeGame(false);
+        else pauseGame();
+    }, [win, pauseGame, paused, resumeGame]);
 
     const handleMenuTutorialClick = useCallback(() => {
-        GameHandler.saveGame()
-        setTutorialIsOpen(t => !t)
-        setMenuActionSheetIsOpen(false)
-    }, [])
+        GameHandler.saveGame();
+        setTutorialIsOpen(t => !t);
+        setMenuActionSheetIsOpen(false);
+    }, []);
 
     const handleQuitTutorial = useCallback(() => {
-        setTutorialIsOpen(false)
-        resumeGame()
-    }, [resumeGame])
+        setTutorialIsOpen(false);
+        resumeGame(false);
+    }, [resumeGame]);
 
     const handleFullNotation = useCallback(() => {
-        timerRef.current?.showMessage(t('sudoku.timerFullNotation'), 2000)
-    }, [t])
+        timerRef.current?.showMessage(t('sudoku.timerFullNotation'), 2000);
+    }, [t]);
 
     const handleAnimationFinished = useCallback(() => {
-        resumeGame()
-    }, [resumeGame])
+        resumeGame(false);
+    }, [resumeGame]);
 
     useEffect(() => {
         if (GameHandler.game === null) {
-            navigate('/')
-            return
+            navigate('/');
+            return;
         }
 
         const windowVisibilityChangeEvent = () => {
             if (document.visibilityState === 'visible') {
-                if (!paused) setIsTimerRunning(true)
+                if (!paused) setIsTimerRunning(true);
             } else {
-                if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame()
-                setIsTimerRunning(false)
+                if (GameHandler.game && !GameHandler.game.complete) GameHandler.saveGame();
+                setIsTimerRunning(false);
             }
-        }
+        };
 
-        window.addEventListener('visibilitychange', windowVisibilityChangeEvent)
+        window.addEventListener('visibilitychange', windowVisibilityChangeEvent);
 
         return () => {
-            window.removeEventListener('visibilitychange', windowVisibilityChangeEvent)
-            GameHandler.saveGame()
-        }
-    }, [navigate, paused, pauseGame, resumeGame])
+            window.removeEventListener('visibilitychange', windowVisibilityChangeEvent);
+            GameHandler.saveGame();
+        };
+    }, [navigate, paused, pauseGame, resumeGame]);
 
-    if (GameHandler.game === null) return null
+    if (GameHandler.game === null) return null;
 
     return (
         <>
@@ -202,7 +203,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                         buttons={[
                             !tutorialIsOpen && <div key={0} style={{ display: 'grid', placeItems: 'center', width: 44, height: 44 }} onClick={topbarMenuClick}><SVGMenu className='sudoku__open-menu-button' strokeTop='var(--primaryIconColor)' strokeBottom='var(--secondaryIconColor)' /></div>
                         ]}
-                        onTitleClick={() => { if (!tutorialIsOpen) openMenuActionSheet() }}
+                        onTitleClick={() => { if (!tutorialIsOpen) openMenuActionSheet(); }}
                     >
                         {!tutorialIsOpen && <Timer ref={timerRef} isTimerRunning={isTimerRunning} paused={paused} win={win} onClick={handleTimerClick} />}
                     </Topbar>
@@ -242,7 +243,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                                 </div>
                             ))
                         }
-                        <div className='context-menu__button' style={{ color: 'white', backgroundColor: 'var(--red)' }} onClick={() => { handleNewGame('restart') }}>
+                        <div className='context-menu__button' style={{ color: 'white', backgroundColor: 'var(--red)' }} onClick={() => { handleNewGame('restart'); }}>
                             <SVGRestart className='sudoku__restart-icon' stroke='white' />
                             <p>{t('gameDifficulties.restart')}</p>
                         </div>
@@ -259,28 +260,28 @@ export default function Sudoku({ requestGoBack }: Props) {
             >
                 <ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
                     try {
-                        if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(true))
-                        setExportActionSheetIsOpen(false)
+                        if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(true));
+                        setExportActionSheetIsOpen(false);
                     } catch (e) {
-                        alert(t('sudoku.exportError'))
+                        alert(t('sudoku.exportError'));
                     }
                 }} />
                 <ActionSheetButton title={t('sudoku.copyFullBoard')} onClick={() => {
                     try {
-                        if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(false))
-                        setExportActionSheetIsOpen(false)
+                        if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(false));
+                        setExportActionSheetIsOpen(false);
                     } catch (e) {
-                        alert(t('sudoku.exportError'))
+                        alert(t('sudoku.exportError'));
                     }
                 }} />
                 {
                     GameHandler.game.difficulty !== 'unrated' ?
                         <ActionSheetButton title={t('sudoku.copyMission')} onClick={() => {
                             try {
-                                if (GameHandler.game) copy(GameHandler.exportMission())
-                                setExportActionSheetIsOpen(false)
+                                if (GameHandler.game) copy(GameHandler.exportMission());
+                                setExportActionSheetIsOpen(false);
                             } catch (e) {
-                                alert(t('sudoku.exportError'))
+                                alert(t('sudoku.exportError'));
                             }
                         }} /> : null
                 }
@@ -292,13 +293,13 @@ export default function Sudoku({ requestGoBack }: Props) {
                 backTitle={t('sudoku.goHome')}
                 backURL='/home'
                 onBack={() => {
-                    setWinActionSheetIsOpen(false)
-                    requestGoBack()
+                    setWinActionSheetIsOpen(false);
+                    requestGoBack();
                 }}
                 onClose={() => setWinActionSheetIsOpen(false)}
             >
                 <WinScreen handleNewGameClick={handleNewGameClick} handleNewGame={handleNewGame} game={GameHandler.game} />
             </ActionSheet>
         </>
-    )
+    );
 }
