@@ -94,7 +94,7 @@ export default function Sudoku({ requestGoBack }: Props) {
         setWinActionSheetIsOpen(false);
         setMenuActionSheetIsOpen(false);
         setExportActionSheetIsOpen(false);
-    }, [resetTimer, resumeGame]);
+    }, [resetTimer]);
 
     const handleNewGameClick = useCallback(() => {
         if (!GameHandler.game) return;
