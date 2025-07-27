@@ -1,20 +1,20 @@
-import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Link } from 'react-router-dom'
-import './topbar.css'
-import SVGLogo from '../../svg/logo'
-import { PropsWithChildren, ReactNode } from 'react'
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
+import './topbar.css';
+import SVGLogo from '../../svg/logo';
+import { PropsWithChildren, ReactNode } from 'react';
 
 type Props = {
-    logo?: boolean
-    title?: string | null
-    subtitle?: string | null
-    backURL?: string | null
-    onBack?: (() => void) | null
-    backIcon?: React.ReactNode
-    buttons?: ReactNode[]
-    onTitleClick?: () => void
-}
+    logo?: boolean;
+    title?: string | null;
+    subtitle?: string | null;
+    backURL?: string | null;
+    onBack?: (() => void) | null;
+    backIcon?: React.ReactNode;
+    buttons?: ReactNode[];
+    onTitleClick?: () => void;
+};
 
 export default function Topbar({ logo = false, title = null, subtitle = null, children = [], backURL = null, onBack = null, backIcon = <FontAwesomeIcon icon={faChevronLeft} style={{ color: 'var(--themeColor)', fontSize: 24 }} />, buttons = [], onTitleClick = () => { } }: PropsWithChildren<Props>) {
     return (
@@ -61,5 +61,5 @@ export default function Topbar({ logo = false, title = null, subtitle = null, ch
                 </div>
             </div>
         </div>
-    )
+    );
 }

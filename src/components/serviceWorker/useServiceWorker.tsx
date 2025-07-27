@@ -1,29 +1,29 @@
-import React, { useState } from "react"
-import { register } from "../../serviceWorkerRegistration"
+import React, { useState } from "react";
+import { register } from "../../serviceWorkerRegistration";
 
 const ServiceWorkerContext = React.createContext(
     {
         isUpdateAvailable: false,
         updateAssets: () => { },
     }
-)
+);
 
 export const ServiceWorkerProvider = ({ children }: React.PropsWithChildren) => {
-    const [waitingServiceWorker, setWaitingServiceWorker] = useState<ServiceWorker | null>(null)
-    const [isUpdateAvailable, setUpdateAvailable] = useState(false)
+    const [waitingServiceWorker, setWaitingServiceWorker] = useState<ServiceWorker | null>(null);
+    const [isUpdateAvailable, setUpdateAvailable] = useState(false);
 
     React.useEffect(() => {
         register({
             onUpdate: registration => {
-                setWaitingServiceWorker(registration.waiting)
-                setUpdateAvailable(true)
+                setWaitingServiceWorker(registration.waiting);
+                setUpdateAvailable(true);
             },
             onWaiting: waiting => {
-                setWaitingServiceWorker(waiting)
-                setUpdateAvailable(true)
+                setWaitingServiceWorker(waiting);
+                setUpdateAvailable(true);
             }
-        })
-    }, [])
+        });
+    }, []);
 
     React.useEffect(() => {
         // We setup an event listener to automatically reload the page
@@ -33,11 +33,11 @@ export const ServiceWorkerProvider = ({ children }: React.PropsWithChildren) => 
         if (waitingServiceWorker) {
             waitingServiceWorker.addEventListener('statechange', event => {
                 if (event.target && (event.target as ServiceWorker).state === 'activated') {
-                    window.location.reload()
+                    window.location.reload();
                 }
-            })
+            });
         }
-    }, [waitingServiceWorker])
+    }, [waitingServiceWorker]);
 
     const value = React.useMemo(() => ({
         isUpdateAvailable,
@@ -45,19 +45,19 @@ export const ServiceWorkerProvider = ({ children }: React.PropsWithChildren) => 
             if (waitingServiceWorker) {
                 // We send the SKIP_WAITING message to tell the Service Worker
                 // to update its cache and flush the old one
-                waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' })
+                waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
             }
         }
-    }), [isUpdateAvailable, waitingServiceWorker])
+    }), [isUpdateAvailable, waitingServiceWorker]);
 
     return (
         <ServiceWorkerContext.Provider value={value}>
             {children}
         </ServiceWorkerContext.Provider>
-    )
-}
+    );
+};
 
 // With this React Hook we'll be able to access `isUpdateAvailable` and `updateAssets`
 export const useServiceWorker = () => {
-    return React.useContext(ServiceWorkerContext)
-}
+    return React.useContext(ServiceWorkerContext);
+};

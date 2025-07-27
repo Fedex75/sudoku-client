@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function ColorCircleSVG({ className = 'icon' }): React.JSX.Element {
     return (
@@ -16,5 +16,5 @@ export default function ColorCircleSVG({ className = 'icon' }): React.JSX.Elemen
                 ></path>
             </g>
         </svg>
-    )
+    );
 }

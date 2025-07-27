@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function MagicWandSVG({ className = 'icon', fill = 'var(--primaryIconColor)' }): React.JSX.Element {
     return (
@@ -32,5 +32,5 @@ export default function MagicWandSVG({ className = 'icon', fill = 'var(--primary
                 </g>
             </g>
         </svg>
-    )
+    );
 }

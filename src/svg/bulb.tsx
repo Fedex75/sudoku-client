@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function BulbSVG({ className = 'icon' }): React.JSX.Element {
     return (
@@ -35,5 +35,5 @@ export default function BulbSVG({ className = 'icon' }): React.JSX.Element {
                 </g>
             </g>
         </svg>
-    )
+    );
 }

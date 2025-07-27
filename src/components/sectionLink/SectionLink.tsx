@@ -1,16 +1,16 @@
-import { IconDefinition } from '@fortawesome/fontawesome-common-types'
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Link } from 'react-router-dom'
+import { IconDefinition } from '@fortawesome/fontawesome-common-types';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 
 type SectionLinkProps = {
-    color?: string
-    icon?: IconDefinition
-    iconColor?: string
-    title: string
-    link: string
-    additionalInfo?: string
-}
+    color?: string;
+    icon?: IconDefinition;
+    iconColor?: string;
+    title: string;
+    link: string;
+    additionalInfo?: string;
+};
 
 export default function SectionLink({ color, iconColor, icon, title, link, additionalInfo }: SectionLinkProps) {
     return (
@@ -22,5 +22,5 @@ export default function SectionLink({ color, iconColor, icon, title, link, addit
                 <FontAwesomeIcon icon={faChevronRight} color='gray' fontSize={12} />
             </div>
         </Link>
-    )
+    );
 }

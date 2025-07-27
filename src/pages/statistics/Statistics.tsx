@@ -1,25 +1,25 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Section, SectionContent, Topbar } from '../../components'
-import { GameModeName } from '../../utils/Difficulties'
-import GameHandler from '../../utils/GameHandler'
-import { convertMillisecondsToHMS } from '../../utils/Statistics'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import './statistics.css'
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Section, SectionContent, Topbar } from '../../components';
+import { GameModeName } from '../../utils/Difficulties';
+import GameHandler from '../../utils/GameHandler';
+import { convertMillisecondsToHMS } from '../../utils/Statistics';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import './statistics.css';
 
 export default function Statistics() {
-    const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
-    const gameMode = searchParams.get('mode')
-    if (!gameMode) navigate('/home/statistics')
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const gameMode = searchParams.get('mode');
+    if (!gameMode) navigate('/home/statistics');
 
     const difficulties = useMemo(() => {
-        const diffs = Object.entries(GameHandler.statistics[gameMode as GameModeName])
-        if (diffs.length === 0) navigate('/home/statistics')
-        return diffs
-    }, [gameMode, navigate])
+        const diffs = Object.entries(GameHandler.statistics[gameMode as GameModeName]);
+        if (diffs.length === 0) navigate('/home/statistics');
+        return diffs;
+    }, [gameMode, navigate]);
 
-    const { t } = useTranslation()
+    const { t } = useTranslation();
 
     return (
         <Section>
@@ -51,5 +51,5 @@ export default function Statistics() {
                 </div>
             </SectionContent>
         </Section>
-    )
+    );
 }

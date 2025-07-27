@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function SVGImport({ className = 'icon' }): React.JSX.Element {
     return (
@@ -37,5 +37,5 @@ export default function SVGImport({ className = 'icon' }): React.JSX.Element {
                 </g>
             </g>
         </svg>
-    )
+    );
 }

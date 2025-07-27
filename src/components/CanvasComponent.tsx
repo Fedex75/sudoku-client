@@ -1,43 +1,43 @@
-import { useEffect, useRef } from "react"
-import { Canvas } from '../utils/Canvas'
-import Board from '../utils/Board'
+import { useEffect, useRef } from "react";
+import { Canvas } from '../utils/Canvas';
+import Board from '../utils/Board';
 
 type Props = {
-    canvasHandler: Canvas<Board>
-    paused: boolean
-}
+    canvasHandler: Canvas<Board>;
+    paused: boolean;
+};
 
 export default function CanvasComponent({ canvasHandler, paused }: Props) {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         if (canvasRef.current) {
-            canvasHandler.createOffscreenCanvases()
-            canvasHandler.resizeCanvas()
+            canvasHandler.createOffscreenCanvases();
+            canvasHandler.resizeCanvas();
 
             const resizeObserver = new ResizeObserver((entries) => {
                 for (let i = 0; i < entries.length; i++) {
-                    canvasHandler.resizeCanvas()
+                    canvasHandler.resizeCanvas();
                 }
-            })
+            });
 
-            resizeObserver.observe(canvasRef.current)
+            resizeObserver.observe(canvasRef.current);
 
             return () => {
-                canvasHandler.canvasRef = null
-                canvasHandler.destroyOffscreenCanvases()
-                resizeObserver.disconnect()
-            }
+                canvasHandler.canvasRef = null;
+                canvasHandler.destroyOffscreenCanvases();
+                resizeObserver.disconnect();
+            };
         }
-    }, [canvasHandler])
+    }, [canvasHandler]);
 
     useEffect(() => {
-        if (canvasRef.current) canvasHandler.canvasRef = canvasRef.current
-    }, [canvasHandler])
+        if (canvasRef.current) canvasHandler.canvasRef = canvasRef.current;
+    }, [canvasHandler]);
 
     useEffect(() => {
-        if (canvasRef.current) canvasHandler.paused = paused
-    }, [paused, canvasHandler])
+        if (canvasRef.current) canvasHandler.paused = paused;
+    }, [paused, canvasHandler]);
 
     return <canvas
         ref={canvasRef}
@@ -49,5 +49,5 @@ export default function CanvasComponent({ canvasHandler, paused }: Props) {
         onMouseDown={canvasHandler.onMouseDown}
         onMouseMove={canvasHandler.onMouseMove}
         onMouseUp={canvasHandler.onMouseUp}
-    />
+    />;
 }

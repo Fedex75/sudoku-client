@@ -1,26 +1,26 @@
-import { useTranslation } from "react-i18next"
-import './mainStatistics.css'
-import GameHandler from "../../../utils/GameHandler"
-import { useCallback } from "react"
-import { Button } from "../../../components"
-import SectionLink from '../../../components/sectionLink/SectionLink'
+import { useTranslation } from "react-i18next";
+import './mainStatistics.css';
+import GameHandler from "../../../utils/GameHandler";
+import { useCallback } from "react";
+import { Button } from "../../../components";
+import SectionLink from '../../../components/sectionLink/SectionLink';
 
 type Props = {
-    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void
-}
+    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void;
+};
 
 export default function MainStatistics({ requestPrompt }: Props) {
-    const { t } = useTranslation()
+    const { t } = useTranslation();
 
     const handleResetStatistics = useCallback(() => {
         requestPrompt(
             t('statistics.promptReset'),
             () => {
-                GameHandler.resetStatistics()
+                GameHandler.resetStatistics();
             },
             () => { }
-        )
-    }, [t, requestPrompt])
+        );
+    }, [t, requestPrompt]);
 
     return (
         <div className='home__statistics'>
@@ -37,8 +37,8 @@ export default function MainStatistics({ requestPrompt }: Props) {
                     }
                 </div>
 
-                <Button title={t('common.reset')} backgroundColor='var(--red)' color='white' onClick={() => { handleResetStatistics() }} />
+                <Button title={t('common.reset')} backgroundColor='var(--red)' color='white' onClick={() => { handleResetStatistics(); }} />
             </div>
         </div>
-    )
+    );
 }

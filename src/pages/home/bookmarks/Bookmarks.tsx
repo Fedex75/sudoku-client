@@ -1,61 +1,61 @@
-import './bookmarks.css'
-import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useCallback, useContext, useState } from "react"
-import { getMode, GameModeIdentifier } from "../../../utils/Difficulties"
-import GameHandler from "../../../utils/GameHandler"
-import { useTranslation } from 'react-i18next'
-import { Bookmark } from '../../../utils/DataTypes'
-import Canvas from '../../../components/CanvasComponent'
-import { BoardFactory } from '../../../game/gameModes/BoardFactory'
-import { CanvasFactory } from '../../../game/gameModes/CanvasFactory'
-import Board from '../../../utils/Board'
-import { AccentColorContext } from '../../../utils/hooks/useAccentColor'
-import { ThemeContext } from '../../../utils/hooks/useTheme'
+import './bookmarks.css';
+import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useContext, useState } from "react";
+import { getMode, GameModeIdentifier } from "../../../utils/Difficulties";
+import GameHandler from "../../../utils/GameHandler";
+import { useTranslation } from 'react-i18next';
+import { Bookmark } from '../../../utils/DataTypes';
+import Canvas from '../../../components/CanvasComponent';
+import { BoardFactory } from '../../../game/gameModes/BoardFactory';
+import { CanvasFactory } from '../../../game/gameModes/CanvasFactory';
+import Board from '../../../utils/Board';
+import { AccentColorContext } from '../../../utils/hooks/useAccentColor';
+import { ThemeContext } from '../../../utils/hooks/useTheme';
 
 type Props = {
-    requestContinue: () => void
-    requestNewGame: (newGame: Board) => void
-    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void
-}
+    requestContinue: () => void;
+    requestNewGame: (newGame: Board) => void;
+    requestPrompt: (prompt: string, onConfirm: () => void, onCancel: () => void) => void;
+};
 
 function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
-    const { theme } = useContext(ThemeContext)
-    const { accentColor } = useContext(AccentColorContext)
-    const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks)
+    const { theme } = useContext(ThemeContext);
+    const { accentColor } = useContext(AccentColorContext);
+    const [bookmarks, setBookmarks] = useState(GameHandler.bookmarks);
 
-    const { t } = useTranslation()
+    const { t } = useTranslation();
 
     const handleRemoveBookmark = useCallback((bm: Bookmark) => {
         requestPrompt(
             t('bookmarks.promptDeleteOne'),
             () => {
-                GameHandler.removeBookmark(bm)
-                setBookmarks(GameHandler.bookmarks)
+                GameHandler.removeBookmark(bm);
+                setBookmarks(GameHandler.bookmarks);
             },
             () => { }
-        )
-    }, [t, requestPrompt])
+        );
+    }, [t, requestPrompt]);
 
     const handleClearBookmarksClick = useCallback(() => {
         requestPrompt(
             t('bookmarks.promptDeleteAll'),
             () => {
-                GameHandler.clearBookmarks()
-                setBookmarks([])
+                GameHandler.clearBookmarks();
+                setBookmarks([]);
             },
             () => { }
-        )
-    }, [t, requestPrompt])
+        );
+    }, [t, requestPrompt]);
 
     const handlePlayBookmark = useCallback((bm: Bookmark) => {
         if (GameHandler.game && !GameHandler.game.complete && GameHandler.game.id === bm.id) {
-            requestContinue()
+            requestContinue();
         } else {
-            const newGame = GameHandler.createNewGameFromBookmark(bm)
-            if (newGame) requestNewGame(newGame)
+            const newGame = GameHandler.createNewGameFromBookmark(bm);
+            if (newGame) requestNewGame(newGame);
         }
-    }, [requestContinue, requestNewGame])
+    }, [requestContinue, requestNewGame]);
 
     return (
         <div className='home__bookmarks'>
@@ -68,35 +68,35 @@ function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
                     <div className="bookmarks__wrapper">
                         {
                             bookmarks.map((bm, i) => {
-                                let board
-                                let solved
+                                let board;
+                                let solved;
 
-                                const mode = getMode(bm.id[0] as GameModeIdentifier)
-                                const mission = GameHandler.findMissionFromID(bm.id)
-                                if (!mission) return null
+                                const mode = getMode(bm.id[0] as GameModeIdentifier);
+                                const mission = GameHandler.findMissionFromID(bm.id);
+                                if (!mission) return null;
                                 board = BoardFactory(mode, {
                                     id: bm.id,
                                     mission: mission.m
-                                })
-                                solved = GameHandler.solved.includes(bm.id)
+                                });
+                                solved = GameHandler.solved.includes(bm.id);
 
 
-                                const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01)
-                                canvasHandlerRef.game = board
-                                canvasHandlerRef.theme = theme
+                                const canvasHandlerRef = CanvasFactory(mode, accentColor, true, 0.01);
+                                canvasHandlerRef.game = board;
+                                canvasHandlerRef.theme = theme;
 
                                 return (
                                     <div key={i} className="bookmarks__item">
                                         <div className="bookmarks_item__top">
                                             <p className="bookmarks__item__top__title">{`${t(`gameModes.${board.mode}`)} - ${t(`gameDifficulties.${board.difficulty}`)}`}</p>
                                             {solved ? <FontAwesomeIcon style={{ color: 'var(--green)' }} icon={faCheck} /> : null}
-                                            <FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm) }} />
+                                            <FontAwesomeIcon className="bookmark-on" icon={faBookmark} onClick={() => { handleRemoveBookmark(bm); }} />
                                         </div>
-                                        <div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm) }}>
+                                        <div className="bookmarks__item__canvas-wrapper" onClick={() => { handlePlayBookmark(bm); }}>
                                             <Canvas canvasHandler={canvasHandlerRef} paused={false} />
                                         </div>
                                     </div>
-                                )
+                                );
                             })
                         }
                     </div> :
@@ -106,7 +106,7 @@ function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
                     </div>
             }
         </div>
-    )
+    );
 }
 
-export default Bookmarks
+export default Bookmarks;

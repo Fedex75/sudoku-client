@@ -1,24 +1,24 @@
-import './actionSheet.css'
-import { ActionSheetButton } from '..'
-import { Sheet } from 'react-modal-sheet'
-import { PropsWithChildren } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
-import { Link } from 'react-router-dom'
+import './actionSheet.css';
+import { ActionSheetButton } from '..';
+import { Sheet } from 'react-modal-sheet';
+import { PropsWithChildren } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 type Props = {
-    isOpen: boolean
-    title?: string | null
-    cancelTitle?: string | null
-    cancelColor?: string
-    onClose?: () => void
-    buttonsMode?: boolean
-    disableDrag?: boolean
-    showBackButton?: boolean
-    backTitle?: string
-    backURL?: string
-    onBack?: () => void
-}
+    isOpen: boolean;
+    title?: string | null;
+    cancelTitle?: string | null;
+    cancelColor?: string;
+    onClose?: () => void;
+    buttonsMode?: boolean;
+    disableDrag?: boolean;
+    showBackButton?: boolean;
+    backTitle?: string;
+    backURL?: string;
+    onBack?: () => void;
+};
 
 export default function ActionSheet({ isOpen, title = null, cancelTitle = null, cancelColor = 'var(--red)', onClose = () => { }, buttonsMode = false, disableDrag = false, showBackButton = false, backTitle = '', backURL = '', onBack = () => { }, children }: PropsWithChildren<Props>) {
     return (
@@ -62,10 +62,10 @@ export default function ActionSheet({ isOpen, title = null, cancelTitle = null, 
                                 {children}
                             </div>
                     }
-                    {cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={() => { onClose() }} color={cancelColor} /> : null}
+                    {cancelTitle !== null ? <ActionSheetButton cancel title={cancelTitle} onClick={() => { onClose(); }} color={cancelColor} /> : null}
                 </Sheet.Content>
             </Sheet.Container>
-            <Sheet.Backdrop onTap={() => { onClose() }} />
+            <Sheet.Backdrop onTap={() => { onClose(); }} />
         </Sheet>
-    )
+    );
 }

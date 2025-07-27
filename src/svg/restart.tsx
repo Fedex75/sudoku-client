@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function SVGRestart({ stroke = '#000', className = 'icon' }): React.JSX.Element {
     return (
@@ -38,5 +38,5 @@ export default function SVGRestart({ stroke = '#000', className = 'icon' }): Rea
                 </g>
             </g>
         </svg>
-    )
+    );
 }

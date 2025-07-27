@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function PencilSVG({ className = 'icon', stroke = 'var(--secondaryIconColor)' }): React.JSX.Element {
     return (
@@ -26,5 +26,5 @@ export default function PencilSVG({ className = 'icon', stroke = 'var(--secondar
                 ></path>
             </g>
         </svg>
-    )
+    );
 }

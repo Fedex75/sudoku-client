@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 export default function SVGMenu({ strokeTop = '#000', strokeBottom = '#000', className = 'icon' }): React.JSX.Element {
     return (
@@ -33,5 +33,5 @@ export default function SVGMenu({ strokeTop = '#000', strokeBottom = '#000', cla
                 </g>
             </g>
         </svg>
-    )
+    );
 };

@@ -1,5 +1,5 @@
-export type GameModeName = 'classic' | 'killer' | 'sandwich' | 'sudokuX' | 'thermo'
-export type DifficultyName = 'easy' | 'medium' | 'hard' | 'expert' | 'evil' | 'unrated'
+export type GameModeName = 'classic' | 'killer' | 'sandwich' | 'sudokuX' | 'thermo';
+export type DifficultyName = 'easy' | 'medium' | 'hard' | 'expert' | 'evil' | 'unrated';
 
 export const difficulties: Record<GameModeName, DifficultyName[]> = {
     'classic': ['easy', 'medium', 'hard', 'expert', 'evil'],
@@ -7,40 +7,40 @@ export const difficulties: Record<GameModeName, DifficultyName[]> = {
     'sudokuX': ['easy', 'medium', 'hard', 'expert'],
     'sandwich': ['easy', 'medium', 'hard', 'expert'],
     'thermo': ['easy', 'medium', 'hard', 'expert']
-}
+};
 
-export type GameModeIdentifier = 'c' | 'k' | 'x' | 'w' | 't'
+export type GameModeIdentifier = 'c' | 'k' | 'x' | 'w' | 't';
 
 export function getMode(from: GameModeIdentifier): GameModeName {
     switch (from) {
         case 'c':
-            return 'classic'
+            return 'classic';
         case 'k':
-            return 'killer'
+            return 'killer';
         case 'x':
-            return 'sudokuX'
+            return 'sudokuX';
         case 'w':
-            return 'sandwich'
+            return 'sandwich';
         case 't':
-            return 'thermo'
+            return 'thermo';
     }
 }
 
-export type DifficultyIdentifier = 'e' | 'm' | 'h' | 'x' | 'v' | 'u'
+export type DifficultyIdentifier = 'e' | 'm' | 'h' | 'x' | 'v' | 'u';
 
 export function getDifficulty(from: DifficultyIdentifier): DifficultyName {
     switch (from) {
         case 'e':
-            return 'easy'
+            return 'easy';
         case 'm':
-            return 'medium'
+            return 'medium';
         case 'h':
-            return 'hard'
+            return 'hard';
         case 'x':
-            return 'expert'
+            return 'expert';
         case 'v':
-            return 'evil'
+            return 'evil';
         case 'u':
-            return 'unrated'
+            return 'unrated';
     }
 }

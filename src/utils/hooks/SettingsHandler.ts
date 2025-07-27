@@ -1,10 +1,10 @@
-import { createContext } from 'react'
-import { getStoredData, useLocalStorage } from './LocalStorageHandler'
+import { createContext } from 'react';
+import { getStoredData, useLocalStorage } from './LocalStorageHandler';
 
-const SETTINGS_KEY = 'settings'
-const SETTINGS_SCHEMA_VERSION = 3
+const SETTINGS_KEY = 'settings';
+const SETTINGS_SCHEMA_VERSION = 3;
 
-export type Language = 'auto' | 'es' | 'en'
+export type Language = 'auto' | 'es' | 'en';
 
 export type Settings = {
     // --- Appearance ---
@@ -51,8 +51,8 @@ export type Settings = {
     sandwichAutoSolveLastInSum: boolean,
 
     // General
-    language: Language
-}
+    language: Language;
+};
 
 export const defaultSettings: Settings = {
     // --- Appearance ---
@@ -100,28 +100,28 @@ export const defaultSettings: Settings = {
 
     // General
     language: 'auto'
-}
+};
 
 export function getCurrentSettings() {
-    return getStoredData(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings)
+    return getStoredData(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings);
 }
 
 export function useSettings() {
-    const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings)
+    const [settings, setSettings] = useLocalStorage<Settings>(SETTINGS_KEY, SETTINGS_SCHEMA_VERSION, defaultSettings);
 
     const updateSettings = (overrideSettings: Partial<Settings>) => {
-        setSettings(({ ...settings, ...overrideSettings }))
-    }
+        setSettings(({ ...settings, ...overrideSettings }));
+    };
 
-    return { settings, updateSettings }
+    return { settings, updateSettings };
 }
 
 interface SettingsContextType {
-    settings: Settings
-    updateSettings: (settings: Partial<Settings>) => void
+    settings: Settings;
+    updateSettings: (settings: Partial<Settings>) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextType>({
     settings: defaultSettings,
     updateSettings: () => { }
-})
+});

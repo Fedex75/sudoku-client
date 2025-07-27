@@ -1,30 +1,30 @@
-export type ThemeName = 'light' | 'dark'
+export type ThemeName = 'light' | 'dark';
 
 export type Theme = {
-    background: string
-    lightDefaultCellColor: string
-    darkDefaultCellColor: string
-    cellBorderColor: string
-    cellBorderColorRGBA: string
-    boxBorderColor: string
-    boxBorderColorRGBA: string
-    clueColor: string
-    noteColor: string
-    selectedCellClueColor: string
-    selectedCellCandidateColor: string
-    sameValueCellBackground: string
-    noteHighlightColor: string
-    valueHighlightColor: string
-    animationBaseColor: string
-    animationDarkColor: string
-    animationFadeBaseColor: string
-    killerCageColor: string
-    killerHighlightedCageColor: string
-    killerCageOnColoredCellColor: string
-    sudokuXDiagonalColor: string
-    thermometerColor: string
-    highlightedThermometerColor: string
-}
+    background: string;
+    lightDefaultCellColor: string;
+    darkDefaultCellColor: string;
+    cellBorderColor: string;
+    cellBorderColorRGBA: string;
+    boxBorderColor: string;
+    boxBorderColorRGBA: string;
+    clueColor: string;
+    noteColor: string;
+    selectedCellClueColor: string;
+    selectedCellCandidateColor: string;
+    sameValueCellBackground: string;
+    noteHighlightColor: string;
+    valueHighlightColor: string;
+    animationBaseColor: string;
+    animationDarkColor: string;
+    animationFadeBaseColor: string;
+    killerCageColor: string;
+    killerHighlightedCageColor: string;
+    killerCageOnColoredCellColor: string;
+    sudokuXDiagonalColor: string;
+    thermometerColor: string;
+    highlightedThermometerColor: string;
+};
 
 export const themes: Record<ThemeName, Theme> = {
     light: {
@@ -77,4 +77,4 @@ export const themes: Record<ThemeName, Theme> = {
         thermometerColor: '#555',
         highlightedThermometerColor: '#777',
     }
-}
+};

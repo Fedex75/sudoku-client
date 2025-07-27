@@ -1,34 +1,34 @@
-import { useContext, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "../../components"
-import { DifficultyName, difficulties } from "../../utils/Difficulties"
-import GameHandler from "../../utils/GameHandler"
-import { convertMillisecondsToHMS } from "../../utils/Statistics"
-import Board from '../../utils/Board'
-import { AccentColorContext } from '../../utils/hooks/useAccentColor'
+import { useContext, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "../../components";
+import { DifficultyName, difficulties } from "../../utils/Difficulties";
+import GameHandler from "../../utils/GameHandler";
+import { convertMillisecondsToHMS } from "../../utils/Statistics";
+import Board from '../../utils/Board';
+import { AccentColorContext } from '../../utils/hooks/useAccentColor';
 
 interface WinScreenProps {
-    handleNewGameClick: () => void
-    handleNewGame: (diff: DifficultyName) => void
-    game: Board
+    handleNewGameClick: () => void;
+    handleNewGame: (diff: DifficultyName) => void;
+    game: Board;
 }
 
 export function WinScreen({ handleNewGameClick, handleNewGame, game }: WinScreenProps) {
-    const { t } = useTranslation()
-    const { accentColor } = useContext(AccentColorContext)
+    const { t } = useTranslation();
+    const { accentColor } = useContext(AccentColorContext);
 
     const nextDifficulty = useMemo(() => {
-        if (!game) return null
-        const diffs = difficulties[game.mode]
-        const index = diffs.indexOf(game.difficulty)
+        if (!game) return null;
+        const diffs = difficulties[game.mode];
+        const index = diffs.indexOf(game.difficulty);
         if (index !== -1 && index < diffs.length - 1) {
-            return diffs[index + 1]
+            return diffs[index + 1];
         } else {
-            return null
+            return null;
         }
-    }, [game])
+    }, [game]);
 
-    if (!game) return null
+    if (!game) return null;
 
     return (
         <div className='sudoku__win-screen-wrapper'>
@@ -51,10 +51,10 @@ export function WinScreen({ handleNewGameClick, handleNewGame, game }: WinScreen
                 <Button title={t('sudoku.newGame')} onClick={handleNewGameClick} marginBottom={30} />
                 {
                     nextDifficulty !== null ?
-                        <Button title={t('sudoku.increaseDifficulty') + ' ' + t(`gameDifficulties.${nextDifficulty}`)} fontSize={16} backgroundColor={accentColor === 'purple' ? 'var(--orange)' : 'var(--purple)'} onClick={() => { handleNewGame(nextDifficulty) }} />
+                        <Button title={t('sudoku.increaseDifficulty') + ' ' + t(`gameDifficulties.${nextDifficulty}`)} fontSize={16} backgroundColor={accentColor === 'purple' ? 'var(--orange)' : 'var(--purple)'} onClick={() => { handleNewGame(nextDifficulty); }} />
                         : null
                 }
             </div>
         </div>
-    )
+    );
 }

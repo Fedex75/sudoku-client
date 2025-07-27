@@ -1,26 +1,26 @@
-import { faBookmark, faChartSimple, faCheck, faGear, faHome, faXmark } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Link, useMatch } from 'react-router-dom'
-import './navbar.css'
-import { AnimatePresence, motion } from 'framer-motion'
-import { COMMON_UI_ANIMATION_DURATION_SECONDS } from '../../utils/Constants'
+import { faBookmark, faChartSimple, faCheck, faGear, faHome, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link, useMatch } from 'react-router-dom';
+import './navbar.css';
+import { AnimatePresence, motion } from 'framer-motion';
+import { COMMON_UI_ANIMATION_DURATION_SECONDS } from '../../utils/Constants';
 
-export type NavbarAction = 'default' | 'prompt'
+export type NavbarAction = 'default' | 'prompt';
 
 type Props = {
-    action: NavbarAction
-    onConfirm: () => void
-    onCancel: () => void
-    text?: string
-    backgroundColor?: string
-    color?: string
-}
+    action: NavbarAction;
+    onConfirm: () => void;
+    onCancel: () => void;
+    text?: string;
+    backgroundColor?: string;
+    color?: string;
+};
 
 export default function Navbar({ action, onConfirm, onCancel, text = '', backgroundColor = 'var(--darkBackground)', color = 'white' }: Props) {
-    const homeMatch = useMatch('/home')
-    const bookmarksMatch = useMatch('/home/bookmarks')
-    const statisticsMatch = useMatch('/home/statistics')
-    const settingsMatch = useMatch('/home/settings')
+    const homeMatch = useMatch('/home');
+    const bookmarksMatch = useMatch('/home/bookmarks');
+    const statisticsMatch = useMatch('/home/statistics');
+    const settingsMatch = useMatch('/home/settings');
 
     return (
         <>
@@ -80,7 +80,7 @@ export default function Navbar({ action, onConfirm, onCancel, text = '', backgro
                         exit={{ bottom: '-60px' }}
                         transition={{ duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
                         className={`play-button confirmVariant`}
-                        onClick={() => { onConfirm() }}
+                        onClick={() => { onConfirm(); }}
                     >
                         <FontAwesomeIcon className='play-button__icon' icon={faCheck} />
                     </motion.div>
@@ -97,7 +97,7 @@ export default function Navbar({ action, onConfirm, onCancel, text = '', backgro
                         exit={{ bottom: '-60px' }}
                         transition={{ duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
                         className={`play-button cancelVariant`}
-                        onClick={() => { onCancel() }}
+                        onClick={() => { onCancel(); }}
                     >
                         <FontAwesomeIcon className='play-button__icon' icon={faXmark} fontSize={28} />
                     </motion.div>
@@ -114,10 +114,10 @@ export default function Navbar({ action, onConfirm, onCancel, text = '', backgro
                         exit={{ opacity: 0 }}
                         transition={{ duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' }}
                         className='navbar-backdrop'
-                        onClick={() => { onCancel() }}
+                        onClick={() => { onCancel(); }}
                     />
                 }
             </AnimatePresence>
         </>
-    )
+    );
 }
