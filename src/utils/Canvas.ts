@@ -172,6 +172,7 @@ export abstract class Canvas<BoardType extends Board> {
 
     set theme(val: ThemeName) {
         this._theme = val;
+        this.afterCanvasChangedSize(); //This triggers a re-drawing of the off-screen canvases, updating the colors of the UI
         this.renderFrame();
     }
 
