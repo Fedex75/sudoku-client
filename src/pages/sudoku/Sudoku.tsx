@@ -75,6 +75,11 @@ export default function Sudoku({ requestGoBack }: Props) {
         resumeGame(false);
     }, [resumeGame]);
 
+    const closeExportActionSheet = useCallback(() => {
+        setExportActionSheetIsOpen(false);
+        resumeGame(false);
+    }, [resumeGame]);
+
     const handleNewGame = useCallback((difficulty: DifficultyName | 'restart') => {
         if (!GameHandler.game) return;
         setWin(false);
@@ -219,7 +224,7 @@ export default function Sudoku({ requestGoBack }: Props) {
 
             <ActionSheet
                 isOpen={menuActionSheetIsOpen}
-                onClose={() => closeMenuActionSheet()}
+                onClose={closeMenuActionSheet}
             >
                 <div className='sudoku__context-menu'>
                     <div className='context-menu__button vertical' style={{ gridArea: 'save' }} onClick={menuBookmarkClick}>
@@ -254,7 +259,7 @@ export default function Sudoku({ requestGoBack }: Props) {
             <ActionSheet
                 isOpen={exportActionSheetIsOpen}
                 cancelTitle={t('common.cancel')}
-                onClose={() => setExportActionSheetIsOpen(false)}
+                onClose={closeExportActionSheet}
                 buttonsMode
                 title={t('common.share')}
             >
