@@ -93,5 +93,6 @@ export class ThermoBoard extends ClassicBoard {
     protected recreatePossibleValuesCache(): void {
         super.recreatePossibleValuesCache();
         if (this.thermometers) for (const thermo of this.thermometers) this.updatePossibleValuesByThermometer(thermo);
+        this.triggerValuesChanged(false);
     }
 }
