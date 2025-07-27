@@ -8,7 +8,7 @@
     cursor: pointer;
     color: var(--editButtonColor);
     background-color: var(--editButtonBackground);
-    transition: all 0.1s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 .edit-buttons__button.disabled {
