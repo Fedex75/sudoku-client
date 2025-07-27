@@ -431,6 +431,12 @@ function Game({ paused, handleComplete, game, handleFullNotation }: Props) {
     }, [theme]);
 
     useEffect(() => {
+        if (game.completedNumbers.has(lockedInput)) {
+            setLockedInput(0);
+        }
+    }, [game.completedNumbers, lockedInput, setLockedInput]);
+
+    useEffect(() => {
         canvasHandlerRef.current.lockedInput = lockedInput;
     }, [lockedInput]);
 
