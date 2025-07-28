@@ -22,6 +22,30 @@
     }
 }
 
+.play-button.continueVariant {
+    background-color: var(--themeColor);
+    left: 50%;
+
+    .play-button__icon {
+        transform: translate(2px);
+    }
+}
+
+.play-button.continueVariant::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background-color: var(--themeColor);
+    /* or whatever matches your theme */
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    /* so it doesn't block clicks */
+}
+
 .play-button.confirmVariant {
     border: none;
     background-color: var(--green);

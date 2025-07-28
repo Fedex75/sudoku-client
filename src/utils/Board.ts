@@ -142,6 +142,9 @@ export default abstract class Board {
     // Game mode specific logic for the calculator
     public abstract get calculatorValue(): number;
 
+    // Obtain the string definition to pass to the SudokuWiki solver (game mode specific)
+    public abstract get stringDefinitionForSolver(): string;
+
     public init(data: GameData) {
         this.timer = data.timer || 0;
         this.history = data.history || [];

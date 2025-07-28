@@ -1,4 +1,4 @@
-import brightness from "../../../utils/Utils";
+import { brightness, packNotes } from "../../../utils/Utils";
 import { decodeMissionString } from "../../../utils/Decoder";
 import Solver from "../../../utils/Solver";
 import Board from "../../../utils/Board";
@@ -139,5 +139,31 @@ export class ClassicBoard extends Board {
 
     get calculatorValue(): number {
         return [...this.selectedCellsValues].reduce((a, b) => a + b, 0);
+    }
+
+    get stringDefinitionForSolver(): string {
+        let s = 'S9B';
+        for (let y = 0; y < this.nSquares; y++) {
+            for (let x = 0; x < this.nSquares; x++) {
+                const cell = this.get({ x, y });
+                if (!cell) continue;
+
+                let n = 0;
+                if (cell.clue) {
+                    n = cell.value;
+                } else if (cell.value > 0) {
+                    // Cell contains a solution
+                    n = cell.value + this.nSquares;
+                } else if (cell.notes.size > 0) {
+                    // Cell contains candidates
+                    n = packNotes(cell.notes) + this.nSquares * 2;
+                }
+
+                let h = n.toString(36);
+                if (h.length < 2) h = '0' + h;
+                s += h;
+            }
+        }
+        return s;
     }
 }

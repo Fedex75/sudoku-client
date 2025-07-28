@@ -9,7 +9,7 @@ import MagicWandSVG from "../svg/magic_wand";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLink } from "@fortawesome/free-solid-svg-icons";
 import ColorCircleSVG from "../svg/color_circle";
-import brightness from "../utils/Utils";
+import { brightness } from "../utils/Utils";
 import { themes } from './Themes';
 import { Cell, CellCoordinates } from '../utils/Cell';
 import CanvasComponent from '../components/CanvasComponent';

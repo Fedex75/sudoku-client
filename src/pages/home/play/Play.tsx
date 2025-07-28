@@ -15,7 +15,27 @@ type Props = {
 
 export default function Play({ requestNewGame }: Props) {
     const { accentColor } = useContext(AccentColorContext);
-    const [snappedIndex, setSnappedIndex] = useState(2);
+    let initialSnappedIndex = 2;
+    if (GameHandler.game && !GameHandler.game.complete) {
+        switch (GameHandler.game.mode) {
+            case 'sandwich':
+                initialSnappedIndex = 0;
+                break;
+            case 'sudokuX':
+                initialSnappedIndex = 1;
+                break;
+            case 'classic':
+                initialSnappedIndex = 2;
+                break;
+            case 'killer':
+                initialSnappedIndex = 3;
+                break;
+            case 'thermo':
+                initialSnappedIndex = 4;
+                break;
+        }
+    }
+    const [snappedIndex, setSnappedIndex] = useState(initialSnappedIndex);
 
     const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +109,21 @@ export default function Play({ requestNewGame }: Props) {
         thermoCanvas.accentColor = accentColor;
     }, [accentColor, classicCanvas, killerCanvas, sudokuXCanvas, sandwichCanvas, thermoCanvas]);
 
+    function scrollToIndex(index: number) {
+        if (!carouselRef.current) return;
+        const carousel = carouselRef.current;
+        const items = carousel.querySelectorAll('.home__gameMode');
+        const carouselRect = carousel.getBoundingClientRect();
+        const carouselCenter = carouselRect.left + carouselRect.width / 2;
+
+
+        const itemRect = items[index].getBoundingClientRect();
+        const itemCenter = itemRect.left + itemRect.width / 2;
+
+        carouselRef.current.scrollLeft += itemCenter - carouselCenter;
+    }
+
+
     const handleScroll = useCallback(() => {
         if (!carouselRef.current) return;
         const carousel = carouselRef.current;
@@ -114,21 +149,10 @@ export default function Play({ requestNewGame }: Props) {
     }, []);
 
     const handleGameModeClick = useCallback((mode: GameModeName, index: number) => {
-        if (!carouselRef.current) return;
-        const carousel = carouselRef.current;
-        const items = carousel.querySelectorAll('.home__gameMode');
-        const carouselRect = carousel.getBoundingClientRect();
-        const carouselCenter = carouselRect.left + carouselRect.width / 2;
-
-
-        const itemRect = items[index].getBoundingClientRect();
-        const itemCenter = itemRect.left + itemRect.width / 2;
-
-        carouselRef.current.scrollLeft += itemCenter - carouselCenter;
-
         const newGame = GameHandler.createNewGame(mode);
         if (newGame) requestNewGame(newGame);
 
+        scrollToIndex(index);
         setSnappedIndex(index);
     }, [requestNewGame]);
 
@@ -136,9 +160,7 @@ export default function Play({ requestNewGame }: Props) {
         if (carouselRef.current) {
             const carousel = carouselRef.current;
 
-            // Calculate the initial scroll position to center the first item
-            const initialScrollPosition = (carousel.scrollWidth - carousel.clientWidth) / 2;
-            carousel.scrollLeft = initialScrollPosition;
+            scrollToIndex(initialSnappedIndex);
 
             carousel.addEventListener('scroll', handleScroll);
 
@@ -146,7 +168,7 @@ export default function Play({ requestNewGame }: Props) {
                 carousel.removeEventListener('scroll', handleScroll);
             };
         }
-    }, [handleScroll]);
+    }, [handleScroll, initialSnappedIndex]);
 
     return (
         <div className='home__play'>

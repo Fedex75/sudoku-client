@@ -266,7 +266,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                 <ActionSheetButton title={t('sudoku.copyClues')} onClick={() => {
                     try {
                         if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(true));
-                        setExportActionSheetIsOpen(false);
+                        closeExportActionSheet();
                     } catch (e) {
                         alert(t('sudoku.exportError'));
                     }
@@ -274,7 +274,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                 <ActionSheetButton title={t('sudoku.copyFullBoard')} onClick={() => {
                     try {
                         if (GameHandler.game) copy(GameHandler.game.getTextRepresentation(false));
-                        setExportActionSheetIsOpen(false);
+                        closeExportActionSheet();
                     } catch (e) {
                         alert(t('sudoku.exportError'));
                     }
@@ -284,11 +284,19 @@ export default function Sudoku({ requestGoBack }: Props) {
                         <ActionSheetButton title={t('sudoku.copyMission')} onClick={() => {
                             try {
                                 if (GameHandler.game) copy(GameHandler.exportMission());
-                                setExportActionSheetIsOpen(false);
+                                closeExportActionSheet();
                             } catch (e) {
                                 alert(t('sudoku.exportError'));
                             }
                         }} /> : null
+                }
+                {
+                    GameHandler.game.mode === 'classic' ?
+                        <ActionSheetButton title={t('sudoku.copyStringDefinition')} onClick={() => {
+                            if (GameHandler.game) copy('https://www.sudokuwiki.org/sudoku.htm?bd=' + GameHandler.game.stringDefinitionForSolver);
+                            closeExportActionSheet();
+                        }} />
+                        : null
                 }
             </ActionSheet>
 

@@ -116,7 +116,7 @@ function Home() {
 
             <Navbar action={navbarAction} onConfirm={handleConfirmButtonClick} onCancel={handleCancelButtonClick} text={navbarText} color='var(--primaryTextColor)' />
 
-            <PlayButton action={playButtonAction} onPlay={handlePlayButtonClick} />
+            <PlayButton action={playButtonAction} onPlay={handlePlayButtonClick} variant={(GameHandler.game && !GameHandler.game.complete) ? 'continueVariant' : 'defaultVariant'} />
 
             <AnimatePresence>
                 {shouldRenderGame && <Sudoku requestGoBack={handleGoBack} />}

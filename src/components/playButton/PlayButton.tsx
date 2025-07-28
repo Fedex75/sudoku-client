@@ -9,9 +9,10 @@ export type PlayButtonAction = 'default' | 'hide';
 type Props = {
     action: PlayButtonAction;
     onPlay: () => void;
+    variant: 'defaultVariant' | 'continueVariant';
 };
 
-export default function PlayButton({ action, onPlay }: Props) {
+export default function PlayButton({ action, onPlay, variant }: Props) {
     return (
         <motion.div
             initial={{ top: 'calc(100vh - 85px)' }}
@@ -19,7 +20,7 @@ export default function PlayButton({ action, onPlay }: Props) {
                 action === 'hide' ? { top: 'calc(100vh - 1px)', transition: { duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' } } :
                     { top: 'calc(100vh - 85px)', transition: { duration: COMMON_UI_ANIMATION_DURATION_SECONDS, ease: 'linear' } }
             }
-            className={`play-button defaultVariant`}
+            className={`play-button ${variant}`}
             onClick={() => { onPlay(); }}
         >
             <FontAwesomeIcon className='play-button__icon' icon={faPlay} />

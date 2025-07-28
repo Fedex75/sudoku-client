@@ -1,5 +1,5 @@
 import { Cell } from '../../../utils/Cell';
-import brightness from '../../../utils/Utils';
+import { brightness } from '../../../utils/Utils';
 import { themes } from '../../Themes';
 import { ClassicBoard } from '../classic/ClassicBoard';
 
