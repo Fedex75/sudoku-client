@@ -13,27 +13,15 @@ type Props = {
     requestNewGame: (newGame: Board) => void;
 };
 
+const gameModeOrder: GameModeName[] = ['sandwich', 'sudokuX', 'classic', 'killer', 'thermo'];
+
 export default function Play({ requestNewGame }: Props) {
     const { accentColor } = useContext(AccentColorContext);
     let initialSnappedIndex = 2;
     if (GameHandler.game && !GameHandler.game.complete) {
-        switch (GameHandler.game.mode) {
-            case 'sandwich':
-                initialSnappedIndex = 0;
-                break;
-            case 'sudokuX':
-                initialSnappedIndex = 1;
-                break;
-            case 'classic':
-                initialSnappedIndex = 2;
-                break;
-            case 'killer':
-                initialSnappedIndex = 3;
-                break;
-            case 'thermo':
-                initialSnappedIndex = 4;
-                break;
-        }
+        initialSnappedIndex = gameModeOrder.indexOf(GameHandler.game.mode);
+    } else {
+        initialSnappedIndex = gameModeOrder.indexOf(GameHandler.recommendations.newGame.mode);
     }
     const [snappedIndex, setSnappedIndex] = useState(initialSnappedIndex);
 
