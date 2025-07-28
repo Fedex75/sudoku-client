@@ -122,7 +122,7 @@ function Game({ paused, handleComplete, game, handleFullNotation }: Props) {
 
         if (colorMode) {
             setMagicWandMode('clearColors');
-        } else if (lockedInput !== 0 || (game.selectedCells.size === 1 && [...game.selectedCells][0].value > 0)) {
+        } else if ((game.selectedCells.size < 2 && lockedInput !== 0) || (game.selectedCells.size === 1 && [...game.selectedCells][0].value > 0)) {
             setMagicWandMode('links');
         } else {
             let selectedColors: ColorName[] = [];
