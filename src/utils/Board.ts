@@ -570,9 +570,17 @@ export default abstract class Board {
             return;
         }
 
-        this._fullNotation = true;
+        if (this._settings.clearColorFullNotation) {
+            if (!this._fullNotation) {
+                // If the notation wasn't full, clear all color
+                this.clearColors({ causedByUser: false });
+            } else {
+                // If it was already full, clear only multi-cell color groups
+                this.removeColorGroups({ from: new Set(Array.from(this.colorGroups).filter(cg => cg.members.size > 1)), causedByUser: false });
+            }
+        }
 
-        if (this._settings.clearColorFullNotation) this.clearColors({ causedByUser: false });
+        this._fullNotation = true;
     }
 
     protected *iterateAllCells(): IterableIterator<Cell> {
