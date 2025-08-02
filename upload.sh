@@ -1,5 +1,6 @@
 #!/bin/bash
 
+USER=captain_n3mo
 HOST=zaifo.com.ar
 FOLDER="/www/test.sudoku.zaifo.com.ar"
 
@@ -16,13 +17,13 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
 fi
 
 echo "Clearing remote folder..."
-ssh root@$HOST rm -rf $FOLDER/*
+ssh $USER@$HOST rm -rf $FOLDER/*
 
 echo "Creating static remote folder..."
-ssh root@$HOST mkdir $FOLDER/static
+ssh $USER@$HOST mkdir $FOLDER/static
 
 echo "Creating splash-screens remote folder..."
-ssh root@$HOST mkdir $FOLDER/splash-screens
+ssh $USER@$HOST mkdir $FOLDER/splash-screens
 
 echo "Transfering files to remote..."
-scp -r build/* root@$HOST:$FOLDER
+scp -r build/* $USER@$HOST:$FOLDER
