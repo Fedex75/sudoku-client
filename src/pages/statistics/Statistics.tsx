@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Section, SectionContent, Topbar } from '../../components';
-import { GameModeName } from '../../utils/Difficulties';
 import GameHandler from '../../utils/GameHandler';
 import { convertMillisecondsToHMS } from '../../utils/Statistics';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './statistics.css';
+import { GameModeName } from '../../game/types';
 
 export default function Statistics() {
     const navigate = useNavigate();

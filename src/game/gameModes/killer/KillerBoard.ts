@@ -1,8 +1,11 @@
 import { Cell, KillerCage } from '../../../utils/Cell';
 import { UseHistory } from '../../../utils/DataTypes';
+import { GameModeName } from '../../types';
 import { ClassicBoard } from '../classic/ClassicBoard';
 
 export class KillerBoard extends ClassicBoard {
+    protected readonly _mode: GameModeName = 'killer';
+
     public cages: KillerCage[] = [];
 
     protected getDataFromMission(): void {

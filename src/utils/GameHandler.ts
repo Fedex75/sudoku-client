@@ -1,5 +1,5 @@
 import missionsData from '../data/missions.json';
-import { difficulties, DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from './Difficulties';
+import { DifficultyIdentifier, DifficultyName, getDifficulty } from './Difficulties';
 import { defaultStatistics, Statistics, update } from './Statistics';
 import { Bookmark, GameData, MissionsData, RawGameData } from './DataTypes';
 import { BoardFactory } from '../game/gameModes/BoardFactory';
@@ -7,6 +7,8 @@ import { STORAGE_SCHEMA_VERSION, BOARD_API_VERSION, RECOMMENDATIONS_API_VERSION,
 import { getStoredData, saveData } from './hooks/LocalStorageHandler';
 import { getCurrentSettings } from './hooks/SettingsHandler';
 import Board from './Board';
+import { GameModeName } from '../game/types';
+import { GameModeDefinitions, getMode } from '../game/Definitions';
 
 type Recommendations = {
     newGame: {
@@ -68,7 +70,7 @@ class GameHandler {
 
         this.recommendations = getStoredData(RECOMMENDATIONS_KEY, RECOMMENDATIONS_API_VERSION, defaultRecommendations);
 
-        this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? BoardFactory(getMode(gameData.id[0] as GameModeIdentifier), gameData, getCurrentSettings()) : null);
+        this.game = getStoredData(GAME_KEY, BOARD_API_VERSION, null, (gameData: GameData) => gameData ? BoardFactory(getMode(gameData.id[0]) ?? 'classic', gameData, getCurrentSettings()) : null);
 
         this.bookmarks = getStoredData(BOOKMARKS_KEY, BOOKMARKS_API_VERSION, []);
 
@@ -107,7 +109,7 @@ class GameHandler {
         let candidates = allMissions.filter(c => !this.solved.includes(c.id));
         if (candidates.length === 0) {
             if (allMissions.length === 0) {
-                for (let diff of difficulties[mode]) {
+                for (let diff of GameModeDefinitions[mode].difficulties) {
                     allMissions = this.missions[mode][diff];
                     if (!allMissions || allMissions.length > 0) continue;
                     candidates = allMissions;
@@ -158,7 +160,7 @@ class GameHandler {
     }*/
 
     findMissionFromID(id: string) {
-        const mode = getMode(id[0] as GameModeIdentifier);
+        const mode = getMode(id[0]);
         const diff = getDifficulty(id[1] as DifficultyIdentifier);
         if (!this.missions[mode] || !this.missions[mode][diff]) return undefined;
         return this.missions[mode][diff].find(mission => mission.id === id) as RawGameData;
@@ -227,7 +229,7 @@ class GameHandler {
     createNewGameFromBookmark(bm: Bookmark) {
         const rawData = this.findMissionFromID(bm.id);
         if (!rawData) return;
-        return BoardFactory(getMode(rawData.id[0] as GameModeIdentifier), {
+        return BoardFactory(getMode(rawData.id[0]), {
             id: rawData.id,
             mission: rawData.m
         });

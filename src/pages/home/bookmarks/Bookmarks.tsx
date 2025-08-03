@@ -2,7 +2,6 @@ import './bookmarks.css';
 import { faBookmark, faCheck, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useContext, useState } from "react";
-import { getMode, GameModeIdentifier } from "../../../utils/Difficulties";
 import GameHandler from "../../../utils/GameHandler";
 import { useTranslation } from 'react-i18next';
 import { Bookmark } from '../../../utils/DataTypes';
@@ -12,6 +11,7 @@ import { CanvasFactory } from '../../../game/gameModes/CanvasFactory';
 import Board from '../../../utils/Board';
 import { AccentColorContext } from '../../../utils/hooks/useAccentColor';
 import { ThemeContext } from '../../../utils/hooks/useTheme';
+import { getMode } from '../../../game/Definitions';
 
 type Props = {
     requestContinue: () => void;
@@ -71,7 +71,7 @@ function Bookmarks({ requestContinue, requestNewGame, requestPrompt }: Props) {
                                 let board;
                                 let solved;
 
-                                const mode = getMode(bm.id[0] as GameModeIdentifier);
+                                const mode = getMode(bm.id[0]);
                                 const mission = GameHandler.findMissionFromID(bm.id);
                                 if (!mission) return null;
                                 board = BoardFactory(mode, {

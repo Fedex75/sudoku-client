@@ -1,7 +1,9 @@
 import { Cell, Thermometer } from '../../../utils/Cell';
+import { GameModeName } from '../../types';
 import { ClassicBoard } from '../classic/ClassicBoard';
 
 export class ThermoBoard extends ClassicBoard {
+    protected readonly _mode: GameModeName = 'thermo';
     public thermometers: Thermometer[] = [];
 
     protected getDataFromMission(): void {

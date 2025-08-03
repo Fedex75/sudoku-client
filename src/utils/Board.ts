@@ -1,14 +1,15 @@
-import { DifficultyIdentifier, DifficultyName, GameModeIdentifier, GameModeName, getDifficulty, getMode } from "./Difficulties";
+import { DifficultyIdentifier, DifficultyName, getDifficulty } from "./Difficulties";
 import { BoardAnimation, BoardHistory, GameData, UseHistory } from "./DataTypes";
 import { ColorName, colorNames, colorNamesShortened } from "./Colors";
 import { Cell, CellCoordinates, ColorGroup } from './Cell';
 import { BOARD_API_VERSION } from './Constants';
 import { defaultSettings, Settings } from './hooks/SettingsHandler';
+import { GameModeName } from '../game/types';
 
 export default abstract class Board {
     // Intrinsic constants
     protected readonly _id: string;
-    protected readonly _mode: GameModeName;
+    protected readonly _mode!: GameModeName;
     protected readonly _difficulty: DifficultyName;
     protected readonly _mission: string;
 
@@ -38,7 +39,6 @@ export default abstract class Board {
 
     constructor(id: string, mission: string, settings: Settings = defaultSettings) {
         this._id = id;
-        this._mode = getMode(this._id[0] as GameModeIdentifier);
         this._difficulty = getDifficulty(this._id[1] as DifficultyIdentifier);
         this._mission = mission;
         this._settings = settings;

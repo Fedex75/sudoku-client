@@ -1,6 +1,7 @@
 import { Cell } from '../../../utils/Cell';
 import { brightness } from '../../../utils/Utils';
 import { themes } from '../../Themes';
+import { GameModeName } from '../../types';
 import { ClassicBoard } from '../classic/ClassicBoard';
 
 interface Diagonal {
@@ -9,6 +10,7 @@ interface Diagonal {
 }
 
 export class SudokuXBoard extends ClassicBoard {
+    protected readonly _mode: GameModeName = 'sudokuX';
     protected mainDiagonal: Diagonal = { members: new Set(), error: false };
     protected secondaryDiagonal: Diagonal = { members: new Set(), error: false };
 

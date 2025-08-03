@@ -4,8 +4,11 @@ import Solver from "../../../utils/Solver";
 import Board from "../../../utils/Board";
 import { themes } from '../../Themes';
 import { Cell } from '../../../utils/Cell';
+import { GameModeName } from '../../types';
 
 export class ClassicBoard extends Board {
+    protected readonly _mode: GameModeName = 'classic';
+
     protected getDataFromMission(): void {
         const [nSquares, encodedClues] = this.mission.split(' ');
         this._nSquares = Number.parseInt(nSquares);

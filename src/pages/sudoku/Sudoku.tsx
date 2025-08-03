@@ -2,7 +2,7 @@ import './sudoku.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Section, SectionContent, Topbar, ActionSheet, ActionSheetButton } from '../../components';
 import GameHandler from '../../utils/GameHandler';
-import { DifficultyName, difficulties } from '../../utils/Difficulties';
+import { DifficultyName } from '../../utils/Difficulties';
 import copy from 'copy-to-clipboard';
 import { useNavigate } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,6 +17,7 @@ import { Tutorial } from './Tutorial';
 import Timer, { TimerRef } from '../../components/timer/Timer';
 import { BOARD_WIN_ANIMATION_DURATION_MS, GAME_SLIDE_ANIMATION_DURATION_SECONDS } from '../../utils/Constants';
 import { motion } from 'framer-motion';
+import { GameModeDefinitions } from '../../game/Definitions';
 
 type Props = {
     requestGoBack: () => void;
@@ -241,7 +242,7 @@ export default function Sudoku({ requestGoBack }: Props) {
                     </div>
                     <div className='sudoku__context-menu__buttons' style={{ gridArea: 'buttons' }}>
                         {
-                            difficulties[GameHandler.game.mode].map(diff => (
+                            GameModeDefinitions[GameHandler.game.mode].difficulties.map(diff => (
                                 <div key={diff} className='context-menu__button' onClick={() => handleNewGame(diff)}>
                                     <FontAwesomeIcon icon={faPlusSquare} fontSize={24} />
                                     <p>{t(`gameDifficulties.${diff}`)}</p>

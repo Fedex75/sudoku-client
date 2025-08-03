@@ -1,11 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../components";
-import { DifficultyName, difficulties } from "../../utils/Difficulties";
+import { DifficultyName } from "../../utils/Difficulties";
 import GameHandler from "../../utils/GameHandler";
 import { convertMillisecondsToHMS } from "../../utils/Statistics";
 import Board from '../../utils/Board';
 import { AccentColorContext } from '../../utils/hooks/useAccentColor';
+import { GameModeDefinitions } from '../../game/Definitions';
 
 interface WinScreenProps {
     handleNewGameClick: () => void;
@@ -19,7 +20,7 @@ export function WinScreen({ handleNewGameClick, handleNewGame, game }: WinScreen
 
     const nextDifficulty = useMemo(() => {
         if (!game) return null;
-        const diffs = difficulties[game.mode];
+        const diffs = GameModeDefinitions[game.mode].difficulties;
         const index = diffs.indexOf(game.difficulty);
         if (index !== -1 && index < diffs.length - 1) {
             return diffs[index + 1];

@@ -1,5 +1,6 @@
 import { Cell } from '../../../utils/Cell';
 import { UseHistory } from '../../../utils/DataTypes';
+import { GameModeName } from '../../types';
 import { ClassicBoard } from '../classic/ClassicBoard';
 
 export type SandwichClue = {
@@ -9,6 +10,8 @@ export type SandwichClue = {
 };
 
 export class SandwichBoard extends ClassicBoard {
+    protected readonly _mode: GameModeName = 'sandwich';
+
     public horizontalClues: SandwichClue[] = [];
     public verticalClues: SandwichClue[] = [];
 

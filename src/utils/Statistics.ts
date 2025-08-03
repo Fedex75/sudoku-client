@@ -1,4 +1,6 @@
-import { DifficultyName, GameModeName } from "./Difficulties";
+import { GameModeDefinitions } from '../game/Definitions';
+import { GameModeName, gameModeOrder } from '../game/types';
+import { DifficultyName } from "./Difficulties";
 
 export type StatisticsItem = {
     average: number;
@@ -12,168 +14,23 @@ export type Statistics<GameModes extends string, Difficulties extends string> = 
     [GameMode in GameModes]: GameModeStatistics<Difficulties>
 };
 
-export const defaultStatistics: Statistics<GameModeName, DifficultyName> = {
-    classic: {
-        easy: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        medium: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        hard: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        expert: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        evil: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        unrated: {
-            average: 0,
-            count: 0,
-            best: 0
-        }
-    },
-    killer: {
-        easy: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        medium: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        hard: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        expert: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        evil: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        unrated: {
-            average: 0,
-            count: 0,
-            best: 0
-        }
-    },
-    sudokuX: {
-        easy: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        medium: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        hard: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        expert: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        evil: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        unrated: {
-            average: 0,
-            count: 0,
-            best: 0
-        }
-    },
-    sandwich: {
-        easy: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        medium: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        hard: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        expert: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        evil: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        unrated: {
-            average: 0,
-            count: 0,
-            best: 0
-        }
-    },
-    thermo: {
-        easy: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        medium: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        hard: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        expert: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        evil: {
-            average: 0,
-            count: 0,
-            best: 0
-        },
-        unrated: {
-            average: 0,
-            count: 0,
-            best: 0
-        }
-    }
+const baseStats = {
+    average: 0,
+    count: 0,
+    best: 0
 };
+
+export const defaultStatistics = Object.fromEntries(
+    gameModeOrder.map((mode) => [
+        mode,
+        Object.fromEntries(
+            [
+                ...(GameModeDefinitions[mode].difficulties ?? []),
+                'unrated'
+            ].map((difficulty) => [difficulty, { ...baseStats }])
+        )
+    ])
+) as Statistics<GameModeName, DifficultyName>;
 
 export const convertMillisecondsToHMS = (time: number) => {
     const totalHours = Math.floor((time / 3600000) % 60);
