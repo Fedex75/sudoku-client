@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USER=captain_n3mo
+USER=deployer
 HOST=zaifo.com.ar
 FOLDER="/www/test.sudoku.zaifo.com.ar"
 
